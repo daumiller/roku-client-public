@@ -67,7 +67,7 @@ sub appPopScreen(screen)
 end sub
 
 sub appRun()
-    print "Starting global message loop"
+    Info("Starting global message loop")
 
     ' TODO(schuyler): Not the best place for this presumably, but you get the idea...
     if m.screens.Count() = 0 then
@@ -79,14 +79,14 @@ sub appRun()
         timeout = m.ProcessOneMessage(timeout)
     end while
 
-    print "Finished global message loop"
+    Info("Finished global message loop")
 end sub
 
 function appProcessOneMessage(timeout)
     msg = wait(timeout, m.port)
 
     if msg <> invalid then
-        print "Processing "; type(msg)
+        Debug("Processing " + type(msg))
         m.screens.Peek().HandleMessage(msg)
     end if
 
