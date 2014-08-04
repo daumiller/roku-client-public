@@ -1,4 +1,5 @@
 sub main(args)
-    ' TODO(schuyler): Hmm, let's see... everything?
-    sleep(30)
+    app = Application()
+
+    app.Run()
 end sub
