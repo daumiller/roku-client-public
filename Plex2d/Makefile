@@ -1,0 +1,50 @@
+#########################################################################
+# Simple makefile for packaging Roku Simple Video Player example
+#
+# Makefile Usage:
+# > make
+# > make dev install
+# > make rel install
+#
+# Important Notes: 
+# To use the "install" and "remove" targets to install your
+# application directly from the shell, you must do the following:
+#
+# 1) Make sure that you have the curl command line executable in your path
+# 2) Set the variable ROKU_DEV_TARGET in your environment to the IP 
+#    address of your Roku box. (e.g. export ROKU_DEV_TARGET=192.168.1.1.
+#    Set in your this variable in your shell startup (e.g. .bashrc)
+##########################################################################  
+APPNAME = Plex2d
+APPDEPS = manifest count_functions
+ZIP_EXCLUDE = -x .git\* -x manifest.template -x \*.swp -x \*.DS_Store -x \*.py -x roku_screenshot.jpg
+include ../app.mk
+
+APPTITLE = $(APPNAME)Dev
+
+num_functions := $(shell grep -ri --include=*.brs 'end \(function\|sub\)' . | wc -l | tr -d ' ')
+
+.PHONY: manifest count_functions dev rel test
+
+test: APPTITLE = $(APPNAME)Test
+test: $(APPNAME)
+
+dev: APPTITLE = $(APPNAME)Dev
+dev: $(APPNAME)
+
+rel: APPTITLE = $(APPNAME)
+rel: $(APPNAME)
+
+manifest:
+	echo "Creating manifest for $(APPTITLE)"
+	sed s/APPTITLE/$(APPTITLE)/ < manifest.template > manifest
+
+count_functions:
+	echo "Counting functions for $(APPTITLE), some Rokus limit to 65536"
+	test $(num_functions) -le 65536
+
+screenshot:
+	$(CURL) -s -F passwd= -F mysubmit=Screenshot -F "archive=;filename=" -H "Expect:" "http://$(ROKU_DEV_TARGET)/plugin_inspect" > /dev/null
+	$(CURL) -s "http://$(ROKU_DEV_TARGET)/pkgs/dev.jpg" > roku_screenshot.jpg
+
+all: $(APPNAME)
