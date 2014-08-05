@@ -19,7 +19,8 @@ function Logger()
         obj.tempFiles = CreateObject("roList")
         obj.lastDateStr = ""
         obj.lastTimeStr = ""
-        obj.lastDateTime = invalid
+        obj.lastTimestamp = 0
+        obj.lastDate = 0
 
         ' Methods
         obj.SetLevel = loggerSetLevel
@@ -34,6 +35,9 @@ function Logger()
         ' TODO(schuyler): Remove these
         obj.SetLevel(obj.LEVEL_DEBUG)
         obj.EnablePapertrail(5)
+
+        ' Register with the web server
+        WebServer().AddHandler("/logs", ProcessLogsRequest)
     end if
 
     return obj
@@ -60,45 +64,42 @@ end sub
 sub loggerLog(level, msg)
     if level < m.level then return
 
-    now = CreateObject("roDateTime")
-    now.ToLocalTime()
+    t = Now(true)
 
-    if m.lastDateTime = invalid or m.lastDateTime.GetDayOfMonth() <> now.GetDayOfMonth() then
-        m.lastDateStr = now.GetMonth().toStr() + "/" + now.GetDayOfMonth().toStr() + "/" + now.GetYear().toStr() + " "
+    if m.lastDate <> t.GetDayOfMonth() then
+        m.lastDateStr = t.GetMonth().toStr() + "/" + t.GetDayOfMonth().toStr() + "/" + t.GetYear().toStr() + " "
     end if
 
-    if m.lastDateTime = invalid or m.lastDateTime.AsSeconds() <> now.AsSeconds() then
+    if m.lastTimestamp <> t.AsSeconds() then
         m.lastTimeStr = box("")
 
-        if now.GetHours() < 10 then
+        if t.GetHours() < 10 then
             m.lastTimeStr.AppendString("0", 1)
-            m.lastTimeStr.AppendString(now.GetHours().toStr(), 1)
+            m.lastTimeStr.AppendString(t.GetHours().toStr(), 1)
         else
-            m.lastTimeStr.AppendString(now.GetHours().toStr(), 2)
+            m.lastTimeStr.AppendString(t.GetHours().toStr(), 2)
         end if
 
         m.lastTimeStr.AppendString(":", 1)
 
-        if now.GetMinutes() < 10 then
+        if t.GetMinutes() < 10 then
             m.lastTimeStr.AppendString("0", 1)
-            m.lastTimeStr.AppendString(now.GetMinutes().toStr(), 1)
+            m.lastTimeStr.AppendString(t.GetMinutes().toStr(), 1)
         else
-            m.lastTimeStr.AppendString(now.GetMinutes().toStr(), 2)
+            m.lastTimeStr.AppendString(t.GetMinutes().toStr(), 2)
         end if
 
         m.lastTimeStr.AppendString(":", 1)
 
-        if now.GetSeconds() < 10 then
+        if t.GetSeconds() < 10 then
             m.lastTimeStr.AppendString("0", 1)
-            m.lastTimeStr.AppendString(now.GetSeconds().toStr(), 1)
+            m.lastTimeStr.AppendString(t.GetSeconds().toStr(), 1)
         else
-            m.lastTimeStr.AppendString(now.GetSeconds().toStr(), 2)
+            m.lastTimeStr.AppendString(t.GetSeconds().toStr(), 2)
         end if
 
         m.lastTimeStr.AppendString(" ", 1)
     end if
-
-    m.lastDateTime = now
 
     levelPrefix = m.LABELS[level]
 
@@ -201,6 +202,35 @@ sub loggerFlush()
         DeleteFile(filename)
     end if
 end sub
+
+function ProcessLogsRequest()
+    log = Logger()
+    log.flush()
+
+    fs = CreateObject("roFilesystem")
+    m.files = CreateObject("roList")
+    totalLen = 0
+    for each path in log.tempFiles
+        stat = fs.stat(path)
+        if stat <> invalid then
+            m.files.AddTail({path: path, length: stat.size})
+            totalLen = totalLen + stat.size
+        end if
+    next
+
+    m.mimetype = "text/plain"
+    m.fileLength = totalLen
+    m.source = m.CONCATFILES
+    m.lastmod = Now()
+
+    ' Not handling range requests...
+    m.start = 0
+    m.length = m.fileLength
+    m.http_code = 200
+
+    m.genHdr()
+    return true
+end function
 
 ' Shortcut functions for log levels
 

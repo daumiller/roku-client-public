@@ -83,11 +83,18 @@ sub appRun()
 end sub
 
 function appProcessOneMessage(timeout)
+    WebServer().PreWait()
+
     msg = wait(timeout, m.port)
 
     if msg <> invalid then
         Debug("Processing " + type(msg))
         m.screens.Peek().HandleMessage(msg)
+
+        if type(msg) = "roSocketEvent" then
+            ' Assume it was for the web server (it won't hurt if it wasn't)
+            WebServer().PostWait()
+        end if
     end if
 
     return 0
