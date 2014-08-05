@@ -16,6 +16,8 @@ function Application()
         obj.pendingRequests = {}
         obj.requestsByScreen = {}
 
+        obj.initializers = {}
+
         obj.AssignScreenID = appAssignScreenID
         obj.PushScreen = appPushScreen
         obj.PopScreen = appPopScreen
@@ -30,8 +32,17 @@ function Application()
         obj.ProcessOneMessage = appProcessOneMessage
         obj.OnInitialized = appOnInitialized
 
+        ' Track anything that needs to be initialized before the app can start
+        ' and an initial screen can be shown. These need to be important,
+        ' generally related to whether the app is unlocked or not.
+        obj.AddInitializer = appAddInitializer
+        obj.ClearInitializer = appClearInitializer
+        obj.IsInitialized = appIsInitialized
+
         obj.reset()
         m.Application = obj
+
+        obj.AddInitializer("application")
     end if
 
     return m.Application
@@ -108,9 +119,10 @@ sub appRun()
     ' Make sure we initialize anything that needs to run in the background
     AppManager()
     WebServer()
+    m.ClearInitializer("application")
 
     timeout = 0
-    while m.screens.Count() > 0 or not AppManager().IsInitialized()
+    while m.screens.Count() > 0 or not m.IsInitialized()
         timeout = m.ProcessOneMessage(timeout)
     end while
 
@@ -241,3 +253,18 @@ sub appCancelRequests(screenID)
         m.requestsByScreen.Delete(screenID)
     end if
 end sub
+
+sub appAddInitializer(name)
+    m.initializers[name] = true
+end sub
+
+sub appClearInitializer(name)
+    if m.initializers.Delete(name) AND m.IsInitialized() then
+        m.OnInitialized()
+    end if
+end sub
+
+function appIsInitialized()
+    m.initializers.Reset()
+    return m.initializers.IsEmpty()
+end function

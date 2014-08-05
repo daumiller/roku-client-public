@@ -13,14 +13,6 @@ function AppManager()
         obj.isAvailableForPurchase = false
         obj.isExempt = false
 
-        obj.initializers = CreateObject("roAssociativeArray")
-
-        ' Track anything that needs to be initialized before the app can start
-        ' and an initial screen can be shown. These need to be important,
-        ' generally related to whether the app is unlocked or not.
-        obj.AddInitializer = managerAddInitializer
-        obj.ClearInitializer = managerClearInitializer
-        obj.IsInitialized = managerIsInitialized
         obj.IsPlaybackAllowed = managerIsPlaybackAllowed
         obj.ResetState = managerResetState
 
@@ -37,21 +29,6 @@ function AppManager()
     end if
 
     return m.AppManager
-end function
-
-sub managerAddInitializer(name)
-    m.initializers[name] = true
-end sub
-
-sub managerClearInitializer(name)
-    if m.initializers.Delete(name) AND m.IsInitialized() then
-        Application().OnInitialized()
-    end if
-end sub
-
-function managerIsInitialized()
-    m.initializers.Reset()
-    return m.initializers.IsEmpty()
 end function
 
 function managerIsPlaybackAllowed()
@@ -78,7 +55,7 @@ sub managerFetchProducts()
     ' purchase on the older firmware.
 
     if CheckMinimumVersion(AppSettings().GetGlobal("rokuVersionArr", [0]), [5, 1]) then
-        m.AddInitializer("channelstore")
+        Application().AddInitializer("channelstore")
 
         ' The docs suggest we can make two requests at the same time by using the
         ' source identity, but it doesn't actually work. So we have to get the
@@ -144,7 +121,7 @@ sub managerHandleChannelStoreEvent(msg)
     end if
 
     if m.pendingStore = invalid then
-        m.ClearInitializer("channelstore")
+        Application().ClearInitializer("channelstore")
     end if
 end sub
 
