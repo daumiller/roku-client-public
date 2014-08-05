@@ -1,7 +1,5 @@
 function AppSettings()
-    obj = m.AppSettings
-
-    if obj = invalid then
+    if m.AppSettings = invalid then
         obj = CreateObject("roAssociativeArray")
 
         ' Properties
@@ -24,7 +22,7 @@ function AppSettings()
         obj.InitGlobals()
     end if
 
-    return obj
+    return m.AppSettings
 end function
 
 function settingsGetPreference(name, defaultValue=invalid, section="preferences")
@@ -59,14 +57,14 @@ sub settingsSetPreference(name, value, section="preferences")
 
     sec = CreateObject("roRegistrySection", section)
     sec.Write(name, value)
-    m.RegistryCache[name + section] = value
+    m.prefsCache[name + section] = value
     sec.Flush()
 end sub
 
 sub settingsClearPreference(name, section="preferences")
     sec = CreateObject("roRegistrySection", section)
     sec.Delete(name)
-    m.RegistryCache.Delete(name + section)
+    m.prefsCache.Delete(name + section)
     sec.Flush()
 end sub
 
@@ -154,4 +152,12 @@ sub settingsInitGlobals()
 
     m.globals["rokuUniqueID"] = device.GetDeviceUniqueId()
     m.globals["clientIdentifier"] = m.globals["appName"] + m.globals["rokuUniqueID"]
+
+    ' Stash some more info from roDeviceInfo into globals. Fetching the device
+    ' info can be slow, especially for anything related to metadata creation
+    ' that may happen inside a loop.
+
+    m.globals["displaySize"] = device.GetDisplaySize()
+    m.globals["displayMode"] = device.GetDisplayMode()
+    m.globals["displayType"] = device.GetDisplayType()
 end sub

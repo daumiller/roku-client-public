@@ -1,7 +1,5 @@
 function TimerClass()
-    obj = m.TimerClass
-
-    if obj = invalid then
+    if m.TimerClass = invalid then
         obj = CreateObject("roAssociativeArray")
 
         ' Properties
@@ -22,7 +20,7 @@ function TimerClass()
         m.TimerClass = obj
     end if
 
-    return obj
+    return m.TimerClass
 end function
 
 function createTimer(name)

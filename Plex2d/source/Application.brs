@@ -1,8 +1,9 @@
 function Application()
-    obj = m.Application
-
-    if obj = invalid then
+    if m.Application = invalid then
         obj = CreateObject("roAssociativeArray")
+
+        ' Fake screen IDs used for HTTP requests
+        obj.SCREEN_ANALYTICS = -2
 
         obj.port = CreateObject("roMessagePort")
         obj.nextScreenID = 1
@@ -12,11 +13,18 @@ function Application()
         obj.timers = {}
         obj.timersByScreen = {}
 
+        obj.pendingRequests = {}
+        obj.requestsByScreen = {}
+
         obj.AssignScreenID = appAssignScreenID
         obj.PushScreen = appPushScreen
         obj.PopScreen = appPopScreen
 
         obj.AddTimer = appAddTimer
+
+        obj.StartRequest = appStartRequest
+        obj.StartRequestIgnoringResponse = appStartRequestIgnoringResponse
+        obj.CancelRequests = appCancelRequests
 
         obj.Run = appRun
         obj.ProcessOneMessage = appProcessOneMessage
@@ -25,7 +33,7 @@ function Application()
         m.Application = obj
     end if
 
-    return obj
+    return m.Application
 end function
 
 sub appAssignScreenID(screen)
@@ -44,6 +52,9 @@ sub appPushScreen(screen)
 
     m.AssignScreenID(screen)
     m.screens.Push(screen)
+
+    Analytics().TrackScreen(screen.screenName)
+    Debug("Pushing screen " + tostr(screen.screenID) + " onto stack - " + screen.screenName)
 
     if oldScreen <> invalid then
         oldScreen.Deactivate()
@@ -68,6 +79,9 @@ sub appPopScreen(screen)
         m.screens.Pop()
     end if
 
+    ' Clean up any requests initiated by this screen
+    m.CancelRequests(screenID)
+
     ' Clean up any timers initiated by this screen
     timers = m.timersByScreen[screenID]
     if timers <> invalid then
@@ -81,7 +95,9 @@ sub appPopScreen(screen)
     end if
 
     if m.screens.Count() > 0 and callActivate then
-        m.screens.Peek().Activate(invalid)
+        newScreen = m.screens.Peek()
+        newScreen.Activate(invalid)
+        Analytics().TrackScreen(newScreen.screenName)
     end if
 end sub
 
@@ -98,6 +114,11 @@ sub appRun()
         timeout = m.ProcessOneMessage(timeout)
     end while
 
+    ' Clean up
+    Analytics().Cleanup()
+    m.pendingRequests.Clear()
+    m.timers.Clear()
+
     Info("Finished global message loop")
 end sub
 
@@ -113,6 +134,16 @@ function appProcessOneMessage(timeout)
         if type(msg) = "roSocketEvent" then
             ' Assume it was for the web server (it won't hurt if it wasn't)
             WebServer().PostWait()
+        else if type(msg) = "roUrlEvent" and msg.GetInt() = 1 then
+            id = msg.GetSourceIdentity().tostr()
+            requestContext = m.pendingRequests[id]
+            if requestContext <> invalid then
+                m.pendingRequests.Delete(id)
+                if requestContext.listener <> invalid then
+                    requestContext.listener.OnUrlEvent(msg, requestContext)
+                end if
+                requestContext = invalid
+            end if
         end if
     end if
 
@@ -145,4 +176,53 @@ sub appAddTimer(timer, listener)
         m.timersByScreen[screenID] = []
     end if
     m.timersByScreen[screenID].Push(timer.ID)
+end sub
+
+function appStartRequest(request, listener, context, body=invalid, contentType=invalid)
+    context.listener = listener
+    context.request = request
+
+    started = request.StartAsync(body, contentType)
+
+    if started then
+        id = request.GetIdentity()
+        m.pendingRequests[id] = context
+
+        ' Screen IDs less than 0 are fake screens that won't be popped until
+        ' the app is cleaned up, so no need to waste the bytes tracking them
+        ' here.
+
+        if listener <> invalid and listener.screenID >= 0 then
+            screenID = listener.screenID.toStr()
+
+            if not m.requestsByScreen.DoesExist(screenID) then
+                m.requestsByScreen[screenID] = []
+            end if
+
+            m.requestsByScreen[screenID].Push(id)
+        end if
+    end if
+
+    return started
+end function
+
+function appStartRequestIgnoringResponse(url, body=invalid, contentType=invalid)
+    request = createHttpRequest(url)
+
+    context = CreateObject("roAssociativeArray")
+    context.requestType = "ignored"
+
+    m.StartRequest(request, invalid, context, body, contentType)
+end function
+
+sub appCancelRequests(screenID)
+    requests = m.requestsByScreen[screenID]
+    if requests <> invalid then
+        for each requestID in requests
+            request = m.pendingRequests[requestID]
+            if request <> invalid then request.Cancel()
+            m.pendingRequests.Delete(requestID)
+        next
+        m.requestsByScreen.Delete(screenID)
+    end if
 end sub

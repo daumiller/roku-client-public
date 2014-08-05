@@ -1,7 +1,5 @@
 function Logger()
-    obj = m.Logger
-
-    if obj = invalid then
+    if m.Logger = invalid then
         obj = CreateObject("roAssociativeArray")
 
         ' Constants
@@ -40,7 +38,7 @@ function Logger()
         WebServer().AddHandler("/logs", ProcessLogsRequest)
     end if
 
-    return obj
+    return m.Logger
 end function
 
 sub loggerSetLevel(level)

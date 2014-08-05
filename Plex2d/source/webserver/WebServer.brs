@@ -3,9 +3,7 @@
 ' initialize it in a way that looks familiar.
 
 function WebServer()
-    obj = m.WebServer
-
-    if obj = invalid then
+    if m.WebServer = invalid then
         obj = CreateObject("roAssociativeArray")
 
         ' Methods
@@ -31,7 +29,7 @@ function WebServer()
         obj.server = InitServer({msgPort: Application().port, port: 8324})
     end if
 
-    return obj
+    return m.WebServer
 end function
 
 sub wsAddHandler(prefix, handler)

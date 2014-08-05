@@ -100,6 +100,16 @@ function UrlUnescape(url)
     return ue.unescape(url)
 end function
 
+function UrlEscape(s)
+    ue = m.UrlEncoder
+    if ue = invalid then
+        ue = CreateObject("roUrlTransfer")
+        m.UrlEncoder = ue
+    end if
+
+    return ue.Escape(s)
+end function
+
 function GetExtension(filename)
     vals = filename.tokenize(".")
     if vals.Count() > 0 then
@@ -107,4 +117,22 @@ function GetExtension(filename)
     else
         return ""
     end if
+end function
+
+' This isn't a "real" UUID, but it should at least be random and look like one.
+function CreateUUID()
+    uuid = ""
+    for each numChars in [8, 4, 4, 4, 12]
+        if Len(uuid) > 0 then uuid = uuid + "-"
+        for i=1 to numChars
+            o = Rnd(16)
+            if o <= 10
+                o = o + 47
+            else
+                o = o + 96 - 10
+            end if
+            uuid = uuid + Chr(o)
+        end for
+    next
+    return uuid
 end function

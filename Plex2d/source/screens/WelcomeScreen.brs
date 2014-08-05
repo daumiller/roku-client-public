@@ -4,6 +4,8 @@ function WelcomeScreen()
     if obj = invalid then
         obj = CreateObject("roAssociativeArray")
 
+        obj.screenName = "Welcome"
+
         obj.Show = welcomeShow
         obj.HandleMessage = welcomeHandleMessage
 

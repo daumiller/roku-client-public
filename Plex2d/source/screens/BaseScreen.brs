@@ -6,6 +6,7 @@ function BaseScreen()
 
         ' Standard screen properties
         obj.screen = invalid
+        obj.screenName = "Unknown"
 
         ' Standard screen methods
         obj.Show = bsShow
