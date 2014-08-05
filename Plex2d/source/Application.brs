@@ -28,6 +28,7 @@ function Application()
 
         obj.Run = appRun
         obj.ProcessOneMessage = appProcessOneMessage
+        obj.OnInitialized = appOnInitialized
 
         obj.reset()
         m.Application = obj
@@ -104,13 +105,12 @@ end sub
 sub appRun()
     Info("Starting global message loop")
 
-    ' TODO(schuyler): Not the best place for this presumably, but you get the idea...
-    if m.screens.Count() = 0 then
-        m.PushScreen(createWelcomeScreen())
-    end if
+    ' Make sure we initialize anything that needs to run in the background
+    AppManager()
+    WebServer()
 
     timeout = 0
-    while m.screens.Count() > 0
+    while m.screens.Count() > 0 or not AppManager().IsInitialized()
         timeout = m.ProcessOneMessage(timeout)
     end while
 
@@ -129,7 +129,10 @@ function appProcessOneMessage(timeout)
 
     if msg <> invalid then
         Debug("Processing " + type(msg))
-        m.screens.Peek().HandleMessage(msg)
+
+        for i = m.screens.Count() - 1 to 0 step -1
+            if m.screens[i].HandleMessage(msg) then exit for
+        end for
 
         if type(msg) = "roSocketEvent" then
             ' Assume it was for the web server (it won't hurt if it wasn't)
@@ -144,6 +147,8 @@ function appProcessOneMessage(timeout)
                 end if
                 requestContext = invalid
             end if
+        else if type(msg) = "roChannelStoreEvent" then
+            AppManager().HandleChannelStoreEvent(msg)
         end if
     end if
 
@@ -164,6 +169,16 @@ function appProcessOneMessage(timeout)
 
     return timeout
 end function
+
+sub appOnInitialized()
+    ' As good a place as any, tell analytics that we've started.
+    Analytics().OnStartup(false)
+
+    ' TODO(schuyler): This is clearly bogus, but we need to show some sort of screen
+    if m.screens.Count() = 0 then
+        m.PushScreen(createWelcomeScreen())
+    end if
+end sub
 
 sub appAddTimer(timer, listener)
     timer.ID = m.nextTimerID.toStr()

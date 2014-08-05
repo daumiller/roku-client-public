@@ -136,3 +136,17 @@ function CreateUUID()
     next
     return uuid
 end function
+
+function CheckMinimumVersion(versionArr, requiredVersion)
+    index = 0
+    for each num in versionArr
+        if index >= requiredVersion.count() then exit for
+        if num < requiredVersion[index] then
+            return false
+        else if num > requiredVersion[index] then
+            return true
+        end if
+        index = index + 1
+    next
+    return true
+end function

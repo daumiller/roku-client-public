@@ -9,8 +9,5 @@ sub main(args)
     Debug("Roku version: " + settings.GetGlobal("rokuVersionStr"))
     Debug("Roku model: " + settings.GetGlobal("rokuModel"))
 
-    ' TODO(schuyler): Call this elsewhere
-    Analytics().OnStartup(false)
-
     app.Run()
 end sub
