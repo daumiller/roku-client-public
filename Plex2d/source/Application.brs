@@ -8,9 +8,15 @@ function Application()
         obj.nextScreenID = 1
         obj.screens = []
 
+        obj.nextTimerID = 1
+        obj.timers = {}
+        obj.timersByScreen = {}
+
         obj.AssignScreenID = appAssignScreenID
         obj.PushScreen = appPushScreen
         obj.PopScreen = appPopScreen
+
+        obj.AddTimer = appAddTimer
 
         obj.Run = appRun
         obj.ProcessOneMessage = appProcessOneMessage
@@ -51,6 +57,7 @@ sub appPopScreen(screen)
     ' this method. Is any warranted here?
 
     callActivate = true
+    screenID = screen.ScreenID.toStr()
 
     if screen.screenID <> m.screens.Peek().screenID then
         ' TODO(schuyler): Is this much of a concern now that we're not using
@@ -59,6 +66,18 @@ sub appPopScreen(screen)
     else
         screen.Destroy()
         m.screens.Pop()
+    end if
+
+    ' Clean up any timers initiated by this screen
+    timers = m.timersByScreen[screenID]
+    if timers <> invalid then
+        for each timerID in timers
+            timer = m.timers[timerID]
+            timer.active = false
+            timer.listener = invalid
+            m.timers.Delete(timerID)
+        next
+        m.timersByScreen.Delete(screenID)
     end if
 
     if m.screens.Count() > 0 and callActivate then
@@ -97,5 +116,33 @@ function appProcessOneMessage(timeout)
         end if
     end if
 
-    return 0
+    ' Check for any expired timers
+    timeout = 0
+    for each timerID in m.timers
+        timer = m.timers[timerID]
+        if timer.IsExpired() then
+            timer.listener.OnTimerExpired(timer)
+        end if
+
+        ' Make sure we set a timeout on the wait so we'll catch the next timer
+        remaining = timer.RemainingMillis()
+        if remaining > 0 and (timeout = 0 or remaining < timeout) then
+            timeout = remaining
+        end if
+    next
+
+    return timeout
 end function
+
+sub appAddTimer(timer, listener)
+    timer.ID = m.nextTimerID.toStr()
+    m.nextTimerID = m.nextTimerID + 1
+    timer.listener = listener
+    m.timers[timer.ID] = timer
+
+    screenID = listener.screenID.toStr()
+    if not m.timersByScreen.DoesExist(screenID) then
+        m.timersByScreen[screenID] = []
+    end if
+    m.timersByScreen[screenID].Push(timer.ID)
+end sub

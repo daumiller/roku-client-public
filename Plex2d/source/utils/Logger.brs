@@ -129,7 +129,7 @@ sub loggerLog(level, msg)
     ' If enabled, log to papertrail. The timestamp is unnecessary.
 
     if m.remoteLoggingTimer <> invalid then
-        if m.remoteLoggingTimer.TotalSeconds() > m.remoteLoggingSeconds then
+        if m.remoteLoggingTimer.IsExpired() then
             m.syslogSocket.Close()
             m.syslogSocket = invalid
             m.syslogPackets = invalid
@@ -184,8 +184,8 @@ sub loggerEnablePapertrail(minutes=20)
     m.syslogPackets = CreateObject("roList")
     m.syslogHeader = "<135> PlexForRoku: [" + label + "] "
 
-    m.remoteLoggingSeconds = minutes * 60
-    m.remoteLoggingTimer = CreateObject("roTimespan")
+    m.remoteLoggingTimer = createTimer("logger")
+    m.remoteLoggingTimer.SetDuration(minutes * 60 * 1000)
 
     ' TODO(schuyler): Enable papertrail logging for PMS, potentially
 end sub
