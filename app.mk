@@ -27,7 +27,7 @@ SOURCEREL = ..
 
 ROKU_DEV_USERNAME ?= rokudev
 ROKU_DEV_PASSWORD ?= plex
-CURL = curl --digest -u $(ROKU_DEV_USERNAME):$(ROKU_DEV_PASSWORD)
+CURL = curl --digest -u $(ROKU_DEV_USERNAME):$(ROKU_DEV_PASSWORD) -H"Expect:"
 
 
 .PHONY: all $(APPNAME)
