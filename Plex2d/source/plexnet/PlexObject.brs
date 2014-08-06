@@ -15,7 +15,7 @@ function PlexObjectClass()
 end function
 
 sub pnoInit(xml)
-    CallSuper(m, PlexAttributeCollectionClass().Init, [xml])
+    ApplyFunc(PlexAttributeCollectionClass().Init, m, [xml])
 
     m.type = firstOf(m.Get("type"), LCase(m.name))
 end sub
