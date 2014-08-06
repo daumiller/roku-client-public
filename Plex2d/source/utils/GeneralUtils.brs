@@ -1,14 +1,14 @@
 ' Mostly standard helpers borrowed from SDK examples
 ' TODO(schuyler): Clean up some of these functions
 
-function tostr(any)
+function tostr(any as dynamic) as string
     ret = AnyToString(any)
     if ret = invalid ret = type(any)
     if ret = invalid ret = "unknown" 'failsafe
     return ret
 end function
 
-function AnyToString(any)
+function AnyToString(any as dynamic) as dynamic
     if any = invalid return "invalid"
     if isstr(any) return any
     if isint(any) return numtostr(any)
@@ -21,19 +21,19 @@ function AnyToString(any)
     return invalid
 end function
 
-function isstr(obj)
+function isstr(obj as dynamic) as boolean
     if obj = invalid return false
     if GetInterface(obj, "ifString") = invalid return false
     return true
 end function
 
-function isint(obj)
+function isint(obj as dynamic) as boolean
     if obj = invalid return false
     if GetInterface(obj, "ifInt") = invalid return false
     return true
 end function
 
-function validint(obj)
+function validint(obj as dynamic) as integer
     if obj <> invalid and GetInterface(obj, "ifInt") <> invalid then
         return obj
     else
@@ -41,7 +41,7 @@ function validint(obj)
     end if
 end function
 
-function numtostr(num)
+function numtostr(num as dynamic) as string
     st=CreateObject("roString")
     if GetInterface(num, "ifInt") <> invalid then
         st.SetString(Stri(num))
@@ -51,26 +51,26 @@ function numtostr(num)
     return st.Trim()
 end function
 
-function validstr(obj)
+function validstr(obj as dynamic) as string
     if isnonemptystr(obj) return obj
     return ""
 end function
 
-function isnonemptystr(obj)
+function isnonemptystr(obj as dynamic) as boolean
     if obj = invalid return false
     if not isstr(obj) return false
     if Len(obj) = 0 return false
     return true
 end function
 
-function firstOf(first, second, third=invalid, fourth=invalid)
+function firstOf(first as dynamic, second as dynamic, third=invalid as dynamic, fourth=invalid as dynamic) as dynamic
     if first <> invalid then return first
     if second <> invalid then return second
     if third <> invalid then return third
     return fourth
 end function
 
-function Now(local=false)
+function Now(local=false as boolean) as object
     if local then
         key = "now_local"
     else
@@ -90,7 +90,7 @@ function Now(local=false)
     return obj
 end function
 
-function UrlUnescape(url)
+function UrlUnescape(url as string) as string
     ue = m.UrlEncoder
     if ue = invalid then
         ue = CreateObject("roUrlTransfer")
@@ -100,7 +100,7 @@ function UrlUnescape(url)
     return ue.unescape(url)
 end function
 
-function UrlEscape(s)
+function UrlEscape(s as string) as string
     ue = m.UrlEncoder
     if ue = invalid then
         ue = CreateObject("roUrlTransfer")
@@ -110,7 +110,7 @@ function UrlEscape(s)
     return ue.Escape(s)
 end function
 
-function GetExtension(filename)
+function GetExtension(filename as string) as string
     vals = filename.tokenize(".")
     if vals.Count() > 0 then
         return vals.GetTail()
@@ -120,7 +120,7 @@ function GetExtension(filename)
 end function
 
 ' This isn't a "real" UUID, but it should at least be random and look like one.
-function CreateUUID()
+function CreateUUID() as string
     uuid = ""
     for each numChars in [8, 4, 4, 4, 12]
         if Len(uuid) > 0 then uuid = uuid + "-"
@@ -137,7 +137,7 @@ function CreateUUID()
     return uuid
 end function
 
-function CheckMinimumVersion(versionArr, requiredVersion)
+function CheckMinimumVersion(versionArr as object, requiredVersion as object) as boolean
     index = 0
     for each num in versionArr
         if index >= requiredVersion.count() then exit for
