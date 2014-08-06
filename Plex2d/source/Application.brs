@@ -4,6 +4,7 @@ function Application()
 
         ' Fake screen IDs used for HTTP requests
         obj.SCREEN_ANALYTICS = -2
+        obj.SCREEN_MYPLEX = -5
 
         obj.port = CreateObject("roMessagePort")
         obj.nextScreenID = 1
@@ -117,6 +118,7 @@ sub appRun()
     Info("Starting global message loop")
 
     ' Make sure we initialize anything that needs to run in the background
+    MyPlexAccount()
     AppManager()
     WebServer()
     m.ClearInitializer("application")
@@ -153,6 +155,7 @@ function appProcessOneMessage(timeout)
             id = msg.GetSourceIdentity().tostr()
             requestContext = m.pendingRequests[id]
             if requestContext <> invalid then
+                Debug("Got a " + tostr(msg.GetResponseCode()) + " from " + requestContext.request.url)
                 m.pendingRequests.Delete(id)
                 if requestContext.listener <> invalid then
                     requestContext.listener.OnUrlEvent(msg, requestContext)
@@ -185,6 +188,9 @@ end function
 sub appOnInitialized()
     ' As good a place as any, tell analytics that we've started.
     Analytics().OnStartup(false)
+
+    ' Make sure we have a current app state
+    AppManager().ResetState()
 
     ' TODO(schuyler): This is clearly bogus, but we need to show some sort of screen
     if m.screens.Count() = 0 then

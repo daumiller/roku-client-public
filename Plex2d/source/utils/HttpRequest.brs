@@ -6,6 +6,7 @@ function HttpRequestClass()
         obj.GetToStringWithTimeout = httpGetToStringWithTimeout
         obj.GetIdentity = httpGetIdentity
         obj.Cancel = httpCancel
+        obj.AddParam = httpAddParam
 
         m.HttpRequestClass = obj
     end if
@@ -13,13 +14,14 @@ function HttpRequestClass()
     return m.HttpRequestClass
 end function
 
-function createHttpRequest(url, plexHeaders=true)
+function createHttpRequest(url, plexHeaders=true, token=invalid)
     obj = CreateObject("roAssociativeArray")
 
     obj.append(HttpRequestClass())
     obj.reset()
 
     obj.url = url
+    obj.hasParams = (Instr(1, url, "?") > 0)
 
     ' Initialize the actual transfer object
     obj.request = CreateObject("roUrlTransfer")
@@ -27,7 +29,7 @@ function createHttpRequest(url, plexHeaders=true)
     obj.request.EnableEncodings(true)
     obj.request.SetCertificatesFile("common:/certs/ca-bundle.crt")
 
-    if plexHeaders then AddPlexHeaders(obj.request)
+    if plexHeaders then AddPlexHeaders(obj.request, token)
 
     return obj
 end function
@@ -37,6 +39,7 @@ function httpStartAsync(body=invalid, contentType=invalid)
     m.request.SetPort(Application().port)
 
     if body = invalid then
+        Debug("Starting request: GET " + m.request.GetUrl())
         started = m.request.AsyncGetToString()
     else
         if contentType = invalid then
@@ -45,6 +48,7 @@ function httpStartAsync(body=invalid, contentType=invalid)
             m.request.AddHeader("Content-Type", MimeType(contentType))
         end if
 
+        Debug("Starting request: POST " + m.request.GetUrl())
         started = m.request.AsyncPostFromString(body)
     end if
 
@@ -90,6 +94,17 @@ end function
 
 sub httpCancel()
     m.request.AsyncCancel()
+end sub
+
+sub httpAddParam(encodedName, value)
+    if m.hasParams then
+        m.url = m.url + "&" + encodedName + "=" + UrlEscape(value)
+    else
+        m.hasParams = true
+        m.url = m.url + "?" + encodedName + "=" + UrlEscape(value)
+    end if
+
+    m.request.SetUrl(m.url)
 end sub
 
 ' Helper functions that operate on ifHttpAgent objects

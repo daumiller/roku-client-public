@@ -8,7 +8,6 @@ function AppManager()
         ' The unlocked state of the app, one of: Plex Pass, Exempt, Purchased, or Limited
         ' Media playback is only allowed if the state is not Limited.
         settings = AppSettings()
-        obj.isPlexPass = (settings.GetPreference("IsPlexPass", "0", "misc") = "1")
         obj.isPurchased = (settings.GetPreference("purchased", "0", "misc") = "1")
         obj.isAvailableForPurchase = false
         obj.isExempt = false
@@ -36,7 +35,7 @@ function managerIsPlaybackAllowed()
 end function
 
 sub managerResetState()
-    if m.isPlexPass then
+    if MyPlexAccount().isPlexPass then
         m.state = "Plex Pass"
     else if m.isExempt then
         m.state = "Exempt"
