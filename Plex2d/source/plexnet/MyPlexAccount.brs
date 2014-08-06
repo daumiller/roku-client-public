@@ -88,6 +88,9 @@ sub mpaUpdateAccount(xml, status)
 
         m.SaveState()
         MyPlexManager().Publish()
+
+        ' TODO(schuyler): Just screwing around, remove this...
+        MyPlexManager().RefreshResources()
     else if status = 401 then
         ' The user is specifically unauthorized, clear everything
         m.username = invalid

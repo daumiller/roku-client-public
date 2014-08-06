@@ -150,3 +150,28 @@ function CheckMinimumVersion(versionArr, requiredVersion)
     next
     return true
 end function
+
+function CallSuper(obj, func, args)
+    ' We don't get real inheritance, so overridden methods lose the ability to
+    ' call super. This is a bit clumsy, but it works. We obviously don't
+    ' have anything like a splat operator either, so we need to handle arity
+    ' manually.
+
+    obj["tempSuperFunc"] = func
+
+    if args.Count() = 0 then
+        result = obj.tempSuperFunc()
+    else if args.Count() = 1 then
+        result = obj.tempSuperFunc(args[0])
+    else if args.Count() = 2 then
+        result = obj.tempSuperFunc(args[0], args[1])
+    else if args.Count() = 3 then
+        result = obj.tempSuperFunc(args[0], args[1], args[2])
+    else
+        Error("CallSuper doesn't currently support " + tostr(args.Count()) + " arguments!")
+        stop
+    end if
+
+    obj.Delete("tempSuperFunc")
+    return result
+end function
