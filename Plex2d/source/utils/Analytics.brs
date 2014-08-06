@@ -12,7 +12,6 @@ function Analytics()
         obj.TrackScreen = analyticsTrackScreen
         obj.TrackTiming = analyticsTrackTiming
         obj.SendTrackingRequest = analyticsSendTrackingRequest
-        obj.OnUrlEvent = analyticsOnUrlEvent
         obj.OnStartup = analyticsOnStartup
         obj.Cleanup = analyticsCleanup
 
@@ -104,12 +103,7 @@ sub analyticsSendTrackingRequest(vars)
 
     Debug("Final analytics data: " + data)
 
-    Application().StartRequest(request, m, context, data)
-end sub
-
-sub analyticsOnUrlEvent(msg, requestContext)
-    Debug("Got analytics response: " + tostr(msg.GetResponseCode()))
-    ' Don't care about the response at all.
+    Application().StartRequest(request, invalid, context, data)
 end sub
 
 sub analyticsOnStartup(signedIn)
