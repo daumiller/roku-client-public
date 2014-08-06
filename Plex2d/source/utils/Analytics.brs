@@ -93,8 +93,7 @@ sub analyticsSendTrackingRequest(vars)
     if AppSettings().GetPreference("analytics", "1") <> "1" then return
 
     request = createHttpRequest("http://www.google-analytics.com/collect", false)
-    context = CreateObject("roAssociativeArray")
-    context.requestType = "analytics"
+    context = CreateRequestContext("analytics")
 
     data = m.baseData
     for each name in vars
@@ -103,7 +102,7 @@ sub analyticsSendTrackingRequest(vars)
 
     Debug("Final analytics data: " + data)
 
-    Application().StartRequest(request, invalid, context, data)
+    Application().StartRequest(request, context, data)
 end sub
 
 sub analyticsOnStartup(signedIn)

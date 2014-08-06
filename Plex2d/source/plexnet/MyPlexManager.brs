@@ -13,7 +13,9 @@ function MyPlexManager()
         obj.Publish = mpPublish
         obj.RefreshResources = mpRefreshResources
 
-        obj.OnUrlEvent = mpOnUrlEvent
+        ' HTTP response handlers
+        obj.OnAccountResponse = mpOnAccountResponse
+        obj.OnResourcesResponse = mpOnResourcesResponse
 
         m.MyPlexManager = obj
     end if
@@ -23,15 +25,15 @@ end function
 
 sub mpRefreshAccount()
     request = createHttpRequest("https://plex.tv/users/account", true, MyPlexAccount().authToken)
-    context = {requestType: "account"}
+    context = CreateRequestContext("account", m, "OnAccountResponse")
 
-    Application().StartRequest(request, m, context)
+    Application().StartRequest(request, context)
 end sub
 
 sub mpPublish()
     url = "https://plex.tv/devices/" + AppSettings().GetGlobal("clientIdentifier")
     request = createHttpRequest(url, true, MyPlexAccount().authToken)
-    context = {requestType: "publish"}
+    context = CreateRequestContext("publish")
 
     device = CreateObject("roDeviceInfo")
     addrs = device.GetIPAddrs()
@@ -41,40 +43,27 @@ sub mpPublish()
         request.AddParam(UrlEscape("Connection[][uri]"), "http://" + addrs[iface] + ":8324")
     next
 
-    Application().StartRequest(request, m, context, "_method=PUT")
+    Application().StartRequest(request, context, "_method=PUT")
 end sub
 
 sub mpRefreshResources()
     ' TODO(schuyler): This is just a demonstration that things are working, much more to do...
     request = createHttpRequest("https://plex.tv/pms/resources", true, MyPlexAccount().authToken)
-    context = {requestType: "resources"}
+    context = CreateRequestContext("resources", m, "OnResourcesResponse")
 
-    Application().StartRequest(request, m, context)
+    Application().StartRequest(request, context)
 end sub
 
-sub mpOnUrlEvent(msg, requestContext)
-    if requestContext.requestType = "account" then
-        status = msg.GetResponseCode()
-        if status = 200 or status = 201 then
-            xml = CreateObject("roXMLElement")
-            if not xml.Parse(msg.GetString()) then xml = invalid
-        else
-            xml = invalid
-        end if
-        MyPlexAccount().UpdateAccount(xml, status)
-    else if requestContext.requestType = "resources" then
-        if msg.GetResponseCode() = 200 then
-            xml = CreateObject("roXMLElement")
-            if not xml.Parse(msg.GetString()) then xml = invalid
-        else
-            xml = invalid
-        end if
+sub mpOnAccountResponse(request as object, response as object, context as object)
+    MyPlexAccount().UpdateAccount(response.GetBodyXml(), response.GetStatus())
+end sub
 
-        if xml <> invalid then
-            for each device in xml.Device
-                resource = createPlexResource(device)
-                Debug("Parsed resource from plex.tv: nodeName:" + resource.name + " type:" + resource.type + " clientIdentifier:" + resource.Get("clientIdentifier") + " name:" + resource.Get("name") + " product:" + resource.Get("product") + " provides:" + resource.Get("provides"))
-            next
-        end if
+sub mpOnResourcesResponse(request as object, response as object, context as object)
+    if response.IsSuccess() then
+        xml = response.GetBodyXml()
+        for each device in xml.Device
+            resource = createPlexResource(device)
+            Debug("Parsed resource from plex.tv: nodeName:" + resource.name + " type:" + resource.type + " clientIdentifier:" + resource.Get("clientIdentifier") + " name:" + resource.Get("name") + " product:" + resource.Get("product") + " provides:" + resource.Get("provides"))
+        next
     end if
 end sub

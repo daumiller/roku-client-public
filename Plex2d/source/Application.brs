@@ -157,10 +157,11 @@ function appProcessOneMessage(timeout)
             if requestContext <> invalid then
                 Debug("Got a " + tostr(msg.GetResponseCode()) + " from " + requestContext.request.url)
                 m.pendingRequests.Delete(id)
-                if requestContext.listener <> invalid then
-                    requestContext.listener.OnUrlEvent(msg, requestContext)
+
+                if requestContext.callbackFunc <> invalid and requestContext.callbackCtx <> invalid then
+                    response = createHttpResponse(msg)
+                    requestContext.callbackCtx[requestContext.callbackFunc](requestContext.request, response, requestContext)
                 end if
-                requestContext = invalid
             end if
         else if type(msg) = "roChannelStoreEvent" then
             AppManager().HandleChannelStoreEvent(msg)
@@ -211,8 +212,7 @@ sub appAddTimer(timer, listener)
     m.timersByScreen[screenID].Push(timer.ID)
 end sub
 
-function appStartRequest(request, listener, context, body=invalid, contentType=invalid)
-    context.listener = listener
+function appStartRequest(request as object, context as object, body=invalid as dynamic, contentType=invalid as dynamic) as boolean
     context.request = request
 
     started = request.StartAsync(body, contentType)
@@ -225,6 +225,7 @@ function appStartRequest(request, listener, context, body=invalid, contentType=i
         ' the app is cleaned up, so no need to waste the bytes tracking them
         ' here.
 
+        listener = context.callbackCtx
         if listener <> invalid and listener.screenID >= 0 then
             screenID = listener.screenID.toStr()
 
@@ -239,13 +240,12 @@ function appStartRequest(request, listener, context, body=invalid, contentType=i
     return started
 end function
 
-function appStartRequestIgnoringResponse(url, body=invalid, contentType=invalid)
+function appStartRequestIgnoringResponse(url as string, body=invalid as dynamic, contentType=invalid as dynamic) as boolean
     request = createHttpRequest(url)
 
-    context = CreateObject("roAssociativeArray")
-    context.requestType = "ignored"
+    context = CreateRequestContext("ignored")
 
-    m.StartRequest(request, invalid, context, body, contentType)
+    return m.StartRequest(request, context, body, contentType)
 end function
 
 sub appCancelRequests(screenID)

@@ -107,6 +107,20 @@ sub httpAddParam(encodedName, value)
     m.request.SetUrl(m.url)
 end sub
 
+function CreateRequestContext(requestType as string, callbackCtx=invalid as dynamic, callbackFunc=invalid as dynamic) as object
+    if callbackFunc <> invalid and (not isstr(callbackFunc) or type(callbackCtx[callbackFunc]) <> "roFunction") then
+        Error("callbackFunc must be a string function name bound to callbackCtx")
+        stop
+    end if
+
+    obj = CreateObject("roAssociativeArray")
+    obj.requestType = requestType
+    obj.callbackCtx = callbackCtx
+    obj.callbackFunc = callbackFunc
+
+    return obj
+end function
+
 ' Helper functions that operate on ifHttpAgent objects
 
 sub AddPlexHeaders(transferObj, token=invalid)
