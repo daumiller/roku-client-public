@@ -62,8 +62,11 @@ sub mpOnResourcesResponse(request as object, response as object, context as obje
     if response.IsSuccess() then
         xml = response.GetBodyXml()
         for each device in xml.Device
-            resource = createPlexResource(device)
+            resource = createPlexResource(createPlexContainer({}, "", xml), device)
             Debug("Parsed resource from plex.tv: nodeName:" + resource.name + " type:" + resource.type + " clientIdentifier:" + resource.Get("clientIdentifier") + " name:" + resource.Get("name") + " product:" + resource.Get("product") + " provides:" + resource.Get("provides"))
+            for each conn in resource.connections
+                Debug(conn.ToString())
+            next
         next
     end if
 end sub
