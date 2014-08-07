@@ -1,9 +1,8 @@
 function PlexObjectClass() as object
     if m.PlexObjectClass = invalid then
         obj = CreateObject("roAssociativeArray")
-        obj.ClassName = "PlexObject"
-
         obj.Append(PlexAttributeCollectionClass())
+        obj.ClassName = "PlexObject"
 
         obj.type = invalid
         obj.container = invalid

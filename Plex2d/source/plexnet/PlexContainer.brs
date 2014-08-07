@@ -1,9 +1,8 @@
 function PlexContainerClass() as object
     if m.PlexContainerClass = invalid then
         obj = CreateObject("roAssociativeArray")
-        obj.ClassName = "PlexContainer"
-
         obj.Append(PlexAttributeCollectionClass())
+        obj.ClassName = "PlexContainer"
 
         obj.server = invalid
         obj.address = invalid

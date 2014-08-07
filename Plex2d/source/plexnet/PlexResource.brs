@@ -1,9 +1,8 @@
 function PlexResourceClass() as object
     if m.PlexResourceClass = invalid then
         obj = CreateObject("roAssociativeArray")
-        obj.ClassName = "PlexResource"
-
         obj.Append(PlexObjectClass())
+        obj.ClassName = "PlexResource"
 
         m.PlexResourceClass = obj
     end if
