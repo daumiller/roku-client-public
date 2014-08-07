@@ -67,6 +67,11 @@ sub mpOnResourcesResponse(request as object, response as object, context as obje
             for each conn in resource.connections
                 Debug(conn.ToString())
             next
+
+            if instr(1, resource.Get("provides", ""), "server") > 0 then
+                server = createPlexServerForResource(resource)
+                Debug(server.ToString())
+            end if
         next
     end if
 end sub

@@ -151,6 +151,39 @@ function CheckMinimumVersion(versionArr as object, requiredVersion as object) as
     return true
 end function
 
+function ParseVersion(version as string) as object
+    Debug("Parsing version string: " + version)
+    versionArr = CreateObject("roList")
+
+    dash = instr(1, version, "-")
+    if dash > 0 then
+        version = left(version, dash - 1)
+    end if
+
+    if lcase(right(version, 3)) = "dev" then
+        version = left(version, len(version) - 3)
+    end if
+
+    tokens = version.Tokenize(".")
+    for each num in tokens
+        versionArr.Push(int(val(num)))
+    next
+
+    versionStr = ""
+    for each num in versionArr
+        if versionStr = "" then
+            versionStr = "["
+        else
+            versionStr = versionStr + ", "
+        end if
+        versionStr = versionStr + tostr(num)
+    next
+    versionStr = versionStr + "]"
+    Debug("Parsed version as " + versionStr)
+
+    return versionArr
+end function
+
 function ApplyFunc(func as function, this as object, args=[] as object) as dynamic
     ' We don't get real inheritance, so overridden methods lose the ability to
     ' call super. This is a bit clumsy, but it works. We obviously don't
