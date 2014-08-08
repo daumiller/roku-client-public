@@ -1,4 +1,4 @@
-function HttpRequestClass()
+function HttpRequestClass() as object
     if m.HttpRequestClass = invalid then
         obj = CreateObject("roAssociativeArray")
 
@@ -7,6 +7,8 @@ function HttpRequestClass()
         obj.GetIdentity = httpGetIdentity
         obj.Cancel = httpCancel
         obj.AddParam = httpAddParam
+        obj.CreateRequestContext = httpCreateRequestContext
+        obj.OnResponse = httpOnResponse
 
         m.HttpRequestClass = obj
     end if
@@ -14,7 +16,7 @@ function HttpRequestClass()
     return m.HttpRequestClass
 end function
 
-function createHttpRequest(url, plexHeaders=true, token=invalid)
+function createHttpRequest(url as string) as object
     obj = CreateObject("roAssociativeArray")
 
     obj.append(HttpRequestClass())
@@ -29,12 +31,10 @@ function createHttpRequest(url, plexHeaders=true, token=invalid)
     obj.request.EnableEncodings(true)
     obj.request.SetCertificatesFile("common:/certs/ca-bundle.crt")
 
-    if plexHeaders then AddPlexHeaders(obj.request, token)
-
     return obj
 end function
 
-function httpStartAsync(body=invalid, contentType=invalid)
+function httpStartAsync(body=invalid as dynamic, contentType=invalid as dynamic) as boolean
     ' This is an async request, so make sure it's using the global message port
     m.request.SetPort(Application().port)
 
@@ -59,7 +59,7 @@ function httpStartAsync(body=invalid, contentType=invalid)
     return started
 end function
 
-function httpGetToStringWithTimeout(seconds)
+function httpGetToStringWithTimeout(seconds as integer) as string
     timeout = 1000 * seconds
 
     response = ""
@@ -88,7 +88,7 @@ function httpGetToStringWithTimeout(seconds)
     return response
 end function
 
-function httpGetIdentity()
+function httpGetIdentity() as string
     return m.request.GetIdentity().toStr()
 end function
 
@@ -96,7 +96,7 @@ sub httpCancel()
     m.request.AsyncCancel()
 end sub
 
-sub httpAddParam(encodedName, value)
+sub httpAddParam(encodedName as string, value as string)
     if m.hasParams then
         m.url = m.url + "&" + encodedName + "=" + UrlEscape(value)
     else
@@ -107,40 +107,21 @@ sub httpAddParam(encodedName, value)
     m.request.SetUrl(m.url)
 end sub
 
-function CreateRequestContext(requestType as string, callbackCtx=invalid as dynamic, callbackFunc=invalid as dynamic) as object
-    if callbackFunc <> invalid and (not isstr(callbackFunc) or type(callbackCtx[callbackFunc]) <> "roFunction") then
-        Error("callbackFunc must be a string function name bound to callbackCtx")
-        stop
-    end if
-
+function httpCreateRequestContext(requestType as string, callback=invalid as dynamic) as object
     obj = CreateObject("roAssociativeArray")
     obj.requestType = requestType
-    obj.callbackCtx = callbackCtx
-    obj.callbackFunc = callbackFunc
+
+    if callback <> invalid then
+        obj.callback = createCallable(m.OnResponse, m)
+        obj.completionCallback = callback
+    end if
 
     return obj
 end function
 
-' Helper functions that operate on ifHttpAgent objects
-
-sub AddPlexHeaders(transferObj, token=invalid)
-    settings = AppSettings()
-
-    transferObj.AddHeader("X-Plex-Platform", "Roku")
-    transferObj.AddHeader("X-Plex-Version", settings.GetGlobal("appVersionStr"))
-    transferObj.AddHeader("X-Plex-Client-Identifier", settings.GetGlobal("clientIdentifier"))
-    transferObj.AddHeader("X-Plex-Platform-Version", settings.GetGlobal("rokuVersionStr", "unknown"))
-    transferObj.AddHeader("X-Plex-Product", "Plex for Roku")
-    transferObj.AddHeader("X-Plex-Device", settings.GetGlobal("rokuModel"))
-    transferObj.AddHeader("X-Plex-Device-Name", settings.GetPreference("player_name", settings.GetGlobal("rokuModel")))
-
-    AddAccountHeaders(transferObj, token)
-end sub
-
-sub AddAccountHeaders(transferObj, token=invalid)
-    if token <> invalid then
-        transferObj.AddHeader("X-Plex-Token", token)
+sub httpOnResponse(event as object, context as object)
+    if context.completionCallback <> invalid then
+        response = createHttpResponse(event)
+        context.completionCallback.Call([m, response, context])
     end if
-
-    ' TODO(schuyler): Add username?
 end sub

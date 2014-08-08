@@ -92,8 +92,8 @@ sub analyticsSendTrackingRequest(vars)
     ' Only if we're enabled
     if AppSettings().GetPreference("analytics", "1") <> "1" then return
 
-    request = createHttpRequest("http://www.google-analytics.com/collect", false)
-    context = CreateRequestContext("analytics")
+    request = createHttpRequest("http://www.google-analytics.com/collect")
+    context = request.CreateRequestContext("analytics")
 
     data = m.baseData
     for each name in vars

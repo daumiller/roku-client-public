@@ -158,9 +158,8 @@ function appProcessOneMessage(timeout)
                 Debug("Got a " + tostr(msg.GetResponseCode()) + " from " + requestContext.request.url)
                 m.pendingRequests.Delete(id)
 
-                if requestContext.callbackFunc <> invalid and requestContext.callbackCtx <> invalid then
-                    response = createHttpResponse(msg)
-                    requestContext.callbackCtx[requestContext.callbackFunc](requestContext.request, response, requestContext)
+                if requestContext.callback <> invalid then
+                    requestContext.callback.Call([msg, requestContext])
                 end if
             end if
         else if type(msg) = "roChannelStoreEvent" then
@@ -242,8 +241,7 @@ end function
 
 function appStartRequestIgnoringResponse(url as string, body=invalid as dynamic, contentType=invalid as dynamic) as boolean
     request = createHttpRequest(url)
-
-    context = CreateRequestContext("ignored")
+    context = request.CreateRequestContext("ignored")
 
     return m.StartRequest(request, context, body, contentType)
 end function

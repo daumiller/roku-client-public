@@ -2,6 +2,8 @@ function HttpResponseClass() as object
     if m.HttpResponseClass = invalid then
         obj = CreateObject("roAssociativeArray")
 
+        obj.event = invalid
+
         obj.IsSuccess = httpIsSuccess
         obj.IsError = httpIsError
         obj.GetStatus = httpGetStatus
@@ -25,7 +27,11 @@ function createHttpResponse(event as object) as object
 end function
 
 function httpIsSuccess() as boolean
-    return (m.event.GetResponseCode() >= 200 and m.event.GetResponseCode() < 300)
+    if m.event <> invalid then
+        return (m.event.GetResponseCode() >= 200 and m.event.GetResponseCode() < 300)
+    else
+        return false
+    end if
 end function
 
 function httpIsError() as boolean
@@ -33,11 +39,19 @@ function httpIsError() as boolean
 end function
 
 function httpGetStatus() as integer
-    return m.event.GetResponseCode()
+    if m.event <> invalid then
+        return m.event.GetResponseCode()
+    else
+        return 0
+    end if
 end function
 
 function httpGetBodyString() as string
-    return m.event.GetString()
+    if m.event <> invalid then
+        return m.event.GetString()
+    else
+        return ""
+    end if
 end function
 
 function httpGetBodyXml() as dynamic

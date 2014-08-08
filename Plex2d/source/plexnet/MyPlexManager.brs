@@ -24,16 +24,15 @@ function MyPlexManager()
 end function
 
 sub mpRefreshAccount()
-    request = createHttpRequest("https://plex.tv/users/account", true, MyPlexAccount().authToken)
-    context = CreateRequestContext("account", m, "OnAccountResponse")
+    request = createMyPlexRequest("/users/account")
+    context = request.CreateRequestContext("account", createCallable("OnAccountResponse", m))
 
     Application().StartRequest(request, context)
 end sub
 
 sub mpPublish()
-    url = "https://plex.tv/devices/" + AppSettings().GetGlobal("clientIdentifier")
-    request = createHttpRequest(url, true, MyPlexAccount().authToken)
-    context = CreateRequestContext("publish")
+    request = createMyPlexRequest("/devices/" + AppSettings().GetGlobal("clientIdentifier"))
+    context = request.CreateRequestContext("publish")
 
     device = CreateObject("roDeviceInfo")
     addrs = device.GetIPAddrs()
@@ -48,8 +47,8 @@ end sub
 
 sub mpRefreshResources()
     ' TODO(schuyler): This is just a demonstration that things are working, much more to do...
-    request = createHttpRequest("https://plex.tv/pms/resources", true, MyPlexAccount().authToken)
-    context = CreateRequestContext("resources", m, "OnResourcesResponse")
+    request = createMyPlexRequest("/pms/resources")
+    context = request.CreateRequestContext("resources", createCallable("OnResourcesResponse", m))
 
     Application().StartRequest(request, context)
 end sub
@@ -59,19 +58,16 @@ sub mpOnAccountResponse(request as object, response as object, context as object
 end sub
 
 sub mpOnResourcesResponse(request as object, response as object, context as object)
-    if response.IsSuccess() then
-        xml = response.GetBodyXml()
-        for each device in xml.Device
-            resource = createPlexResource(createPlexContainer({}, "", xml), device)
-            Debug("Parsed resource from plex.tv: nodeName:" + resource.name + " type:" + resource.type + " clientIdentifier:" + resource.Get("clientIdentifier") + " name:" + resource.Get("name") + " product:" + resource.Get("product") + " provides:" + resource.Get("provides"))
-            for each conn in resource.connections
-                Debug(conn.ToString())
-            next
-
-            if instr(1, resource.Get("provides", ""), "server") > 0 then
-                server = createPlexServerForResource(resource)
-                Debug(server.ToString())
-            end if
+    response.ParseResponse()
+    for each resource in response.items
+        Debug("Parsed resource from plex.tv: nodeName:" + resource.name + " type:" + resource.type + " clientIdentifier:" + resource.Get("clientIdentifier") + " name:" + resource.Get("name") + " product:" + resource.Get("product") + " provides:" + resource.Get("provides"))
+        for each conn in resource.connections
+            Debug(conn.ToString())
         next
-    end if
+
+        if instr(1, resource.Get("provides", ""), "server") > 0 then
+            server = createPlexServerForResource(resource)
+            Debug(server.ToString())
+        end if
+    next
 end sub

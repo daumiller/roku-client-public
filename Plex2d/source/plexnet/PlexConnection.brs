@@ -96,6 +96,8 @@ function pncBuildUrl(server as object, path as string, includeToken=false as boo
             url = url + "?X-Plex-Token=" + token
         end if
     end if
+
+    return url
 end function
 
 function pncEquals(other as object) as boolean

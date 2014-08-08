@@ -21,3 +21,12 @@ sub pnoInit(container as object, xml as object)
     m.type = firstOf(m.Get("type"), LCase(m.name))
     m.container = container
 end sub
+
+function createPlexObjectFromElement(container as object, xml as object) as object
+    if xml.GetName() = "Device" then
+        return createPlexResource(container, xml)
+    end if
+
+    Error("Don't know how to create PlexObject for " + xml.GetName())
+    stop
+end function
