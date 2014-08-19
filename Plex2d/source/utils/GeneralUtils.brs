@@ -211,3 +211,14 @@ function ApplyFunc(func as function, this as object, args=[] as object) as dynam
     this.Delete("tempBoundFunc")
     return result
 end function
+
+function GetFirstIPAddress() as dynamic
+    device = CreateObject("roDeviceInfo")
+    addrs = device.GetIPAddrs()
+    addrs.Reset()
+    if addrs.IsNext() then
+        return addrs[addrs.Next()]
+    else
+        return invalid
+    end if
+end function

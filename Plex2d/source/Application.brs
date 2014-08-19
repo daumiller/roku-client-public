@@ -127,6 +127,7 @@ sub appRun()
     AppManager()
     WebServer()
     GDMAdvertiser()
+    GDMDiscovery().Discover()
     m.ClearInitializer("application")
 
     timeout = 0
@@ -137,6 +138,7 @@ sub appRun()
     ' Clean up
     Analytics().Cleanup()
     GDMAdvertiser().Cleanup()
+    GDMDiscovery().Cleanup()
     m.pendingRequests.Clear()
     m.timers.Clear()
     m.socketCallbacks.Clear()
