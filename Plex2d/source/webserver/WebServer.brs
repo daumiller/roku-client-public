@@ -6,6 +6,8 @@ function WebServer()
     if m.WebServer = invalid then
         obj = CreateObject("roAssociativeArray")
 
+        obj.port = 8324
+
         ' Methods
         obj.AddHandler = wsAddHandler
         obj.PreWait = wsPreWait
@@ -26,7 +28,7 @@ function WebServer()
         MimeType()
         HttpTitle()
 
-        obj.server = InitServer({msgPort: Application().port, port: 8324})
+        obj.server = InitServer({msgPort: Application().port, port: obj.port})
     end if
 
     return m.WebServer

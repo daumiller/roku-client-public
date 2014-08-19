@@ -17,6 +17,8 @@ function Application()
         obj.pendingRequests = {}
         obj.requestsByScreen = {}
 
+        obj.socketCallbacks = {}
+
         obj.initializers = {}
 
         obj.AssignScreenID = appAssignScreenID
@@ -29,6 +31,8 @@ function Application()
         obj.StartRequestIgnoringResponse = appStartRequestIgnoringResponse
         obj.CancelRequests = appCancelRequests
         obj.OnRequestTimeout = appOnRequestTimeout
+
+        obj.AddSocketCallback = appAddSocketCallback
 
         obj.Run = appRun
         obj.ProcessOneMessage = appProcessOneMessage
@@ -122,6 +126,7 @@ sub appRun()
     MyPlexAccount()
     AppManager()
     WebServer()
+    GDMAdvertiser()
     m.ClearInitializer("application")
 
     timeout = 0
@@ -131,8 +136,10 @@ sub appRun()
 
     ' Clean up
     Analytics().Cleanup()
+    GDMAdvertiser().Cleanup()
     m.pendingRequests.Clear()
     m.timers.Clear()
+    m.socketCallbacks.Clear()
 
     Info("Finished global message loop")
 end sub
@@ -150,8 +157,13 @@ function appProcessOneMessage(timeout)
         end for
 
         if type(msg) = "roSocketEvent" then
-            ' Assume it was for the web server (it won't hurt if it wasn't)
-            WebServer().PostWait()
+            callback = m.socketCallbacks[msg.getSocketID().tostr()]
+            if callback <> invalid then
+                callback.Call([msg])
+            else
+                ' Assume it was for the web server (it won't hurt if it wasn't)
+                WebServer().PostWait()
+            end if
         else if type(msg) = "roUrlEvent" and msg.GetInt() = 1 then
             id = msg.GetSourceIdentity().tostr()
             requestContext = m.pendingRequests[id]
@@ -304,6 +316,10 @@ sub appOnRequestTimeout(timer)
     ' Clear circular references
     timer.requestContext.timer = invalid
     timer.requestContext = invalid
+end sub
+
+sub appAddSocketCallback(socket, callback)
+    m.socketCallbacks[socket.GetID().tostr()] = callback
 end sub
 
 sub appAddInitializer(name)
