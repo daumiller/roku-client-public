@@ -87,6 +87,8 @@ sub pncOnReachabilityResponse(request as object, response as object, context as 
     else
         m.state = m.STATE_UNREACHABLE
     end if
+
+    context.server.OnReachabilityResult(m)
 end sub
 
 function pncBuildUrl(server as object, path as string, includeToken=false as boolean) as string
@@ -111,7 +113,8 @@ function pncBuildUrl(server as object, path as string, includeToken=false as boo
     return url
 end function
 
-function pncEquals(other as object) as boolean
+function pncEquals(other as dynamic) as boolean
+    if other = invalid then return false
     if m.ClassName <> other.ClassName then return false
     return (m.address = other.address)
 end function

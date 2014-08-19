@@ -21,10 +21,13 @@ function PlexServerClass() as object
         obj.allowsMediaDeletion = false
         obj.activeConnection = invalid
 
+        obj.pendingReachabilityRequests = 0
+
         obj.BuildUrl = pnsBuildUrl
         obj.GetToken = pnsGetToken
         obj.CollectDataFromRoot = pnsCollectDataFromRoot
         obj.UpdateReachability = pnsUpdateReachability
+        obj.OnReachabilityResult = pnsOnReachabilityResult
         obj.MarkAsRefreshing = pnsMarkAsRefreshing
         obj.MarkUpdateFinished = pnsMarkUpdateFinished
         obj.Merge = pnsMerge
@@ -123,8 +126,35 @@ sub pnsUpdateReachability(force=true as boolean)
 
     Debug("Updating reachability for " + tostr(m.name) + ", will test " + tostr(m.connections.Count()) + " connections")
     for each conn in m.connections
+        m.pendingReachabilityRequests = m.pendingReachabilityRequests + 1
         conn.TestReachability(m)
     next
+end sub
+
+sub pnsOnReachabilityResult(connection as object)
+    m.pendingReachabilityRequests = m.pendingReachabilityRequests - 1
+
+    Debug("Reachability result for " + tostr(m.name) + ": " + connection.address + " is " + tostr(connection.state))
+
+    if m.pendingReachabilityRequests <= 0 then
+        ' Pick a best connection. If we already had an active connection and
+        ' it's still reachable, stick with it.
+        if m.activeConnection <> invalid and m.activeConnection.state <> PlexConnectionClass().STATE_REACHABLE then
+            m.activeConnection = invalid
+        end if
+
+        if m.activeConnection = invalid then
+            for i = m.connections.Count() - 1 to 0 step -1
+                conn = m.connections[i]
+                if conn.state = PlexConnectionClass().STATE_REACHABLE and (m.activeConnection = invalid or conn.isLocal) then
+                    m.activeConnection = conn
+                end if
+            next
+        end if
+
+        Info("Active connection for " + tostr(m.name) + " is " + tostr(m.activeConnection))
+        PlexServerManager().UpdateReachabilityResult(m, (m.activeConnection <> invalid))
+    end if
 end sub
 
 sub pnsMarkAsRefreshing()
@@ -191,7 +221,8 @@ sub pnsMerge(other as object)
     end if
 end sub
 
-function pnsEquals(other as object) as boolean
+function pnsEquals(other as dynamic) as boolean
+    if other = invalid then return false
     if m.ClassName <> other.ClassName then return false
     return ((m.uuid = other.uuid) and (m.owner = other.owner))
 end function
