@@ -58,6 +58,8 @@ sub mpOnAccountResponse(request as object, response as object, context as object
 end sub
 
 sub mpOnResourcesResponse(request as object, response as object, context as object)
+    servers = CreateObject("roList")
+
     response.ParseResponse()
     for each resource in response.items
         Debug("Parsed resource from plex.tv: nodeName:" + resource.name + " type:" + resource.type + " clientIdentifier:" + resource.Get("clientIdentifier") + " name:" + resource.Get("name") + " product:" + resource.Get("product") + " provides:" + resource.Get("provides"))
@@ -68,6 +70,9 @@ sub mpOnResourcesResponse(request as object, response as object, context as obje
         if instr(1, resource.Get("provides", ""), "server") > 0 then
             server = createPlexServerForResource(resource)
             Debug(server.ToString())
+            servers.AddTail(server)
         end if
     next
+
+    PlexServerManager().UpdateFromConnectionType(servers, PlexConnectionClass().SOURCE_MYPLEX)
 end sub

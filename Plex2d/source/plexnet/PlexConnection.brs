@@ -19,7 +19,7 @@ function PlexConnectionClass() as object
         obj.address = invalid
         obj.isLocal = false
         obj.token = invalid
-        obj.refreshed = false
+        obj.refreshed = true
 
         ' Methods
         obj.Merge = pncMerge
@@ -64,13 +64,24 @@ sub pncMerge(other as object)
 end sub
 
 sub pncTestReachability(server as object)
-    ' TODO: Build request, add callback to deal with response
+    request = createHttpRequest(m.BuildUrl(server, "/"))
+    context = request.CreateRequestContext("reachability", CreateCallable("OnReachabilityResponse", m))
+    context.server = server
+    AddPlexHeaders(request.request, server.GetToken())
+
+    Application().StartRequest(request, context)
 end sub
 
 sub pncOnReachabilityResponse(request as object, response as object, context as object)
     if response.IsSuccess() then
-        ' Get data from root
-        m.state = m.STATE_REACHABLE
+        xml = response.GetBodyXml()
+        if xml <> invalid AND context.server.CollectDataFromRoot(xml) then
+            m.state = m.STATE_REACHABLE
+        else
+            ' This is unexpected, but treat it as unreachable
+            Error("Unable to parse root response from " + tostr(context.server))
+            m.state = m.STATE_UNREACHABLE
+        end if
     else if response.GetStatus() = 401 then
         m.state = m.STATE_UNAUTHORIZED
     else

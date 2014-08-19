@@ -3,6 +3,9 @@
 
 function tostr(any as dynamic) as string
     ret = AnyToString(any)
+    if ret = invalid and any <> invalid and type(any.ToString) = "roFunction" then
+        ret = any.ToString()
+    end if
     if ret = invalid ret = type(any)
     if ret = invalid ret = "unknown" 'failsafe
     return ret

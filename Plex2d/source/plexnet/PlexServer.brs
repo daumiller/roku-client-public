@@ -15,12 +15,18 @@ function PlexServerClass() as object
         obj.owner = invalid
         obj.multiuser = false
         obj.synced = false
+        obj.supportsAudioTranscoding = false
+        obj.supportsVideoTranscoding = false
+        obj.supportsPhotoTranscoding = false
+        obj.allowsMediaDeletion = false
         obj.activeConnection = invalid
 
         obj.BuildUrl = pnsBuildUrl
         obj.GetToken = pnsGetToken
         obj.CollectDataFromRoot = pnsCollectDataFromRoot
         obj.UpdateReachability = pnsUpdateReachability
+        obj.MarkAsRefreshing = pnsMarkAsRefreshing
+        obj.MarkUpdateFinished = pnsMarkUpdateFinished
         obj.Merge = pnsMerge
         obj.Equals = pnsEquals
         obj.ToString = pnsToString
@@ -78,21 +84,80 @@ function pnsBuildUrl(path as string, includeToken=false as boolean) as dynamic
 end function
 
 function pnsGetToken() as dynamic
-    for each conn in m.connections
+    ' It's dangerous to use for each here, because it may reset the index
+    ' on m.connections when something else was in the middle of an iteration.
+
+    for i = 0 to m.connections.Count() - 1
+        conn = m.connections[i]
         if conn.token <> invalid then return conn.token
     next
 
     return invalid
 end function
 
-function pnsCollectDataFromRoot() as boolean
-    ' TODO(schuyler): This will probably be based on a PlexResult?
+function pnsCollectDataFromRoot(xml as object) as boolean
+    ' Make sure we're processing data for our server, and not some other
+    ' server that happened to be at the same IP.
+    if m.uuid <> xml@machineIdentifier then
+        Info("Got a reachability response, but from a different server")
+        return false
+    end if
+
+    m.supportsAudioTranscoding = (xml@transcoderAudio = "1")
+    m.supportsVideoTranscoding = (xml@transcoderVideoQualities <> invalid)
+    m.supportsPhotoTranscoding = NOT m.synced
+    m.allowsMediaDeletion = (m.owned and (xml@allowMediaDeletion = "1"))
+    m.multiuser = (xml@multiuser = "1")
+    m.name = firstOf(xml@friendlyName, m.name)
+
+    ' TODO(schuyler): Process transcoder qualities
+    ' TODO(schuyler): Version
+
+    Debug("Server information updated from reachability check: " + tostr(m))
+
     return true
 end function
 
-sub pnsUpdateReachability()
-    ' TODO(schuyler): Probably using the yet-to-be defined PlexRequest
+sub pnsUpdateReachability(force=true as boolean)
+    if not force and m.activeConnection <> invalid then return
+
+    Debug("Updating reachability for " + tostr(m.name) + ", will test " + tostr(m.connections.Count()) + " connections")
+    for each conn in m.connections
+        conn.TestReachability(m)
+    next
 end sub
+
+sub pnsMarkAsRefreshing()
+    for each conn in m.connections
+        conn.refreshed = false
+    next
+end sub
+
+function pnsMarkUpdateFinished(source as integer) as boolean
+    ' Any connections for the given source which haven't been refreshed should
+    ' be removed. Since removing from a list is hard, we'll make a new list.
+    toKeep = CreateObject("roList")
+
+    for each conn in m.connections
+        if not conn.refreshed then
+            conn.sources = (conn.sources and (not source))
+        end if
+
+        if conn.sources > 0 then
+            toKeep.AddTail(conn)
+        else
+            Debug("Removed connection for " + tostr(m.name) + " after updating connections for " + tostr(source))
+            if m.activeConnection = conn then
+                Debug("Active connection lost")
+                m.activeConnection = invalid
+            end if
+        end if
+    next
+
+    m.connections = toKeep
+
+    return (m.connections.Count() > 0)
+end function
 
 sub pnsMerge(other as object)
     ' Wherever this other server came from, assume its information is better
