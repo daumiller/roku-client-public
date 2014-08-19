@@ -27,7 +27,7 @@ function createPlexResult(server as object, address as string) as object
     return obj
 end function
 
-sub pnrSetResponse(event as object)
+sub pnrSetResponse(event as dynamic)
     m.event = event
 end sub
 

@@ -28,6 +28,7 @@ function Application()
         obj.StartRequest = appStartRequest
         obj.StartRequestIgnoringResponse = appStartRequestIgnoringResponse
         obj.CancelRequests = appCancelRequests
+        obj.OnRequestTimeout = appOnRequestTimeout
 
         obj.Run = appRun
         obj.ProcessOneMessage = appProcessOneMessage
@@ -158,6 +159,13 @@ function appProcessOneMessage(timeout)
                 Debug("Got a " + tostr(msg.GetResponseCode()) + " from " + requestContext.request.url)
                 m.pendingRequests.Delete(id)
 
+                ' Clear our timeout timer
+                if requestContext.timer <> invalid then
+                    requestContext.timer.active = false
+                    requestContext.timer.requestContext = invalid
+                    requestContext.timer = invalid
+                end if
+
                 if requestContext.callback <> invalid then
                     requestContext.callback.Call([msg, requestContext])
                 end if
@@ -169,10 +177,11 @@ function appProcessOneMessage(timeout)
 
     ' Check for any expired timers
     timeout = 0
+    timersToRemove = CreateObject("roList")
     for each timerID in m.timers
         timer = m.timers[timerID]
-        if timer.IsExpired() then
-            timer.listener.OnTimerExpired(timer)
+        if timer.IsExpired() and timer.callback <> invalid then
+            timer.callback.Call([timer])
         end if
 
         ' Make sure we set a timeout on the wait so we'll catch the next timer
@@ -180,6 +189,15 @@ function appProcessOneMessage(timeout)
         if remaining > 0 and (timeout = 0 or remaining < timeout) then
             timeout = remaining
         end if
+
+        ' Clear references to dead timers
+        if not timer.active then
+            timersToRemove.AddTail(timerID)
+        end if
+    next
+
+    for each timerID in timersToRemove
+        m.timers.Delete(timerID)
     next
 
     return timeout
@@ -198,17 +216,18 @@ sub appOnInitialized()
     end if
 end sub
 
-sub appAddTimer(timer, listener)
+sub appAddTimer(timer as object, callback as object, screenID=invalid as dynamic)
     timer.ID = m.nextTimerID.toStr()
     m.nextTimerID = m.nextTimerID + 1
-    timer.listener = listener
+    timer.callback = callback
     m.timers[timer.ID] = timer
 
-    screenID = listener.screenID.toStr()
-    if not m.timersByScreen.DoesExist(screenID) then
-        m.timersByScreen[screenID] = []
+    if screenID <> invalid then
+        if not m.timersByScreen.DoesExist(screenID) then
+            m.timersByScreen[screenID] = []
+        end if
+        m.timersByScreen[screenID].Push(timer.ID)
     end if
-    m.timersByScreen[screenID].Push(timer.ID)
 end sub
 
 function appStartRequest(request as object, context as object, body=invalid as dynamic, contentType=invalid as dynamic) as boolean
@@ -234,6 +253,16 @@ function appStartRequest(request as object, context as object, body=invalid as d
 
             m.requestsByScreen[screenID].Push(id)
         end if
+
+        if context.timeout <> invalid then
+            timer = createTimer("request_timeout")
+            timer.SetDuration(context.timeout)
+            timer.requestContext = context
+            context.timer = timer
+            m.AddTimer(timer, createCallable("OnRequestTimeout", m))
+        end if
+    else if context.callback <> invalid then
+        context.callback.Call([invalid, context])
     end if
 
     return started
@@ -256,6 +285,25 @@ sub appCancelRequests(screenID)
         next
         m.requestsByScreen.Delete(screenID)
     end if
+end sub
+
+sub appOnRequestTimeout(timer)
+    requestContext = timer.requestContext
+    request = requestContext.request
+    requestID = request.GetIdentity()
+
+    request.Cancel()
+    m.pendingRequests.Delete(requestID)
+
+    Warn("Request to " + request.url + " timed out after " + tostr(timer.GetElapsedSeconds()) + " seconds")
+
+    if requestContext.callback <> invalid then
+        requestContext.callback.Call([invalid, requestContext])
+    end if
+
+    ' Clear circular references
+    timer.requestContext.timer = invalid
+    timer.requestContext = invalid
 end sub
 
 sub appAddInitializer(name)

@@ -37,12 +37,6 @@ sub welcomeShow(screen)
     m.screen.AddParagraph("Nothing to see here")
     m.screen.AddButton(0, "close")
     m.screen.Show()
-
-    ' TODO(schuyler): Remove, just a PoC
-    m.OnTimerExpired = welcomeOnTimerExpired
-    timer = createTimer("welcome")
-    timer.SetDuration(5000, true)
-    Application().AddTimer(timer, m)
 end sub
 
 function welcomeHandleMessage(msg)
@@ -60,7 +54,3 @@ function welcomeHandleMessage(msg)
 
     return handled
 end function
-
-sub welcomeOnTimerExpired(timer)
-    Debug(timer.name + " timer expired")
-end sub

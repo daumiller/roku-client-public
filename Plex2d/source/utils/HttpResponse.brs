@@ -16,7 +16,7 @@ function HttpResponseClass() as object
     return m.HttpResponseClass
 end function
 
-function createHttpResponse(event as object) as object
+function createHttpResponse(event as dynamic) as object
     obj = CreateObject("roAssociativeArray")
 
     obj.Append(HttpResponseClass())
