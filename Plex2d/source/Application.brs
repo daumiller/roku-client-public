@@ -152,7 +152,12 @@ function appProcessOneMessage(timeout)
     msg = wait(timeout, m.port)
 
     if msg <> invalid then
-        Debug("Processing " + type(msg))
+        ' Socket events are chatty (every 5 seconds per PMS) and URL events
+        ' almost always log immediately, so this is just noise.
+        '
+        if type(msg) <> "roSocketEvent" and type(msg) <> "roUrlEvent" then
+            Debug("Processing " + type(msg))
+        end if
 
         for i = m.screens.Count() - 1 to 0 step -1
             if m.screens[i].HandleMessage(msg) then exit for
