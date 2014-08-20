@@ -48,6 +48,8 @@ function Analytics()
         ' Singleton
         obj.reset()
         m.Analytics = obj
+
+        Application().On("init", createCallable("OnStartup", obj))
     end if
 
     return m.Analytics

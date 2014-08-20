@@ -2,6 +2,8 @@ function Application()
     if m.Application = invalid then
         obj = CreateObject("roAssociativeArray")
 
+        obj.Append(EventsMixin())
+
         ' Fake screen IDs used for HTTP requests
         obj.SCREEN_ANALYTICS = -2
         obj.SCREEN_MYPLEX = -5
@@ -123,6 +125,7 @@ sub appRun()
     Info("Starting global message loop")
 
     ' Make sure we initialize anything that needs to run in the background
+    Analytics()
     MyPlexAccount()
     AppManager()
     WebServer()
@@ -223,8 +226,7 @@ function appProcessOneMessage(timeout)
 end function
 
 sub appOnInitialized()
-    ' As good a place as any, tell analytics that we've started.
-    Analytics().OnStartup(false)
+    m.Trigger("init", [false])
 
     ' Make sure we have a current app state
     AppManager().ResetState()

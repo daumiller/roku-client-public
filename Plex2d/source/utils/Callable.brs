@@ -4,6 +4,7 @@ function CallableClass() as object
         obj.ClassName = "Callable"
 
         obj.Call = callableCall
+        obj.Equals = callableEquals
 
         m.CallableClass = obj
     end if
@@ -47,4 +48,10 @@ function callableCall(args=[] as object) as dynamic
 
     this.Delete("tempBoundFunc")
     return result
+end function
+
+function callableEquals(other as dynamic) as boolean
+    if other = invalid then return false
+    if m.ClassName <> other.ClassName then return false
+    return (m.func = other.func and m.context = other.context)
 end function
