@@ -107,7 +107,7 @@ sub analyticsSendTrackingRequest(vars)
     Application().StartRequest(request, context, data)
 end sub
 
-sub analyticsOnStartup(signedIn)
+sub analyticsOnStartup()
     settings = AppSettings()
 
     lastSessionDuration = settings.GetIntPreference("session_duration", 0, "analytics")

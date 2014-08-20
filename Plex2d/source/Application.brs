@@ -226,7 +226,7 @@ function appProcessOneMessage(timeout)
 end function
 
 sub appOnInitialized()
-    m.Trigger("init", [false])
+    m.Trigger("init", [])
 
     ' Make sure we have a current app state
     AppManager().ResetState()
