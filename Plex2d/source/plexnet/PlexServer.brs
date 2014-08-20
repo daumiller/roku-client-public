@@ -177,7 +177,7 @@ function pnsMarkUpdateFinished(source as integer) as boolean
             toKeep.AddTail(conn)
         else
             Debug("Removed connection for " + tostr(m.name) + " after updating connections for " + tostr(source))
-            if m.activeConnection = conn then
+            if conn.Equals(m.activeConnection) then
                 Debug("Active connection lost")
                 m.activeConnection = invalid
             end if

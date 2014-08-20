@@ -20,12 +20,16 @@ function PlexServerManager()
 
         obj.IsValidForTranscoding = psmIsValidForTranscoding
 
+        obj.OnAccountChange = psmOnAccountChange
+
         obj.SaveState = psmSaveState
         obj.LoadState = psmLoadState
 
         m.PlexServerManager = obj
 
         obj.LoadState()
+
+        Application().On("change:user", createCallable("OnAccountChange", obj))
     end if
 
     return m.PlexServerManager
@@ -157,6 +161,16 @@ end sub
 function psmIsValidForTranscoding(server as dynamic) as boolean
     return (server <> invalid and server.activeConnection <> invalid and server.owned and not server.synced)
 end function
+
+sub psmOnAccountChange(account)
+    if account.isSignedIn then
+        ' Refresh resources from plex.tv
+        MyPlexManager().RefreshResources()
+    else
+        ' Clear servers/connections from plex.tv
+        m.UpdateFromConnectionType([], PlexConnectionClass().SOURCE_MYPLEX)
+    end if
+end sub
 
 ' TODO(schuyler): Notifications
 ' TODO(schuyler): Transcode (and primary) server selection

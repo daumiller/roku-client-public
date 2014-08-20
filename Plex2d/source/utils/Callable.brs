@@ -20,6 +20,11 @@ function createCallable(func as dynamic, context as dynamic) as object
     obj.func = func
     obj.context = context
 
+    if isstr(func) and type(context[func]) <> "roFunction" then
+        Error(func + " not found on object")
+        stop
+    end if
+
     return obj
 end function
 
