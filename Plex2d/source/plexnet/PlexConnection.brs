@@ -93,7 +93,11 @@ sub pncOnReachabilityResponse(request as object, response as object, context as 
 end sub
 
 function pncBuildUrl(server as object, path as string, includeToken=false as boolean) as string
-    url = m.address + path
+    if instr(1, path, "://") > 0 then
+        url = path
+    else
+        url = m.address + path
+    end if
 
     if includeToken then
         ' If we have a token, use it. Otherwise see if any other connections

@@ -9,6 +9,7 @@ function HttpResponseClass() as object
         obj.GetStatus = httpGetStatus
         obj.GetBodyString = httpGetBodyString
         obj.GetBodyXml = httpGetBodyXml
+        obj.GetResponseHeader = httpGetResponseHeader
 
         m.HttpResponseClass = obj
     end if
@@ -61,4 +62,8 @@ function httpGetBodyXml() as dynamic
     else
         return invalid
     end if
+end function
+
+function httpGetResponseHeader(name as string) as dynamic
+    return m.event.GetResponseHeaders()[name]
 end function

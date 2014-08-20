@@ -8,6 +8,8 @@ function WelcomeScreen()
 
         obj.Show = welcomeShow
         obj.HandleMessage = welcomeHandleMessage
+        obj.OnAccountChange = welcomeOnAccountChange
+        obj.ReplaceScreen = welcomeReplaceScreen
 
         obj.reset()
         m.WelcomeScreen = obj
@@ -27,15 +29,30 @@ function createWelcomeScreen()
     obj.append(BaseScreen())
     obj.append(WelcomeScreen())
 
+    Application().On("change:user", createCallable("OnAccountChange", obj))
+
     obj.reset()
     return obj
 end function
 
 sub welcomeShow(screen)
     m.screen.SetMessagePort(Application().port)
-    m.screen.AddHeaderText("Welcome!")
-    m.screen.AddParagraph("Nothing to see here")
-    m.screen.AddButton(0, "close")
+
+    account = MyPlexAccount()
+
+    if account.isSignedIn then
+        m.screen.AddHeaderText("Welcome, " + account.username + "!")
+        ' TODO(schuyler): Add servers as paragraphs
+
+        m.screen.AddButton(2, "Sign out")
+        m.screen.AddButton(0, "Close")
+    else
+        m.screen.AddHeaderText("Welcome!")
+
+        m.screen.AddButton(1, "Sign in")
+        m.screen.AddButton(0, "Close")
+    end if
+
     m.screen.Show()
 end sub
 
@@ -45,12 +62,42 @@ function welcomeHandleMessage(msg)
     if type(msg) = "roParagraphScreenEvent" then
         handled = true
 
-        if msg.isScreenClosed() then
-            Application().PopScreen(m)
+        if msg.isScreenClosed() and not (m.ignoreCloseEvent = true) then
+            if m.ignoreCloseEvent = true then
+                m.ignoreCloseEvent = false
+            else
+                Application().PopScreen(m)
+            end if
         else if msg.isButtonPressed() then
-            m.Screen.Close()
+            if msg.GetIndex() = 1 then
+                Application().PushScreen(createPinScreen())
+            else if msg.GetIndex() = 2 then
+                MyPlexAccount().SignOut()
+            else
+                m.Screen.Close()
+            end if
         end if
     end if
 
     return handled
 end function
+
+sub welcomeOnAccountChange(account)
+    Debug("Account changed, now: " + tostr(account.username))
+
+    if Application().IsActiveScreen(m) then
+        m.ReplaceScreen(invalid)
+    else
+        m.Activate = m.ReplaceScreen
+    end if
+end sub
+
+sub welcomeReplaceScreen(ignored)
+    oldScreen = m.screen
+    m.ignoreCloseEvent = true
+    m.Activate = BaseScreen().Activate
+
+    m.screen = CreateObject("roParagraphScreen")
+    m.Show(invalid)
+    oldScreen.Close()
+end sub

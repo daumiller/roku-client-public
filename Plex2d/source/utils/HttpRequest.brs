@@ -7,6 +7,7 @@ function HttpRequestClass() as object
         obj.GetIdentity = httpGetIdentity
         obj.Cancel = httpCancel
         obj.AddParam = httpAddParam
+        obj.AddHeader = httpAddHeader
         obj.CreateRequestContext = httpCreateRequestContext
         obj.OnResponse = httpOnResponse
 
@@ -105,6 +106,10 @@ sub httpAddParam(encodedName as string, value as string)
     end if
 
     m.request.SetUrl(m.url)
+end sub
+
+sub httpAddHeader(name as string, value as string)
+    m.request.AddHeader(name, value)
 end sub
 
 function httpCreateRequestContext(requestType as string, callback=invalid as dynamic) as object

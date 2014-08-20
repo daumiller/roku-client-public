@@ -11,7 +11,10 @@ function MyPlexAccount()
 
         obj.SaveState = mpaSaveState
         obj.LoadState = mpaLoadState
-        obj.UpdateAccount = mpaUpdateAccount
+        obj.SignOut = mpaSignOut
+        obj.ValidateToken = mpaValidateToken
+
+        obj.OnAccountResponse = mpaOnAccountResponse
 
         m.MyPlexAccount = obj
 
@@ -61,15 +64,22 @@ sub mpaLoadState()
 
     if m.authToken <> invalid then
         m.isSignedIn = true
-        MyPlexManager().RefreshAccount()
+
+        request = createMyPlexRequest("/users/account")
+        context = request.CreateRequestContext("account", createCallable("OnAccountResponse", m))
+        Application().StartRequest(request, context)
     else
         m.isSignedIn = false
         Application().ClearInitializer("myplex")
     end if
 end sub
 
-sub mpaUpdateAccount(xml, status)
-    if xml <> invalid and (status = 200 or status = 201) then
+sub mpaOnAccountResponse(request as object, response as object, context as object)
+    oldUsername = m.username
+
+    if response.IsSuccess() then
+        xml = response.GetBodyXml()
+
         ' The user is signed in
         m.username = xml@username
         m.email = xml@email
@@ -91,23 +101,44 @@ sub mpaUpdateAccount(xml, status)
 
         ' TODO(schuyler): Just screwing around, remove this...
         MyPlexManager().RefreshResources()
-    else if status = 401 then
+    else if response.GetStatus() = 401 then
         ' The user is specifically unauthorized, clear everything
-        m.username = invalid
-        m.email = invalid
-        m.isSignedIn = false
-        m.isPlexPass = false
-        m.authToken = invalid
-        m.features.Clear()
-
         Warn("User is unauthorized")
 
-        m.SaveState()
+        m.SignOut()
     else
         ' Unexpected error, keep using whatever we read from the registry
-        Warn("Unexpected response from plex.tv (" + tostr(status) + "), reusing sign in status of " + tostr(m.isSignedIn))
+        Warn("Unexpected response from plex.tv (" + tostr(response.GetStatus()) + "), reusing sign in status of " + tostr(m.isSignedIn))
     end if
 
     Application().ClearInitializer("myplex")
     AppManager().ResetState()
+
+    if oldUsername <> m.username then
+        Application().Trigger("change:user", [m])
+    end if
+end sub
+
+sub mpaSignOut()
+    if not m.isSignedIn then return
+
+    m.username = invalid
+    m.email = invalid
+    m.isSignedIn = false
+    m.isPlexPass = false
+    m.authToken = invalid
+    m.features.Clear()
+
+    Application().Trigger("change:user", [m])
+
+    m.SaveState()
+end sub
+
+sub mpaValidateToken(token as string)
+    m.authToken = token
+    m.isSignedIn = true
+
+    request = createMyPlexRequest("/users/sign_in.xml")
+    context = request.CreateRequestContext("sign_in", createCallable("OnAccountResponse", m))
+    Application().StartRequest(request, context, "")
 end sub

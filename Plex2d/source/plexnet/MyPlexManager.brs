@@ -9,12 +9,10 @@ function MyPlexManager()
         ' We need a screenID property in order to use certain Application feature
         obj.screenID = Application().SCREEN_MYPLEX
 
-        obj.RefreshAccount = mpRefreshAccount
         obj.Publish = mpPublish
         obj.RefreshResources = mpRefreshResources
 
         ' HTTP response handlers
-        obj.OnAccountResponse = mpOnAccountResponse
         obj.OnResourcesResponse = mpOnResourcesResponse
 
         m.MyPlexManager = obj
@@ -22,13 +20,6 @@ function MyPlexManager()
 
     return m.MyPlexManager
 end function
-
-sub mpRefreshAccount()
-    request = createMyPlexRequest("/users/account")
-    context = request.CreateRequestContext("account", createCallable("OnAccountResponse", m))
-
-    Application().StartRequest(request, context)
-end sub
 
 sub mpPublish()
     request = createMyPlexRequest("/devices/" + AppSettings().GetGlobal("clientIdentifier"))
@@ -51,10 +42,6 @@ sub mpRefreshResources()
     context = request.CreateRequestContext("resources", createCallable("OnResourcesResponse", m))
 
     Application().StartRequest(request, context)
-end sub
-
-sub mpOnAccountResponse(request as object, response as object, context as object)
-    MyPlexAccount().UpdateAccount(response.GetBodyXml(), response.GetStatus())
 end sub
 
 sub mpOnResourcesResponse(request as object, response as object, context as object)

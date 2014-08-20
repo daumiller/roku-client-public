@@ -2,5 +2,10 @@
 ' PlexRequest where the server is fixed.
 
 function createMyPlexRequest(path as string) as object
-    return createPlexRequest(MyPlexServer(), path)
+    request = createPlexRequest(MyPlexServer(), path)
+
+    ' Make sure we're always getting XML
+    request.AddHeader("Accept", "application/xml")
+
+    return request
 end function

@@ -25,15 +25,15 @@ function BaseScreen()
 end function
 
 sub bsShow(screen)
-    m.screen = screen
+    ' m.screen = screen
 end sub
 
 sub bsActivate(screen)
-    m.screen = screen
+    ' m.screen = screen
 end sub
 
 sub bsDeactivate()
-    m.screen = invalid
+    ' m.screen = invalid
 end sub
 
 sub bsDestroy()

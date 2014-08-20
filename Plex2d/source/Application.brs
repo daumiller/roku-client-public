@@ -26,6 +26,7 @@ function Application()
         obj.AssignScreenID = appAssignScreenID
         obj.PushScreen = appPushScreen
         obj.PopScreen = appPopScreen
+        obj.IsActiveScreen = appIsActiveScreen
 
         obj.AddTimer = appAddTimer
 
@@ -120,6 +121,10 @@ sub appPopScreen(screen)
         Analytics().TrackScreen(newScreen.screenName)
     end if
 end sub
+
+function appIsActiveScreen(screen as object) as boolean
+    return (screen.screenID = m.screens.Peek().screenID)
+end function
 
 sub appRun()
     Info("Starting global message loop")
