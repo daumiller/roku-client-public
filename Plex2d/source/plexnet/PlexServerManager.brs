@@ -140,6 +140,15 @@ end sub
 sub psmUpdateReachabilityResult(server as object, reachable as boolean)
     if reachable
         ' m.NotifyAboutDevice(server, true)
+
+        ' TODO(schuyler): This doesn't belong here, it's just a convenient hook
+        ' to make a request to test PlexNet stuff (hubs!).
+        if server.owned then
+            Debug("Making hubs request, just because")
+            request = createPlexRequest(server, "/hubs")
+            context = request.CreateRequestContext("dummy_hubs", createCallable(LogHubsResponse, invalid))
+            Application().StartRequest(request, context)
+        end if
     else
         if server.Equals(m.selectedServer) then
             Debug("Selected server is not reachable")
@@ -147,6 +156,18 @@ sub psmUpdateReachabilityResult(server as object, reachable as boolean)
         end if
 
         ' m.NotifyAboutDevice(server, false)
+    end if
+end sub
+
+sub LogHubsResponse(request as object, response as object, context as object)
+    Debug("Got hubs response with status " + tostr(response.GetStatus()))
+
+    if response.ParseResponse() then
+        for each hub in response.items
+            Debug(hub.ToString())
+        next
+    else
+        Error("Failed to parse hubs response")
     end if
 end sub
 

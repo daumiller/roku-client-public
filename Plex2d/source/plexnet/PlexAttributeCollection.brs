@@ -9,6 +9,10 @@ function PlexAttributeCollectionClass()
         obj.Has = pnacHas
         obj.Get = pnacGet
         obj.GetInt = pnacGetInt
+        obj.Set = pnacSet
+        obj.TryCopy = pnacTryCopy
+
+        obj.AttributesMatch = pnacAttributesMatch
 
         ' Note: The "real" PlexNet version has quite a bit more, especially
         ' around setting attributes and emitting XML. We'll only implement
@@ -45,4 +49,23 @@ function pnacGetInt(attrName, defaultValue=0)
     else
         return defaultValue
     end if
+end function
+
+sub pnacSet(attrName as string, attrValue as string)
+    m.attrs[attrName] = attrValue
+end sub
+
+sub pnacTryCopy(other as object, attrName as string)
+    if other.Has(attrName) and not m.Has(attrName) then
+        m.Set(attrName, other.Get(attrName))
+    end if
+end sub
+
+function pnacAttributesMatch(other as object, attributes as object) as boolean
+    for each attr in attributes
+        if (m.Has(attr) <> other.Has(attr)) then return false
+        if (m.Get(attr) <> other.Get(attr)) then return false
+    next
+
+    return true
 end function

@@ -1,0 +1,113 @@
+function PlexStreamClass() as object
+    if m.PlexStreamClass = invalid then
+        obj = CreateObject("roAssociativeArray")
+        obj.Append(PlexAttributeCollectionClass())
+        obj.ClassName = "PlexStream"
+
+        ' Constants
+        obj.TYPE_UNKNOWN = 0
+        obj.TYPE_VIDEO = 1
+        obj.TYPE_AUDIO = 2
+        obj.TYPE_SUBTITLE = 3
+
+        ' Methods
+        obj.GetTitle = pnstrGetTitle
+        obj.GetCodec = pnstrGetCodec
+        obj.GetChannels = pnstrGetChannels
+        obj.IsSelected = pnstrIsSelected
+        obj.ToString = pnstrToString
+        obj.Equals = pnstrEquals
+
+        m.PlexStreamClass = obj
+    end if
+
+    return m.PlexStreamClass
+end function
+
+function createPlexStream(xml as object) as object
+    obj = CreateObject("roAssociativeArray")
+
+    obj.Append(PlexStreamClass())
+
+    obj.Init(xml)
+
+    return obj
+end function
+
+function pnstrGetTitle() as string
+    title = firstOf(m.Get("language"), "Unknown")
+
+    if m.GetInt("streamType") = m.TYPE_AUDIO then
+        codec = m.GetCodec()
+        channels = m.GetChannels()
+
+        if codec <> "" and channels <> "" then
+            title = title + " (" + codec + " " + channels + ")"
+        else if codec <> "" or channels <> "" then
+            title = title + " (" + codec + channels + ")"
+        end if
+    end if
+
+    return title
+end function
+
+function pnstrGetCodec() as string
+    codec = firstOf(m.Get("codec"), "")
+
+    if codec = "dca" then
+        codec = "DTS"
+    else
+        codec = UCase(codec)
+    end if
+
+    return codec
+end function
+
+function pnstrGetChannels() as string
+    channels = m.GetInt("channels")
+
+    if channels = 1 then
+        return "Mono"
+    else if channels = 2 then
+        return "Stereo"
+    else if channels > 0 then
+        return (channels - 1).tostr() + ".1"
+    else
+        return ""
+    end if
+end function
+
+function pnstrIsSelected() as boolean
+    return (m.GetInt("selected") = 1)
+end function
+
+function pnstrToString() as string
+    return m.GetTitle()
+end function
+
+function pnstrEquals(other as dynamic) as boolean
+    if other = invalid then return false
+    if m.ClassName <> other.ClassName then return false
+
+    return m.AttributesMatch(other, ["streamType", "language", "codec", "channels", "index"])
+end function
+
+' Synthetic subtitle stream for 'none'
+
+function NoneStream() as object
+    if m.NoneStream = invalid then
+        obj = CreateObject("roAssociativeArray")
+        obj.Append(PlexStreamClass())
+
+        obj.name = "Stream"
+        obj.attrs = {id: "0", streamType: obj.TYPE_SUBTITLE}
+
+        obj.GetTitle = function() :return "None" :end function
+
+        m.NoneStream = obj
+    end if
+
+    return m.NoneStream
+end function
+
+' TODO(schuyler): setSelected, getSubtitlePath

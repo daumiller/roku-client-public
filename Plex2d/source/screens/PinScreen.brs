@@ -34,7 +34,7 @@ function createPinScreen() as object
     obj.screen.AddFocalText("From your computer,", "spacing-dense")
     obj.screen.AddFocalText("go to plex.tv/pin", "spacing-dense")
     obj.screen.AddFocalText("and enter this code:", "spacing-dense")
-    m.screen.SetRegistrationCode("retrieving code...")
+    obj.screen.SetRegistrationCode("retrieving code...")
     obj.screen.AddParagraph(" ")
     obj.screen.AddParagraph("This screen will automatically update once your Roku player has been linked to your Plex account.")
 

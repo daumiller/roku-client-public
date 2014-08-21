@@ -31,7 +31,7 @@ sub pnrSetResponse(event as dynamic)
     m.event = event
 end sub
 
-sub pnrParseResponse()
+function pnrParseResponse() as boolean
     if m.IsSuccess() then
         xml = m.GetBodyXml()
         if xml <> invalid then
@@ -42,6 +42,10 @@ sub pnrParseResponse()
                 item = createPlexObjectFromElement(m.container, node)
                 m.items.Push(item)
             next
+
+            return true
         end if
     end if
-end sub
+
+    return false
+end function
