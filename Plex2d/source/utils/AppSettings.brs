@@ -160,4 +160,5 @@ sub settingsInitGlobals()
     m.globals["displaySize"] = device.GetDisplaySize()
     m.globals["displayMode"] = device.GetDisplayMode()
     m.globals["displayType"] = device.GetDisplayType()
+    m.globals["IsHD"] = (device.GetDisplayType() = "HDTV")
 end sub
