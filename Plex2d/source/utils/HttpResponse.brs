@@ -7,6 +7,7 @@ function HttpResponseClass() as object
         obj.IsSuccess = httpIsSuccess
         obj.IsError = httpIsError
         obj.GetStatus = httpGetStatus
+        obj.GetErrorString = httpGetErrorString
         obj.GetBodyString = httpGetBodyString
         obj.GetBodyXml = httpGetBodyXml
         obj.GetResponseHeader = httpGetResponseHeader
@@ -50,6 +51,14 @@ end function
 function httpGetBodyString() as string
     if m.event <> invalid then
         return m.event.GetString()
+    else
+        return ""
+    end if
+end function
+
+function httpGetErrorString() as string
+    if m.event <> invalid then
+        return m.event.GetFailureReason()
     else
         return ""
     end if
