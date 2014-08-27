@@ -127,7 +127,7 @@ function pnsCollectDataFromRoot(xml as object) as boolean
 end function
 
 sub pnsUpdateReachability(force=true as boolean)
-    if not force and m.activeConnection <> invalid then return
+    if not force and m.activeConnection <> invalid and m.activeConnection.state <> PlexConnectionClass().STATE_UNKNOWN then return
 
     Debug("Updating reachability for " + tostr(m.name) + ", will test " + tostr(m.connections.Count()) + " connections")
     for each conn in m.connections
