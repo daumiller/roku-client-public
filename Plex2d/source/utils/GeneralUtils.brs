@@ -73,6 +73,14 @@ function firstOf(first as dynamic, second as dynamic, third=invalid as dynamic, 
     return fourth
 end function
 
+function firstOfArr(arr as object)
+    if arr = invalid or arr.count() = 0 then return invalid
+    for each value in arr
+        if value <> invalid then return value
+    end for
+    return invalid
+end function
+
 function Now(local=false as boolean) as object
     if local then
         key = "now_local"
