@@ -7,6 +7,7 @@ function PlexServerManager()
 
         obj.SetSelectedServer = psmSetSelectedServer
         obj.GetServer = psmGetServer
+        obj.GetServers = psmGetServers
         obj.RemoveServer = psmRemoveServer
         obj.MergeServer = psmMergeServer
 
@@ -59,6 +60,17 @@ function psmGetServer(uuid as string) as dynamic
     if uuid = "myplex" then return MyPlexServer()
 
     return m.serversByUuid[uuid]
+end function
+
+function psmGetServers() as dynamic
+    servers = []
+    for each uuid in m.serversByUuid
+        if uuid <> "myplex" then
+            servers.push(m.serversByUuid[uuid])
+        end if
+    next
+
+    return servers
 end function
 
 sub psmRemoveServer(server as object)
