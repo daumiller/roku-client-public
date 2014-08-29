@@ -30,6 +30,7 @@ function PlexServerClass() as object
         obj.OnReachabilityResult = pnsOnReachabilityResult
         obj.MarkAsRefreshing = pnsMarkAsRefreshing
         obj.MarkUpdateFinished = pnsMarkUpdateFinished
+        obj.IsReachable = pnsIsReachable
         obj.Merge = pnsMerge
         obj.Equals = pnsEquals
         obj.ToString = pnsToString
@@ -84,6 +85,10 @@ function pnsBuildUrl(path as string, includeToken=false as boolean) as dynamic
     else
         return invalid
     end if
+end function
+
+function pnsIsReachable() as boolean
+    return (m.activeConnection <> invalid and m.activeConnection.state = PlexConnectionClass().STATE_REACHABLE)
 end function
 
 function pnsGetToken() as dynamic
