@@ -165,7 +165,7 @@ function appProcessOneMessage(timeout)
         ' Socket events are chatty (every 5 seconds per PMS) and URL events
         ' almost always log immediately, so this is just noise.
         '
-        if type(msg) <> "roSocketEvent" and type(msg) <> "roUrlEvent" then
+        if type(msg) <> "roSocketEvent" and type(msg) <> "roUrlEvent" and type(msg) <> "roTextureRequestEvent" and type(msg) <> "roUniversalControlEvent" then
             Debug("Processing " + type(msg))
         end if
 
