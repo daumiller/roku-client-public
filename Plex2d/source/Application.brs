@@ -108,9 +108,11 @@ sub appPopScreen(screen)
     if timers <> invalid then
         for each timerID in timers
             timer = m.timers[timerID]
-            timer.active = false
-            timer.listener = invalid
-            m.timers.Delete(timerID)
+            if timer <> invalid then
+                timer.active = false
+                timer.listener = invalid
+                m.timers.Delete(timerID)
+            end if
         next
         m.timersByScreen.Delete(screenID)
     end if
