@@ -5,6 +5,7 @@ function PlexResultClass() as object
         obj.ClassName = "PlexResult"
 
         obj.container = invalid
+        obj.parsed = invalid
 
         obj.SetResponse = pnrSetResponse
         obj.ParseResponse = pnrParseResponse
@@ -32,6 +33,8 @@ sub pnrSetResponse(event as dynamic)
 end sub
 
 function pnrParseResponse() as boolean
+    if m.parsed <> invalid then return m.parsed
+
     if m.IsSuccess() then
         xml = m.GetBodyXml()
         if xml <> invalid then
@@ -43,9 +46,11 @@ function pnrParseResponse() as boolean
                 m.items.Push(item)
             next
 
+            m.parsed = true
             return true
         end if
     end if
 
+    m.parsed = false
     return false
 end function
