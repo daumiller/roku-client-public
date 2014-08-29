@@ -81,7 +81,7 @@ sub appPushScreen(screen)
         oldScreen.Deactivate()
     end if
 
-    screen.Show(invalid)
+    screen.Show()
 end sub
 
 sub appPopScreen(screen)
@@ -117,7 +117,7 @@ sub appPopScreen(screen)
 
     if m.screens.Count() > 0 and callActivate then
         newScreen = m.screens.Peek()
-        newScreen.Activate(invalid)
+        newScreen.Activate()
         Analytics().TrackScreen(newScreen.screenName)
     end if
 end sub

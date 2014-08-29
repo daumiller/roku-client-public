@@ -24,11 +24,11 @@ function BaseScreen()
     return obj
 end function
 
-sub bsShow(screen)
+sub bsShow()
     ' m.screen = screen
 end sub
 
-sub bsActivate(screen)
+sub bsActivate()
     ' m.screen = screen
 end sub
 
