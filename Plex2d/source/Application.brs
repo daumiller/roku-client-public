@@ -250,11 +250,14 @@ sub appAddTimer(timer as object, callback as object, screenID=invalid as dynamic
     timer.callback = callback
     m.timers[timer.ID] = timer
 
+    if screenID = invalid and callback <> invalid and callback.context <> invalid then
+        screenID = callback.context.screenID
+    end if
     if screenID <> invalid then
-        if not m.timersByScreen.DoesExist(screenID) then
-            m.timersByScreen[screenID] = []
+        if not m.timersByScreen.DoesExist(tostr(screenID)) then
+            m.timersByScreen[tostr(screenID)] = []
         end if
-        m.timersByScreen[screenID].Push(timer.ID)
+        m.timersByScreen[tostr(screenID)].Push(timer.ID)
     end if
 end sub
 
