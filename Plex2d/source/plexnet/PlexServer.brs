@@ -141,25 +141,25 @@ sub pnsOnReachabilityResult(connection as object)
 
     Debug("Reachability result for " + tostr(m.name) + ": " + connection.address + " is " + tostr(connection.state))
 
-    if m.pendingReachabilityRequests <= 0 then
-        ' Pick a best connection. If we already had an active connection and
-        ' it's still reachable, stick with it.
-        if m.activeConnection <> invalid and m.activeConnection.state <> PlexConnectionClass().STATE_REACHABLE then
-            m.activeConnection = invalid
-        end if
-
-        if m.activeConnection = invalid then
-            for i = m.connections.Count() - 1 to 0 step -1
-                conn = m.connections[i]
-                if conn.state = PlexConnectionClass().STATE_REACHABLE and (m.activeConnection = invalid or conn.isLocal) then
-                    m.activeConnection = conn
-                end if
-            next
-        end if
-
-        Info("Active connection for " + tostr(m.name) + " is " + tostr(m.activeConnection))
-        PlexServerManager().UpdateReachabilityResult(m, (m.activeConnection <> invalid))
+    ' invalidate active connection if the state is unreachable
+    if m.activeConnection <> invalid and m.activeConnection.state <> PlexConnectionClass().STATE_REACHABLE then
+        m.activeConnection = invalid
     end if
+
+    ' Pick a best connection. If we already had an active connection and
+    ' it's still reachable, stick with it. (replace with local if
+    ' available)
+    if m.activeConnection = invalid or NOT(m.activeConnection.isLocal = true) then
+    for i = m.connections.Count() - 1 to 0 step -1
+            conn = m.connections[i]
+            if conn.state = PlexConnectionClass().STATE_REACHABLE and (m.activeConnection = invalid or conn.isLocal) then
+        m.activeConnection = conn
+            end if
+        next
+    end if
+
+    Info("Active connection for " + tostr(m.name) + " is " + tostr(m.activeConnection))
+    PlexServerManager().UpdateReachabilityResult(m, (m.activeConnection <> invalid))
 end sub
 
 sub pnsMarkAsRefreshing()
