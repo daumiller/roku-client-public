@@ -2,6 +2,7 @@ function BlockClass() as object
     if m.BlockClass = invalid then
         obj = CreateObject("roAssociativeArray")
         obj.Append(ComponentClass())
+        obj.ClassName = "Block"
 
         obj.Draw = blockDraw
 

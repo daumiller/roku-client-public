@@ -13,6 +13,7 @@ function Colors() as object
         obj.PlexClrTran = &hff8a0000
         obj.CardBkgClr = &h272727ff
         obj.BtnBkgClr = &h272727ff
+        obj.TextClr = &hffffffff
 
         m.Colors = obj
     end if

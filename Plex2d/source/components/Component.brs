@@ -10,10 +10,12 @@ function ComponentClass() as object
 
         obj.alphaEnable = false
         obj.bgColor = Colors().ScrBkgClr
+        obj.fgColor = Colors().TextClr
 
         ' Methods
         obj.InitRegion = compInitRegion
         obj.Draw = compDraw
+        obj.GetCenterOffsets = compGetCenterOffsets
 
         m.ComponentClass = obj
     end if
@@ -31,3 +33,10 @@ end sub
 sub compDraw()
     stop
 end sub
+
+function compGetCenterOffsets(width as integer, height as integer) as object
+    coords = { x: 0, y: 0 }
+    coords.x = int(m.width / 2 - width / 2)
+    coords.y = int(m.height / 2 - height / 2)
+    return coords
+end function
