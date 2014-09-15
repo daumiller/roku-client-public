@@ -136,12 +136,9 @@ sub pinGetComponents()
     m.components.Clear()
 
     mainBox = createHBox(false, false, false, 50)
-    mainBox.SetFrame(219, 200, 1000, 400)
+    mainBox.SetFrame(219, 200, 1000, 320)
 
-    ' TODO(schuyler): Use an image component, not this lame stand-in.
-    chevron = createBlock(Colors().PlexClr)
-    chevron.width = 200
-    chevron.height = 340
+    chevron = createImage("pkg:/images/plex-chevron.png", 195, 320)
     mainBox.AddComponent(chevron)
 
     vb = createVBox(false, false, false, 5)
