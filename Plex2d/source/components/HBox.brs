@@ -28,6 +28,7 @@ function createHBox(homogeneous as boolean, expand as boolean, fill as boolean, 
 end function
 
 sub hboxPerformLayout()
+    m.needsLayout = false
     numChildren = m.components.Count()
 
     ' Strange, but let's not even bother with the complicated stuff if we don't need to.
