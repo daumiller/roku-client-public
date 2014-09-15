@@ -34,11 +34,13 @@ sub compositorDrawAll()
 end sub
 
 sub compositorDrawComponent(component)
-    ' Let the component draw itself to its own region
-    component.Draw()
+    ' Let the component draw itself to its own regions
+    regions = component.Draw()
 
-    ' Then convert that region to a sprite on our screen
-    m.compositor.NewSprite(component.x, component.y, component.region)
+    ' Then convert those regions to sprites on our screen
+    for each region in regions
+        m.compositor.NewSprite(region.x, region.y, region.region)
+    next
 end sub
 
 sub compositorDestroy()

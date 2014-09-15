@@ -13,6 +13,8 @@ function LabelClass() as object
         obj.JUSTIFY_RIGHT = 2
 
         obj.Draw = labelDraw
+        obj.GetPreferredWidth = labelGetPreferredWidth
+        obj.GetPreferredHeight = labelGetPreferredHeight
 
         obj.WrapText = labelWrapText
         obj.TruncateText = labelTruncateText
@@ -28,17 +30,36 @@ function createLabel(text as string, font as object) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(LabelClass())
 
+    obj.Init()
+
     obj.text = text
     obj.font = font
     obj.halign = obj.JUSTIFY_LEFT
     obj.valign = obj.ALIGN_TOP
     obj.wrap = false
-    obj.height = font.GetOneLineHeight()
 
     return obj
 end function
 
-sub labelDraw()
+function labelGetPreferredWidth() as integer
+    ' If someone specifically set our width, then prefer that.
+    if m.width <> 0 then
+        return m.width
+    else
+        return m.font.GetOneLineWidth(m.text, 1280)
+    end if
+end function
+
+function labelGetPreferredHeight() as integer
+    ' If someone specifically set our height, then prefer that.
+    if m.height <> 0 then
+        return m.height
+    else
+        return m.font.GetOneLineHeight()
+    end if
+end function
+
+function labelDraw() as object
     m.InitRegion()
 
     lineHeight = m.font.GetOneLineHeight()
@@ -72,7 +93,9 @@ sub labelDraw()
         m.region.DrawText(line, xOffset, yOffset, m.fgColor, m.font)
         yOffset = yOffset + lineHeight
     next
-end sub
+
+    return [{x: m.x, y: m.y, region: m.region}]
+end function
 
 function labelWrapText() as object
     lines = []

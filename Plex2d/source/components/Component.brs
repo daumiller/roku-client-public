@@ -13,9 +13,13 @@ function ComponentClass() as object
         obj.fgColor = Colors().TextClr
 
         ' Methods
+        obj.Init = function() :end function
         obj.InitRegion = compInitRegion
         obj.Draw = compDraw
         obj.GetCenterOffsets = compGetCenterOffsets
+        obj.GetPreferredWidth = compGetPreferredWidth
+        obj.GetPreferredHeight = compGetPreferredHeight
+        obj.SetFrame = compSetFrame
 
         m.ComponentClass = obj
     end if
@@ -30,9 +34,11 @@ sub compInitRegion()
     m.region = CreateObject("roRegion", bmp, 0, 0, bmp.GetWidth(), bmp.GetHeight())
 end sub
 
-sub compDraw()
-    stop
-end sub
+function compDraw() as object
+    m.InitRegion()
+
+    return [{x: m.x, y: m.y, region: m.region}]
+end function
 
 function compGetCenterOffsets(width as integer, height as integer) as object
     coords = { x: 0, y: 0 }
@@ -40,3 +46,18 @@ function compGetCenterOffsets(width as integer, height as integer) as object
     coords.y = int(m.height / 2 - height / 2)
     return coords
 end function
+
+function compGetPreferredWidth() as integer
+    return m.width
+end function
+
+function compGetPreferredHeight() as integer
+    return m.height
+end function
+
+sub compSetFrame(x as integer, y as integer, width as integer, height as integer)
+    m.x = x
+    m.y = y
+    m.width = width
+    m.height = height
+end sub

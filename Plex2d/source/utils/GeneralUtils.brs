@@ -211,6 +211,8 @@ function ApplyFunc(func as function, this as object, args=[] as object) as dynam
         result = this.tempBoundFunc(args[0], args[1])
     else if args.Count() = 3 then
         result = this.tempBoundFunc(args[0], args[1], args[2])
+    else if args.Count() = 4 then
+        result = this.tempBoundFunc(args[0], args[1], args[2], args[3])
     else
         Error("ApplyFunc doesn't currently support " + tostr(args.Count()) + " arguments!")
         stop
