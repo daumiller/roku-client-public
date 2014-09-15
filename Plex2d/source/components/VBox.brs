@@ -1,21 +1,21 @@
-function HBoxClass() as object
-    if m.HBoxClass = invalid then
+function VBoxClass() as object
+    if m.VBoxClass = invalid then
         obj = CreateObject("roAssociativeArray")
         obj.Append(BoxClass())
-        obj.ClassName = "HBox"
+        obj.ClassName = "VBox"
 
         ' Methods
-        obj.PerformLayout = hboxPerformLayout
+        obj.PerformLayout = vboxPerformLayout
 
-        m.HBoxClass = obj
+        m.VBoxClass = obj
     end if
 
-    return m.HBoxClass
+    return m.VBoxClass
 end function
 
-function createHBox(homogeneous as boolean, expand as boolean, fill as boolean, spacing=0 as integer) as object
+function createVBox(homogeneous as boolean, expand as boolean, fill as boolean, spacing=0 as integer) as object
     obj = CreateObject("roAssociativeArray")
-    obj.Append(HBoxClass())
+    obj.Append(VBoxClass())
 
     obj.Init()
 
@@ -27,14 +27,14 @@ function createHBox(homogeneous as boolean, expand as boolean, fill as boolean, 
     return obj
 end function
 
-sub hboxPerformLayout()
+sub vboxPerformLayout()
     m.needsLayout = false
     numChildren = m.components.Count()
 
     ' Strange, but let's not even bother with the complicated stuff if we don't need to.
     if numChildren = 0 then return
 
-    offsets = m.CalculateOffsets(m.width, m.x, "GetPreferredWidth", m.halign)
+    offsets = m.CalculateOffsets(m.height, m.y, "GetPreferredHeight", m.valign)
 
     ' Now that we have all the offsets, setting each child's frame is simple.
 
@@ -46,16 +46,16 @@ sub hboxPerformLayout()
         offset = nextOffset
         nextOffset = offsets.Next()
         component = m.components.Next()
-        maxWidth = nextOffset - offset - m.spacing
+        maxHeight = nextOffset - offset - m.spacing
 
         if m.fill then
-            width = maxWidth
+            height = maxHeight
         else
-            width = component.GetPreferredWidth()
-            if width > maxWidth then width = maxWidth
-            offset = offset + int((maxWidth - width) / 2)
+            height = component.GetPreferredHeight()
+            if height > maxHeight then height = maxHeight
+            offset = offset + int((maxHeight - height) / 2)
         end if
 
-        component.SetFrame(offset, m.y, width, m.height)
+        component.SetFrame(m.x, offset, m.width, height)
     end while
 end sub
