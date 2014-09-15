@@ -2,15 +2,8 @@ function LabelClass() as object
     if m.LabelClass = invalid then
         obj = CreateObject("roAssociativeArray")
         obj.Append(ComponentClass())
+        obj.Append(AlignmentMixin())
         obj.ClassName = "Label"
-
-        ' Constants
-        obj.ALIGN_TOP = 0
-        obj.ALIGN_MIDDLE = 1
-        obj.ALIGN_BOTTOM = 2
-        obj.JUSTIFY_LEFT = 0
-        obj.JUSTIFY_CENTER = 1
-        obj.JUSTIFY_RIGHT = 2
 
         obj.Draw = labelDraw
         obj.GetPreferredWidth = labelGetPreferredWidth
@@ -34,8 +27,6 @@ function createLabel(text as string, font as object) as object
 
     obj.text = text
     obj.font = font
-    obj.halign = obj.JUSTIFY_LEFT
-    obj.valign = obj.ALIGN_TOP
     obj.wrap = false
 
     return obj

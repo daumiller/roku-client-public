@@ -90,7 +90,29 @@ sub compTestGetComponents()
 
     ' Basic layout with nothing expanding or shrinking.
     hbox = createHBox(false, false, false, 10)
-    hbox.SetFrame(100, 450, 1040, 40)
+    hbox.SetFrame(100, 450, 1040, 7)
+    for i = 1 to 5
+        block = createBlock(Colors().PlexClr)
+        block.width = i * 50
+        hbox.AddComponent(block)
+    end for
+    m.components.Push(hbox)
+
+    ' Same, but right justified.
+    hbox = createHBox(false, false, false, 10)
+    hbox.SetFrame(100, 467, 1040, 7)
+    hbox.halign = hbox.JUSTIFY_RIGHT
+    for i = 1 to 5
+        block = createBlock(Colors().PlexClr)
+        block.width = i * 50
+        hbox.AddComponent(block)
+    end for
+    m.components.Push(hbox)
+
+    ' Same, but centered.
+    hbox = createHBox(false, false, false, 10)
+    hbox.SetFrame(100, 484, 1040, 7)
+    hbox.halign = hbox.JUSTIFY_CENTER
     for i = 1 to 5
         block = createBlock(Colors().PlexClr)
         block.width = i * 50

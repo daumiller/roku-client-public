@@ -90,6 +90,13 @@ sub hboxPerformLayout()
             ' Nothing to do, just set the offsets according to preferred width.
             index = 1
 
+            ' If we have a different alignment then adjust the first offset accordingly.
+            if m.halign = m.JUSTIFY_CENTER then
+                offsets[0] = offsets[0] + int((availableWidth - totalPreferredWidth) / 2)
+            else if m.halign = m.JUSTIFY_RIGHT then
+                offsets[0] = offsets[0] + availableWidth - totalPreferredWidth
+            end if
+
             for each component in m.components
                 offsets[index] = offsets[index-1] + m.spacing + component.GetPreferredWidth()
                 index = index + 1
