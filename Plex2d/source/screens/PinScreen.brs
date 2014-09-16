@@ -162,7 +162,9 @@ sub pinGetComponents()
         end if
         pinDigit.SetColor(pinColor, &h1f1f1fff)
         pinDigit.halign = pinDigit.JUSTIFY_CENTER
+        pinDigit.valign = pinDigit.ALIGN_MIDDLE
         pinDigit.width = 113
+        pinDigit.height = 140
         pinDigits.AddComponent(pinDigit)
     end for
     vb.AddComponent(pinDigits)
@@ -178,6 +180,7 @@ sub pinGetComponents()
     skipButton = createButton("Skip", FontRegistry().font16, "skip")
     skipButton.SetColor(&hffffffff, &h1f1f1fff)
     skipButton.width = 72
+    skipButton.height = 44
     m.focusedItem = skipButton
     buttons.AddComponent(skipButton)
 
@@ -185,6 +188,7 @@ sub pinGetComponents()
         refreshButton = createButton("Refresh", FontRegistry().font16, "refresh")
         refreshButton.SetColor(&hffffffff, &h1f1f1fff)
         refreshButton.width = 72
+        refreshButton.height = 44
         m.focusedItem = refreshButton
         buttons.AddComponent(refreshButton)
     end if
