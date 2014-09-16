@@ -9,6 +9,7 @@ function PinScreen() as object
         obj.pinCode = invalid
         obj.hasError = false
 
+        obj.Init = pinInit
         obj.GetComponents = pinGetComponents
 
         obj.RequestCode = pinRequestCode
@@ -25,6 +26,15 @@ function PinScreen() as object
     return m.PinScreen
 end function
 
+sub pinInit()
+    ApplyFunc(ComponentsScreen().Init, m)
+
+    ' Intialize custom fonts for this screen
+    m.customFonts.pin = FontRegistry().GetTextFont(150, true)
+    m.customFonts.welcome = FontRegistry().GetTextFont(32)
+    m.customFonts.info = FontRegistry().font16
+end sub
+
 function createPinScreen() as object
     Debug("######## Creating PIN roScreen ########")
 
@@ -32,11 +42,6 @@ function createPinScreen() as object
     obj.Append(PinScreen())
 
     obj.Init()
-
-    ' Intialize custom fonts for this screen
-    obj.customFonts.pin = FontRegistry().GetTextFont(150, true)
-    obj.customFonts.welcome = FontRegistry().GetTextFont(32)
-    obj.customFonts.info = FontRegistry().font16
 
     ' Request a code
     obj.RequestCode()
@@ -46,6 +51,7 @@ end function
 
 sub pinActivate()
     ' Request a code
+    m.Init()
     m.RequestCode()
 end sub
 
