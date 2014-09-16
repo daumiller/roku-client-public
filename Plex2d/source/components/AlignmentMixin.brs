@@ -25,21 +25,25 @@ function AlignmentMixin() as object
 end function
 
 function alignGetXOffsetAlignment(displayWidth as integer) as integer
+    contentArea = m.GetContentArea()
+
     if m.halign = m.JUSTIFY_CENTER then
         return int((m.width - displayWidth) / 2)
     else if m.halign = m.JUSTIFY_RIGHT then
-        return m.width - displayWidth
+        return contentArea.width - displayWidth + contentArea.x
     else
-        return 0
+        return contentArea.x
     end if
 end function
 
 function alignGetYOffsetAlignment(displayHeight as integer) as integer
+    contentArea = m.GetContentArea()
+
     if m.valign = m.ALIGN_MIDDLE then
         return int((m.height - displayHeight) / 2)
     else if m.valign = m.ALIGN_BOTTOM then
-        return m.height - displayHeight
+        return contentArea.height - displayHeight + contentArea.y
     else
-        return 0
+        return contentArea.y
     end if
 end function

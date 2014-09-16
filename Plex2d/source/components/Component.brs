@@ -26,6 +26,7 @@ function ComponentClass() as object
         obj.Draw = compDraw
         obj.GetPreferredWidth = compGetPreferredWidth
         obj.GetPreferredHeight = compGetPreferredHeight
+        obj.GetContentArea = compGetContentArea
         obj.SetFrame = compSetFrame
         obj.SetFocusSibling = compSetFocusSibling
         obj.GetFocusSibling = compGetFocusSibling
@@ -61,6 +62,19 @@ end function
 
 function compGetPreferredHeight() as integer
     return firstOf(m.preferredHeight, m.height)
+end function
+
+function compGetContentArea() as object
+    if m.contentArea = invalid then
+        m.contentArea = {
+            x: 0,
+            y: 0,
+            width: m.width,
+            height: m.height
+        }
+    end if
+
+    return m.contentArea
 end function
 
 sub compSetFrame(x as integer, y as integer, width as integer, height as integer)

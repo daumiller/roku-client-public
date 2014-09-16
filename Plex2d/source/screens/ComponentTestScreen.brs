@@ -53,6 +53,7 @@ sub compTestGetComponents()
 
     label = createLabel(lorem, FontRegistry().font16)
     label.SetFrame(730, 100, 200, 200)
+    label.SetPadding(10)
     label.bgColor = Colors().PlexClr
     label.halign = label.JUSTIFY_RIGHT
     label.valign = label.ALIGN_BOTTOM

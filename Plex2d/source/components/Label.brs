@@ -3,6 +3,7 @@ function LabelClass() as object
         obj = CreateObject("roAssociativeArray")
         obj.Append(ComponentClass())
         obj.Append(AlignmentMixin())
+        obj.Append(PaddingMixin())
         obj.ClassName = "Label"
 
         obj.Init = labelInit
@@ -45,7 +46,13 @@ function labelGetPreferredWidth() as integer
     if m.width <> 0 then
         return m.width
     else
-        return m.font.GetOneLineWidth(m.text, 1280)
+        if m.padding <> invalid then
+            paddingSize = m.padding.left + m.padding.right
+        else
+            paddingSize = 0
+        end if
+
+        return m.font.GetOneLineWidth(m.text, 1280) + paddingSize
     end if
 end function
 
@@ -54,7 +61,13 @@ function labelGetPreferredHeight() as integer
     if m.height <> 0 then
         return m.height
     else
-        return m.font.GetOneLineHeight()
+        if m.padding <> invalid then
+            paddingSize = m.padding.top + m.padding.bottom
+        else
+            paddingSize = 0
+        end if
+
+        return m.font.GetOneLineHeight() + paddingSize
     end if
 end function
 
@@ -77,7 +90,7 @@ function labelDraw() as object
     for each line in lines
         ' If we're left justifying, don't bother with the expensive width calculation.
         if m.halign = m.JUSTIFY_LEFT then
-            xOffset = 0
+            xOffset = m.GetContentArea().x
         else
             xOffset = m.GetXOffsetAlignment(m.font.GetOneLineWidth(line, 1280))
         end if
@@ -105,9 +118,10 @@ sub labelSetColor(fgColor as integer, bgColor=invalid as dynamic)
 end sub
 
 function labelWrapText() as object
+    contentArea = m.GetContentArea()
     lines = []
     lineNum = 0
-    maxLines = int(m.height / m.font.GetOneLineHeight())
+    maxLines = int(contentArea.height / m.font.GetOneLineHeight())
 
     startPos = 0
 
@@ -122,7 +136,7 @@ function labelWrapText() as object
             breakPos = startPos
             for index = startPos+1 to m.text.len()
                 if m.text.mid(index, 1) = " " then
-                    if m.font.GetOneLineWidth(m.text.mid(startPos, index - startPos), 1280) > m.width then
+                    if m.font.GetOneLineWidth(m.text.mid(startPos, index - startPos), 1280) > contentArea.width then
                         exit for
                     else
                         breakPos = index
@@ -150,7 +164,7 @@ function labelTruncateText(fullText=invalid as dynamic) as string
 
     ' See if we need to truncate at all
     textWidth = m.font.GetOneLineWidth(fullText, 1280)
-    if textWidth <= m.width then return fullText
+    if textWidth <= m.GetContentArea().width then return fullText
 
     ' OK, we do need to trim the string. Start by adding an ellipsis so we can
     ' factor that width in. Then do a binary search to find the largest string
@@ -166,7 +180,7 @@ function labelMaxLineLength(text as string, startPos=0 as integer) as integer
 
     while curPos > startPos and curPos <= endPos
         textWidth = m.font.GetOneLineWidth(left(text, curPos), 1280)
-        if textWidth <= m.width then
+        if textWidth <= m.GetContentArea().width then
             startPos = curPos
         else
             endPos = curPos
