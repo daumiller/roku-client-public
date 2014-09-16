@@ -131,7 +131,7 @@ sub compOnKeyRelease(keyCode as integer)
     ' OK and Back for sure. Maybe play and info as well?
 
     if keyCode = m.kp_OK then
-        if m.focusedItem <> invalid then
+        if m.focusedItem <> invalid and m.focusedItem.selectable = true then
             ' TODO(schuyler): Lock remote events?
             m.OnItemSelected(m.focusedItem)
         end if
