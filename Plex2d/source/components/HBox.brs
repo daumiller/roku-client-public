@@ -8,6 +8,7 @@ function HBoxClass() as object
         obj.PerformLayout = hboxPerformLayout
         obj.GetPreferredWidth = hboxGetPreferredWidth
         obj.GetPreferredHeight = hboxGetPreferredHeight
+        obj.AddSpacer = hboxAddSpacer
 
         m.HBoxClass = obj
     end if
@@ -28,6 +29,10 @@ function createHBox(homogeneous as boolean, expand as boolean, fill as boolean, 
 
     return obj
 end function
+
+sub hboxAddSpacer(delta as integer)
+    m.AddComponent(createSpacer(delta, 0))
+end sub
 
 sub hboxPerformLayout()
     m.needsLayout = false

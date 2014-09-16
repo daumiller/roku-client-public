@@ -8,6 +8,7 @@ function VBoxClass() as object
         obj.PerformLayout = vboxPerformLayout
         obj.GetPreferredWidth = vboxGetPreferredWidth
         obj.GetPreferredHeight = vboxGetPreferredHeight
+        obj.AddSpacer = vboxAddSpacer
 
         m.VBoxClass = obj
     end if
@@ -28,6 +29,10 @@ function createVBox(homogeneous as boolean, expand as boolean, fill as boolean, 
 
     return obj
 end function
+
+sub vboxAddSpacer(delta as integer)
+    m.AddComponent(createSpacer(0, delta))
+end sub
 
 sub vboxPerformLayout()
     m.needsLayout = false
