@@ -166,5 +166,14 @@ sub compOnItemFocused(item as object)
 end sub
 
 sub compOnItemSelected(item as object)
+    Debug("component item selected with command: " + tostr(item.command))
     ' TODO(schuyler): What makes sense here? Maybe generic command processing?
+    ' TODO(rob): Here is some generic processing :)
+    if item.command <> invalid then
+        if item.command = "cardTestScreen" then
+            Application().PushScreen(createCardTestScreen())
+        else
+            Debug("command not defined: " + tostr(item.command))
+        end if
+    end if
 end sub
