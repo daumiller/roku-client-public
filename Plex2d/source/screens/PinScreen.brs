@@ -151,6 +151,8 @@ sub pinGetComponents()
     end if
     vb.AddComponent(infoLabel)
 
+    vb.AddSpacer(10)
+
     pinDigits = createHBox(true, true, false, 20)
     for i = 1 to 4
         if m.pinCode <> invalid then
@@ -164,6 +166,8 @@ sub pinGetComponents()
         pinDigits.AddComponent(pinDigit)
     end for
     vb.AddComponent(pinDigits)
+
+    vb.AddSpacer(15)
 
     buttons = createHBox(false, false, false, 10)
     buttons.halign = buttons.JUSTIFY_RIGHT
