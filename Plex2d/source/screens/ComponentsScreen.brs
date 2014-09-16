@@ -59,6 +59,10 @@ sub compShow()
         m.screen.DrawComponent(comp)
     next
 
+    if m.focusedItem <> invalid then
+        m.screen.DrawFocus(m.focusedItem)
+    end if
+
     m.screen.DrawAll()
 end sub
 

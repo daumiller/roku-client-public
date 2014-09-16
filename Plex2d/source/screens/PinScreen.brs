@@ -104,23 +104,13 @@ sub pinOnPollTimer(timer as dynamic)
 end sub
 
 sub pinOnItemSelected(item as object)
-    ' TODO(schuyler): All of this. It depends on selectability, which depends on focusability.
-    Debug("pinOnItemSelected::")
+    Debug("PIN item selected with command: " + tostr(item.command))
 
-    ' check to see if se have a command requested for the area
-    if item.area <> invalid then
-        command = item.area.command
-    else
-        command = invalid
-    end if
-
-    ' process commands here
-    if command <> invalid then
-        Debug("process command: " + tostr(command))
-        if command = "skipPinScreen" then
+    if item.command <> invalid then
+        if item.command = "skip" then
             ' TODO(schuyler): Go somewhere sensible. Replace this screen.
             Application().PushScreen(createComponentTestScreen())
-        else if command = "refreshPinScreen" then
+        else if item.command = "refresh" then
             ' Request a new code
             m.RequestCode()
         end if
@@ -181,15 +171,17 @@ sub pinGetComponents()
     ' TODO(schuyler): We probably want a Button component that's similar to
     ' Label, but perhaps does things like set focusability by default and add a border?
 
-    skipButton = createLabel("Skip", FontRegistry().font16)
-    skipButton.halign = skipButton.JUSTIFY_CENTER
+    skipButton = createButton("Skip", FontRegistry().font16, "skip")
+    skipButton.SetColor(&hffffffff, &h1f1f1fff)
     skipButton.width = 72
+    m.focusedItem = skipButton
     buttons.AddComponent(skipButton)
 
     if m.hasError then
-        refreshButton = createLabel("Refresh", FontRegistry().font16)
-        refreshButton.halign = refreshButton.JUSTIFY_CENTER
+        refreshButton = createButton("Refresh", FontRegistry().font16, "refresh")
+        refreshButton.SetColor(&hffffffff, &h1f1f1fff)
         refreshButton.width = 72
+        m.focusedItem = refreshButton
         buttons.AddComponent(refreshButton)
     end if
 

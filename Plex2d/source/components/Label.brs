@@ -5,6 +5,7 @@ function LabelClass() as object
         obj.Append(AlignmentMixin())
         obj.ClassName = "Label"
 
+        obj.Init = labelInit
         obj.Draw = labelDraw
         obj.GetPreferredWidth = labelGetPreferredWidth
         obj.GetPreferredHeight = labelGetPreferredHeight
@@ -24,16 +25,20 @@ function createLabel(text as string, font as object) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(LabelClass())
 
-    obj.Init()
-
-    obj.SetColor(Colors().TextClr)
-
-    obj.text = text
-    obj.font = font
-    obj.wrap = false
+    obj.Init(text, font)
 
     return obj
 end function
+
+sub labelInit(text as string, font as object)
+    ApplyFunc(ComponentClass().Init, m)
+
+    m.SetColor(Colors().TextClr)
+
+    m.text = text
+    m.font = font
+    m.wrap = false
+end sub
 
 function labelGetPreferredWidth() as integer
     ' If someone specifically set our width, then prefer that.

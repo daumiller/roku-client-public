@@ -12,6 +12,10 @@ function ComponentClass() as object
         obj.bgColor = Colors().ScrBkgClr
         obj.fgColor = Colors().TextClr
 
+        obj.focusable = false
+        obj.selectable = false
+        obj.command = invalid
+
         ' Methods
         obj.Init = function() :end function
         obj.InitRegion = compInitRegion
