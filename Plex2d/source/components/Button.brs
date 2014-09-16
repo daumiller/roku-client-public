@@ -29,4 +29,5 @@ sub buttonInit(text as string, font as object)
     m.focusable = true
     m.selectable = true
     m.halign = m.JUSTIFY_CENTER
+    m.valign = m.ALIGN_MIDDLE
 end sub
