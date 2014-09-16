@@ -17,6 +17,7 @@ function PinScreen() as object
         obj.OnPollTimer = pinOnPollTimer
 
         obj.OnItemSelected = pinOnItemSelected
+        obj.Activate = pinActivate
 
         m.PinScreen = obj
     end if
@@ -42,6 +43,11 @@ function createPinScreen() as object
 
     return obj
 end function
+
+sub pinActivate()
+    ' Request a code
+    m.RequestCode()
+end sub
 
 sub pinRequestCode()
     ' Kick off a request for the real pin
