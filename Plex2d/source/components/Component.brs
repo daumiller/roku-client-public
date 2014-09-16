@@ -7,6 +7,10 @@ function ComponentClass() as object
         obj.y = 0
         obj.width = 0
         obj.height = 0
+        obj.offsetX = 0
+        obj.offsetY = 0
+        obj.preferredWidth = invalid
+        obj.preferredHeight = invalid
 
         obj.alphaEnable = false
         obj.bgColor = Colors().ScrBkgClr
@@ -20,7 +24,6 @@ function ComponentClass() as object
         obj.Init = componentInit
         obj.InitRegion = compInitRegion
         obj.Draw = compDraw
-        obj.GetCenterOffsets = compGetCenterOffsets
         obj.GetPreferredWidth = compGetPreferredWidth
         obj.GetPreferredHeight = compGetPreferredHeight
         obj.SetFrame = compSetFrame
@@ -52,19 +55,12 @@ function compDraw() as object
     return [m]
 end function
 
-function compGetCenterOffsets(width as integer, height as integer) as object
-    coords = { x: 0, y: 0 }
-    coords.x = int(m.width / 2 - width / 2)
-    coords.y = int(m.height / 2 - height / 2)
-    return coords
-end function
-
 function compGetPreferredWidth() as integer
-    return m.width
+    return firstOf(m.preferredWidth, m.width)
 end function
 
 function compGetPreferredHeight() as integer
-    return m.height
+    return firstOf(m.preferredHeight, m.height)
 end function
 
 sub compSetFrame(x as integer, y as integer, width as integer, height as integer)

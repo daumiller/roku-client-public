@@ -72,21 +72,14 @@ function labelDraw() as object
 
     ' Draw each line
 
-    if m.valign = m.ALIGN_MIDDLE then
-        yOffset = m.GetCenterOffsets(0, lines.Count() * lineHeight).y
-    else if m.valign = m.ALIGN_BOTTOM then
-        yOffset = m.height - (lines.Count() * lineHeight)
-    else
-        yOffset = 0
-    end if
+    yOffset = m.GetYOffsetAlignment(lines.Count() * lineHeight)
 
     for each line in lines
-        if m.halign = m.JUSTIFY_CENTER then
-            xOffset = m.GetCenterOffsets(m.font.GetOneLineWidth(line, m.width), 0).x
-        else if m.halign = m.JUSTIFY_RIGHT then
-            xOffset = m.width - m.font.GetOneLineWidth(line, 1280)
-        else
+        ' If we're left justifying, don't bother with the expensive width calculation.
+        if m.halign = m.JUSTIFY_LEFT then
             xOffset = 0
+        else
+            xOffset = m.GetXOffsetAlignment(m.font.GetOneLineWidth(line, 1280))
         end if
 
         m.region.DrawText(line, xOffset, yOffset, m.fgColor, m.font)

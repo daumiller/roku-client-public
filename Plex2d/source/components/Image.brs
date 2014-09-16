@@ -2,6 +2,7 @@ function ImageClass() as object
    if m.ImageClass = invalid then
         obj = CreateObject("roAssociativeArray")
         obj.Append(ComponentClass())
+        obj.Append(AlignmentMixin())
         obj.ClassName = "Image"
 
         obj.Draw = imageDraw
@@ -28,6 +29,11 @@ function imageDraw() as object
         m.region = m.source
     end if
 
+    if m.preferredWidth <> invalid and m.preferredHeight <> invalid then
+        m.offsetX = m.GetXOffsetAlignment(m.preferredWidth)
+        m.offsetY = m.GetYOffsetAlignment(m.preferredHeight)
+    end if
+
     return [m]
 end function
 
@@ -41,6 +47,11 @@ function createImage(source as dynamic, width=0 as integer, height=0 as integer)
     obj.width = width
     obj.height = height
 
+    if width > 0 and height > 0 then
+        obj.preferredWidth = width
+        obj.preferredHeight = height
+    end if
+
     return obj
 end function
 
@@ -53,7 +64,7 @@ end sub
 sub imageFromLocal()
     bmp = CreateObject("roBitmap", m.source)
     m.region = CreateObject("roRegion", bmp, 0, 0, bmp.GetWidth(), bmp.GetHeight())
-    m.ScaleRegion(m.width, m.height)
+    m.ScaleRegion(firstOf(m.preferredWidth, m.width), firstOf(m.preferredHeight, m.height))
 end sub
 
 sub imageScaleRegion(width as integer, height as integer)
