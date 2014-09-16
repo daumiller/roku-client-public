@@ -31,6 +31,7 @@ function ComponentClass() as object
         obj.SetFrame = compSetFrame
         obj.SetFocusSibling = compSetFocusSibling
         obj.GetFocusSibling = compGetFocusSibling
+        obj.SetFocusable = compSetFocusable
 
         obj.ToString = compToString
 
@@ -109,3 +110,9 @@ end function
 function compToString() as string
     return tostr(m.ClassName) + " " + tostr(m.width) + "x" + tostr(m.height) + " at (" + tostr(m.x) + ", " + tostr(m.y) + ")"
 end function
+
+sub compSetFocusable(command = invalid as dynamic)
+    m.focusable = true
+    m.selectable = (command <> invalid)
+    m.command = command
+end sub
