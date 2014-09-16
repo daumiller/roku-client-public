@@ -29,9 +29,6 @@ sub compositorReset()
     m.compositor.SetDrawTo(m.screen, Colors().ScrBkgClr)
 
     m.focusSprite = invalid
-
-    ' Encourage some extra memory cleanup
-    RunGarbageCollector()
 end sub
 
 sub compositorDrawAll()
