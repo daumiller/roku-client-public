@@ -107,6 +107,7 @@ sub pinOnItemSelected(item as object)
     Debug("PIN item selected with command: " + tostr(item.command))
 
     if item.command <> invalid then
+        m.pollTimer.active = false
         if item.command = "skip" then
             ' TODO(schuyler): Go somewhere sensible. Replace this screen.
             Application().PushScreen(createComponentTestScreen())
