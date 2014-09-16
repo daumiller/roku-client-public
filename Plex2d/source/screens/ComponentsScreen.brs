@@ -19,6 +19,7 @@ function ComponentsScreen() as object
         ' Standard screen methods
         obj.Init = compInit
         obj.Show = compShow
+        obj.Deactivate = compDeactivate
 
         obj.GetComponents = compGetComponents
 
@@ -64,6 +65,16 @@ sub compShow()
     end if
 
     m.screen.DrawAll()
+end sub
+
+' TODO(rob) screen is not required to be passed, but we might want to ignore
+' clearing some objects depending on the screen? I.E. DialogScreen. We will
+' also need to exclude resetting the compositor.
+sub compDeactivate(screen = invalid as dynamic)
+    Debug("Deactivate ComponentsScreen: clearing components and custom fonts")
+    m.components.clear()
+    m.customFonts.clear()
+    m.focusedItem = invalid
 end sub
 
 sub compGetComponents()
