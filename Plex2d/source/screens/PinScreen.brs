@@ -174,9 +174,6 @@ sub pinGetComponents()
     buttons = createHBox(false, false, false, 10)
     buttons.halign = buttons.JUSTIFY_RIGHT
 
-    ' TODO(schuyler): We probably want a Button component that's similar to
-    ' Label, but perhaps does things like set focusability by default and add a border?
-
     skipButton = createButton("Skip", FontRegistry().font16, "skip")
     skipButton.SetColor(&hffffffff, &h1f1f1fff)
     skipButton.width = 72
