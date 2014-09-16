@@ -78,6 +78,7 @@ function imageFromLocal(source as string) as dynamic
     if bmp <> invalid then
         m.region = CreateObject("roRegion", bmp, 0, 0, bmp.GetWidth(), bmp.GetHeight())
         m.ScaleRegion(firstOf(m.preferredWidth, m.width), firstOf(m.preferredHeight, m.height))
+        bmp = m.region.GetBitmap()
     else
         Error("Failed to load local image at " + source)
         m.InitRegion()
@@ -96,6 +97,7 @@ sub imageSetBitmap(bmp as object, makeCopy=true as boolean)
 
     m.region = CreateObject("roRegion", m.bitmap, 0, 0, m.bitmap.GetWidth(), m.bitmap.GetHeight())
     m.ScaleRegion(firstOf(m.preferredWidth, m.width), firstOf(m.preferredHeight, m.height))
+    m.bitmap = m.region.GetBitmap()
 
     Debug("Got a bitmap from a texture event")
     m.Redraw()
