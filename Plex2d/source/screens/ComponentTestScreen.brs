@@ -6,6 +6,7 @@ function ComponentTestScreen() as object
         obj.screenName = "ComponentTest"
 
         obj.GetComponents = compTestGetComponents
+        obj.Activate = compTestActivate
 
         m.ComponentTestScreen = obj
     end if
@@ -21,6 +22,11 @@ function createComponentTestScreen() as object
 
     return obj
 end function
+
+sub compTestActivate()
+    m.Init()
+    m.Show()
+end sub
 
 sub compTestGetComponents()
     m.components.Clear()
