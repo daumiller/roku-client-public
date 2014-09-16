@@ -51,7 +51,7 @@ function contDraw() as object
     return regions
 end function
 
-sub contAddComponent(child)
+sub contAddComponent(child as object)
     m.components.Push(child)
     m.needsLayout = true
 end sub

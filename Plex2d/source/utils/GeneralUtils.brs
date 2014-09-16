@@ -232,3 +232,31 @@ function GetFirstIPAddress() as dynamic
         return invalid
     end if
 end function
+
+function KeyCodeToString(keyCode as integer) as string
+    if keyCode = 0 then
+        return "back"
+    else if keyCode = 2 then
+        return "up"
+    else if keyCode = 3 then
+        return "down"
+    else if keyCode = 4 then
+        return "left"
+    else if keyCode = 5 then
+        return "right"
+    else if keyCode = 6 then
+        return "ok"
+    else if keyCode = 7 then
+        return "replay"
+    else if keyCode = 8 then
+        return "rev"
+    else if keyCode = 9 then
+        return "fwd"
+    else if keyCode = 10 then
+        return "info"
+    else if keyCode = 11 then
+        return "play"
+    else
+        return ""
+    end if
+end function

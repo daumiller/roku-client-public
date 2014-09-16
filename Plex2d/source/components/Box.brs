@@ -4,6 +4,9 @@ function BoxClass() as object
         obj.Append(ContainerClass())
         obj.Append(AlignmentMixin())
 
+        obj.lastFocusableItem = invalid
+
+        obj.AddComponent = boxAddComponent
         obj.CalculateOffsets = boxCalculateOffsets
 
         m.BoxClass = obj
@@ -87,3 +90,16 @@ function boxCalculateOffsets(totalSize as integer, initialOffset as integer, siz
 
     return offsets
 end function
+
+sub boxAddComponent(child as object)
+    ApplyFunc(ContainerClass().AddComponent, m, [child])
+
+    if child.focusable then
+        if m.lastFocusableItem <> invalid then
+            child.SetFocusSibling(m.FocusDirections[0], m.lastFocusableItem)
+            m.lastFocusableItem.SetFocusSibling(m.FocusDirections[1], child)
+        end if
+
+        m.lastFocusableItem = child
+    end if
+end sub

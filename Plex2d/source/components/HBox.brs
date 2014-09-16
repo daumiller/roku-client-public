@@ -4,6 +4,8 @@ function HBoxClass() as object
         obj.Append(BoxClass())
         obj.ClassName = "HBox"
 
+        obj.FocusDirections = ["left", "right"]
+
         ' Methods
         obj.PerformLayout = hboxPerformLayout
         obj.GetPreferredWidth = hboxGetPreferredWidth

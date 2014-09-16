@@ -118,8 +118,17 @@ end sub
 
 sub compOnKeyPress(keyCode as integer, repeat as boolean)
     if keyCode = m.kp_RT or keyCode = m.kp_LT or keyCode = m.kp_UP or keyCode = m.kp_DN then
-        ' TODO(schuyler): Handle focus shift
-        ' m.OnItemFocused(m.focusedItem)
+        if m.focusedItem <> invalid then
+            toFocus = m.focusedItem.GetFocusSibling(KeyCodeToString(keyCode))
+            if toFocus <> invalid then
+                ' TODO(schuyler): Do we want to call things like OnBlur and OnFocus to let the components know?
+                m.focusedItem = toFocus
+                m.OnItemFocused(toFocus)
+            end if
+
+            ' TODO(schuyler): Consider adding an else here and looking for the
+            ' closest focusable element in that direction.
+        end if
     else if keyCode = m.kp_REV or keyCode = m.kp_FWD then
         ' TODO(schuyler): Handle focus (big) shift
         ' m.OnItemFocused(m.focusedItem)
@@ -142,7 +151,7 @@ sub compOnKeyRelease(keyCode as integer)
 end sub
 
 sub compOnItemFocused(item as object)
-    ' TODO(schuyler): Draw focus, whatever else makes sense here in the base.
+    m.screen.DrawFocus(item, true)
 end sub
 
 sub compOnItemSelected(item as object)

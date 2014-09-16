@@ -17,19 +17,27 @@ function ComponentClass() as object
         obj.command = invalid
 
         ' Methods
-        obj.Init = function() :end function
+        obj.Init = componentInit
         obj.InitRegion = compInitRegion
         obj.Draw = compDraw
         obj.GetCenterOffsets = compGetCenterOffsets
         obj.GetPreferredWidth = compGetPreferredWidth
         obj.GetPreferredHeight = compGetPreferredHeight
         obj.SetFrame = compSetFrame
+        obj.SetFocusSibling = compSetFocusSibling
+        obj.GetFocusSibling = compGetFocusSibling
+
+        obj.ToString = compToString
 
         m.ComponentClass = obj
     end if
 
     return m.ComponentClass
 end function
+
+sub componentInit()
+    m.focusSiblings = {}
+end sub
 
 sub compInitRegion()
     bmp = CreateObject("roBitmap", {width: m.width, height: m.height, alphaEnable: m.alphaEnable})
@@ -65,3 +73,19 @@ sub compSetFrame(x as integer, y as integer, width as integer, height as integer
     m.width = width
     m.height = height
 end sub
+
+sub compSetFocusSibling(direction as string, component as dynamic)
+    if component <> invalid then
+        m.focusSiblings[direction] = component
+    else
+        m.focusSiblings.Delete(direction)
+    end if
+end sub
+
+function compGetFocusSibling(direction as string) as dynamic
+    return m.focusSiblings[direction]
+end function
+
+function compToString() as string
+    return tostr(m.ClassName) + " " + tostr(m.width) + "x" + tostr(m.height) + " at (" + tostr(m.x) + ", " + tostr(m.y) + ")"
+end function

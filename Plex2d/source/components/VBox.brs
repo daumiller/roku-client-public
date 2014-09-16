@@ -4,6 +4,8 @@ function VBoxClass() as object
         obj.Append(BoxClass())
         obj.ClassName = "VBox"
 
+        obj.FocusDirections = ["up", "down"]
+
         ' Methods
         obj.PerformLayout = vboxPerformLayout
         obj.GetPreferredWidth = vboxGetPreferredWidth
