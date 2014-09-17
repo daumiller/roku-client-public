@@ -1,6 +1,7 @@
 function ComponentClass() as object
     if m.ComponentClass = invalid then
         obj = CreateObject("roAssociativeArray")
+        obj.Append(EventsMixin())
 
         ' Properties
         obj.x = 0
@@ -32,6 +33,7 @@ function ComponentClass() as object
         obj.SetFocusSibling = compSetFocusSibling
         obj.GetFocusSibling = compGetFocusSibling
         obj.SetFocusable = compSetFocusable
+        obj.Destroy = compDestroy
 
         obj.ToString = compToString
 
@@ -59,9 +61,12 @@ function compDraw() as object
 end function
 
 sub compRedraw()
+    ' If our component was rendered directly into a sprite, then we may be
+    ' asked to redraw ourselves into that sprite. If we're part of a more
+    ' complicated composite then this shouldn't be called, but we'll notice
+    ' that we don't have a sprite and simply do nothing.
+
     if m.sprite <> invalid then
-        ' TODO(schuyler): Is this the clever solution or a hack?
-        m.sprite.SetDrawableFlag(true)
         m.sprite.SetRegion(m.region)
         CompositorScreen().DrawAll()
     end if
@@ -115,4 +120,9 @@ sub compSetFocusable(command = invalid as dynamic)
     m.focusable = true
     m.selectable = (command <> invalid)
     m.command = command
+end sub
+
+sub compDestroy()
+    ' Clean up anything that could result in circular references.
+    m.Off(invalid, invalid)
 end sub

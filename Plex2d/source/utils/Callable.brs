@@ -12,13 +12,17 @@ function CallableClass() as object
     return m.CallableClass
 end function
 
-function createCallable(func as dynamic, context as dynamic) as object
+function createCallable(func as dynamic, context as dynamic, id=invalid as dynamic) as object
     obj = CreateObject("roAssociativeArray")
 
     obj.Append(CallableClass())
 
     obj.func = func
     obj.context = context
+
+    ' Since we can't do a reference equality check on context, if a particular
+    ' callable wants to allow equality checks, it can pass an ID.
+    obj.id = id
 
     if isstr(func) and type(context[func]) <> "roFunction" then
         Error(func + " not found on object")
@@ -58,5 +62,5 @@ end function
 function callableEquals(other as dynamic) as boolean
     if other = invalid then return false
     if m.ClassName <> other.ClassName then return false
-    return (m.func = other.func and m.context = other.context)
+    return (m.id <> invalid and m.id = other.id)
 end function

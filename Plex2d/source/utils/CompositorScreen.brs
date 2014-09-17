@@ -11,6 +11,8 @@ function CompositorScreen() as object
         obj.DrawFocus = compositorDrawFocus
         obj.focusSprite = invalid
 
+        obj.OnComponentRedraw = compositorOnComponentRedraw
+
         ' Set up an roScreen one time, with double buffering and alpha enabled
         obj.screen = CreateObject("roScreen", true)
         obj.screen.SetAlphaEnable(true)
@@ -36,7 +38,7 @@ sub compositorDrawAll()
     m.screen.SwapBuffers()
 end sub
 
-sub compositorDrawComponent(component)
+sub compositorDrawComponent(component as object)
     ' Let the component draw itself to its own regions
     drawableComponents = component.Draw()
 
@@ -44,7 +46,15 @@ sub compositorDrawComponent(component)
     for each comp in drawableComponents
         Debug("******** Drawing " + tostr(comp))
         comp.sprite = m.compositor.NewSprite(comp.x, comp.y, comp.region)
+        comp.On("redraw", createCallable("OnComponentRedraw", m, "compositorRedraw"))
     next
+end sub
+
+sub compositorOnComponentRedraw(component as object)
+    ' We only listen to redraw requests for components that we drew to
+    ' their own sprite. Those components know how to redraw themselves
+    ' to that sprite.
+    component.Redraw()
 end sub
 
 sub compositorDestroy()

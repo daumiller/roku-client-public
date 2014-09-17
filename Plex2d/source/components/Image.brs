@@ -99,8 +99,8 @@ sub imageSetBitmap(bmp as object, makeCopy=true as boolean)
     m.ScaleRegion(firstOf(m.preferredWidth, m.width), firstOf(m.preferredHeight, m.height))
     m.bitmap = m.region.GetBitmap()
 
-    Debug("Got a bitmap from a texture event")
-    m.Redraw()
+    ' Let whoever cares know that we should be redrawn.
+    m.Trigger("redraw", [m])
 end sub
 
 sub imageSetPlaceholder(source as string)

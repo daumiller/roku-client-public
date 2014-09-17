@@ -31,7 +31,20 @@ sub eventsOn(eventName as string, callback as object)
         m.eventsCallbacks[eventName] = callbacks
     end if
 
-    callbacks.AddTail(callback)
+    ' If the callback has an ID, check for duplicates
+    add = true
+    if callback.id <> invalid then
+        for each existing in callbacks
+            if callback.Equals(existing) then
+                add = false
+                exit for
+            end if
+        next
+    end if
+
+    if add then
+        callbacks.AddTail(callback)
+    end if
 end sub
 
 sub eventsOff(eventName as dynamic, callback as dynamic)
