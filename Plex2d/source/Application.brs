@@ -246,8 +246,8 @@ sub appOnInitialized()
 
     ' TODO(schuyler): This is clearly bogus, but we need to show some sort of screen
     if m.screens.Count() = 0 then
-        ' TODO(schuyler): Temporarily forcing PIN screen
-        m.pushScreen(createPinScreen())
+        ' TODO(rob): Temporarily forcing CardTest screen
+        m.pushScreen(createHomeTestScreen({}))
     end if
 end sub
 
