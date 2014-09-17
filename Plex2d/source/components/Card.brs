@@ -4,6 +4,8 @@ function CardClass() as object
         obj.Append(CompositeClass())
         obj.ClassName = "Card"
 
+        obj.alphaEnable = true
+
         ' Methods
         obj.Init = cardInit
         obj.PerformLayout = cardPerformLayout
