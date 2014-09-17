@@ -3,6 +3,8 @@ function ComponentClass() as object
         obj = CreateObject("roAssociativeArray")
         obj.Append(EventsMixin())
 
+        m.nextComponentId = 1
+
         ' Properties
         obj.x = 0
         obj.y = 0
@@ -44,6 +46,10 @@ function ComponentClass() as object
 end function
 
 sub componentInit()
+    ' Assign a unique ID to all components
+    m.id = GetGlobalAA()["nextComponentId"]
+    GetGlobalAA().AddReplace("nextComponentId", m.id + 1)
+
     m.focusSiblings = {}
 end sub
 

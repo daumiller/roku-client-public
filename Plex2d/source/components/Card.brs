@@ -1,11 +1,12 @@
 function CardClass() as object
     if m.CardClass = invalid then
         obj = CreateObject("roAssociativeArray")
-        obj.Append(BoxClass())
+        obj.Append(CompositeClass())
         obj.ClassName = "Card"
 
         ' Methods
-        obj.PerformLayout = CardPerformLayout
+        obj.Init = cardInit
+        obj.PerformLayout = cardPerformLayout
 
         m.CardClass = obj
     end if
@@ -13,32 +14,39 @@ function CardClass() as object
     return m.CardClass
 end function
 
-function createCard() as object
+function createCard(imageSource as dynamic, text as string) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(CardClass())
 
-    obj.Init()
+    obj.Init(imageSource, text)
 
-    obj.homogeneous = false
-    obj.expand = false
-    obj.fill = false
-    obj.spacing = 0
+    ' TODO(schuyler): Lots, presumably. We need to expose some of the options
+    ' of our children. Does the overlay have multiple lines of text? Does the
+    ' image have a placeholder?
 
     return obj
 end function
 
+sub cardInit(imageSource as dynamic, text as string)
+    ApplyFunc(CompositeClass().Init, m)
+
+    m.image = createImage(imageSource)
+
+    m.overlay = createLabel(text, FontRegistry().font16)
+    m.overlay.SetPadding(10)
+    m.overlay.SetColor(&hffffffff, &h000000e0)
+
+    m.AddComponent(m.image)
+    m.AddComponent(m.overlay)
+end sub
+
 sub cardPerformLayout()
     m.needsLayout = false
-    numChildren = m.components.Count()
 
-    ' Strange, but let's not even bother with the complicated stuff if we don't need to.
-    if numChildren = 0 then return
+    ' Since we're a composite, the coordinates of our children are relative to
+    ' our own x,y.
 
-    m.components.Reset()
+    m.image.SetFrame(0, 0, m.width, m.height)
 
-    while m.components.IsNext()
-        component = m.components.Next()
-
-        component.SetFrame(m.x + component.offsetX, m.y + component.offsetY, component.width, component.height)
-    end while
+    m.overlay.SetFrame(0, m.height - m.overlay.GetPreferredHeight(), m.width, m.overlay.GetPreferredHeight())
 end sub
