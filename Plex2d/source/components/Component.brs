@@ -131,4 +131,14 @@ end sub
 sub compDestroy()
     ' Clean up anything that could result in circular references.
     m.Off(invalid, invalid)
+
+    ' Clean any objects in memory (bitmaps, regions and sprites)
+    m.region = invalid
+    m.bitmap = invalid
+    m.sprite = invalid
+    if m.components <> invalid then
+        for each comp in m.components
+            comp.destroy()
+        end for
+    end if
 end sub

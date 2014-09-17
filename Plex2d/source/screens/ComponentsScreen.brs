@@ -72,6 +72,9 @@ end sub
 ' also need to exclude resetting the compositor.
 sub compDeactivate(screen = invalid as dynamic)
     Debug("Deactivate ComponentsScreen: clearing components and custom fonts")
+    for each comp in m.components
+        comp.Destroy()
+    end for
     m.components.clear()
     m.customFonts.clear()
     m.focusedItem = invalid
