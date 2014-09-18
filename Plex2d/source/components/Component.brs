@@ -38,6 +38,7 @@ function ComponentClass() as object
         obj.Destroy = compDestroy
 
         obj.ToString = compToString
+        obj.Equals = compEquals
 
         m.ComponentClass = obj
     end if
@@ -120,6 +121,10 @@ end function
 
 function compToString() as string
     return tostr(m.ClassName) + " " + tostr(m.width) + "x" + tostr(m.height) + " at (" + tostr(m.x) + ", " + tostr(m.y) + ")"
+end function
+
+function compEquals(other as object) as boolean
+    return (m.id = other.id)
 end function
 
 sub compSetFocusable(command = invalid as dynamic)
