@@ -28,16 +28,33 @@ sub homeTestGetComponents()
     m.components.Clear()
     m.focusedItem = invalid
 
+    hbox = createHBox(false, false, false, 25)
+    hbox.SetFrame(100, 100, 2000, 500)
+
     hub = createHub(1, 1, 10)
-    hub.SetFrame(100, 100, 1280, 500)
-    for i = 1 to 5
+    hub.height = 500
+    for i = 1 to hub.MaxChildrenForLayout()
         block = createBlock(Colors().PlexClr)
         block.SetFocusable("test")
         if m.focusedItem = invalid then m.focusedItem = block
         hub.AddComponent(block)
     end for
     hub.ShowMoreButton("more")
-    m.components.Push(hub)
+    hbox.AddComponent(hub)
+
+    hub = createHub(1, 2, 10)
+    hub.height = 500
+    for i = 1 to hub.MaxChildrenForLayout()
+        block = createBlock(Colors().PlexClr)
+        block.SetFocusable("test")
+        if m.focusedItem = invalid then m.focusedItem = block
+        hub.AddComponent(block)
+    end for
+    hub.ShowMoreButton("more")
+    hbox.AddComponent(hub)
+
+    m.components.Push(hbox)
+
     ' m.components.Clear()
 
     ' ' dummy section data

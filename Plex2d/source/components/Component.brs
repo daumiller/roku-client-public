@@ -120,7 +120,7 @@ function compGetFocusSibling(direction as string) as dynamic
 end function
 
 function compToString() as string
-    return tostr(m.ClassName) + " " + tostr(m.width) + "x" + tostr(m.height) + " at (" + tostr(m.x) + ", " + tostr(m.y) + ")"
+    return tostr(m.ClassName) + " " + tostr(m.width) + "x" + tostr(m.height) + " at (" + tostr(m.x) + ", " + tostr(m.y) + ") id=" + tostr(m.id)
 end function
 
 function compEquals(other as object) as boolean

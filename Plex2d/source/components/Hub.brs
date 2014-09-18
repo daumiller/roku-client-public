@@ -19,6 +19,7 @@ function HubClass() as object
         obj.MaxChildrenForLayout = hubMaxChildrenForLayout
         obj.ShowMoreButton = hubShowMoreButton
         obj.GetWidthForOrientation = hubGetWidthForOrientation
+        obj.GetPreferredWidth = hubGetPreferredWidth
 
         m.HubClass = obj
     end if
@@ -223,4 +224,10 @@ function hubGetWidthForOrientation(height as integer) as integer
         Error("Unknown hub orientation: " + tostr(m.orientation))
         stop
     end if
+end function
+
+function hubGetPreferredWidth() as integer
+    if m.needsLayout then m.PerformLayout()
+
+    return m.preferredWidth
 end function
