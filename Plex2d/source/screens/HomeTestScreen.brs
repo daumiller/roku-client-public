@@ -34,7 +34,7 @@ sub homeTestGetComponents()
     hub = createHub(1, 1, 10)
     hub.height = 500
     for i = 1 to hub.MaxChildrenForLayout()
-        block = createBlock(Colors().PlexClr)
+        block = createBlock(Colors().CardBkgClr)
         block.SetFocusable("test")
         if m.focusedItem = invalid then m.focusedItem = block
         hub.AddComponent(block)
@@ -42,10 +42,21 @@ sub homeTestGetComponents()
     hub.ShowMoreButton("more")
     hbox.AddComponent(hub)
 
-    hub = createHub(1, 2, 10)
+    hub = createHub(2, 2, 10)
     hub.height = 500
     for i = 1 to hub.MaxChildrenForLayout()
-        block = createBlock(Colors().PlexClr)
+        block = createBlock(Colors().CardBkgClr)
+        block.SetFocusable("test")
+        if m.focusedItem = invalid then m.focusedItem = block
+        hub.AddComponent(block)
+    end for
+    hub.ShowMoreButton("more")
+    hbox.AddComponent(hub)
+
+    hub = createHub(2, 3, 10)
+    hub.height = 500
+    for i = 1 to hub.MaxChildrenForLayout()
+        block = createBlock(Colors().CardBkgClr)
         block.SetFocusable("test")
         if m.focusedItem = invalid then m.focusedItem = block
         hub.AddComponent(block)
