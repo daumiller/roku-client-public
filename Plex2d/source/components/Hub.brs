@@ -1,8 +1,11 @@
 function HubClass() as object
     if m.HubClass = invalid then
         obj = CreateObject("roAssociativeArray")
-        obj.Append(HBoxClass())
+        obj.Append(ContainerClass())
+        obj.Append(AlignmentMixin())
         obj.ClassName = "Hub"
+
+        obj.PerformLayout = hubPerformLayout
 
         obj.Build = hubBuild
 
@@ -21,9 +24,6 @@ function createHub(hubObject as object, spacing=0 as integer) as object
 
     obj.Init()
 
-    obj.homogeneous = false
-    obj.expand = false
-    obj.fill = false
     obj.spacing = spacing
 
     obj.Build()
@@ -40,44 +40,69 @@ sub hubBuild()
 
     ' HBOX/VBOX: 1 Hero, 4 Portrait
     if htype = 1 then
+        hbox = createHBox(false, false, false, m.spacing)
+        hbox.setFrame(0, 0, 295+144+144+(m.spacing*2), 434)
         for index = 0 to 4
             item = items[index]
             if index = 0 then
-                ' col = createImage(item.poster +"?w=295&h=434", 295, 434)
-                ' TODO(rob/schuyler) I don't see how to set the preferred card
-                ' height. It's seems to be overriden by the parent.
-                col = createCard(item.poster +"?w=295&h=434", "Card Test")
-                col.SetFrame(0, 0, 295, 434)
-                m.AddComponent(col)
+                card = createCard(item.poster +"?w=295&h=434", "295, 434")
+                card.SetFrame(0, 0, 295, 434)
+                hbox.AddComponent(card)
             else
-                col = createVBox(false, false, false, 10)
+                vb = createVBox(false, false, false, m.spacing)
                 for incr = 0 to 1
                     index = index+incr
                     item = items[index]
-                    img = createImage(item.poster +"?w=144&h=212", 144, 212)
-                    col.AddComponent(img)
+                    card = createCard(item.poster +"?w=144&h=212", "144, 212")
+                    card.setFrame(0, 0, 144, 212)
+                    vb.AddComponent(card)
                 end for
-
-                m.AddComponent(col)
+                hbox.AddComponent(vb)
             end if
         end for
+        m.AddComponent(hbox)
+        m.setFrame(0, 0, hbox.width, hbox.height)
     ' VBOX: 3 Art
     else if htype = 2 then
-        col1 = createVBox(false, false, false, 10)
+        vb = createVBox(false, false, false, m.spacing)
+        vb.setFrame(0, 0, 245, 138*3)
         for count = 0 to 2
             item = items[count]
-            img = createImage(item.art +"?w=245&h=138", 245, 138)
-            col1.AddComponent(img)
+            card = createCard(item.art +"?w=245&h=138", "245, 138")
+            card.setFrame(0, 0, 245, 138)
+            vb.AddComponent(card)
         end for
-        m.AddComponent(col1)
+        m.AddComponent(vb)
+        m.setFrame(0, 0, vb.width, vb.height)
     ' VBOX: 2 Art
     else if htype = 3 then
-        col1 = createVBox(false, false, false, 10)
+        vb = createVBox(false, false, false, m.spacing)
+        vb.setFrame(0, 0, 245, 138*2)
         for count = 0 to 1
             item = items[count]
-            img = createImage(item.art +"?w=377&h=212", 377, 212)
-            col1.AddComponent(img)
+            card = createCard(item.art +"?w=377&h=212", "377, 212")
+            card.setFrame(0, 0, 377, 212)
+            vb.AddComponent(card)
         end for
-        m.AddComponent(col1)
+        m.AddComponent(vb)
+        m.setFrame(0, 0, vb.width, vb.height)
     end if
+end sub
+
+sub hubPerformLayout()
+    m.needsLayout = false
+    numChildren = m.components.Count()
+
+    ' Strange, but let's not even bother with the complicated stuff if we don't need to.
+    if numChildren = 0 then return
+
+    m.components.Reset()
+
+    while m.components.IsNext()
+        component = m.components.Next()
+        width = component.GetPreferredWidth()
+        height = component.GetPreferredHeight()
+
+        component.SetFrame(m.x, m.y, width, height)
+    end while
 end sub
