@@ -32,6 +32,8 @@ function ComponentClass() as object
         obj.GetPreferredHeight = compGetPreferredHeight
         obj.GetContentArea = compGetContentArea
         obj.SetFrame = compSetFrame
+        obj.SetPosition = compSetPosition
+        obj.SetDimensions = compSetDimensions
         obj.SetFocusSibling = compSetFocusSibling
         obj.GetFocusSibling = compGetFocusSibling
         obj.SetFocusable = compSetFocusable
@@ -103,6 +105,16 @@ end function
 sub compSetFrame(x as integer, y as integer, width as integer, height as integer)
     m.x = x
     m.y = y
+    m.width = width
+    m.height = height
+end sub
+
+sub compSetPosition(x as integer, y as integer)
+    m.x = x
+    m.y = y
+end sub
+
+sub compSetDimensions(width as integer, height as integer)
     m.width = width
     m.height = height
 end sub

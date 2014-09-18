@@ -11,6 +11,8 @@ function ContainerClass() as object
         obj.AddComponent = contAddComponent
         obj.PerformLayout = contPerformLayout
         obj.SetFrame = contSetFrame
+        obj.SetPosition = contSetPosition
+        obj.SetDimensions = contSetDimensions
 
         m.ContainerClass = obj
     end if
@@ -61,6 +63,37 @@ sub contPerformLayout()
 end sub
 
 sub contSetFrame(x as integer, y as integer, width as integer, height as integer)
-    ApplyFunc(ComponentClass().SetFrame, m, [x, y, width, height])
-    m.needsLayout = true
+    ' Set the dimensions first, since setting the position acts differently
+    ' based on needsLayout.
+
+    m.SetDimensions(width, height)
+    m.SetPosition(x, y)
+end sub
+
+sub contSetPosition(x as integer, y as integer)
+    if x <> m.x or y <> m.y then
+        xDelta = x - m.x
+        yDelta = y - m.y
+
+        m.x = x
+        m.y = y
+
+        ' If we need to reperform layout anyway, then there's no value in
+        ' updating the position of our children.
+
+        if not m.needsLayout then
+            for each component in m.components
+                component.SetPosition(component.x + xDelta, component.y + yDelta)
+            next
+        end if
+    end if
+end sub
+
+sub contSetDimensions(width as integer, height as integer)
+    ' If either dimension changed, we need to reperform our layout
+    if width <> m.width or height <> m.height then
+        m.width = width
+        m.height = height
+        m.needsLayout = true
+    end if
 end sub
