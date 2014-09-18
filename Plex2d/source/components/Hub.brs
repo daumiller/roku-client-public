@@ -13,6 +13,7 @@ function HubClass() as object
         obj.LAYOUT_HERO_4 = 1
         obj.LAYOUT_ART_3 = 2
         obj.LAYOUT_ART_2 = 3
+        obj.LAYOUT_HERO_3 = 4
 
         ' Methods
         obj.PerformLayout = hubPerformLayout
@@ -68,7 +69,7 @@ sub hubPerformLayout()
 
     m.components.Reset()
 
-    if m.layout = m.LAYOUT_HERO_4 then
+    if m.layout = m.LAYOUT_HERO_4 or m.layout = m.LAYOUT_HERO_3 then
         component = m.components.Next()
 
         ' TODO(schuyler): Fast forward to the future and suppose that our
@@ -78,7 +79,7 @@ sub hubPerformLayout()
         ' subclass that knows to tweak the URL based on the SetFrame call
         ' (which should always happen before Draw anyway)?
 
-        heroWidth = m.GetWidthForOrientation(availableHeight)
+        heroWidth = m.GetWidthForOrientation(m.ORIENTATION_PORTRAIT, availableHeight)
         component.SetFrame(xOffset, yOffset, heroWidth, availableHeight)
 
         xOffset = xOffset + heroWidth + m.spacing
@@ -90,12 +91,19 @@ sub hubPerformLayout()
             m.moreButton.SetFocusSibling("up", component)
         end if
 
-        rows = 2
-        cols = 3
+        if m.layout = m.LAYOUT_HERO_4 then
+            rows = 2
+            cols = 3
+        else if m.layout = m.LAYOUT_HERO_3 then
+            rows = 3
+            cols = 2
+        end if
+
         startCol = 1
         grid = CreateObject("roArray", rows * cols, false)
-        grid[0] = component
-        grid[3] = component
+        for i = 0 to rows - 1
+            grid[i * cols] = component
+        end for
     else if m.layout = m.LAYOUT_ART_2 then
         rows = 2
         cols = 1
@@ -115,7 +123,7 @@ sub hubPerformLayout()
     ' out.
 
     itemHeight = int((availableHeight - (m.spacing * (rows - 1))) / rows)
-    itemWidth = m.GetWidthForOrientation(itemHeight)
+    itemWidth = m.GetWidthForOrientation(m.orientation, itemHeight)
 
     Debug("Each grid item will be " + tostr(itemWidth) + "x" + tostr(itemHeight))
 
@@ -187,6 +195,8 @@ function hubMaxChildrenForLayout() as integer
         return 3
     else if m.layout = m.LAYOUT_HERO_4 then
         return 5
+    else if m.layout = m.LAYOUT_HERO_3 then
+        return 4
     end if
 
     Error("Unknown hub layout: " + tostr(m.layout))
@@ -213,15 +223,15 @@ sub hubShowMoreButton(moreCommand as dynamic)
     end if
 end sub
 
-function hubGetWidthForOrientation(height as integer) as integer
-    if m.orientation = m.ORIENTATION_SQUARE then
+function hubGetWidthForOrientation(orientation as integer, height as integer) as integer
+    if orientation = m.ORIENTATION_SQUARE then
         return height
-    else if m.orientation = m.ORIENTATION_LANDSCAPE then
+    else if orientation = m.ORIENTATION_LANDSCAPE then
         return int(height * 1.777)
-    else if m.orientation = m.ORIENTATION_PORTRAIT then
+    else if orientation = m.ORIENTATION_PORTRAIT then
         return int(height * 0.679)
     else
-        Error("Unknown hub orientation: " + tostr(m.orientation))
+        Error("Unknown hub orientation: " + tostr(orientation))
         stop
     end if
 end function
