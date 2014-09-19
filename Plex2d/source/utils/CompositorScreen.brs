@@ -110,7 +110,7 @@ sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
         m.focusSprite.MoveTo(focus.x, focus.y)
         m.focusSprite.SetZ(focus.z)
     else
-        m.HideFocus()
+        m.HideFocus(true)
 
         bmp = CreateObject("roBitmap", {width: focus.w, height: focus.h, alphaEnable: false})
         bmp.DrawRect(0, 0, focus.w, numPixels, focus.color)
