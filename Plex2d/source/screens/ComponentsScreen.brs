@@ -311,7 +311,7 @@ function compGetFocusManual(direction as string) as dynamic
                     if best.item = invalid or distance < best.distance then
                         Debug("Found a new best item: " + tostr(candidate))
                         if best.item <> invalid then
-                            m.screen.DrawDebugRect(best.x, best.y, 15, 15, &h00ff00ff, true)
+                            m.screen.DrawDebugRect(best.x, best.y, 15, 15, &h0000ffff, true)
                         end if
                         best.navOffset = navOffset
                         best.orthOffset = orthOffset
@@ -319,13 +319,13 @@ function compGetFocusManual(direction as string) as dynamic
                         best.x = candX
                         best.y = candY
                         best.item = candidate
-                        m.screen.DrawDebugRect(candX, candY, 15, 15, &hff0000ff, true)
+                        m.screen.DrawDebugRect(candX, candY, 15, 15, &h00ff00ff, true)
                     else
                         Debug("Candidate " + tostr(candidate) + " turned out to be worse than " + tostr(best.item))
-                        m.screen.DrawDebugRect(candX, candY, 15, 15, &h00ff00ff, true)
+                        m.screen.DrawDebugRect(candX, candY, 15, 15, &h0000ffff, true)
                     end if
                 else
-                    m.screen.DrawDebugRect(candX, candY, 15, 15, &h0000ffff, true)
+                    m.screen.DrawDebugRect(candX, candY, 15, 15, &hff0000ff, true)
                     Debug("Candidate " + tostr(candidate) + " is obviously worse than " + tostr(best.item))
                 end if
                 sleep(500)
