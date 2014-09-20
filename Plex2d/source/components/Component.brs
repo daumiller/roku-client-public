@@ -37,6 +37,7 @@ function ComponentClass() as object
         obj.SetFocusSibling = compSetFocusSibling
         obj.GetFocusSibling = compGetFocusSibling
         obj.SetFocusable = compSetFocusable
+        obj.GetFocusableItems = compGetFocusableItems
         obj.Destroy = compDestroy
 
         obj.ToString = compToString
@@ -143,6 +144,12 @@ sub compSetFocusable(command = invalid as dynamic)
     m.focusable = true
     m.selectable = (command <> invalid)
     m.command = command
+end sub
+
+sub compGetFocusableItems(arr as object)
+    if m.focusable then
+        arr.Push(m)
+    end if
 end sub
 
 sub compDestroy()

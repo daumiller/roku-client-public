@@ -260,3 +260,18 @@ function KeyCodeToString(keyCode as integer) as string
         return ""
     end if
 end function
+
+function OppositeDirection(direction as string) as string
+    if m.OppositeDirections = invalid then
+        m.OppositeDirections = {
+            right: "left",
+            left: "right",
+            up: "down",
+            down: "up",
+            rev: "fwd",
+            fwd: "rev"
+        }
+    end if
+
+    return m.OppositeDirections[direction]
+end function

@@ -7,6 +7,12 @@ function CompositeClass() as object
         obj.Draw = compositeDraw
         obj.OnComponentRedraw = compositeOnComponentRedraw
 
+        ' Either the composite itself is focusable or its not, the children
+        ' don't matter. So we can use the base component definition instead
+        ' of the Container definition.
+        '
+        obj.GetFocusableItems = compGetFocusableItems
+
         m.CompositeClass = obj
     end if
 

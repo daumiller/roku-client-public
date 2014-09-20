@@ -23,6 +23,9 @@ function ComponentsScreen() as object
 
         obj.GetComponents = compGetComponents
 
+        ' Manual focus methods
+        obj.GetFocusManual = compGetFocusManual
+
         ' Message handling
         obj.HandleMessage = compHandleMessage
         obj.OnItemFocused = compOnItemFocused
@@ -45,6 +48,8 @@ sub compInit()
 
     m.components = CreateObject("roList")
     m.focusedItem = invalid
+    m.focusX = invalid
+    m.focusY = invalid
     m.keyPressTimer = invalid
     m.lastKey = -1
     m.customFonts = CreateObject("roAssociativeArray")
@@ -61,6 +66,11 @@ sub compShow()
     next
 
     if m.focusedItem <> invalid then
+        if m.focusX = invalid or m.focusY = invalid then
+            m.focusX = m.focusedItem.x + int(m.focusedItem.width / 2)
+            m.focusY = m.focusedItem.y + int(m.focusedItem.height / 2)
+        end if
+
         m.screen.DrawFocus(m.focusedItem)
     end if
 
@@ -134,14 +144,24 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
     if keyCode = m.kp_RT or keyCode = m.kp_LT or keyCode = m.kp_UP or keyCode = m.kp_DN then
         if m.focusedItem <> invalid then
             toFocus = m.focusedItem.GetFocusSibling(KeyCodeToString(keyCode))
+            ' TODO(rob) disabled known focus siblings to test manual focus on every component
+            toFocus = invalid
+
+            ' manually find the closest component to focus
+            if toFocus = invalid then
+                Debug("I'm lonely... I don't have any siblings [locate a relative]")
+                toFocus = m.GetFocusManual(KeyCodeToString(keyCode))
+            else
+                ' We didn't have to search focus candidates, but we still need
+                ' to update our focus point.
+                ' TODO(schuyler): Do that
+            end if
+
             if toFocus <> invalid then
                 ' TODO(schuyler): Do we want to call things like OnBlur and OnFocus to let the components know?
                 m.focusedItem = toFocus
                 m.OnItemFocused(toFocus)
             end if
-
-            ' TODO(schuyler): Consider adding an else here and looking for the
-            ' closest focusable element in that direction.
         end if
     else if keyCode = m.kp_REV or keyCode = m.kp_FWD then
         ' TODO(schuyler): Handle focus (big) shift
@@ -180,3 +200,134 @@ sub compOnItemSelected(item as object)
         end if
     end if
 end sub
+
+function computeRect(component as object) as object
+    return {
+        left: component.x,
+        up: component.y,
+        width: component.width,
+        height: component.height,
+        right: component.x + component.width,
+        down: component.y + component.height
+    }
+end function
+
+function compGetFocusManual(direction as string) as dynamic
+    ' These should never happen...
+    if m.focusedItem = invalid or m.focusX = invalid or m.focusY = invalid then return invalid
+
+    oppositeDir = OppositeDirection(direction)
+
+    candidates = CreateObject("roList")
+
+    ' Ask each component to add to our list of candidates.
+    for each component in m.components
+        component.GetFocusableItems(candidates)
+    next
+
+    ' Keep track of some things for the best candidate. We need to know the
+    ' offset along both the navigational axis and the orthogonal axis. All
+    ' other distances and scores are based on these values.
+    '
+    best = {
+        navOffset: 0,
+        orthOffset: 0,
+        distance: 0,
+        x: 0,
+        y: 0,
+        item: invalid
+    }
+
+    for each candidate in candidates
+        if not candidate.Equals(m.focusedItem) then
+            rect = computeRect(candidate)
+
+            ' Calculate the focus point for the candidate.
+            if direction = "left" or direction = "right" then
+                candX = rect[oppositeDir]
+                if m.focusY < rect.up then
+                    candY = rect.up
+                else if m.focusY > rect.down then
+                    candY = rect.down
+                else
+                    candY = m.focusY
+                end if
+
+                orthOffset = m.focusY - candY
+
+                if direction = "left" then
+                    navOffset = m.focusX - candX
+                else
+                    navOffset = candX - m.focusX
+                end if
+            else
+                candY = rect[oppositeDir]
+                if m.focusX < rect.left then
+                    candX = rect.left
+                else if m.focusX > rect.right then
+                    candX = rect.right
+                else
+                    candX = m.focusX
+                end if
+
+                orthOffset = m.focusX - candX
+
+                if direction = "up" then
+                    navOffset = m.focusY - candY
+                else
+                    navOffset = candY - m.focusY
+                end if
+            end if
+
+            ' Items are only real candidates if they have a positive navOffset.
+            if navOffset > 0 then
+                if orthOffset < 0 then orthOffset = -1 * orthOffset
+
+                ' Ok, it's a real candidate. We don't need to do any real math
+                ' if it's not better than our best so far in at least one way.
+                '
+                if best.item = invalid or navOffset < best.navOffset or orthOffset < best.orthOffset then
+                    if navOffset = 0 then
+                        dotDistance = 0
+                    else
+                        dotDistance = int(Sqr(navOffset*navOffset + orthOffset*orthOffset))
+                    end if
+
+                    ' TODO(schuyler): Do we need to account for overlap?
+                    distance = dotDistance + navOffset + 2*orthOffset
+
+                    if best.item = invalid or distance < best.distance then
+                        Debug("Found a new best item: " + tostr(candidate))
+                        best.navOffset = navOffset
+                        best.orthOffset = orthOffset
+                        best.distance = distance
+                        best.x = candX
+                        best.y = candY
+                        best.item = candidate
+                    else
+                        Debug("Candidate " + tostr(candidate) + " turned out to be worse than " + tostr(best.item))
+                    end if
+                else
+                    Debug("Candidate " + tostr(candidate) + " is obviously worse than " + tostr(best.item))
+                end if
+            end if
+        end if
+    next
+
+    ' If we found something then return it. Otherwise, we can at least move the
+    ' focus point to the edge of our current component.
+    '
+    if best.item <> invalid then
+        m.focusX = best.x
+        m.focusY = best.y
+    else
+        focusedRect = computeRect(m.focusedItem)
+        if direction = "left" or direction = "right" then
+            m.focusX = focusedRect[direction]
+        else
+            m.focusY = focusedRect[direction]
+        end if
+    end if
+
+    return best.item
+end function

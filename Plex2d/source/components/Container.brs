@@ -13,6 +13,7 @@ function ContainerClass() as object
         obj.SetFrame = contSetFrame
         obj.SetPosition = contSetPosition
         obj.SetDimensions = contSetDimensions
+        obj.GetFocusableItems = contGetFocusableItems
 
         m.ContainerClass = obj
     end if
@@ -96,4 +97,10 @@ sub contSetDimensions(width as integer, height as integer)
         m.height = height
         m.needsLayout = true
     end if
+end sub
+
+sub contGetFocusableItems(arr as object)
+    for each component in m.components
+        component.GetFocusableItems(arr)
+    next
 end sub
