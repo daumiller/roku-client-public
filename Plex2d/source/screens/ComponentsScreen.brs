@@ -25,6 +25,7 @@ function ComponentsScreen() as object
 
         ' Manual focus methods
         obj.GetFocusManual = compGetFocusManual
+        obj.CalculateFocusPoint = compCalculateFocusPoint
 
         ' Message handling
         obj.HandleMessage = compHandleMessage
@@ -145,6 +146,9 @@ end sub
 sub compOnKeyPress(keyCode as integer, repeat as boolean)
     if keyCode = m.kp_RT or keyCode = m.kp_LT or keyCode = m.kp_UP or keyCode = m.kp_DN then
         if m.focusedItem <> invalid then
+            m.screen.ClearDebugSprites()
+            m.screen.DrawDebugRect(m.focusX, m.focusY, 15, 15, &hffffffff, true)
+
             direction = KeyCodeToString(keyCode)
 
             ' If we're doing the opposite of our last direction, go back to
@@ -165,7 +169,11 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
             else
                 ' We didn't have to search focus candidates, but we still need
                 ' to update our focus point.
-                ' TODO(schuyler): Do that
+                '
+                point = m.CalculateFocusPoint(toFocus, direction)
+                m.focusX = point.x
+                m.focusY = point.y
+                m.screen.DrawDebugRect(point.x, point.y, 15, 15, &h00ff00ff, true)
             end if
 
             if toFocus <> invalid then
@@ -226,9 +234,35 @@ function computeRect(component as object) as object
     }
 end function
 
-function compGetFocusManual(direction as string) as dynamic
-    m.screen.ClearDebugSprites()
+function compCalculateFocusPoint(component as object, direction as string) as object
+    point = {}
+    rect = computeRect(component)
+    oppositeDir = OppositeDirection(direction)
 
+    if direction = "left" or direction = "right" then
+        point.x = rect[oppositeDir]
+        if m.focusY < rect.up then
+            point.y = rect.up
+        else if m.focusY > rect.down then
+            point.y = rect.down
+        else
+            point.y = m.focusY
+        end if
+    else
+        point.y = rect[oppositeDir]
+        if m.focusX < rect.left then
+            point.x = rect.left
+        else if m.focusX > rect.right then
+            point.x = rect.right
+        else
+            point.x = m.focusX
+        end if
+    end if
+
+    return point
+end function
+
+function compGetFocusManual(direction as string) as dynamic
     ' These should never happen...
     if m.focusedItem = invalid or m.focusX = invalid or m.focusY = invalid then return invalid
 
@@ -270,42 +304,24 @@ function compGetFocusManual(direction as string) as dynamic
 
     for each candidate in candidates
         if not candidate.Equals(m.focusedItem) then
-            rect = computeRect(candidate)
+            candPt = m.CalculateFocusPoint(candidate, direction)
 
             ' Calculate the focus point for the candidate.
             if direction = "left" or direction = "right" then
-                candX = rect[oppositeDir]
-                if m.focusY < rect.up then
-                    candY = rect.up
-                else if m.focusY > rect.down then
-                    candY = rect.down
-                else
-                    candY = m.focusY
-                end if
-
-                orthOffset = m.focusY - candY
+                orthOffset = m.focusY - candPt.y
 
                 if direction = "left" then
-                    navOffset = m.focusX - candX
+                    navOffset = m.focusX - candPt.x
                 else
-                    navOffset = candX - m.focusX
+                    navOffset = candPt.x - m.focusX
                 end if
             else
-                candY = rect[oppositeDir]
-                if m.focusX < rect.left then
-                    candX = rect.left
-                else if m.focusX > rect.right then
-                    candX = rect.right
-                else
-                    candX = m.focusX
-                end if
-
-                orthOffset = m.focusX - candX
+                orthOffset = m.focusX - candPt.x
 
                 if direction = "up" then
-                    navOffset = m.focusY - candY
+                    navOffset = m.focusY - candPt.y
                 else
-                    navOffset = candY - m.focusY
+                    navOffset = candPt.y - m.focusY
                 end if
             end if
 
@@ -336,16 +352,16 @@ function compGetFocusManual(direction as string) as dynamic
                         best.navOffset = navOffset
                         best.orthOffset = orthOffset
                         best.distance = distance
-                        best.x = candX
-                        best.y = candY
+                        best.x = candPt.x
+                        best.y = candPt.y
                         best.item = candidate
-                        m.screen.DrawDebugRect(candX, candY, 15, 15, &h00ff00ff, true)
+                        m.screen.DrawDebugRect(candPt.x, candPt.y, 15, 15, &h00ff00ff, true)
                     else
                         Debug("Candidate " + tostr(candidate) + " turned out to be worse than " + tostr(best.item))
-                        m.screen.DrawDebugRect(candX, candY, 15, 15, &h0000ffff, true)
+                        m.screen.DrawDebugRect(candPt.x, candPt.y, 15, 15, &h0000ffff, true)
                     end if
                 else
-                    m.screen.DrawDebugRect(candX, candY, 15, 15, &hff0000ff, true)
+                    m.screen.DrawDebugRect(candPt.x, candPt.y, 15, 15, &hff0000ff, true)
                     Debug("Candidate " + tostr(candidate) + " is obviously worse than " + tostr(best.item))
                 end if
                 sleep(500)
