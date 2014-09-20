@@ -50,6 +50,8 @@ sub compInit()
     m.focusedItem = invalid
     m.focusX = invalid
     m.focusY = invalid
+    m.lastFocusedItem = invalid
+    m.lastDirection = invalid
     m.keyPressTimer = invalid
     m.lastKey = -1
     m.customFonts = CreateObject("roAssociativeArray")
@@ -143,9 +145,18 @@ end sub
 sub compOnKeyPress(keyCode as integer, repeat as boolean)
     if keyCode = m.kp_RT or keyCode = m.kp_LT or keyCode = m.kp_UP or keyCode = m.kp_DN then
         if m.focusedItem <> invalid then
-            toFocus = m.focusedItem.GetFocusSibling(KeyCodeToString(keyCode))
-            ' TODO(rob) disabled known focus siblings to test manual focus on every component
-            toFocus = invalid
+            direction = KeyCodeToString(keyCode)
+
+            ' If we're doing the opposite of our last direction, go back to
+            ' where we came from.
+            '
+            if m.lastFocusedItem <> invalid and direction = OppositeDirection(m.lastDirection) then
+                toFocus = m.lastFocusedItem
+            else
+                toFocus = m.focusedItem.GetFocusSibling(KeyCodeToString(keyCode))
+                ' TODO(rob) disabled known focus siblings to test manual focus on every component
+                toFocus = invalid
+            end if
 
             ' manually find the closest component to focus
             if toFocus = invalid then
@@ -158,6 +169,9 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
             end if
 
             if toFocus <> invalid then
+                m.lastFocusedItem = m.focusedItem
+                m.lastDirection = direction
+
                 ' TODO(schuyler): Do we want to call things like OnBlur and OnFocus to let the components know?
                 m.focusedItem = toFocus
                 m.OnItemFocused(toFocus)
