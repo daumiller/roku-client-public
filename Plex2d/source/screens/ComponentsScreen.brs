@@ -227,6 +227,16 @@ function compGetFocusManual(direction as string) as dynamic
         component.GetFocusableItems(candidates)
     next
 
+    ' Move our current focus point to the edge of the current component in
+    ' the direction we're moving.
+    '
+    focusedRect = computeRect(m.focusedItem)
+    if direction = "left" or direction = "right" then
+        m.focusX = focusedRect[direction]
+    else
+        m.focusY = focusedRect[direction]
+    end if
+
     ' Keep track of some things for the best candidate. We need to know the
     ' offset along both the navigational axis and the orthogonal axis. All
     ' other distances and scores are based on these values.
@@ -329,13 +339,6 @@ function compGetFocusManual(direction as string) as dynamic
     if best.item <> invalid then
         m.focusX = best.x
         m.focusY = best.y
-    else
-        focusedRect = computeRect(m.focusedItem)
-        if direction = "left" or direction = "right" then
-            m.focusX = focusedRect[direction]
-        else
-            m.focusY = focusedRect[direction]
-        end if
     end if
 
     return best.item
