@@ -11,6 +11,10 @@ function CompositorScreen() as object
         obj.DrawFocus = compositorDrawFocus
         obj.focusSprite = invalid
 
+        obj.DrawDebugRect = compositorDrawDebugRect
+        obj.ClearDebugSprites = compositorClearDebugSprites
+        obj.debugSprites = CreateObject("roList")
+
         obj.OnComponentRedraw = compositorOnComponentRedraw
 
         ' Set up an roScreen one time, with double buffering and alpha enabled
@@ -119,4 +123,19 @@ sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
     end if
 
     if drawAllNow then m.DrawAll()
+end sub
+
+sub compositorClearDebugSprites()
+    for each sprite in m.debugSprites
+        sprite.Remove()
+    next
+    m.debugSprites.Clear()
+end sub
+
+sub compositorDrawDebugRect(x, y, width, height, color, drawNow=false)
+    bmp = CreateObject("roBitmap", {width: width, height: height, alphaEnable: false})
+    bmp.Clear(color)
+    region = CreateObject("roRegion", bmp, 0, 0, width, height)
+    m.debugSprites.Push(m.compositor.NewSprite(x, y, region))
+    if drawNow then m.DrawAll()
 end sub

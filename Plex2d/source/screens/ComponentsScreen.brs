@@ -213,6 +213,8 @@ function computeRect(component as object) as object
 end function
 
 function compGetFocusManual(direction as string) as dynamic
+    m.screen.ClearDebugSprites()
+
     ' These should never happen...
     if m.focusedItem = invalid or m.focusX = invalid or m.focusY = invalid then return invalid
 
@@ -298,18 +300,25 @@ function compGetFocusManual(direction as string) as dynamic
 
                     if best.item = invalid or distance < best.distance then
                         Debug("Found a new best item: " + tostr(candidate))
+                        if best.item <> invalid then
+                            m.screen.DrawDebugRect(best.x, best.y, 15, 15, &h00ff00ff, true)
+                        end if
                         best.navOffset = navOffset
                         best.orthOffset = orthOffset
                         best.distance = distance
                         best.x = candX
                         best.y = candY
                         best.item = candidate
+                        m.screen.DrawDebugRect(candX, candY, 15, 15, &hff0000ff, true)
                     else
                         Debug("Candidate " + tostr(candidate) + " turned out to be worse than " + tostr(best.item))
+                        m.screen.DrawDebugRect(candX, candY, 15, 15, &h00ff00ff, true)
                     end if
                 else
+                    m.screen.DrawDebugRect(candX, candY, 15, 15, &h0000ffff, true)
                     Debug("Candidate " + tostr(candidate) + " is obviously worse than " + tostr(best.item))
                 end if
+                sleep(500)
             end if
         end if
     next
