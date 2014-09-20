@@ -28,6 +28,28 @@ sub homeTestGetComponents()
     m.components.Clear()
     m.focusedItem = invalid
 
+    ' TODO(rob) make pretty - testing just to see interaction with buttons
+    headBkg = createBlock(&h000000e0)
+    headBkg.SetFrame(0, 0, 1280, 72)
+    m.components.Push(headBkg)
+
+    headLogo = createImage("pkg:/images/plex_logo_HD_62x20.png", 62, 20)
+    headLogo.SetFrame(100, 35, 62, 20)
+    m.components.Push(headLogo)
+
+    hbHeadButtons = createHBox(false, false, false, 25)
+    hbHeadButtons.SetFrame(900, 35, 1280, 25)
+
+    but1 = createButton("server", FontRegistry().font16, "server_selection")
+    but1.width = 128
+    hbHeadButtons.AddComponent(but1)
+
+    but2 = createButton("options", FontRegistry().font16, "server_selection")
+    but2.width = 128
+    hbHeadButtons.AddComponent(but2)
+
+    m.components.Push(hbHeadButtons)
+
     hbox = createHBox(false, false, false, 25)
     hbox.SetFrame(100, 100, 2000, 500)
 
