@@ -232,6 +232,8 @@ function compGetFocusManual(direction as string) as dynamic
     ' These should never happen...
     if m.focusedItem = invalid or m.focusX = invalid or m.focusY = invalid then return invalid
 
+    Debug("Evaluating manual " + direction + " focus for " + tostr(m.focusedItem))
+
     oppositeDir = OppositeDirection(direction)
 
     candidates = CreateObject("roList")
@@ -250,6 +252,8 @@ function compGetFocusManual(direction as string) as dynamic
     else
         m.focusY = focusedRect[direction]
     end if
+
+    Debug("Focus point is " + tostr(m.focusX) + ", " + tostr(m.focusY))
 
     ' Keep track of some things for the best candidate. We need to know the
     ' offset along both the navigational axis and the orthogonal axis. All
@@ -321,6 +325,8 @@ function compGetFocusManual(direction as string) as dynamic
 
                     ' TODO(schuyler): Do we need to account for overlap?
                     distance = dotDistance + navOffset + 2*orthOffset
+                    Debug("Evaluated " + tostr(candidate))
+                    Debug("navOffset=" + tostr(navOffset) + " orthOffset=" + tostr(orthOffset) + " dotDistance=" + tostr(dotDistance) + " distance=" + tostr(distance))
 
                     if best.item = invalid or distance < best.distance then
                         Debug("Found a new best item: " + tostr(candidate))
