@@ -333,16 +333,36 @@ function compGetFocusManual(direction as string) as dynamic
                 ' if it's not better than our best so far in at least one way.
                 '
                 if best.item = invalid or navOffset < best.navOffset or orthOffset < best.orthOffset then
-                    if navOffset = 0 then
+                    if orthOffset = 0 then
                         dotDistance = 0
                     else
                         dotDistance = int(Sqr(navOffset*navOffset + orthOffset*orthOffset))
                     end if
 
-                    ' TODO(schuyler): Do we need to account for overlap?
-                    distance = dotDistance + navOffset + 2*orthOffset
+                    ' Prioritize items that overlap on the orth axix.
+                    rect = computeRect(candidate)
+                    if focusedRect.up <= rect.up then
+                        if focusedRect.down >= rect.down then
+                            overlap = rect.height
+                        else if focusedRect.down <= rect.up then
+                            overlap = 0
+                        else
+                            overlap = focusedRect.down - rect.up
+                        end if
+                    else
+                        if focusedRect.down <= rect.down then
+                            overlap = focusedRect.height
+                        else if focusedRect.up >= rect.down then
+                            overlap = 0
+                        else
+                            overlap = rect.down - focusedRect.up
+                        end if
+                    end if
+
+                    distance = dotDistance + navOffset + 2*orthOffset - int(sqr(overlap))
+
                     Debug("Evaluated " + tostr(candidate))
-                    Debug("navOffset=" + tostr(navOffset) + " orthOffset=" + tostr(orthOffset) + " dotDistance=" + tostr(dotDistance) + " distance=" + tostr(distance))
+                    Debug("navOffset=" + tostr(navOffset) + " orthOffset=" + tostr(orthOffset) + " dotDistance=" + tostr(dotDistance) + " overlap=" + tostr(overlap) + " distance=" + tostr(distance))
 
                     if best.item = invalid or distance < best.distance then
                         Debug("Found a new best item: " + tostr(candidate))
@@ -364,7 +384,7 @@ function compGetFocusManual(direction as string) as dynamic
                     m.screen.DrawDebugRect(candPt.x, candPt.y, 15, 15, &hff0000ff, true)
                     Debug("Candidate " + tostr(candidate) + " is obviously worse than " + tostr(best.item))
                 end if
-                sleep(500)
+                ' sleep(500)
             end if
         end if
     next
