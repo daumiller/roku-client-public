@@ -329,34 +329,39 @@ function compGetFocusManual(direction as string) as dynamic
             if navOffset > 0 then
                 if orthOffset < 0 then orthOffset = -1 * orthOffset
 
+                ' Prioritize items that overlap on the orth axix.
+                rect = computeRect(candidate)
+                if focusedRect.up <= rect.up then
+                    if focusedRect.down >= rect.down then
+                        overlap = rect.height
+                    else if focusedRect.down <= rect.up then
+                        overlap = 0
+                    else
+                        overlap = focusedRect.down - rect.up
+                    end if
+                else
+                    if focusedRect.down <= rect.down then
+                        overlap = focusedRect.height
+                    else if focusedRect.up >= rect.down then
+                        overlap = 0
+                    else
+                        overlap = rect.down - focusedRect.up
+                    end if
+                end if
+
+                ' If there's any overlap at all, consider the items to be on the
+                ' same plane and give them a bonus.
+                '
+                if overlap <> 0 then orthOffset = 0
+
                 ' Ok, it's a real candidate. We don't need to do any real math
                 ' if it's not better than our best so far in at least one way.
                 '
-                if best.item = invalid or navOffset < best.navOffset or orthOffset < best.orthOffset then
+                if best.item = invalid or navOffset < best.navOffset or orthOffset <= best.orthOffset then
                     if orthOffset = 0 then
                         dotDistance = 0
                     else
                         dotDistance = int(Sqr(navOffset*navOffset + orthOffset*orthOffset))
-                    end if
-
-                    ' Prioritize items that overlap on the orth axix.
-                    rect = computeRect(candidate)
-                    if focusedRect.up <= rect.up then
-                        if focusedRect.down >= rect.down then
-                            overlap = rect.height
-                        else if focusedRect.down <= rect.up then
-                            overlap = 0
-                        else
-                            overlap = focusedRect.down - rect.up
-                        end if
-                    else
-                        if focusedRect.down <= rect.down then
-                            overlap = focusedRect.height
-                        else if focusedRect.up >= rect.down then
-                            overlap = 0
-                        else
-                            overlap = rect.down - focusedRect.up
-                        end if
                     end if
 
                     distance = dotDistance + navOffset + 2*orthOffset - int(sqr(overlap))
