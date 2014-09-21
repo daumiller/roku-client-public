@@ -69,9 +69,10 @@ sub compShow()
     next
 
     if m.focusedItem <> invalid then
+        ' Make sure that we set an initial focus point.
         if m.focusX = invalid or m.focusY = invalid then
-            m.focusX = m.focusedItem.x + int(m.focusedItem.width / 2)
-            m.focusY = m.focusedItem.y + int(m.focusedItem.height / 2)
+            m.focusX = m.focusedItem.x
+            m.focusY = m.focusedItem.y
         end if
 
         m.screen.DrawFocus(m.focusedItem)
