@@ -151,19 +151,19 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
 
             direction = KeyCodeToString(keyCode)
 
-            ' If we're doing the opposite of our last direction, go back to
-            ' where we came from.
-            '
-            if m.lastFocusedItem <> invalid and direction = OppositeDirection(m.lastDirection) then
-                toFocus = m.lastFocusedItem
-            else
-                toFocus = m.focusedItem.GetFocusSibling(KeyCodeToString(keyCode))
-            end if
+            ' If the component knows its sibling, always use that.
+            toFocus = m.focusedItem.GetFocusSibling(KeyCodeToString(keyCode))
 
-            ' manually find the closest component to focus
             if toFocus = invalid then
-                Debug("I'm lonely... I don't have any siblings [locate a relative]")
-                toFocus = m.GetFocusManual(KeyCodeToString(keyCode))
+                ' If we're doing the opposite of our last direction, go back to
+                ' where we came from. Otherwise search manually.
+                '
+                if m.lastFocusedItem <> invalid and direction = OppositeDirection(m.lastDirection) then
+                    toFocus = m.lastFocusedItem
+                else
+                    Debug("I'm lonely... I don't have any siblings [locate a relative]")
+                    toFocus = m.GetFocusManual(KeyCodeToString(keyCode))
+                end if
             else
                 ' We didn't have to search focus candidates, but we still need
                 ' to update our focus point.
