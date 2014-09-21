@@ -158,8 +158,6 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
                 toFocus = m.lastFocusedItem
             else
                 toFocus = m.focusedItem.GetFocusSibling(KeyCodeToString(keyCode))
-                ' TODO(rob) disabled known focus siblings to test manual focus on every component
-                toFocus = invalid
             end if
 
             ' manually find the closest component to focus

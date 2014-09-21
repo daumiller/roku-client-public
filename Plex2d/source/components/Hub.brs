@@ -58,8 +58,6 @@ sub hubPerformLayout()
     availableHeight = contentArea.height - m.spacing - buttonHeight
     xOffset = m.x + contentArea.x
     yOffset = m.y + contentArea.y
-    startRow = 0
-    startCol = 0
 
     Debug("Laying out hub at (" + tostr(xOffset) + "," + tostr(yOffset) + "), available height is " + tostr(availableHeight))
 
@@ -68,6 +66,8 @@ sub hubPerformLayout()
     ' can take care of the rows and cols in a general way.
 
     m.components.Reset()
+
+    lastHero = invalid
 
     if m.layout = m.LAYOUT_HERO_4 or m.layout = m.LAYOUT_HERO_3 then
         component = m.components.Next()
@@ -85,37 +85,32 @@ sub hubPerformLayout()
         xOffset = xOffset + heroWidth + m.spacing
         Debug("Hero width was " + tostr(heroWidth) + ", xOffset is now " + tostr(xOffset))
 
-        ' Set the focus for the more button
+        ' Set the focus for the more button, but not the reverse behavior.
         if m.moreButton <> invalid then
             component.SetFocusSibling("down", m.moreButton)
-            m.moreButton.SetFocusSibling("up", component)
         end if
 
         if m.layout = m.LAYOUT_HERO_4 then
             rows = 2
-            cols = 3
+            cols = 2
         else if m.layout = m.LAYOUT_HERO_3 then
             rows = 3
-            cols = 2
+            cols = 1
         end if
 
-        startCol = 1
-        grid = CreateObject("roArray", rows * cols, false)
-        for i = 0 to rows - 1
-            grid[i * cols] = component
-        end for
+        lastHero = component
     else if m.layout = m.LAYOUT_ART_2 then
         rows = 2
         cols = 1
-        grid = CreateObject("roArray", rows * cols, false)
     else if m.layout = m.LAYOUT_ART_3 then
         rows = 3
         cols = 1
-        grid = CreateObject("roArray", rows * cols, false)
     else
         Error("Unknown hub layout: " + tostr(m.layout))
         stop
     end if
+
+    grid = CreateObject("roArray", rows * cols, false)
 
     ' Ok, at this point the components cursor should be pointing at the
     ' next child to render and rows and cols should both be set. We can
@@ -128,8 +123,8 @@ sub hubPerformLayout()
     Debug("Each grid item will be " + tostr(itemWidth) + "x" + tostr(itemHeight))
 
     xOffsets = CreateObject("roArray", cols, false)
-    xOffsets[startCol] = xOffset
-    for i = startCol + 1 to cols - 1
+    xOffsets[0] = xOffset
+    for i = 1 to cols - 1
         xOffsets[i] = xOffsets[i-1] + m.spacing + itemWidth
     end for
 
@@ -140,8 +135,8 @@ sub hubPerformLayout()
     end for
     yOffsets[rows - 1] = yOffset + availableHeight - itemHeight
 
-    for rowNum = startRow to rows - 1
-        for colNum = startCol to cols - 1
+    for rowNum = 0 to rows - 1
+        for colNum = 0 to cols - 1
             component = m.components.Next()
             if component = invalid then exit for
 
@@ -150,11 +145,9 @@ sub hubPerformLayout()
             grid[rowNum*cols + colNum] = component
 
             ' Set focus relationships. If there's a more button, always
-            ' set the down button to there and vice versa. It will end
-            ' being correct.
+            ' set the down button to there but not vice versa.
             if m.moreButton <> invalid then
                 component.SetFocusSibling("down", m.moreButton)
-                m.moreButton.SetFocusSibling("up", component)
             end if
 
             if rowNum > 0 then
@@ -166,9 +159,10 @@ sub hubPerformLayout()
             if colNum > 0 then
                 sibling = grid[rowNum*cols + colNum - 1]
                 component.SetFocusSibling("left", sibling)
-                if sibling.GetFocusSibling("right") = invalid then
-                    sibling.SetFocusSibling("right", component)
-                end if
+                sibling.SetFocusSibling("right", component)
+            else if lastHero <> invalid then
+                ' Set left from here to the last hero, but not vice versa.
+                component.SetFocusSibling("left", lastHero)
             end if
         end for
     end for
