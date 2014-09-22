@@ -7,6 +7,11 @@ function HomeTestScreen() as object
 
         obj.GetComponents = homeTestGetComponents
 
+        ' debug - switch hub layout styles
+        obj.CreateHubs = homeTestCreateHubs
+        obj.CreateHub = homeTestCreateHub
+        obj.HandleRewind = homeTestHandleRewind
+
         m.HomeTestScreen = obj
     end if
 
@@ -18,6 +23,8 @@ function createHomeTestScreen(server as object) as object
     obj.Append(HomeTestScreen())
 
     obj.server = server
+
+    obj.layoutStyle = 0
 
     obj.Init()
 
@@ -50,43 +57,8 @@ sub homeTestGetComponents()
 
     m.components.Push(hbHeadButtons)
 
-    hbox = createHBox(false, false, false, 25)
-    hbox.SetFrame(100, 100, 2000, 500)
-
-    hub = createHub(1, 1, 10)
-    hub.height = 500
-    for i = 1 to hub.MaxChildrenForLayout()
-        block = createBlock(Colors().CardBkgClr)
-        block.SetFocusable("test")
-        if m.focusedItem = invalid then m.focusedItem = block
-        hub.AddComponent(block)
-    end for
-    hub.ShowMoreButton("more")
-    hbox.AddComponent(hub)
-
-    hub = createHub(2, 2, 10)
-    hub.height = 500
-    for i = 1 to hub.MaxChildrenForLayout()
-        block = createBlock(Colors().CardBkgClr)
-        block.SetFocusable("test")
-        if m.focusedItem = invalid then m.focusedItem = block
-        hub.AddComponent(block)
-    end for
-    hub.ShowMoreButton("more")
-    hbox.AddComponent(hub)
-
-    hub = createHub(2, 3, 10)
-    hub.height = 500
-    for i = 1 to hub.MaxChildrenForLayout()
-        block = createBlock(Colors().CardBkgClr)
-        block.SetFocusable("test")
-        if m.focusedItem = invalid then m.focusedItem = block
-        hub.AddComponent(block)
-    end for
-    hub.ShowMoreButton("more")
-    hbox.AddComponent(hub)
-
-    m.components.Push(hbox)
+    hubs = m.CreateHubs()
+    m.components.Push(hubs)
 
     ' m.components.Clear()
 
@@ -146,3 +118,58 @@ sub homeTestGetComponents()
 
     ' m.components.Push(mainBox)
 end sub
+
+function homeTestHandleRewind()
+    ' clear memory!
+    m.Deactivate(invalid)
+    ' start fresh on the components screen
+    m.Init()
+    ' change layout style
+    m.layoutStyle = m.layoutStyle+1
+    ' profit
+    m.show()
+end function
+
+function homeTestCreateHub(orientation as integer, layout as integer, name as string, more = true as boolean) as object
+    hub = createHub(orientation, layout, 10)
+    hub.height = 500
+    for i = 1 to hub.MaxChildrenForLayout()
+        label = createLabel(name + tostr(i), FontRegistry().font16)
+        label.bgColor = Colors().CardBkgClr
+        label.halign = label.JUSTIFY_CENTER
+        label.valign = label.ALIGN_MIDDLE
+        label.SetFocusable("test")
+        if m.focusedItem = invalid then m.focusedItem = label
+        hub.AddComponent(label)
+    end for
+    if more then hub.ShowMoreButton("more")
+    return hub
+end function
+
+function homeTestCreateHubs() as object
+    hbox = createHBox(false, false, false, 25)
+    hbox.SetFrame(100, 100, 2000*10, 500)
+
+    if m.layoutStyle = 1 then
+        hbox.AddComponent(m.CreateHub(1, 1, "A"))
+        hbox.AddComponent(m.CreateHub(1, 1, "B"))
+        hbox.AddComponent(m.CreateHub(1, 1, "C"))
+        hbox.AddComponent(m.CreateHub(1, 1, "D"))
+        hbox.AddComponent(m.CreateHub(1, 1, "E"))
+        hbox.AddComponent(m.CreateHub(1, 1, "F"))
+    else if m.layoutStyle = 2 then
+        hbox.AddComponent(m.CreateHub(1, 1, "A"))
+        hbox.AddComponent(m.CreateHub(2, 2, "B", false))
+        hbox.AddComponent(m.CreateHub(1, 3, "C"))
+    else
+        ' lazy logic - back to defaults
+        m.layoutStyle = 0
+        hbox.AddComponent(m.CreateHub(1, 1, "A"))
+        hbox.AddComponent(m.CreateHub(2, 2, "B"))
+        hbox.AddComponent(m.CreateHub(1, 3, "C"))
+    end if
+
+    print m.layoutStyle
+
+    return hbox
+end function

@@ -203,6 +203,8 @@ sub compOnKeyRelease(keyCode as integer)
     else if keyCode = m.kp_BK then
         ' TODO(schuyler): Lock remote events?
         Application().popScreen(m)
+    else if keyCode = m.kp_RW and m.HandleRewind <> invalid then
+        m.HandleRewind()
     end if
 end sub
 
@@ -286,6 +288,9 @@ function compGetFocusManual(direction as string) as dynamic
     else
         m.focusY = focusedRect[direction]
     end if
+
+    ' draw where we moved the focus point
+    m.screen.DrawDebugRect(m.focusX, m.focusY, 15, 15, Colors().PlexClr, true)
 
     Debug("Focus point is " + tostr(m.focusX) + ", " + tostr(m.focusY))
 
