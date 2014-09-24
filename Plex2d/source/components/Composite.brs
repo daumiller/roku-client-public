@@ -27,13 +27,12 @@ function compositeDraw() as object
 
     if m.needsLayout then m.PerformLayout()
 
-    bmp = CreateObject("roBitmap", {width: m.width, height: m.height, alphaEnable: m.alphaEnable})
-    bmp.Clear(m.bgColor)
-
-    m.region = CreateObject("roRegion", bmp, 0, 0, bmp.GetWidth(), bmp.GetHeight())
+    ' init the region ( it will be cleared/reused if not invalid )
+    m.InitRegion()
+    m.region.setAlphaEnable(m.alphaEnable)
 
     compositor = CreateObject("roCompositor")
-    compositor.SetDrawTo(bmp, m.bgColor)
+    compositor.SetDrawTo(m.region, m.bgColor)
 
     drawables = CreateObject("roList")
 
