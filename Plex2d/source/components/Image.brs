@@ -93,15 +93,31 @@ function imageFromLocal(source as string) as dynamic
     return bmp
 end function
 
-sub imageSetBitmap(bmp as object, makeCopy=true as boolean)
+sub imageSetBitmap(bmp as object, makeCopy=false as boolean)
+    perfTimer().mark()
+
     if makeCopy then
         m.bitmap = CreateObject("roBitmap", {width: bmp.GetWidth(), height: bmp.GetHeight(), alphaEnable: false})
         m.bitmap.DrawObject(0, 0, bmp)
+        msg = "makeCopy"
+    else if m.region <> invalid then
+        m.region.DrawObject(0, 0, bmp)
+        m.bitmap = m.region.GetBitMap()
+        msg = "clear and reuse region"
     else
         m.bitmap = bmp
+        msg = "use original"
+    end if
+    perfTimer().Log("imageSetBitmap::" + msg)
+
+    ' create a region if invalid or if a copy was requested
+    if makeCopy or m.region = invalid then
+        m.region = CreateObject("roRegion", m.bitmap, 0, 0, m.bitmap.GetWidth(), m.bitmap.GetHeight())
+        perfTimer().Log("imageSetBitmap:: init new region")
     end if
 
-    m.region = CreateObject("roRegion", m.bitmap, 0, 0, m.bitmap.GetWidth(), m.bitmap.GetHeight())
+    ' TODO(rob) we shouldn't need to scale here as the TextureManager handles
+    ' scaling now. I'll verify this once we start loading real images.
     m.ScaleRegion(firstOf(m.preferredWidth, m.width), firstOf(m.preferredHeight, m.height))
     m.bitmap = m.region.GetBitmap()
 
