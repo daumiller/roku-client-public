@@ -67,10 +67,19 @@ sub componentInit()
 end sub
 
 sub compInitRegion()
-    bmp = CreateObject("roBitmap", {width: m.width, height: m.height, alphaEnable: m.alphaEnable})
-    bmp.Clear(m.bgColor)
+    perfTimer().mark()
+    ' performance++ clear and resuse a region
+    if m.region <> invalid then
+        m.region.clear(m.bgColor)
+        msg = "clear and reuse"
+    else
+        bmp = CreateObject("roBitmap", {width: m.width, height: m.height, alphaEnable: m.alphaEnable})
+        bmp.Clear(m.bgColor)
+        m.region = CreateObject("roRegion", bmp, 0, 0, bmp.GetWidth(), bmp.GetHeight())
+        msg = "new bitmap/region"
+    end if
 
-    m.region = CreateObject("roRegion", bmp, 0, 0, bmp.GetWidth(), bmp.GetHeight())
+    PerfTimer().Log("compInitRegion:: " + msg + " " + tostr(m.region.getWidth()) + "x" + tostr(m.region.getHeight()))
 end sub
 
 function compDraw() as object
