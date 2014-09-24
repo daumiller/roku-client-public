@@ -46,8 +46,10 @@ function compositeDraw() as object
     for each comp in drawables
         compositor.NewSprite(comp.x, comp.y, comp.region)
         comp.On("redraw", createCallable("OnComponentRedraw", m, "comp" + tostr(m.id) + "_redraw"))
-        comp.region = invalid
-        comp.bitmap = invalid
+        ' performance vs memory: keep all regions, except for a URL source
+        if comp.source <> invalid and left(comp.source, 4) = "http" then comp.region = invalid
+        ' do not keep any bitmaps ( we already have the region )
+        if comp.bitmap <> invalid then comp.bitmap = invalid
     next
 
     compositor.DrawAll()
