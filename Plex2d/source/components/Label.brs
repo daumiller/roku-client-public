@@ -71,7 +71,9 @@ function labelGetPreferredHeight() as integer
     end if
 end function
 
-function labelDraw() as object
+function labelDraw(redraw=false as boolean) as object
+    if redraw = false and m.region <> invalid then return [m]
+
     m.InitRegion()
 
     lineHeight = m.font.GetOneLineHeight()
