@@ -31,7 +31,7 @@ function Logger()
         m.Logger = obj
 
         ' TODO(schuyler): Remove these
-        obj.SetLevel(AppSettings().GetIntPreference("log_level", obj.LEVEL_DEBUG))
+        obj.SetLevel(AppSettings().GetIntPreference("log_level", obj.LEVEL_OFF))
         obj.EnablePapertrail(5)
 
         ' Register with the web server
