@@ -28,11 +28,15 @@ function HubClass() as object
     return m.HubClass
 end function
 
-function createHub(orientation as integer, layout as integer, spacing=0 as integer) as object
+function createHub(title as string, orientation as integer, layout as integer, spacing=0 as integer) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(HubClass())
 
     obj.Init()
+
+    ' add a label component for the hubs title
+    obj.title = createLabel(title, FontRegistry().font16)
+    obj.AddComponent(obj.title)
 
     obj.orientation = orientation
     obj.layout = layout
@@ -48,7 +52,8 @@ sub hubPerformLayout()
     numChildren = m.components.Count()
 
     ' Strange, but let's not even bother with the complicated stuff if we don't need to.
-    if numChildren = 0 then return
+    '  note: the hub will always have one component due to the title
+    if numChildren-1 < 1 then return
 
     ' Figure out how much height we have available. We just need to account for
     ' our spacing and the space reserved for the more button.
@@ -68,6 +73,13 @@ sub hubPerformLayout()
     m.components.Reset()
 
     lastHero = invalid
+
+    ' Set the title frame above the hub. We could set the title at the specified yOffset, but
+    ' that could make it harder to lineup other containers. e.g. the sections vbox. For now
+    ' we'll set the title directly above the hub, minus the font height and spacing.
+    title = m.components.Next()
+    title.SetFrame(xOffset, yOffset-m.spacing-title.font.GetOneLineHeight(), 0, title.font.GetOneLineHeight())
+    title.fixed = false
 
     if m.layout = m.LAYOUT_HERO_4 or m.layout = m.LAYOUT_HERO_3 then
         component = m.components.Next()
@@ -176,6 +188,9 @@ sub hubPerformLayout()
     rightX = xOffsets[cols - 1] + itemWidth
     m.preferredWidth = rightX - m.x
     m.width = m.preferredWidth
+
+    ' set the title frame width (now that we have the hub width)
+    title.width = m.width
 
     if m.moreButton <> invalid then
         m.moreButton.x = rightX - m.moreButton.width
