@@ -30,17 +30,22 @@ function imageDraw() as object
             m.InitRegion()
         end if
 
-        ' TODO(rob) remove this in production or when we start querying the PMS
-        ' for now, we want the url to be unique to the size of the image
-        if instr(1, m.source, "roku.rarforge.com") > 0 then
-            m.source = m.source + "?width=" + tostr(m.width) + "&height=" + tostr(m.height)
+        ' TODO(rob/schuyler) proper image transcoding
+        width = firstOf(m.preferredWidth, m.width)
+        height = firstOf(m.preferredHeight, m.height)
+        if m.server <> invalid and m.server.supportsphototranscoding then
+            m.source = m.server.transcodeImage(m.sourceOrig, tostr(width), tostr(height), "1f1f1f", { minSize: 1})
+        else if instr(1, m.source, "roku.rarforge.com") > 0 then
+            ' TODO(rob) remove this in production or when we start querying the PMS
+            ' for now, we want the url to be unique to the size of the image
+            m.source = m.source + "?width=" + tostr(width) + "&height=" + tostr(height)
         end if
 
         ' Request texture through the TextureManager
         context = {
             url: m.source,
-            width: firstOf(m.preferredWidth, m.width),
-            height: firstOf(m.preferredHeight, m.height),
+            width: width,
+            height: height,
             scaleSize: true,
             scaleMode: 1
         }
@@ -63,7 +68,13 @@ function createImage(source as dynamic, width=0 as integer, height=0 as integer)
 
     obj.Init()
 
-    obj.source = source
+    if type(source) = "roAssociativeArray" then
+        obj.source = source.url
+        obj.server = source.server
+    else
+        obj.source = source
+    end if
+    obj.sourceOrig = obj.source
     obj.width = width
     obj.height = height
 
