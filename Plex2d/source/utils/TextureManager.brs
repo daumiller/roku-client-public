@@ -1,0 +1,346 @@
+function TextureManager() as object
+    if m.TextureManager = invalid then
+        obj = {}
+
+        obj.TManager = CreateObject("roTextureManager")
+        obj.TManager.SetMessagePort(Application().port)
+
+        obj.RequestList = {}
+
+        obj.SendCount = 0
+        obj.ReceiveCount = 0
+
+        ' UNUSED STATES (FOR NOW)
+        obj.STATE_REQUESTED   = 0
+        obj.STATE_DOWNLOADING = 1
+        obj.STATE_DOWNLOADED  = 2
+
+        ' USED STATES
+        obj.STATE_READY = 3
+        obj.STATE_FAILED = 4
+        obj.STATE_CANCELLED = 5
+
+        obj.AddItem = tmAddItem
+        obj.RemoveItem = tmRemoveItem
+        obj.GetItem = tmGetItem
+        obj.Reset = tmReset
+
+        obj.CreateTextureRequest = tmCreateTextureRequest
+        obj.RequestTexture = tmRequestTexture
+        obj.CancelTexture = tmCancelTexture
+        obj.ReceiveTexture = tmReceiveTexture
+        obj.RemoveTexture = tmRemoveTexture
+
+        obj.Finish = tmFinish
+
+        obj.Reset()
+        m.TextureManager = obj
+    end if
+
+    return m.TextureManager
+end function
+
+' remove a texture from the texture manager
+sub tmRemoveTexture(url as dynamic, doLog = false as boolean)
+    if url = invalid then return
+    if doLog = true then Debug("unloading bitmap url from texture manager: " + tostr(url))
+    m.TManager.UnloadBitmap(url)
+end sub
+
+' Adds an item to the list and increments the list count. The key is the textures id
+sub tmAddItem(id as integer, value as dynamic)
+    m.RequestList.AddReplace(id.toStr(), value)
+    m.ListCount = m.ListCount + 1
+end sub
+
+' Removes an item from the list, decrements the count
+function tmRemoveItem(id as integer) as dynamic
+    key   = id.toStr()
+    value = m.RequestList.LookUp(key)
+
+    if value = invalid then return invalid
+
+    m.RequestList.Delete(key)
+    m.ListCount = m.ListCount - 1
+
+    return value
+end function
+
+function tmGetItem(id as integer) as dynamic
+    return m.RequestList[id.toStr()]
+end function
+
+' Resets the list by emptying the manager and clearing
+' out any items remaing, resets all values
+sub tmReset()
+    ' cancel any pending requests
+    if m.ListCount <> invalid and m.ListCount > 0 then
+        for each key in m.RequestList
+            m.CancelTexture(m.RequestList[key])
+        end for
+    end if
+
+    m.TManager.CleanUp()
+    m.RequestList.Clear()
+
+    m.ListCount = 0
+    m.SendCount = 0
+    m.ReceiveCount = 0
+end sub
+
+sub tmCancelTexture(context as object)
+    if context <> invalid and context.textureRequest <> invalid then
+        ' increment the count before canceling.
+        m.ReceiveCount = m.ReceiveCount + 1
+        m.TManager.CancelRequest(context.textureRequest)
+    end if
+end sub
+
+' Each texture object is sent to this function, which creates the texturerequest and sends it
+' It also increments the sendcount
+sub tmRequestTexture(component as object, context as object)
+    if m.timerTextureManger = invalid then m.timerTextureManger = createtimer("textureManagerRequest")
+    if m.SendCount = m.ReceiveCount then m.timerTextureManger.mark()
+
+    request = m.CreateTextureRequest(context)
+
+    if context.retriesRemaining = invalid then
+        context.retriesRemaining = 3
+    end if
+
+    ' TODO(schuyler): Figure out how to ignore requests that come back after the
+    ' screen is gone. Screen ID may work, but we may also want to keep some
+    ' components around when they're the next screen down (e.g. dialogs, overlays, ...).
+    ' Maybe components just generally need a way to know whether or not they've
+    ' been discarded.
+
+    ' Add the item into the async list
+    m.AddItem(request.getID(), context)
+    ' asynchronously request the texture
+    m.TManager.RequestTexture(request)
+    ' Increment the send count
+    m.SendCount = m.SendCount + 1
+    ' Return the current total sent
+
+    ' Debug("texture request: " + tostr(m.SendCount) + "; " + texture.Url)
+
+    ' Stash some references
+    context.textureRequest = request
+    context.component = component
+end sub
+
+function tmCreateTextureRequest(context as object) as object
+    request = CreateObject("roTextureRequest", context.url)
+
+    ' texture requests expose the ifHttpAgent interface. We can set headers
+    ' and certificates if needed. AddPlexHeaders?
+    if left(context.url, 5) = "https" then
+        request.SetCertificatesFile("common:/certs/ca-bundle.crt")
+    end if
+
+    if context.scaleSize = true then
+        request.SetSize(context.width, context.height)
+        request.SetScaleMode(context.scaleMode)
+    end if
+
+    return request
+end function
+
+' This function receives the texture and processes it, if successful it increments the receive count
+function tmReceiveTexture(tmsg as object) as boolean
+    Debug("Received texture event")
+    ' Get the returned state
+    state = tmsg.GetState()
+
+    context = m.getItem(tmsg.getID())
+
+    ' TODO(schuyler): See above. Somehow detect and discard textures for closed screens?
+
+    if state = m.STATE_CANCELLED then
+        Debug("Cancelled Texture Request. State : " + state.toStr())
+        m.RemoveItem(tmsg.getID())
+        return false
+    end if
+
+    ' If return state is Ready, Failed, or Cancelled - either case, remove it from the list
+    if state = m.STATE_READY or state >= m.STATE_FAILED
+        ' Removed the received texture from the asynclist. But do not increment the received count
+        m.RemoveItem(tmsg.getID())
+
+        ' There SHOULD ALWAYS be one in there if used properly. This shouldn't
+        ' happen anymore now that we cancel textures during cleanup (reset)
+        if context = invalid then
+            WARN("texture received is invalid: state " + tostr(state))
+            return false
+        end if
+
+        bitmap = tmsg.GetBitmap()
+
+        ' A state of 3 with a valid bitmap is complete
+        if state = m.STATE_READY and bitmap <> invalid
+            ' Increment the receive count and get rid of the texture request
+            m.ReceiveCount = m.ReceiveCount + 1
+            context.textureRequest = invalid
+
+            ' Debug("texture request recv: " + tostr(m.ReceiveCount) + "; " + texture.Url)
+
+            context.component.SetBitmap(bitmap)
+
+            return true
+        ' If a failure occurs you can try to resend it, but usually it is a more serious problem which
+        ' can put you in an endless loop if you dont put a limit on it.
+        else if state = m.STATE_FAILED and context.retriesRemaining > 0 then
+            ' on any failure, we must remove the draw lock
+            if Locks().Unlock("drawAll") = true then
+                CompositorScreen().drawAll()
+            end if
+
+            ' Rebuild and resend
+            context.retriesRemaining = context.retriesRemaining - 1
+            context.request = m.CreateTextureRequest(context)
+            m.AddItem(context.request.getID(), context)
+            m.TManager.RequestTexture(context.request)
+
+            str = "Resend Texture Request. State : " + state.toStr()
+            str = str + "  Bitmap: " + type(tmsg.GetBitmap()) + "  retriesRemaining: " + texture.retriesRemaining.toStr()
+            str = str + " URI: " + context.url
+            Debug(str)
+
+            return false
+        ' This can occur with the dylnamic allocation when the textures are not removed from the queue fast enough
+        ' or the resend count has expired, cancelled etc...
+        else
+            ' on any failure, we must remove the draw lock
+            if Locks().Unlock("drawAll") = true then
+                CompositorScreen().drawAll()
+            end if
+
+            ' I've run into the issue with duplicate urls causing this issue. It
+            ' might be due to unloading bitmaps to early or running GC (which we
+            ' really need to keep for now)
+            if state = m.STATE_READY then
+                ' Rebuild and resend
+                context.retriesRemaining = context.retriesRemaining - 1
+                context.request = m.CreateTextureRequest(context)
+                m.AddItem(context.request.getID(), context)
+                m.TManager.RequestTexture(context.request)
+
+                str = "texture Ready, but bitmap invalid -- Resend Texture Request. State : " + state.toStr()
+                str = str + "  Bitmap: " + type(tmsg.GetBitmap()) + "  retriesRemaining: " + context.retriesRemaining.toStr()
+                str = str + " URI: " + context.url
+                Debug(str)
+
+                return false
+            else
+                m.ReceiveCount = m.ReceiveCount + 1
+
+                ' TODO(schuyler): Should we notify the component? Call SetBitmap(invalid)?
+
+                str = "Handled Failure with blank (card) Image. State: " + state.toStr() + "  Bitmap: " + type(tmsg.GetBitmap())
+                str = str + " URI: " + context.url
+                Debug(str)
+
+                return true
+            end if
+
+            str = "Unhandled Failure. State: " + state.toStr() + "  Bitmap: " + type(tmsg.GetBitmap())
+            str = str + " URI: " + context.url
+            Debug(str)
+
+            return false
+        end if
+
+    end if
+
+    ' Otherwise it is some other code such as downloading if it even exists.  Never seen it
+    return false
+end function
+
+sub tmReplaceSprite(texture as object, screen as object)
+    if texture.sprite = invalid then
+        WARN("we tried to draw to an invalid sprite!")
+        return
+    end if
+
+    ' we cannot blindly draw new objects on a region from a downloaded texture.
+    ' If any other area uses this same bitmap (url) the overlays will stack as
+    ' they are all shared/references to each other. We will need to create a new
+    ' bitmap and draw on it.
+
+    ' copy the original bitmap (create same size bitmap and draw original on
+    ' top) we shouldn't have to worry about memory cleanup as we will be placing
+    ' this bitmap in a sprite, which automatically gets cleaned up.
+    copyBM=createobject("roBitmap", {width: texture.bitmap.getWidth(), height:texture.bitmap.getHeight(), AlphaEnable: false})
+    copyBM.drawObject(0, 0, texture.bitmap)
+    region = CreateObject("roRegion", copyBM, 0, 0, copyBM.GetWidth(), copyBM.GetHeight())
+
+' TODO(rob) overlays/cards: new class?
+'    ' check the texture item for any overlays. We will draw the overlays as needed.
+'    item = texture.item
+'    if item <> invalid and item.bitmapOverlay <> invalid then
+'        region.setAlphaEnable(true)
+'        for each overlay in item.bitmapoverlay
+'            if overlay.func = "DrawRect" then
+'                ' set bitmap alpha enabled for overlay rect
+'                region.drawRect(overlay.x, overlay.y, overlay.w, overlay.h, overlay.color)
+'            else if overlay.func = "DrawText" then
+'                if overlay.center = true then
+'                    title_coords = uiCenterText(overlay.text, overlay.w, overlay.h-overlay.y, overlay.font)
+'                    ' we need to make sure we get the center of the specified y offset
+'                    title_coords.y = overlay.y+title_coords.y
+'                    ' if x is specified, it will be overriden
+'                    if overlay.x <> invalid then title_coords.x = overlay.x
+'                end if
+'                regionTextTrunc(region, region.getWidth()-title_coords.x, overlay.text, title_coords.x, title_coords.y, overlay.antiAliasColor, overlay.color, overlay.font)
+'            else
+'                Debug("tmReplaceSprite::we don't know how to support this overlay!")
+'                DebugPrint(overlay)
+'            end if
+'        end for
+'    end if
+
+
+' TODO(rob) sprites no longer have data (yet) in this iteration
+'    ' set the full url in the sprites data (needed if we want to unload it)
+'    spriteData = texture.sprite.getdata()
+'    spriteData.TMurl = texture.Url
+'    spriteData.isLoaded = true
+'    sprite.setData(spriteData)
+
+    ' replace the existing sprite region
+    texture.sprite.setDrawableFlag(true)
+    texture.sprite.setregion(region)
+    CompositorScreen().drawAll()
+
+    texture.bitmap = invalid
+    region = invalid
+    m.finish()
+end sub
+
+sub tmFinish()
+    if m.ReceiveCount >= m.SendCount then
+        '   texture.ResendCount'or then
+        m.timerTextureManger.LogElapsedTime("Textures total send/received " + tostr(m.SendCount))
+        m.timerTextureManger = invalid
+        m.SendCount = 0
+        m.ReceiveCount = 0
+
+        ' we will need to verify after we receive the textures, that the focus
+        ' sprite, if displayed, is focused on a valid sprite. Sometimes we
+        ' replace existing sprites and remove them, so we may have focused on
+        ' an invalid/remove sprite (grid screen)
+
+        ' TODO(rob) this could probably use a better place. The main time this
+        ' crops us is on a grid screen when we have forced a remote release -
+        ' I.E. the user is holding down a button to scroll, but we have reached
+        ' the end of the grid.
+
+        'TODO(rob) focus logic doesn't exist in this iteration
+        ' verifyFocusIsValid(Application().roScreen)
+
+        ' release the draw lock once we have received all the textures
+        if Locks().Unlock("drawAll") = true then
+            CompositorScreen().drawAll()
+        end if
+    end if
+end sub
