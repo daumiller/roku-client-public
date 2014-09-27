@@ -5,6 +5,7 @@ function LoadingScreen() as object
 
         obj.show = loadingScreenShow
         obj.activate = loadingActivate
+        obj.deactivate = loadingDeactivate
         obj.handleMessage = loadingHandleMessage
         obj.onWaitTimer = loadingOnWaitTimer
         obj.createBackground = loadingCreateBackground
@@ -15,6 +16,10 @@ function LoadingScreen() as object
 
     return m.LoadingScreen
 end function
+
+sub loadingDeactivate(screen as dynamic)
+    m.screen.close()
+end sub
 
 Function createLoadingScreen() As Object
     obj = CreateObject("roAssociativeArray")
