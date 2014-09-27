@@ -173,7 +173,13 @@ function appProcessOneMessage(timeout)
             if m.screens[i].HandleMessage(msg) then exit for
         end for
 
-        if type(msg) = "roSocketEvent" then
+        if type(msg) = "roTextureRequestEvent" then
+            ' TODO(rob) we should be tracking roTextureRequestEvent by screenID
+            ' Only one roScreen is available at a time, but we want to ignore
+            ' any requests that might come in for a prevoius screen. The logic
+            ' to handle that should just be added to the TextureManager
+             TextureManager().ReceiveTexture(msg)
+        else if type(msg) = "roSocketEvent" then
             callback = m.socketCallbacks[msg.getSocketID().tostr()]
             if callback <> invalid then
                 callback.Call([msg])

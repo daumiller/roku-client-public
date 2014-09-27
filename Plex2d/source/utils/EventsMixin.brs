@@ -62,7 +62,7 @@ sub eventsOff(eventName as dynamic, callback as dynamic)
     end if
 end sub
 
-sub eventsTrigger(eventName as string, args as object)
+sub eventsTrigger(eventName as string, args=[] as object)
     if m.eventsCallbacks = invalid then return
 
     callbacks = m.eventsCallbacks[eventName]

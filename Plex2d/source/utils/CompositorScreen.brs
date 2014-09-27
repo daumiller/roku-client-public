@@ -41,12 +41,12 @@ end sub
 
 sub compositorDrawComponent(component)
     ' Let the component draw itself to its own regions
-    regions = component.Draw()
+    drawableComponents = component.Draw()
 
     ' Then convert those regions to sprites on our screen
-    for each region in regions
-        Debug("******** Creating " + tostr(region.ClassName) + " sprite " + tostr(region.width) + "x" + tostr(region.height) + " at (" + tostr(region.x) + ", " + tostr(region.y) + ")")
-        m.compositor.NewSprite(region.x + region.offsetX, region.y + region.offsetY, region.region)
+    for each comp in drawableComponents
+        Debug("******** Drawing " + tostr(comp))
+        comp.sprite = m.compositor.NewSprite(comp.x, comp.y, comp.region)
     next
 end sub
 

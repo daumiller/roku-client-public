@@ -8,7 +8,8 @@ function ImageClass() as object
         obj.Draw = imageDraw
         obj.ScaleRegion = imageScaleRegion
 
-        obj.FromUrl = imageFromUrl
+        obj.SetBitmap = imageSetBitmap
+        obj.SetPlaceholder = imageSetPlaceholder
         obj.FromLocal = imageFromLocal
 
         m.ImageClass = obj
@@ -18,15 +19,28 @@ function ImageClass() as object
 end function
 
 function imageDraw() as object
-    if instr(1, type(m.source), "String") > 0 then
-        if left(m.source, 4) = "http" then
-            m.FromUrl()
+    if m.bitmap <> invalid then
+        ' Nothing to do, region should already be set based on bitmap
+    else if left(m.source, 4) = "http" then
+        if m.placeholder <> invalid then
+            ' Draw the placeholder for now, but don't keep a reference to the bitmap.
+            m.FromLocal(m.placeholder)
         else
-            m.FromLocal()
+            ' Just do the basic region initialization until we get a real bitmap.
+            m.InitRegion()
         end if
-    ' TODO(rob) not sure if this is needed anymore.
-    else if type(m.source) = "roRegion" then
-        m.region = m.source
+
+        ' Request texture through the TextureManager
+        context = {
+            url: m.source,
+            width: firstOf(m.preferredWidth, m.width),
+            height: firstOf(m.preferredHeight, m.height),
+            scaleSize: true,
+            scaleMode: 1
+        }
+        TextureManager().RequestTexture(m, context)
+    else
+        m.bitmap = m.FromLocal(m.source)
     end if
 
     if m.preferredWidth <> invalid and m.preferredHeight <> invalid then
@@ -47,6 +61,9 @@ function createImage(source as dynamic, width=0 as integer, height=0 as integer)
     obj.width = width
     obj.height = height
 
+    obj.bitmap = invalid
+    obj.placeholder = invalid
+
     if width > 0 and height > 0 then
         obj.preferredWidth = width
         obj.preferredHeight = height
@@ -55,16 +72,37 @@ function createImage(source as dynamic, width=0 as integer, height=0 as integer)
     return obj
 end function
 
-' TODO(rob) how to handle urls (TextureManger)
-' Previous code, we'd create a blank region for the tmanager to replace.
-sub imageFromUrl()
-    m.InitRegion()
+function imageFromLocal(source as string) as dynamic
+    bmp = CreateObject("roBitmap", source)
+
+    if bmp <> invalid then
+        m.region = CreateObject("roRegion", bmp, 0, 0, bmp.GetWidth(), bmp.GetHeight())
+        m.ScaleRegion(firstOf(m.preferredWidth, m.width), firstOf(m.preferredHeight, m.height))
+    else
+        Error("Failed to load local image at " + source)
+        m.InitRegion()
+    end if
+
+    return bmp
+end function
+
+sub imageSetBitmap(bmp as object, makeCopy=true as boolean)
+    if makeCopy then
+        m.bitmap = CreateObject("roBitmap", {width: bmp.GetWidth(), height: bmp.GetHeight(), alphaEnable: false})
+        m.bitmap.DrawObject(0, 0, bmp)
+    else
+        m.bitmap = bmp
+    end if
+
+    m.region = CreateObject("roRegion", m.bitmap, 0, 0, m.bitmap.GetWidth(), m.bitmap.GetHeight())
+    m.ScaleRegion(firstOf(m.preferredWidth, m.width), firstOf(m.preferredHeight, m.height))
+
+    Debug("Got a bitmap from a texture event")
+    m.Redraw()
 end sub
 
-sub imageFromLocal()
-    bmp = CreateObject("roBitmap", m.source)
-    m.region = CreateObject("roRegion", bmp, 0, 0, bmp.GetWidth(), bmp.GetHeight())
-    m.ScaleRegion(firstOf(m.preferredWidth, m.width), firstOf(m.preferredHeight, m.height))
+sub imageSetPlaceholder(source as string)
+    m.placeholder = source
 end sub
 
 sub imageScaleRegion(width as integer, height as integer)

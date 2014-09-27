@@ -30,9 +30,10 @@ sub compTestGetComponents()
     'block.SetFrame(100, 100, 200, 200)
     'm.components.Push(block)
 
-    image = createimage("pkg:/images/plex-chevron.png")
-    image.SetFrame(100, 100, 200, 200)
-    m.components.Push(image)
+    urlImage = createImage("https://plex.tv/assets/img/pms-icon-f921d4d3a1a02c4437faa9e7fd4ba5cc.png", 200, 200)
+    urlImage.SetFrame(100, 100, 200, 200)
+    urlImage.SetPlaceholder("pkg:/images/plex-chevron.png")
+    m.components.Push(urlImage)
 
     ' Add some labels
     lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non luctus lorem, non vestibulum metus. Nunc ut nulla eu erat imperdiet posuere. Vivamus venenatis elementum vestibulum. Phasellus ut erat ullamcorper, fermentum mauris nec, hendrerit lacus. Suspendisse sodales dignissim leo. Etiam ornare erat ac ligula pulvinar, elementum dapibus arcu elementum. Mauris neque tellus, maximus vitae laoreet at, hendrerit rutrum turpis. Etiam vel imperdiet tortor."

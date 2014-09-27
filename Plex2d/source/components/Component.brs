@@ -24,6 +24,7 @@ function ComponentClass() as object
         obj.Init = componentInit
         obj.InitRegion = compInitRegion
         obj.Draw = compDraw
+        obj.Redraw = compRedraw
         obj.GetPreferredWidth = compGetPreferredWidth
         obj.GetPreferredHeight = compGetPreferredHeight
         obj.GetContentArea = compGetContentArea
@@ -55,6 +56,15 @@ function compDraw() as object
 
     return [m]
 end function
+
+sub compRedraw()
+    if m.sprite <> invalid then
+        ' TODO(schuyler): Is this the clever solution or a hack?
+        m.sprite.SetDrawableFlag(true)
+        m.sprite.SetRegion(m.region)
+        CompositorScreen().DrawAll()
+    end if
+end sub
 
 function compGetPreferredWidth() as integer
     return firstOf(m.preferredWidth, m.width)
