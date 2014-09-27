@@ -26,9 +26,13 @@ sub compTestGetComponents()
     m.components.Clear()
 
     ' Let's start simple, just add a colored block at a fixed position.
-    block = createBlock(Colors().PlexClr)
-    block.SetFrame(100, 100, 200, 200)
-    m.components.Push(block)
+    'block = createBlock(Colors().PlexClr)
+    'block.SetFrame(100, 100, 200, 200)
+    'm.components.Push(block)
+
+    image = createimage("pkg:/images/plex-chevron.png")
+    image.SetFrame(100, 100, 200, 200)
+    m.components.Push(image)
 
     ' Add some labels
     lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non luctus lorem, non vestibulum metus. Nunc ut nulla eu erat imperdiet posuere. Vivamus venenatis elementum vestibulum. Phasellus ut erat ullamcorper, fermentum mauris nec, hendrerit lacus. Suspendisse sodales dignissim leo. Etiam ornare erat ac ligula pulvinar, elementum dapibus arcu elementum. Mauris neque tellus, maximus vitae laoreet at, hendrerit rutrum turpis. Etiam vel imperdiet tortor."
