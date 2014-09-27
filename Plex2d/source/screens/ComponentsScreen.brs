@@ -32,6 +32,7 @@ function ComponentsScreen() as object
         obj.Init = compInit
         obj.Show = compShow
         obj.Deactivate = compDeactivate
+        obj.OnAccountChange = compOnAccountChange
 
         obj.GetComponents = compGetComponents
 
@@ -50,6 +51,8 @@ function ComponentsScreen() as object
         obj.OnKeyPress = compOnKeyPress
         obj.OnKeyHeld = compOnKeyHeld
         obj.OnKeyRelease = compOnKeyRelease
+
+        Application().On("change:user", createCallable("OnAccountChange", obj))
 
         m.ComponentsScreen = obj
     end if
@@ -245,6 +248,10 @@ sub compOnItemSelected(item as object)
     if item.command <> invalid then
         if item.command = "cardTestScreen" then
             Application().PushScreen(createCardTestScreen())
+        else if item.command = "sign_out" then
+            MyPlexAccount().SignOut()
+        else if item.command = "sign_in" then
+            Application().pushScreen(createPinScreen())
         else
             Debug("command not defined: " + tostr(item.command))
         end if
@@ -688,4 +695,9 @@ sub compLazyLoadExec(components as object, zOrder=1 as integer)
         end if
     end for
     perfTimer().Log("lazy-load components")
+end sub
+
+sub compOnAccountChange(account as dynamic)
+    Debug("Account changed to " + tostr(account.username) )
+    Application().pushScreen(createLoadingScreen())
 end sub
