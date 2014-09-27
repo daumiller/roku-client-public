@@ -6,6 +6,8 @@ function VBoxClass() as object
 
         ' Methods
         obj.PerformLayout = vboxPerformLayout
+        obj.GetPreferredWidth = vboxGetPreferredWidth
+        obj.GetPreferredHeight = vboxGetPreferredHeight
 
         m.VBoxClass = obj
     end if
@@ -59,3 +61,20 @@ sub vboxPerformLayout()
         component.SetFrame(m.x, offset, m.width, height)
     end while
 end sub
+
+function vboxGetPreferredWidth() as integer
+    maxWidth = 0
+    for each component in m.components
+        width = component.GetPreferredWidth()
+        if width > maxWidth then maxWidth = width
+    next
+    return maxWidth
+end function
+
+function vboxGetPreferredHeight() as integer
+    totalHeight = m.spacing * (m.components.Count() - 1)
+    for each component in m.components
+        totalHeight = totalHeight + component.GetPreferredHeight()
+    next
+    return totalHeight
+end function

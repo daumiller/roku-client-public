@@ -6,6 +6,8 @@ function HBoxClass() as object
 
         ' Methods
         obj.PerformLayout = hboxPerformLayout
+        obj.GetPreferredWidth = hboxGetPreferredWidth
+        obj.GetPreferredHeight = hboxGetPreferredHeight
 
         m.HBoxClass = obj
     end if
@@ -59,3 +61,22 @@ sub hboxPerformLayout()
         component.SetFrame(offset, m.y, width, m.height)
     end while
 end sub
+
+function hboxGetPreferredWidth() as integer
+    if m.width <> 0 then return m.width
+
+    totalWidth = m.spacing * (m.components.Count() - 1)
+    for each component in m.components
+        totalWidth = totalWidth + component.GetPreferredWidth()
+    next
+    return totalWidth
+end function
+
+function hboxGetPreferredHeight() as integer
+    maxHeight = 0
+    for each component in m.components
+        height = component.GetPreferredHeight()
+        if height > maxHeight then maxHeight = height
+    next
+    return maxHeight
+end function

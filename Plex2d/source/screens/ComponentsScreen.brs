@@ -46,9 +46,13 @@ sub compInit()
     m.focusedItem = invalid
     m.keyPressTimer = invalid
     m.lastKey = -1
+    m.customFonts = CreateObject("roAssociativeArray")
 end sub
 
 sub compShow()
+    ' TODO(schuyler): Can we avoid always resetting and drawing everything?
+    m.screen.Reset()
+
     m.GetComponents()
 
     for each comp in m.components

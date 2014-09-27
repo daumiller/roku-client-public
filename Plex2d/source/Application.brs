@@ -240,8 +240,8 @@ sub appOnInitialized()
 
     ' TODO(schuyler): This is clearly bogus, but we need to show some sort of screen
     if m.screens.Count() = 0 then
-        ' TODO(schuyler): Temporarily forcing test screen
-        m.pushScreen(createComponentTestScreen())
+        ' TODO(schuyler): Temporarily forcing PIN screen
+        m.pushScreen(createPinScreen())
     end if
 end sub
 

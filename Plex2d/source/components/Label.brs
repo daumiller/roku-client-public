@@ -8,6 +8,7 @@ function LabelClass() as object
         obj.Draw = labelDraw
         obj.GetPreferredWidth = labelGetPreferredWidth
         obj.GetPreferredHeight = labelGetPreferredHeight
+        obj.SetColor = labelSetColor
 
         obj.WrapText = labelWrapText
         obj.TruncateText = labelTruncateText
@@ -24,6 +25,8 @@ function createLabel(text as string, font as object) as object
     obj.Append(LabelClass())
 
     obj.Init()
+
+    obj.SetColor(Colors().TextClr)
 
     obj.text = text
     obj.font = font
@@ -85,8 +88,23 @@ function labelDraw() as object
         yOffset = yOffset + lineHeight
     next
 
-    return [{x: m.x, y: m.y, region: m.region}]
+    return [m]
 end function
+
+sub labelSetColor(fgColor as integer, bgColor=invalid as dynamic)
+    ' We commonly want a transparent background, but in order for antialiasing
+    ' to work well we have to set the background to be the same as the
+    ' foreground apart from the alpha channel. So we allow the background to
+    ' be omitted as a convenience for transparent.
+
+    m.fgColor = fgColor
+
+    if bgColor = invalid then
+        m.bgColor = (fgColor and &hffffff00)
+    else
+        m.bgColor = bgColor
+    end if
+end sub
 
 function labelWrapText() as object
     lines = []

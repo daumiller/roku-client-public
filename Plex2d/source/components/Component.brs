@@ -37,7 +37,7 @@ end sub
 function compDraw() as object
     m.InitRegion()
 
-    return [{x: m.x, y: m.y, region: m.region}]
+    return [m]
 end function
 
 function compGetCenterOffsets(width as integer, height as integer) as object
