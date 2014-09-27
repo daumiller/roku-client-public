@@ -240,7 +240,8 @@ sub appOnInitialized()
 
     ' TODO(schuyler): This is clearly bogus, but we need to show some sort of screen
     if m.screens.Count() = 0 then
-        m.PushScreen(createWelcomeScreen())
+        ' TODO(schuyler): Temporarily forcing test screen
+        m.pushScreen(createComponentTestScreen())
     end if
 end sub
 

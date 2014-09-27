@@ -1,7 +1,5 @@
 function BaseScreen()
-    obj = m.BaseScreen
-
-    if obj = invalid then
+    if m.BaseScreen = invalid then
         obj = CreateObject("roAssociativeArray")
 
         ' Standard screen properties
@@ -9,6 +7,7 @@ function BaseScreen()
         obj.screenName = "Unknown"
 
         ' Standard screen methods
+        obj.Init = bsInit
         obj.Show = bsShow
         obj.Activate = bsActivate
         obj.Deactivate = bsDeactivate
@@ -19,10 +18,12 @@ function BaseScreen()
         m.BaseScreen = obj
     end if
 
-    Application().AssignScreenID(obj)
-
-    return obj
+    return m.BaseScreen
 end function
+
+sub bsInit()
+    Application().AssignScreenID(m)
+end sub
 
 sub bsShow()
     ' m.screen = screen
@@ -41,9 +42,11 @@ sub bsDestroy()
 end sub
 
 function bsHandleMessage(msg)
-    if msg.isScreenClosed() then
-        Application().PopScreen(m)
-        return true
+    if msg <> invalid and type(msg) <> "roUniversalControlEvent" then
+        if msg.isScreenClosed() then
+            Application().PopScreen(m)
+            return true
+        end if
     end if
 
     return false
