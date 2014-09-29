@@ -78,7 +78,7 @@ sub appPushScreen(screen)
     Debug("Pushing screenID " + tostr(screen.screenID) + " onto stack - " + screen.screenName + ", total screens:" + tostr(m.screens.Count()))
 
     if oldScreen <> invalid then
-        oldScreen.Deactivate()
+        oldScreen.Deactivate(screen)
     end if
 
     screen.Show()
