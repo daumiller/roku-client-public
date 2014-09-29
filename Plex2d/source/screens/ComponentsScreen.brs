@@ -476,14 +476,6 @@ sub compCalculateShift(toFocus as object)
             right: invalid
         }
 
-        ' demandLeft: testing ( it seems we expect a hub/container to be set at a specific X offset, after shifting )
-        ' (total hack) ignore demandLeft if first/last container - there has to be a better way.
-        ' TODO(rob) determine a way to calculate the current right offset of ALL containers. We need to make sure we
-        ' don't shift the last couple containers too far left ( due to demandLeft )
-        if tofocus.parent.parent <> invalid and ( tofocus.parent.parent.components[0].id = tofocus.parent.id or tofocus.parent.parent.components.peek().id = tofocus.parent.id) then
-            shift.demandLeft = invalid
-        end if
-
         ' calculate the min/max left/right offsets in the parent container
         for each component in parentCont
             focusRect = computeRect(component)
