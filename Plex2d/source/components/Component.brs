@@ -161,7 +161,10 @@ sub compDestroy()
     ' Clean any objects in memory (bitmaps, regions and sprites)
     m.region = invalid
     m.bitmap = invalid
-    m.sprite = invalid
+    if m.sprite <> invalid then
+        m.sprite.remove()
+        m.sprite = invalid
+    end if
     if m.components <> invalid then
         for each comp in m.components
             comp.destroy()
