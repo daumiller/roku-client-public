@@ -24,6 +24,7 @@ function TextureManager() as object
         obj.RemoveItem = tmRemoveItem
         obj.GetItem = tmGetItem
         obj.Reset = tmReset
+        obj.CancelAll = tmCancelAll
 
         obj.CreateTextureRequest = tmCreateTextureRequest
         obj.RequestTexture = tmRequestTexture
@@ -68,15 +69,21 @@ function tmGetItem(id as integer) as dynamic
     return m.RequestList[id.toStr()]
 end function
 
-' Resets the list by emptying the manager and clearing
-' out any items remaing, resets all values
-sub tmReset()
-    ' cancel any pending requests
+sub tmCancelAll()
     if m.ListCount <> invalid and m.ListCount > 0 then
         for each key in m.RequestList
             m.CancelTexture(m.RequestList[key])
         end for
     end if
+    ' TODO(rob) should we clear the RequestList and counts? The question is,
+    ' do we want requests we couldn't cancel to be processed or not?
+end sub
+
+' Resets the list by emptying the manager and clearing
+' out any items remaing, resets all values
+sub tmReset()
+    ' cancel any pending requests
+    m.CancelAll()
 
     m.TManager.CleanUp()
     m.RequestList.Clear()

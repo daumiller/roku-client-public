@@ -30,6 +30,12 @@ function imageDraw() as object
             m.InitRegion()
         end if
 
+        ' TODO(rob) remove this in production or when we start querying the PMS
+        ' for now, we want the url to be unique to the size of the image
+        if instr(1, m.source, "roku.rarforge.com") > 0 then
+            m.source = m.source + "?width=" + tostr(m.width) + "&height=" + tostr(m.height)
+        end if
+
         ' Request texture through the TextureManager
         context = {
             url: m.source,

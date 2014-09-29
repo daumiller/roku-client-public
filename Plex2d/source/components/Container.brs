@@ -14,6 +14,7 @@ function ContainerClass() as object
         obj.SetPosition = contSetPosition
         obj.SetDimensions = contSetDimensions
         obj.GetFocusableItems = contGetFocusableItems
+        obj.GetShiftableItems = contGetShiftableItems
 
         m.ContainerClass = obj
     end if
@@ -45,16 +46,22 @@ function contDraw() as object
     regions = CreateObject("roList")
 
     for each component in m.components
-        childRegions = component.Draw()
-        for each region in childRegions
-            regions.Push(region)
-        next
+        ' only load/draw components on screen and in buffer area
+        if component.IsOnScreen(0, 0, ComponentsScreen().ll_load) then
+            childRegions = component.Draw()
+            for each region in childRegions
+                regions.Push(region)
+            next
+        else if component.PerformLayout <> invalid then
+            component.PerformLayout()
+        end if
     next
 
     return regions
 end function
 
 sub contAddComponent(child as object)
+    child.parent = m
     m.components.Push(child)
     m.needsLayout = true
 end sub
@@ -102,5 +109,11 @@ end sub
 sub contGetFocusableItems(arr as object)
     for each component in m.components
         component.GetFocusableItems(arr)
+    next
+end sub
+
+sub contGetShiftableItems(partShift as object, fullShift as object, lazyLoad = invalid as dynamic, deltaX=0 as integer, deltaY=0 as integer)
+    for each component in m.components
+        component.GetShiftableItems(partShift, fullShift, lazyLoad, deltaX, deltaY)
     next
 end sub

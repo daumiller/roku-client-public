@@ -48,8 +48,13 @@ sub compositorDrawComponent(component as object)
 
     ' Then convert those regions to sprites on our screen
     for each comp in drawableComponents
-        Debug("******** Drawing " + tostr(comp))
-        comp.sprite = m.compositor.NewSprite(comp.x, comp.y, comp.region)
+        if comp.IsOnScreen() then
+            zOrder = 1
+        else
+            zOrder = -1
+        end if
+        Debug("******** Drawing " + tostr(comp) + " zOrder:" + tostr(zOrder))
+        comp.sprite = m.compositor.NewSprite(comp.x, comp.y, comp.region, zOrder)
         comp.On("redraw", createCallable("OnComponentRedraw", m, "compositorRedraw"))
     next
 end sub

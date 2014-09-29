@@ -16,6 +16,18 @@ function ComponentsScreen() as object
         obj.kp_INFO = 10
         obj.kp_PLAY = 13
 
+        ' Lazy Load methods and constants
+        ' ll_unload: how far off screen to unload (any direction)
+        ' ll_trigger: when to trigger a lazy load (items within range not loaded). This should be > screen
+        ' ll_load: how many to load when triggered (<= ll_unload, otherwise we'll load more than we allow)
+        ' ll_timerDur: ms to wait before lazy loading the pending off screen components
+        obj.LazyLoadOnTimer = compLazyLoadOnTimer
+        obj.LazyLoadExec = compLazyLoadExec
+        obj.ll_unload = int(1280*4)
+        obj.ll_trigger = int(1280*2)
+        obj.ll_load = int(1280*4)
+        obj.ll_timerDur = 2000
+
         ' Standard screen methods
         obj.Init = compInit
         obj.Show = compShow
@@ -26,6 +38,10 @@ function ComponentsScreen() as object
         ' Manual focus methods
         obj.GetFocusManual = compGetFocusManual
         obj.CalculateFocusPoint = compCalculateFocusPoint
+
+        ' Shifting methods
+        obj.CalculateShift = compCalculateShift
+        obj.ShiftComponents = compShiftComponents
 
         ' Message handling
         obj.HandleMessage = compHandleMessage
@@ -56,6 +72,10 @@ sub compInit()
     m.keyPressTimer = invalid
     m.lastKey = -1
     m.customFonts = CreateObject("roAssociativeArray")
+
+    ' lazy load timer ( loading off screen components )
+    m.lazyLoadTimer = createTimer("lazyLoad")
+    m.lazyLoadTimer.SetDuration(m.ll_timerDur)
 end sub
 
 sub compShow()
@@ -147,6 +167,7 @@ end sub
 sub compOnKeyPress(keyCode as integer, repeat as boolean)
     if keyCode = m.kp_RT or keyCode = m.kp_LT or keyCode = m.kp_UP or keyCode = m.kp_DN then
         if m.focusedItem <> invalid then
+            perfTimer().mark()
             m.screen.ClearDebugSprites()
             m.screen.DrawDebugRect(m.focusX, m.focusY, 15, 15, &hffffffff, true)
 
@@ -182,6 +203,11 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
 
                 ' TODO(schuyler): Do we want to call things like OnBlur and OnFocus to let the components know?
                 m.focusedItem = toFocus
+
+                perfTimer().Log("Determined next focus")
+
+                m.CalculateShift(toFocus)
+
                 m.OnItemFocused(toFocus)
             end if
         end if
@@ -409,3 +435,257 @@ function compGetFocusManual(direction as string) as dynamic
 
     return best.item
 end function
+
+sub compCalculateShift(toFocus as object)
+    if toFocus.fixed = true then return
+    ' TODO(rob) handle vertical shifting. revisit safeLeft/safeRight - we can't
+    ' just assume these arbitary numbers are right.
+    shift = {
+        x: 0
+        y: 0
+        safeRight: 1230
+        safeLeft: 50
+        ' place parent container of the component as this position
+        ' * if invalid, the container will be shifted on screen to
+        '   the shift.safeLeft or shift.safeRight position
+        demandLeft: 300
+    }
+
+    ' verify the component is on the screen if no parent exists
+    if toFocus.parent = invalid then
+        focusRect = computeRect(toFocus)
+        if focusRect.right > shift.safeRight
+            shift.x = shift.safeRight - focusRect.right
+        else if focusRect.left < shift.safeLeft then
+            shift.x = shift.safeLeft - focusRect.left
+        end if
+    ' verify the components parent is on the screen (only tested with hubs)
+    else
+        parentCont = CreateObject("roList")
+        checkComp = toFocus.parent.GetShiftableItems(parentCont, parentCont)
+        cont = {
+            checkShift: invalid
+            left: invalid
+            right: invalid
+        }
+
+        ' demandLeft: testing ( it seems we expect a hub/container to be set at a specific X offset, after shifting )
+        ' (total hack) ignore demandLeft if first/last container - there has to be a better way.
+        ' TODO(rob) determine a way to calculate the current right offset of ALL containers. We need to make sure we
+        ' don't shift the last couple containers too far left ( due to demandLeft )
+        if tofocus.parent.parent <> invalid and ( tofocus.parent.parent.components[0].id = tofocus.parent.id or tofocus.parent.parent.components.peek().id = tofocus.parent.id) then
+            shift.demandLeft = invalid
+        end if
+
+        ' calculate the min/max left/right offsets in the parent container
+        for each component in parentCont
+            focusRect = computeRect(component)
+            if cont.left = invalid or focusRect.left < cont.left then cont.left = focusRect.left
+            if cont.right = invalid or focusRect.right > cont.right then cont.right = focusRect.right
+        next
+
+        ' calculate the shift
+
+        ' shift left: only if the container right is off the screen (safeRight)
+        if cont.right > shift.safeRight
+            if shift.demandLeft <> invalid then
+                shift.x = (cont.left - shift.demandLeft) * -1
+            else
+                shift.x = shift.safeRight - cont.right
+            end if
+        ' shift right (special case): demandLeft<>invalid and container entire container < demandLeft
+        else if shift.demandLeft <> invalid and cont.left < shift.demandLeft and cont.right < shift.demandLeft then
+                shift.x = shift.demandLeft - cont.left
+        ' shift right: if container left is off screen (safeLeft)
+        else if cont.left < shift.safeLeft then
+            if shift.demandLeft <> invalid then
+                shift.x = shift.demandLeft - cont.left
+            else
+                shift.x = shift.safeLeft - cont.left
+            end if
+        end if
+    end if
+
+    if (shift.x <> 0 or shift.y <> 0) then
+        TextureManager().CancelAll()
+        m.screen.hideFocus()
+        m.shiftComponents(shift)
+    end if
+end sub
+
+sub compShiftComponents(shift)
+    ' TODO(rob) the logic below has only been testing shifting the x axis.
+    Debug("shift components by: " + tostr(shift.x) + "," + tostr(shift.y))
+    perfTimer().mark()
+
+    ' partShift: on screen or will be after shift (animate/scroll, partial shifting)
+    ' fullShift: off screen before/after shifting (no animation, shift in full)
+    partShift = CreateObject("roList")
+    fullShift = CreateObject("roList")
+    lazyLoad = CreateObject("roAssociativeArray")
+    for each component in m.components
+        component.GetShiftableItems(partShift, fullShift, lazyLoad, shift.x, shift.y)
+    next
+    perfTimer().Log("Determined shiftable items: " + "onscreen=" + tostr(partShift.count()) + ", offScreen=" + tostr(fullShift.count()))
+
+    ' verify we are not shifting the components to far (first or last component). This
+    ' will modify shift.x based on the first or last component viewable on screen. It
+    ' should be quick to iterate partShift (on screen components after shifting).
+    minMax = {}
+    for each comp in partShift
+        focusRect = computeRect(comp)
+        if minMax.right = invalid or focusRect.right > minMax.right then minMax.right = focusRect.right
+        if minMax.left = invalid or focusRect.left < minMax.left then minMax.left = focusRect.left
+    end for
+    minMax.right = minMax.right + shift.x
+    minMax.left = minMax.left + shift.x
+    if minMax.right < shift.safeRight then
+        shift.x = shift.x - (minMax.right - shift.safeRight)
+    else if minMax.left > shift.safeLeft then
+        shift.x = shift.x + (shift.safeLeft - minMax.left)
+    end if
+    perfTimer().Log("verified first/last on-screen component offsets: left=" + tostr(minMax.left) + ", right=" + tostr(minMax.right))
+
+    ' lazy-load any components that will be on-screen after we shift
+    m.LazyLoadExec(partShift)
+
+    ' Calculate the FPS shift amount. 15 fps seems to be a workable arbitrary number.
+    ' Verify the px shifting are > than the fps, otherwise it's sluggish (non Roku3)
+    fps = 15
+    if shift.x <> 0 and abs(shift.x / fps) < fps then
+        fps = int(abs(shift.x / fps))
+    else if shift.y <> 0 and abs(shift.y / fps) < fps then
+        fps = int(abs(shift.y / fps))
+    end if
+
+    ' TODO(rob) just a quick hack for slower roku's
+    if appSettings().GetGlobal("animationFull") = false then fps = int(fps / 1.5)
+
+    if shift.x < 0 then
+        xd = int((shift.x / fps) + .9)
+    else if shift.x > 0 then
+        xd = int(shift.x / fps)
+    else
+        xd = 0
+    end if
+
+    if shift.y < 0 then
+        yd = int((shift.y / fps) + .9)
+    else if shift.y > 0 then
+        yd = int(shift.y / fps)
+    else
+        yd = 0
+    end if
+
+    ' total px shifted to verfy we shifted the exact amount (when shifting partially)
+    xd_shifted = 0
+    yd_shifted = 0
+
+    ' TODO(rob) only animate shifts if on screen (or will be after shift)
+    for x=1 To fps
+        xd_shifted = xd_shifted + xd
+        yd_shifted = yd_shifted + yd
+
+        ' we need to make sure we shifted the shift_xd amount,
+        ' since can't move pixel by pixel
+        if x = fps then
+            if xd_shifted <> shift.x then
+                if xd < 0 then
+                    xd = xd + (shift.x - xd_shifted)
+                else
+                    xd = xd + (shift.x - xd_shifted)
+                end if
+            end if
+            if yd_shifted <> shift.y then
+                if yd < 0 then
+                    yd = yd + (shift.y - yd_shifted)
+                else
+                    yd = yd + (shift.y - yd_shifted)
+                end if
+            end if
+        end if
+
+        for each comp in partShift
+            comp.ShiftPosition(xd, yd)
+        end for
+        ' draw each shift after all components are shifted
+        m.screen.drawAll()
+    end for
+    perfTimer().Log("Shifted ON screen items, expect *high* ms  (partShift)")
+
+    for each comp in fullShift
+        comp.ShiftPosition(shift.x, shift.y, false)
+    end for
+    perfTimer().Log("Shifted OFF screen items (fullShift)")
+
+    ' draw the focus before we lazy load
+    m.screen.DrawFocus(m.focusedItem, true)
+
+    ' lazy-load any components off screen, but within our range (ll_trigger)
+    ' create a timer to load when the user has stopped shifting (LazyLoadOnTimer)
+    if lazyLoad.trigger = true then
+        lazyLoad.components = CreateObject("roList")
+
+        ' add any off screen component withing range
+        for each candidate in fullShift
+            if candidate.SpriteIsLoaded() = false and candidate.IsOnScreen(0, 0, ComponentsScreen().ll_load) then
+                lazyLoad.components.Push(candidate)
+            end if
+        end for
+        perfTimer().Log("Determined lazy load components (off screen): total=" + tostr(lazyLoad.components.count()))
+
+        if lazyLoad.components.count() > 0 then
+            m.lazyLoadTimer.active = true
+            m.lazyLoadTimer.components = lazyLoad.components
+            Application().AddTimer(m.lazyLoadTimer, createCallable("LazyLoadOnTimer", m))
+            m.lazyLoadTimer.mark()
+        end if
+    end if
+
+    if lazyLoad.components = invalid then
+        m.lazyLoadTimer.active = false
+        m.lazyLoadTimer.components = invalid
+    end if
+
+end sub
+
+' Handle expiration of lazy load timer. We expect all components contained
+' to be off screen. Shifting the components will reset the list.
+sub compLazyLoadOnTimer(timer as object)
+    if timer.components = invalid or timer.components.count() = 0 then return
+
+    ' TODO(rob) we should set device as an AppSettings global
+    device = CreateObject("roDeviceInfo")
+
+    ' mark timer to retry if the last keypress is < timer duration
+    if device.TimeSinceLastKeypress()*1000 >= timer.durationmillis then
+        Debug("compLazyLoadOnTimer:: exec lazy load")
+        m.LazyLoadExec(timer.components, -1)
+    else
+        ' re-mark the timer to retry when the user has stopped moving
+        Debug("compLazyLoadOnTimer:: re-mark and retry")
+        timer.active = true
+        timer.mark()
+    end if
+end sub
+
+' TODO(rob) assumed we know the zOrder since we call exec the lazyLoad
+' by passing a list of components either on screen or off (which may not
+' alway be true in the future)
+sub compLazyLoadExec(components as object, zOrder=1 as integer)
+    if components.count() = 0 then return
+    for each comp in components
+        if comp.SpriteIsLoaded() = false then
+            Debug("******** Drawing (lazy-load) zOrder " + tostr(zOrder) + ", " + tostr(comp))
+            comp.draw()
+            ' add the sprite placeholder to the compositors screen
+            if comp.sprite = invalid then
+                comp.sprite = m.screen.compositor.NewSprite(comp.x, comp.y, comp.region, zOrder)
+            end if
+            ' set the sprites data to let all know it's NOT loaded yet
+            comp.sprite.setData({lazyLoad: true, retainThisKey: true})
+            comp.On("redraw", createCallable("OnComponentRedraw", CompositorScreen(), "compositorRedraw"))
+        end if
+    end for
+    perfTimer().Log("lazy-load components")
+end sub

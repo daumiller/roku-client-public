@@ -180,7 +180,10 @@ sub hubPerformLayout()
     if m.moreButton <> invalid then
         m.moreButton.x = rightX - m.moreButton.width
         m.moreButton.y = m.y + contentArea.y + contentArea.height - m.moreButton.height
-        m.components.AddTail(m.moreButton)
+        ' TODO(rob) any reason we used AddTail intead of AddComponent? changed this to utilized some extra
+        ' logic in AddComponent (adding the parent to the component)
+        ' m.components.AddTail(m.moreButton)
+        m.AddComponent(m.moreButton)
     end if
 end sub
 
@@ -216,7 +219,10 @@ sub hubShowMoreButton(moreCommand as dynamic)
         m.moreButton.width = 72
         m.moreButton.height = 44
         m.moreButton.fixed = false
-        m.components.AddTail(m.moreButton)
+        ' TODO(rob) any reason we used AddTail intead of AddComponent? changed this to utilized some extra
+        ' logic in AddComponent (adding the parent to the component)
+        ' m.components.AddTail(m.moreButton)
+        m.AddComponent(m.moreButton)
     end if
 end sub
 

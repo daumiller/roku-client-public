@@ -12,6 +12,7 @@ function CompositeClass() as object
         ' of the Container definition.
         '
         obj.GetFocusableItems = compGetFocusableItems
+        obj.GetShiftableItems = compGetShiftableItems
 
         m.CompositeClass = obj
     end if
