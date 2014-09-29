@@ -83,3 +83,21 @@ function timerRemainingMillis()
 
     return 0
 end function
+
+function PerfTimer() as object
+    if m.PerfTimer = invalid then
+        obj = createTimer("perfTimer")
+
+        obj.Log = perfTimerLog
+
+        m.PerfTimer = obj
+    end if
+
+    return m.PerfTimer
+end function
+
+sub perfTimerLog(msg = "" as string)
+    if m.active = true then
+        m.LogElapsedTime("++++++++++ PERFORMANCE: " + tostr(msg))
+    end if
+end sub
