@@ -71,6 +71,7 @@ sub hubPerformLayout()
 
     if m.layout = m.LAYOUT_HERO_4 or m.layout = m.LAYOUT_HERO_3 then
         component = m.components.Next()
+        component.fixed = false
 
         ' TODO(schuyler): Fast forward to the future and suppose that our
         ' components are cards with artwork based on metadata items. We'll
@@ -139,6 +140,7 @@ sub hubPerformLayout()
         for colNum = 0 to cols - 1
             component = m.components.Next()
             if component = invalid then exit for
+            component.fixed = false
 
             component.SetFrame(xOffsets[colNum], yOffsets[rowNum], itemWidth, itemHeight)
 
@@ -213,6 +215,7 @@ sub hubShowMoreButton(moreCommand as dynamic)
         m.moreButton.SetColor(&hffffffff, &h1f1f1fff)
         m.moreButton.width = 72
         m.moreButton.height = 44
+        m.moreButton.fixed = false
         m.components.AddTail(m.moreButton)
     end if
 end sub
