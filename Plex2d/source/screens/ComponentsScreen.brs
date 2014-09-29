@@ -545,6 +545,9 @@ sub compShiftComponents(shift)
     end if
     perfTimer().Log("verified first/last on-screen component offsets: left=" + tostr(minMax.left) + ", right=" + tostr(minMax.right))
 
+    ' return if we calculated zero shift
+    if shift.x = 0 and shift.y = 0 then return
+
     ' lazy-load any components that will be on-screen after we shift
     m.LazyLoadExec(partShift)
 
