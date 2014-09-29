@@ -28,6 +28,7 @@ function PlexConnectionClass() as object
         obj.BuildUrl = pncBuildUrl
         obj.Equals = pncEquals
         obj.ToString = pncToString
+        obj.TranscodeImage = pncTranscodeImage
 
         m.PlexConnectionClass = obj
     end if
@@ -91,6 +92,27 @@ sub pncOnReachabilityResponse(request as object, response as object, context as 
 
     context.server.OnReachabilityResult(m)
 end sub
+
+function pncTranscodeImage(server as object, path as string, width as string, height as string, forceBackgroundColor = "1f1f1f" as string, extraOpts = invalid as object, includeToken=false as boolean) as dynamic
+    ' TODO(rob) verify includeToken (copied from buildUrl)
+    imageUrl = m.buildUrl(server, path, includeToken)
+    if NOT server.supportsPhotoTranscoding then return imageUrl
+    ' TODO(rob) ConvertURLToLoopback - verify what this did and if it's needed
+    '    imageUrl = m.ConvertURLToLoopback(imageUrl)
+    encodedUrl = UrlEscape(imageUrl)
+    image = m.address + "/photo/:/transcode?url="+encodedUrl+"&width="+width+"&height="+height
+    if forceBackgroundColor <> invalid then
+        image = image + "&format=jpeg&background=" + forceBackgroundColor
+    end if
+
+    if extraOpts <> invalid then
+        for each key in extraOpts
+            image = image + "&" + key + "=" + tostr(extraOpts[key])
+        end for
+    end if
+
+    return image
+end function
 
 function pncBuildUrl(server as object, path as string, includeToken=false as boolean) as string
     if instr(1, path, "://") > 0 then

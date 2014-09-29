@@ -34,6 +34,7 @@ function PlexServerClass() as object
         obj.Merge = pnsMerge
         obj.Equals = pnsEquals
         obj.ToString = pnsToString
+        obj.TranscodeImage = pnsTranscodeImage
 
         m.PlexServerClass = obj
     end if
@@ -82,6 +83,15 @@ end function
 function pnsBuildUrl(path as string, includeToken=false as boolean) as dynamic
     if m.activeConnection <> invalid then
         return m.activeConnection.BuildUrl(m, path, includeToken)
+    else
+        return invalid
+    end if
+end function
+
+function pnsTranscodeImage(path as string, width as string, height as string, forceBackgroundColor = "1f1f1f" as string, extraOpts = invalid as object, includeToken=false as boolean) as dynamic
+    ' TODO(rob) verify includeToken (copied from buildUrl)
+    if m.activeConnection <> invalid then
+        return m.activeConnection.TranscodeImage(m, path, width, height, forceBackgroundColor, extraOpts, includeToken)
     else
         return invalid
     end if
