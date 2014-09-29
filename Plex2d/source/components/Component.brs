@@ -23,6 +23,8 @@ function ComponentClass() as object
         obj.selectable = false
         obj.command = invalid
 
+        obj.fixed = true
+
         ' Methods
         obj.Init = componentInit
         obj.InitRegion = compInitRegion
