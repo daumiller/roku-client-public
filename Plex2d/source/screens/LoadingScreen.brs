@@ -33,7 +33,7 @@ Function createLoadingScreen() As Object
 
     obj.createBackground()
 
-    Application().clearScreens()
+    ' Application().clearScreens()
 
     return obj
 End Function
