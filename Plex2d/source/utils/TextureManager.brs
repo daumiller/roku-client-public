@@ -31,8 +31,6 @@ function TextureManager() as object
         obj.ReceiveTexture = tmReceiveTexture
         obj.RemoveTexture = tmRemoveTexture
 
-        obj.Finish = tmFinish
-
         obj.Reset()
         m.TextureManager = obj
     end if
@@ -122,7 +120,7 @@ sub tmRequestTexture(component as object, context as object)
     m.SendCount = m.SendCount + 1
     ' Return the current total sent
 
-    ' Debug("texture request: " + tostr(m.SendCount) + "; " + texture.Url)
+    ' Debug("texture request: " + tostr(m.SendCount) + "; " + context.Url)
 
     ' Stash some references
     context.textureRequest = request
@@ -182,7 +180,7 @@ function tmReceiveTexture(tmsg as object) as boolean
             m.ReceiveCount = m.ReceiveCount + 1
             context.textureRequest = invalid
 
-            ' Debug("texture request recv: " + tostr(m.ReceiveCount) + "; " + texture.Url)
+            ' Debug("texture request recv: " + tostr(m.ReceiveCount) + "; " + context.Url)
 
             context.component.SetBitmap(bitmap)
 
@@ -190,11 +188,6 @@ function tmReceiveTexture(tmsg as object) as boolean
         ' If a failure occurs you can try to resend it, but usually it is a more serious problem which
         ' can put you in an endless loop if you dont put a limit on it.
         else if state = m.STATE_FAILED and context.retriesRemaining > 0 then
-            ' on any failure, we must remove the draw lock
-            if Locks().Unlock("drawAll") = true then
-                CompositorScreen().drawAll()
-            end if
-
             ' Rebuild and resend
             context.retriesRemaining = context.retriesRemaining - 1
             context.request = m.CreateTextureRequest(context)
@@ -202,7 +195,7 @@ function tmReceiveTexture(tmsg as object) as boolean
             m.TManager.RequestTexture(context.request)
 
             str = "Resend Texture Request. State : " + state.toStr()
-            str = str + "  Bitmap: " + type(tmsg.GetBitmap()) + "  retriesRemaining: " + texture.retriesRemaining.toStr()
+            str = str + "  Bitmap: " + type(tmsg.GetBitmap()) + "  retriesRemaining: " + context.retriesRemaining.toStr()
             str = str + " URI: " + context.url
             Debug(str)
 
@@ -210,11 +203,6 @@ function tmReceiveTexture(tmsg as object) as boolean
         ' This can occur with the dylnamic allocation when the textures are not removed from the queue fast enough
         ' or the resend count has expired, cancelled etc...
         else
-            ' on any failure, we must remove the draw lock
-            if Locks().Unlock("drawAll") = true then
-                CompositorScreen().drawAll()
-            end if
-
             ' I've run into the issue with duplicate urls causing this issue. It
             ' might be due to unloading bitmaps to early or running GC (which we
             ' really need to keep for now)
@@ -255,92 +243,3 @@ function tmReceiveTexture(tmsg as object) as boolean
     ' Otherwise it is some other code such as downloading if it even exists.  Never seen it
     return false
 end function
-
-sub tmReplaceSprite(texture as object, screen as object)
-    if texture.sprite = invalid then
-        WARN("we tried to draw to an invalid sprite!")
-        return
-    end if
-
-    ' we cannot blindly draw new objects on a region from a downloaded texture.
-    ' If any other area uses this same bitmap (url) the overlays will stack as
-    ' they are all shared/references to each other. We will need to create a new
-    ' bitmap and draw on it.
-
-    ' copy the original bitmap (create same size bitmap and draw original on
-    ' top) we shouldn't have to worry about memory cleanup as we will be placing
-    ' this bitmap in a sprite, which automatically gets cleaned up.
-    copyBM=createobject("roBitmap", {width: texture.bitmap.getWidth(), height:texture.bitmap.getHeight(), AlphaEnable: false})
-    copyBM.drawObject(0, 0, texture.bitmap)
-    region = CreateObject("roRegion", copyBM, 0, 0, copyBM.GetWidth(), copyBM.GetHeight())
-
-' TODO(rob) overlays/cards: new class?
-'    ' check the texture item for any overlays. We will draw the overlays as needed.
-'    item = texture.item
-'    if item <> invalid and item.bitmapOverlay <> invalid then
-'        region.setAlphaEnable(true)
-'        for each overlay in item.bitmapoverlay
-'            if overlay.func = "DrawRect" then
-'                ' set bitmap alpha enabled for overlay rect
-'                region.drawRect(overlay.x, overlay.y, overlay.w, overlay.h, overlay.color)
-'            else if overlay.func = "DrawText" then
-'                if overlay.center = true then
-'                    title_coords = uiCenterText(overlay.text, overlay.w, overlay.h-overlay.y, overlay.font)
-'                    ' we need to make sure we get the center of the specified y offset
-'                    title_coords.y = overlay.y+title_coords.y
-'                    ' if x is specified, it will be overriden
-'                    if overlay.x <> invalid then title_coords.x = overlay.x
-'                end if
-'                regionTextTrunc(region, region.getWidth()-title_coords.x, overlay.text, title_coords.x, title_coords.y, overlay.antiAliasColor, overlay.color, overlay.font)
-'            else
-'                Debug("tmReplaceSprite::we don't know how to support this overlay!")
-'                DebugPrint(overlay)
-'            end if
-'        end for
-'    end if
-
-
-' TODO(rob) sprites no longer have data (yet) in this iteration
-'    ' set the full url in the sprites data (needed if we want to unload it)
-'    spriteData = texture.sprite.getdata()
-'    spriteData.TMurl = texture.Url
-'    spriteData.isLoaded = true
-'    sprite.setData(spriteData)
-
-    ' replace the existing sprite region
-    texture.sprite.setDrawableFlag(true)
-    texture.sprite.setregion(region)
-    CompositorScreen().drawAll()
-
-    texture.bitmap = invalid
-    region = invalid
-    m.finish()
-end sub
-
-sub tmFinish()
-    if m.ReceiveCount >= m.SendCount then
-        '   texture.ResendCount'or then
-        m.timerTextureManger.LogElapsedTime("Textures total send/received " + tostr(m.SendCount))
-        m.timerTextureManger = invalid
-        m.SendCount = 0
-        m.ReceiveCount = 0
-
-        ' we will need to verify after we receive the textures, that the focus
-        ' sprite, if displayed, is focused on a valid sprite. Sometimes we
-        ' replace existing sprites and remove them, so we may have focused on
-        ' an invalid/remove sprite (grid screen)
-
-        ' TODO(rob) this could probably use a better place. The main time this
-        ' crops us is on a grid screen when we have forced a remote release -
-        ' I.E. the user is holding down a button to scroll, but we have reached
-        ' the end of the grid.
-
-        'TODO(rob) focus logic doesn't exist in this iteration
-        ' verifyFocusIsValid(Application().roScreen)
-
-        ' release the draw lock once we have received all the textures
-        if Locks().Unlock("drawAll") = true then
-            CompositorScreen().drawAll()
-        end if
-    end if
-end sub
