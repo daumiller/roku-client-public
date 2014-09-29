@@ -133,6 +133,8 @@ sub compositorClearDebugSprites()
 end sub
 
 sub compositorDrawDebugRect(x, y, width, height, color, drawNow=false)
+    ' disabled draw debug points for focus
+    return
     bmp = CreateObject("roBitmap", {width: width, height: height, alphaEnable: false})
     bmp.Clear(color)
     region = CreateObject("roRegion", bmp, 0, 0, width, height)

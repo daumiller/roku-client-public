@@ -164,7 +164,7 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
 
             if toFocus = invalid then
                 ' All else failed, search manually.
-                Debug("I'm lonely... I don't have any siblings [locate a relative]")
+                ' Debug("I'm lonely... I don't have any siblings [locate a relative]")
                 toFocus = m.GetFocusManual(KeyCodeToString(keyCode))
             else
                 ' We didn't have to search focus candidates, but we still need
@@ -268,7 +268,7 @@ function compGetFocusManual(direction as string) as dynamic
     ' These should never happen...
     if m.focusedItem = invalid or m.focusX = invalid or m.focusY = invalid then return invalid
 
-    Debug("Evaluating manual " + direction + " focus for " + tostr(m.focusedItem))
+    ' Debug("Evaluating manual " + direction + " focus for " + tostr(m.focusedItem))
 
     oppositeDir = OppositeDirection(direction)
 
@@ -292,7 +292,7 @@ function compGetFocusManual(direction as string) as dynamic
     ' draw where we moved the focus point
     m.screen.DrawDebugRect(m.focusX, m.focusY, 15, 15, Colors().PlexClr, true)
 
-    Debug("Focus point is " + tostr(m.focusX) + ", " + tostr(m.focusY))
+    ' Debug("Focus point is " + tostr(m.focusX) + ", " + tostr(m.focusY))
 
     ' Keep track of some things for the best candidate. We need to know the
     ' offset along both the navigational axis and the orthogonal axis. All
@@ -371,11 +371,11 @@ function compGetFocusManual(direction as string) as dynamic
 
                     distance = dotDistance + navOffset + 2*orthOffset - int(sqr(overlap))
 
-                    Debug("Evaluated " + tostr(candidate))
-                    Debug("navOffset=" + tostr(navOffset) + " orthOffset=" + tostr(orthOffset) + " dotDistance=" + tostr(dotDistance) + " overlap=" + tostr(overlap) + " distance=" + tostr(distance))
+                    ' Debug("Evaluated " + tostr(candidate))
+                    ' Debug("navOffset=" + tostr(navOffset) + " orthOffset=" + tostr(orthOffset) + " dotDistance=" + tostr(dotDistance) + " overlap=" + tostr(overlap) + " distance=" + tostr(distance))
 
                     if best.item = invalid or distance < best.distance then
-                        Debug("Found a new best item: " + tostr(candidate))
+                        ' Debug("Found a new best item: " + tostr(candidate))
                         if best.item <> invalid then
                             m.screen.DrawDebugRect(best.x, best.y, 15, 15, &h0000ffff, true)
                         end if
@@ -387,12 +387,12 @@ function compGetFocusManual(direction as string) as dynamic
                         best.item = candidate
                         m.screen.DrawDebugRect(candPt.x, candPt.y, 15, 15, &h00ff00ff, true)
                     else
-                        Debug("Candidate " + tostr(candidate) + " turned out to be worse than " + tostr(best.item))
+                        ' Debug("Candidate " + tostr(candidate) + " turned out to be worse than " + tostr(best.item))
                         m.screen.DrawDebugRect(candPt.x, candPt.y, 15, 15, &h0000ffff, true)
                     end if
                 else
                     m.screen.DrawDebugRect(candPt.x, candPt.y, 15, 15, &hff0000ff, true)
-                    Debug("Candidate " + tostr(candidate) + " is obviously worse than " + tostr(best.item))
+                    ' Debug("Candidate " + tostr(candidate) + " is obviously worse than " + tostr(best.item))
                 end if
                 ' sleep(500)
             end if
