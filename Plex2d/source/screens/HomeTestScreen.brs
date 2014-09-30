@@ -103,6 +103,8 @@ sub homeTestGetComponents()
     hbox.SetFrame(100, 125, 2000*2000, 500)
 
     hubs = m.CreateHubs()
+    ' always focus the first HUB to the left of the screen
+    hubs[0].demandLeft = 50
     for each hub in hubs
         hbox.AddComponent(hub)
     end for

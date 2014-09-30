@@ -476,6 +476,12 @@ sub compCalculateShift(toFocus as object)
             right: invalid
         }
 
+        ' adhere to the parents wanted left position when focused
+        if toFocus.parent.demandLeft <> invalid then
+            shift.demandLeft = toFocus.parent.demandLeft
+            shift.forceShift = true
+        end if
+
         ' calculate the min/max left/right offsets in the parent container
         for each component in parentCont
             focusRect = computeRect(component)
@@ -486,7 +492,7 @@ sub compCalculateShift(toFocus as object)
         ' calculate the shift
 
         ' shift left: only if the container right is off the screen (safeRight)
-        if cont.right > shift.safeRight
+        if cont.right > shift.safeRight or shift.forceShift = true then
             if shift.demandLeft <> invalid then
                 shift.x = (cont.left - shift.demandLeft) * -1
             else
