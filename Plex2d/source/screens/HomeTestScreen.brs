@@ -102,6 +102,43 @@ sub homeTestGetComponents()
     hbox = createHBox(false, false, false, 25)
     hbox.SetFrame(100, 125, 2000*2000, 500)
 
+    ' Dummy Sections
+    secCount = 19
+
+    ' Calculate how many rows/columns we need (allow)
+    rows = 6
+    cols = int(secCount/rows + .9)
+    ' for now - limit sections to 2 columns
+    if cols > 2 then cols = 2
+
+    for col = 0 to cols-1
+        vbox = createVBox(false, false, false, 10)
+        vbox.SetFrame(100, 125, 300, 500)
+        for row = 0 to rows-1
+            if rows*col + row >= secCount then exit for
+            ' rows*col + row: vertical count, increment by coloumn
+            ' cols*row + col: horizontal count, increment by row
+            secBtn = createButton("section " + tostr(rows*col + row + 1), FontRegistry().font16, "TBD_section")
+            secBtn.width = 200
+            secBtn.height = 66
+            secBtn.fixed = false
+            secBtn.setColor(Colors().TextClr, Colors().BtnBkgClr)
+            if m.focusedItem = invalid then m.focusedItem = secBtn
+            vbox.AddComponent(secBtn)
+        end for
+        hbox.AddComponent(vbox)
+    end for
+
+    ' TODO(rob/schuyler): allow the width to be specified and not overridden
+    if secCount > rows*cols then
+        moreButton = createButton("More", FontRegistry().font16, "TBD_more")
+        moreButton.SetColor(&hffffffff, &h1f1f1fff)
+        moreButton.width = 72
+        moreButton.height = 44
+        moreButton.fixed = false
+        vbox.AddComponent(moreButton)
+    end if
+
     hubs = m.CreateHubs()
     ' always focus the first HUB to the left of the screen
     hubs[0].demandLeft = 50
