@@ -175,7 +175,7 @@ function pniGetLimitedTagValues(tagClass as string, limit as integer, sep=", " a
 end function
 
 function pniGetSeasonString() as string
-    value = firstOf(m.Get("index"), m.Get("year"))
+    value = firstOf(m.Get("parentIndex"), m.Get("year"))
 
     if value <> invalid then
         return "Season " + value
