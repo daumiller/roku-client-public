@@ -49,7 +49,7 @@ sub compositorDrawComponent(component as object)
     ' Then convert those regions to sprites on our screen
     for each comp in drawableComponents
         if comp.IsOnScreen() then
-            zOrder = 1
+            zOrder = firstOf(comp.zOrder, 1)
         else
             zOrder = -1
         end if
