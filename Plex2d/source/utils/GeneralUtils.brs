@@ -328,3 +328,20 @@ function convertDateToString(date as string) as string
         return ""
     end if
 end function
+
+function JoinArray(arr, sep, key1="", key2="") as string
+    result = ""
+    first = true
+
+    for each value in arr
+        if type(value) = "roassociativeArray" then value = firstOf(value[key1], value[key2])
+        if first then
+            first = false
+        else
+            result = result + sep
+        end if
+        result = result + value
+    end for
+
+    return result
+end function
