@@ -14,6 +14,10 @@ function BaseScreen()
         obj.Destroy = bsDestroy
         obj.HandleMessage = bsHandleMessage
 
+        ' debugging
+        obj.OnInfoButton = function(): print "OnInfoButton:no-op": end function
+        obj.OnRewindButton = function(): print "OnRewindButton:no-op": end function
+
         obj.reset()
         m.BaseScreen = obj
     end if

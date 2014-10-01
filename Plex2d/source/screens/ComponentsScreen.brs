@@ -51,6 +51,7 @@ function ComponentsScreen() as object
         obj.OnKeyPress = compOnKeyPress
         obj.OnKeyHeld = compOnKeyHeld
         obj.OnKeyRelease = compOnKeyRelease
+        obj.OnInfoButton = compOnInfoButton
 
         Application().On("change:user", createCallable("OnAccountChange", obj))
 
@@ -243,8 +244,10 @@ sub compOnKeyRelease(keyCode as integer)
     else if keyCode = m.kp_BK then
         ' TODO(schuyler): Lock remote events?
         Application().popScreen(m)
-    else if keyCode = m.kp_RW and m.HandleRewind <> invalid then
-        m.HandleRewind()
+    else if keyCode = m.kp_RW then
+        m.OnRewindButton()
+    else if keyCode = m.kp_INFO then
+        m.OnInfoButton()
     end if
 end sub
 
@@ -720,4 +723,16 @@ end sub
 sub compOnAccountChange(account as dynamic)
     Debug("Account changed to " + tostr(account.username) )
     Application().pushScreen(createLoadingScreen())
+end sub
+
+sub compOnInfoButton()
+    item = m.focusedItem
+    print "---- item ----"
+    print item
+    print "---- item.plexObject ----"
+    print item.plexObject
+    print "---- item.metadata ----"
+    print item.metadata
+    print "---- item.command ----"
+    print item.command
 end sub
