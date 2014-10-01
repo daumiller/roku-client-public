@@ -5,19 +5,26 @@ function HomeTestScreen() as object
 
         obj.screenName = "HomeTest Screen"
 
+        ' HomeTest methods
+        obj.Show = homeTestShow
+        obj.OnResponse = homeTestOnResponse
+        obj.ClearCache = homeTestClearCache
         obj.GetComponents = homeTestGetComponents
 
-        ' debug - switch hub layout styles
-        obj.HandleRewind = homeTestSwitchHubLayout
-
-        ' HUB Request and Creation methods
-        obj.Show = homeTestShow
-        obj.OnHubResponse = homeTestOnHubResponse
-        obj.CreateHubs = homeTestCreateHubs
-
-        ' methods to create a hub (+ dummy debug)
+        ' Hubs and Sections (get/create)
+        obj.GetHubs = homeTestGetHubs
         obj.CreateHub = homeTestCreateHub
+        obj.GetSections = homeTestGetSections
+        obj.CreateSection = homeTestCreateSection
+
+        ' Methods for debugging
         obj.CreateDummyHub = homeTestCreateDummyHub
+        obj.OnRewindButton = homeTestSwitchHubLayout
+
+        ' Standard Properties
+        obj.sectionsMaxRows = 6
+        obj.sectionsMaxCols = 2
+        obj.layoutStyle = 1
 
         m.HomeTestScreen = obj
     end if
@@ -25,52 +32,61 @@ function HomeTestScreen() as object
     return m.HomeTestScreen
 end function
 
-sub homeTestShow()
-    ' create the hub requests or show cached hubs. We'll need a way to refresh a
-    ' hub to update watched status, and maybe other attributes. We do need caching
-    ' because some hubs are very dynamic (maybe not on the home screen)
-    if m.hubsContainer = invalid or m.hubsContainer.count() = 0 then
-        m.request = createPlexRequest(m.server, "/hubs")
-        m.context = m.request.CreateRequestContext("dummy_hubs", createCallable("OnHubResponse", m))
-        Application().StartRequest(m.request, m.context)
-    else
-        ApplyFunc(ComponentsScreen().Show, m)
-    end if
-end sub
-
-function homeTestOnHubResponse(request as object, response as object, context as object)
-    Debug("Got hubs response with status " + tostr(response.GetStatus()))
-
-    ' TODO(rob): handle an invalid response - no hubs
-
-    m.hubsContainer = []
-    if response.ParseResponse() then
-        for each container in response.items
-            if container.items <> invalid and container.items.count() > 0 then
-                m.hubsContainer.push(container)
-            end if
-        end for
-    end if
-
-    ApplyFunc(ComponentsScreen().Show, m)
-end function
-
 function createHomeTestScreen(server as object) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(HomeTestScreen())
 
-    obj.server = server
-
-    obj.layoutStyle = 1
-
     obj.Init()
 
+    obj.server = server
+
+    obj.hubsContainer = CreateObject("roAssociativeArray")
+    obj.sectionsContainer = CreateObject("roAssociativeArray")
+
     return obj
+end function
+
+sub homeTestShow()
+    ' create the hub requests or show cached hubs. We'll need a way to refresh a
+    ' hub to update watched status, and maybe other attributes. We do need caching
+    ' because some hubs are very dynamic (maybe not on the home screen)
+
+    ' section requests
+    if m.sectionsContainer.request = invalid then
+        request = createPlexRequest(m.server, "/library/sections")
+        context = request.CreateRequestContext("sections", createCallable("OnResponse", m))
+        Application().StartRequest(request, context)
+        m.sectionsContainer = context
+    end if
+
+    ' hub requests
+    if m.hubsContainer.request = invalid then
+        request = createPlexRequest(m.server, "/hubs")
+        context = request.CreateRequestContext("hubs", createCallable("OnResponse", m))
+        Application().StartRequest(request, context)
+        m.hubsContainer = context
+    end if
+
+    if m.hubsContainer.response <> invalid and m.sectionsContainer.response <> invalid then
+        ApplyFunc(ComponentsScreen().Show, m)
+    else
+        Debug("homeTestShow:: waiting for all requests to be completed")
+    end if
+end sub
+
+function homeTestOnResponse(request as object, response as object, context as object) as object
+    response.ParseResponse()
+    context.response = response
+    context.items = response.items
+
+    m.show()
 end function
 
 sub homeTestGetComponents()
     m.components.Clear()
     m.focusedItem = invalid
+
+    ' *** HEADER *** '
 
     ' TODO(rob) make pretty - testing just to see interaction with buttons
     headBkg = createBlock(&h000000e0)
@@ -110,47 +126,47 @@ sub homeTestGetComponents()
 
     m.components.Push(hbHeadButtons)
 
+    ' *** SECTIONS & HUBS *** '
     hbox = createHBox(false, false, false, 25)
     hbox.SetFrame(100, 125, 2000*2000, 500)
 
-    ' Dummy Sections
-    secCount = 19
+    ' ** SECTIONS ** '
+    sections = m.GetSections()
 
-    ' Calculate how many rows/columns we need (allow)
-    rows = 6
-    cols = int(secCount/rows + .9)
-    ' for now - limit sections to 2 columns
-    if cols > 2 then cols = 2
+    ' Section Buttons
+    if sections.count() > 0 then
+        ' Calculate how many columns we need and allow
+        cols = int(sections.count()/m.sectionsMaxRows + .9)
+        if cols > m.sectionsMaxCols then cols = m.sectionsMaxCols
 
-    for col = 0 to cols-1
-        vbox = createVBox(false, false, false, 10)
-        vbox.SetFrame(100, 125, 300, 500)
-        for row = 0 to rows-1
-            if rows*col + row >= secCount then exit for
-            ' rows*col + row: vertical count, increment by coloumn
-            ' cols*row + col: horizontal count, increment by row
-            secBtn = createButton("section " + tostr(rows*col + row + 1), FontRegistry().font16, "TBD_section")
-            secBtn.width = 200
-            secBtn.height = 66
-            secBtn.fixed = false
-            secBtn.setColor(Colors().TextClr, Colors().BtnBkgClr)
-            if m.focusedItem = invalid then m.focusedItem = secBtn
-            vbox.AddComponent(secBtn)
+        for col = 0 to cols-1
+            vbox = createVBox(false, false, false, 10)
+            vbox.SetFrame(100, 125, 300, 500)
+
+            for row = 0 to m.sectionsMaxRows-1
+                index = m.sectionsMaxRows*col + row
+                if index >= sections.count() then exit for
+                if sections[index] <> invalid then
+                    vbox.AddComponent(sections[index])
+                    if m.focusedItem = invalid then m.focusedItem = sections[index]
+                end if
+            end for
+            hbox.AddComponent(vbox)
         end for
-        hbox.AddComponent(vbox)
-    end for
 
-    ' TODO(rob/schuyler): allow the width to be specified and not overridden
-    if secCount > rows*cols then
-        moreButton = createButton("More", FontRegistry().font16, "TBD_more")
-        moreButton.SetColor(&hffffffff, &h1f1f1fff)
-        moreButton.width = 72
-        moreButton.height = 44
-        moreButton.fixed = false
-        vbox.AddComponent(moreButton)
+        ' TODO(rob/schuyler): allow the width to be specified and not overridden
+        if sections.count() > m.sectionsMaxRows*cols then
+            moreButton = createButton("More", FontRegistry().font16, "more")
+            moreButton.SetColor(&hffffffff, &h1f1f1fff)
+            moreButton.width = 72
+            moreButton.height = 44
+            moreButton.fixed = false
+            vbox.AddComponent(moreButton)
+        end if
     end if
 
-    hubs = m.CreateHubs()
+    ' ** HUBS ** '
+    hubs = m.GetHubs()
     ' always focus the first HUB to the left of the screen
     if hubs.count() > 0 then
         hubs[0].demandLeft = 50
@@ -169,6 +185,9 @@ function homeTestSwitchHubLayout()
     m.Init()
     ' change layout style
     m.layoutStyle = m.layoutStyle+1
+
+    m.ClearCache()
+
     ' profit
     m.show()
 end function
@@ -184,7 +203,7 @@ function homeTestCreateDummyHub(orientation as integer, layout as integer, name 
     end if
     for i = 1 to hub.MaxChildrenForLayout()
         card = createCard(url, name + tostr(i))
-        card.SetFocusable("test")
+        card.SetFocusable("card")
         if m.focusedItem = invalid then m.focusedItem = card
         hub.AddComponent(card)
     end for
@@ -192,7 +211,7 @@ function homeTestCreateDummyHub(orientation as integer, layout as integer, name 
     return hub
 end function
 
-function homeTestCreateHub(container)
+function homeTestCreateHub(container) as object
     ' TODO(rob): we need a way to determine the orientation and layout for the hub. I'd expect we
     ' can determine orientation here, but I'd expect the 'createHub' function to calculate a
     ' layout based on the number of items in a hub, rendering the 'layout' unnecessary
@@ -219,7 +238,9 @@ function homeTestCreateHub(container)
         image = { url: m.server.BuildUrl(thumb, true), server: m.server }
 
         card = createCard(image, item.GetSingleLineTitle())
-        card.SetFocusable("test")
+        card.setMetadata(container.attrs)
+        card.plexObject = container
+        card.SetFocusable("card")
         if m.focusedItem = invalid then m.focusedItem = card
         hub.AddComponent(card)
     end for
@@ -238,11 +259,31 @@ function homeTestCreateHub(container)
     return hub
 end function
 
-function homeTestCreateHubs() as object
+function homeTestCreateSection(container as object) as object
+    button = createButton(container.GetSingleLineTitle(), FontRegistry().font16, "section_button")
+    button.setMetadata(container.attrs)
+    button.plexObject = container
+    button.width = 200
+    button.height = 66
+    button.fixed = false
+    button.setColor(Colors().TextClr, Colors().BtnBkgClr)
+    return button
+end function
+
+function homeTestGetSections() as object
+    sections = []
+    for each container in m.sectionsContainer.items
+        sections.push(m.createSection(container))
+    end for
+
+    return sections
+end function
+
+function homeTestGetHubs() as object
     hubs = []
 
     if m.layoutStyle = 1 then
-        for each container in m.hubsContainer
+        for each container in m.hubsContainer.items
             hubs.push(m.CreateHub(container))
         end for
     else if m.layoutStyle = 2 then
@@ -269,3 +310,8 @@ function homeTestCreateHubs() as object
 
     return hubs
 end function
+
+sub homeTestClearCache()
+    if m.hubsContainer <> invalid then m.hubsContainer.clear()
+    if m.sectionsContainer <> invalid then m.sectionsContainer.clear()
+end sub
