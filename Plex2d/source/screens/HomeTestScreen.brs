@@ -141,11 +141,12 @@ sub homeTestGetComponents()
 
     hubs = m.CreateHubs()
     ' always focus the first HUB to the left of the screen
-    hubs[0].demandLeft = 50
-    for each hub in hubs
-        hbox.AddComponent(hub)
-    end for
-
+    if hubs.count() > 0 then
+        hubs[0].demandLeft = 50
+        for each hub in hubs
+            hbox.AddComponent(hub)
+        end for
+    end if
     m.components.Push(hbox)
 
     ' m.components.Clear()
