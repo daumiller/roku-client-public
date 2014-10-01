@@ -179,6 +179,17 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
             ' If the component knows its sibling, always use that.
             toFocus = m.focusedItem.GetFocusSibling(KeyCodeToString(keyCode))
 
+            ' handle drop downs - the focus should stay contained
+            if toFocus = invalid and m.focusedItem.dropDown <> invalid then
+                ' TODO(rob): do we want to allow exit/hiding the dialog on
+                ' other movement than up?
+                if direction <> "up" then return
+
+                m.focusedItem.dropDown.hide()
+                toFocus = m.focusedItem.dropDown
+                m.focusedItem = invalid
+            end if
+
             ' If we're doing the opposite of our last direction, go back to
             ' where we came from.
             '
@@ -245,7 +256,11 @@ sub compOnItemSelected(item as object)
     Debug("component item selected with command: " + tostr(item.command))
     ' TODO(schuyler): What makes sense here? Maybe generic command processing?
     ' TODO(rob): Here is some generic processing :)
-    if item.command <> invalid then
+
+    if tostr(item.classname) = "DropDown" then
+        if item.hide() then return
+        item.show(m)
+    else if item.command <> invalid then
         if item.command = "cardTestScreen" then
             Application().PushScreen(createCardTestScreen())
         else if item.command = "sign_out" then
