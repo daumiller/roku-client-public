@@ -308,3 +308,23 @@ Function GetDurationString(seconds as dynamic, emptyHr=0 as integer, emptyMin=0 
 
    return duration.trim()
 end Function
+
+function convertDateToString(date as string) as string
+    '  format-in: 2014-10-01
+    ' format-out: "Long-month Day, Year"
+    parts = date.Tokenize("-")
+    if parts.count() <> 3 or date.len() <> 10 then return ""
+
+    ' TODO(?) localize
+    months = ["January","February","March","April","May","June","July","August","September","October","November","December"]
+
+    year = parts[0]
+    month = months[parts[1].toInt()-1]
+    day = tostr(parts[2].toInt())
+
+    if year <> invalid and month <> invalid and day <> invalid then
+        return month + " " + day + ", " + year
+    else
+        return ""
+    end if
+end function
