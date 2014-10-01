@@ -267,6 +267,10 @@ sub compOnItemSelected(item as object)
             MyPlexAccount().SignOut()
         else if item.command = "sign_in" then
             Application().pushScreen(createPinScreen())
+        else if item.command = "selected_server" then
+            if item.metadata <> invalid then
+                Application().pushScreen(createHomeTestScreen(item.metadata))
+            end if
         else
             Debug("command not defined: " + tostr(item.command))
         end if
