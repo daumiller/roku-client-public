@@ -26,6 +26,9 @@ function PlexObjectClass() as object
 
         obj.GetSingleLineTitle = pnoGetSingleLineTitle
         obj.GetLongerTitle = pnoGetLongerTitle
+        obj.GetDuration = pnoGetDuration
+        obj.GetAddedAt = pnoGetAddedAt
+        obj.GetOriginallyAvailableAt = pnoGetOriginallyAvailableAt
 
         obj.ToString = pnoToString
 
@@ -125,6 +128,33 @@ end function
 
 function pnoToString() as string
     return m.name + ": " + m.GetSingleLineTitle()
+end function
+
+function pnoGetDuration() as string
+    duration = m.Get("duration")
+    if duration <> invalid then
+        return GetDurationString(int(duration.toInt()/1000))
+    end if
+    return ""
+end function
+
+function pnoGetAddedAt() as string
+    date = m.Get("addedAt")
+    if date <> invalid then
+        datetime = CreateObject( "roDateTime" )
+        datetime.ToLocalTime()
+        datetime.FromSeconds( date.toInt() )
+        return datetime.AsDateString("no-weekday")
+    end if
+    return ""
+end function
+
+function pnoGetOriginallyAvailableAt() as string
+    date = m.Get("originallyAvailableAt")
+    if date <> invalid then
+        return convertDateToString(date)
+    end if
+    return ""
 end function
 
 function createPlexObjectFromElement(container as object, xml as object) as object
