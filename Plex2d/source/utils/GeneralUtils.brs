@@ -275,3 +275,36 @@ function OppositeDirection(direction as string) as string
 
     return m.OppositeDirections[direction]
 end function
+
+Function GetDurationString(seconds as dynamic, emptyHr=0 as integer, emptyMin=0 as integer, emptySec=0 as integer, includeSeconds = false) as string
+   duration = ""
+   datetime = CreateObject("roDateTime")
+
+   if (type(seconds) = "roString") then
+       totalSeconds% = seconds.toint()
+   else if (type(seconds) = "roInteger") or (type(seconds) = "Integer") then
+       totalSeconds% = seconds
+   else
+       return duration
+   end if
+
+   datetime.Fromseconds(totalSeconds%)
+
+   hours = datetime.GetHours().toStr()
+   minutes = datetime.GetMinutes().toStr()
+   seconds = datetime.Getseconds().toStr()
+
+   if hours <> "0" or emptyHr = 1 then
+      duration = duration + hours + " hr "
+   end if
+
+   if minutes <> "0" or emptyMin = 1 then
+      duration = duration + minutes + " min "
+   end if
+
+   if (includeseconds = true or duration = "") and (seconds <> "0" or emptySec = 1) then
+      duration = duration + seconds + " sec"
+   end if
+
+   return duration.trim()
+end Function
