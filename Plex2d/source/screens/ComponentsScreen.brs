@@ -76,6 +76,7 @@ sub compInit()
     m.keyPressTimer = invalid
     m.lastKey = -1
     m.customFonts = CreateObject("roAssociativeArray")
+    m.componentsManual = CreateObject("roAssociativeArray")
 
     ' lazy load timer ( loading off screen components )
     m.lazyLoadTimer = createTimer("lazyLoad")
@@ -113,7 +114,15 @@ sub compDeactivate(screen = invalid as dynamic)
     for each comp in m.components
         comp.Destroy()
     end for
+    ' components we have created manually (AA of roList)
+    for each key in m.componentsManual
+        for each comp in m.componentsManual[key]
+            comp.Destroy()
+        end for
+        m.componentsManual[key].clear()
+    end for
     m.components.clear()
+    m.componentsManual.clear()
     m.customFonts.clear()
     m.focusedItem = invalid
 end sub
