@@ -43,6 +43,7 @@ function ComponentClass() as object
         obj.Destroy = compDestroy
         obj.Unload = compUnload
         obj.SpriteIsLoaded = compSpriteIsLoaded
+        obj.SetMetadata = compSetMetadata
 
         ' shifting methods
         obj.ShiftPosition = compShiftPosition
@@ -298,3 +299,7 @@ function compSpriteIsLoaded() as boolean
     ' anything else we will consider loaded
     return true
 end function
+
+sub compSetMetadata(metadata=invalid as dynamic)
+    m.metadata = metadata
+end sub
