@@ -291,7 +291,9 @@ sub compOnItemSelected(item as object)
     ' TODO(schuyler): What makes sense here? Maybe generic command processing?
     ' TODO(rob): Here is some generic processing :)
 
-    if tostr(item.classname) = "DropDown" then
+    if item.OnSelected <> invalid then
+        item.OnSelected()
+    else if tostr(item.classname) = "DropDown" then
         if item.hide() then return
         item.show(m)
     else if item.command <> invalid then
