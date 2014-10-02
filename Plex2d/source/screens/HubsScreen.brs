@@ -1,81 +1,42 @@
-function HomeTestScreen() as object
-    if m.HomeTestScreen = invalid then
+function HubsScreen() as object
+    if m.HubsScreen = invalid then
         obj = CreateObject("roAssociativeArray")
         obj.Append(ComponentsScreen())
 
-        obj.screenName = "HomeTest Screen"
+        obj.screenName = "Hubs Screen"
 
-        ' HomeTest methods
-        obj.Show = homeTestShow
-        obj.OnResponse = homeTestOnResponse
-        obj.ClearCache = homeTestClearCache
-        obj.GetComponents = homeTestGetComponents
-        obj.AfterItemFocused = homeTestAfterItemFocused
+        ' Hubs methods
+        obj.Init = HubsInit
+        obj.OnResponse = HubsOnResponse
+        obj.ClearCache = HubsClearCache
+        obj.GetComponents = HubsGetComponents
+        obj.AfterItemFocused = HubsAfterItemFocused
 
         ' Hubs and Sections (get/create)
-        obj.GetHubs = homeTestGetHubs
-        obj.CreateHub = homeTestCreateHub
-        obj.GetSections = homeTestGetSections
-        obj.CreateSection = homeTestCreateSection
+        obj.GetHubs = HubsGetHubs
+        obj.CreateHub = HubsCreateHub
+        obj.GetSections = HubsGetSections
+        obj.CreateSection = HubsCreateSection
 
-        ' Methods for debugging
-        obj.CreateDummyHub = homeTestCreateDummyHub
-        obj.OnRewindButton = homeTestSwitchHubLayout
-
-        ' Standard Properties
-        obj.sectionsMaxRows = 6
-        obj.sectionsMaxCols = 2
-        obj.layoutStyle = 1
-
-        m.HomeTestScreen = obj
+        m.HubsScreen = obj
     end if
 
-    return m.HomeTestScreen
+    return m.HubsScreen
 end function
 
-function createHomeTestScreen(server as object) as object
-    obj = CreateObject("roAssociativeArray")
-    obj.Append(HomeTestScreen())
+sub HubsInit()
+    ApplyFunc(ComponentsScreen().Init, m)
 
-    obj.Init()
+    ' Standard Properties
+    m.sectionsMaxRows = 6
+    m.sectionsMaxCols = 2
 
-    obj.server = server
-
-    obj.hubsContainer = CreateObject("roAssociativeArray")
-    obj.sectionsContainer = CreateObject("roAssociativeArray")
-
-    return obj
-end function
-
-sub homeTestShow()
-    ' create the hub requests or show cached hubs. We'll need a way to refresh a
-    ' hub to update watched status, and maybe other attributes. We do need caching
-    ' because some hubs are very dynamic (maybe not on the home screen)
-
-    ' section requests
-    if m.sectionsContainer.request = invalid then
-        request = createPlexRequest(m.server, "/library/sections")
-        context = request.CreateRequestContext("sections", createCallable("OnResponse", m))
-        Application().StartRequest(request, context)
-        m.sectionsContainer = context
-    end if
-
-    ' hub requests
-    if m.hubsContainer.request = invalid then
-        request = createPlexRequest(m.server, "/hubs")
-        context = request.CreateRequestContext("hubs", createCallable("OnResponse", m))
-        Application().StartRequest(request, context)
-        m.hubsContainer = context
-    end if
-
-    if m.hubsContainer.response <> invalid and m.sectionsContainer.response <> invalid then
-        ApplyFunc(ComponentsScreen().Show, m)
-    else
-        Debug("homeTestShow:: waiting for all requests to be completed")
-    end if
+    ' Section and Hub containers
+    m.hubsContainer = CreateObject("roAssociativeArray")
+    m.sectionsContainer = CreateObject("roAssociativeArray")
 end sub
 
-function homeTestOnResponse(request as object, response as object, context as object) as object
+function HubsOnResponse(request as object, response as object, context as object) as object
     response.ParseResponse()
     context.response = response
     context.items = response.items
@@ -83,7 +44,7 @@ function homeTestOnResponse(request as object, response as object, context as ob
     m.show()
 end function
 
-sub homeTestGetComponents()
+sub HubsGetComponents()
     m.components.Clear()
     m.focusedItem = invalid
 
@@ -179,41 +140,8 @@ sub homeTestGetComponents()
 
 end sub
 
-function homeTestSwitchHubLayout()
-    ' clear memory!
-    m.Deactivate(invalid)
-    ' start fresh on the components screen
-    m.Init()
-    ' change layout style
-    m.layoutStyle = m.layoutStyle+1
-
-    ' TODO(rob) when should we clear any cached sections/headers?
-    m.ClearCache()
-
-    ' profit
-    m.show()
-end function
-
-function homeTestCreateDummyHub(orientation as integer, layout as integer, name as string, more = true as boolean) as object
-    hub = createHub("HUB " + name, orientation, layout, 10)
-    hub.height = 500
-    ' set the test poset url based on the orientation (square/landscape = art)
-    if orientation = 1 then
-        url = "http://roku.rarforge.com/images/sn-poster.jpg"
-    else
-        url = "http://roku.rarforge.com/images/sn-art.jpg"
-    end if
-    for i = 1 to hub.MaxChildrenForLayout()
-        card = createCard(url, name + tostr(i))
-        card.SetFocusable("card")
-        if m.focusedItem = invalid then m.focusedItem = card
-        hub.AddComponent(card)
-    end for
-    if more then hub.ShowMoreButton("more")
-    return hub
-end function
-
-function homeTestCreateHub(container) as object
+function HubsCreateHub(container) as dynamic
+    if container.items = invalid or container.items.count() = 0 return invalid
     ' TODO(rob): we need a way to determine the orientation and layout for the hub. I'd expect we
     ' can determine orientation here, but I'd expect the 'createHub' function to calculate a
     ' layout based on the number of items in a hub, rendering the 'layout' unnecessary
@@ -261,7 +189,7 @@ function homeTestCreateHub(container) as object
     return hub
 end function
 
-function homeTestCreateSection(container as object) as object
+function HubsCreateSection(container as object) as object
     button = createButton(container.GetSingleLineTitle(), FontRegistry().font16, "section_button")
     button.setMetadata(container.attrs)
     button.plexObject = container
@@ -272,7 +200,7 @@ function homeTestCreateSection(container as object) as object
     return button
 end function
 
-function homeTestGetSections() as object
+function HubsGetSections() as object
     sections = []
     for each container in m.sectionsContainer.items
         sections.push(m.createSection(container))
@@ -281,44 +209,23 @@ function homeTestGetSections() as object
     return sections
 end function
 
-function homeTestGetHubs() as object
+function HubsGetHubs() as object
     hubs = []
 
-    if m.layoutStyle = 1 then
-        for each container in m.hubsContainer.items
-            hubs.push(m.CreateHub(container))
-        end for
-    else if m.layoutStyle = 2 then
-        letters = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
-        for each letter in letters
-            hubs.push(m.CreateDummyHub(1, 1, ucase(letter)))
-        end for
-    else if m.layoutStyle = 3 then
-        for count = 0 to 2
-            hubs.push(m.CreateDummyHub(1, 1, tostr(count) + "A"))
-            hubs.push(m.CreateDummyHub(2, 2, tostr(count) + "B", false))
-            hubs.push(m.CreateDummyHub(2, 4, tostr(count) + "C", false))
-            hubs.push(m.CreateDummyHub(1, 3, tostr(count) + "D"))
-        end for
-    else
-        ' lazy logic - back to defaults
-        m.layoutStyle = 0
-        for count = 0 to 2
-            hubs.push(m.CreateDummyHub(1, 1, tostr(count) + "A"))
-            hubs.push(m.CreateDummyHub(2, 2, tostr(count) + "B"))
-            hubs.push(m.CreateDummyHub(2, 3, tostr(count) + "C"))
-        end for
-    end if
+    for each container in m.hubsContainer.items
+        hub = m.CreateHub(container)
+        if hub <> invalid then hubs.push(hub)
+    end for
 
     return hubs
 end function
 
-sub homeTestClearCache()
+sub HubsClearCache()
     if m.hubsContainer <> invalid then m.hubsContainer.clear()
     if m.sectionsContainer <> invalid then m.sectionsContainer.clear()
 end sub
 
-sub homeTestAfterItemFocused(item as object)
+sub HubsAfterItemFocused(item as object)
     manualKey = "descriptionComponents"
     components = m.componentsManual[manualKey]
     if components = invalid then
