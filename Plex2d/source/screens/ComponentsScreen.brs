@@ -284,13 +284,15 @@ sub compOnItemSelected(item as object)
     else if item.command <> invalid then
         if item.command = "cardTestScreen" then
             Application().PushScreen(createCardTestScreen())
+        else if item.command = "section_button" then
+            Application().PushScreen(createSectionsScreen(item.plexObject))
         else if item.command = "sign_out" then
             MyPlexAccount().SignOut()
         else if item.command = "sign_in" then
             Application().pushScreen(createPinScreen())
         else if item.command = "selected_server" then
             if item.metadata <> invalid then
-                Application().pushScreen(createHomeTestScreen(item.metadata))
+                Application().pushScreen(createHomeScreen(item.metadata))
             end if
         else
             Debug("command not defined: " + tostr(item.command))

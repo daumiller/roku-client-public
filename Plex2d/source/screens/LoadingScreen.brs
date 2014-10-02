@@ -103,7 +103,7 @@ sub loadingOnWaitTimer(timer as object)
             timer.Active = false
 
             ' create the home screen now
-            Application().pushScreen(createHomeTestScreen(foundServer))
+            Application().pushScreen(createHomeScreen(foundServer))
         else if timer.Attempts >= timer.maxAttempts then
             ' SHOW pin screen if no servers and not signed in.
             if MyPlexAccount().IsSignedIn = false
