@@ -206,15 +206,19 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
             ' If the component knows its sibling, always use that.
             toFocus = m.focusedItem.GetFocusSibling(KeyCodeToString(keyCode))
 
-            ' handle drop downs - the focus should stay contained
-            if toFocus = invalid and m.focusedItem.dropDown <> invalid then
-                ' TODO(rob): do we want to allow exit/hiding the dialog on
-                ' other movement than up?
-                if direction <> "up" then return
+            ' Check if we allow manual focus (dialogs/dropdown/etc)
+            if toFocus = invalid
+                ' ONLY focus siblings are allowed
+                if m.focusedItem.FocusNonSiblings = false then return
 
-                m.focusedItem.dropDown.hide()
-                toFocus = m.focusedItem.dropDown
-                m.focusedItem = invalid
+                ' DropDowns: focus should stay contained to focus siblings, except UP
+                if m.focusedItem.dropDown <> invalid then
+                    if direction <> "up" then return
+
+                    m.focusedItem.dropDown.hide()
+                    toFocus = m.focusedItem.dropDown
+                    m.focusedItem = invalid
+                end if
             end if
 
             ' If we're doing the opposite of our last direction, go back to
