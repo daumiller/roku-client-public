@@ -129,7 +129,7 @@ sub homeTestGetComponents()
 
     ' *** SECTIONS & HUBS *** '
     hbox = createHBox(false, false, false, 25)
-    hbox.SetFrame(100, 125, 2000*2000, 500)
+    hbox.SetFrame(50, 125, 2000*2000, 500)
 
     ' ** SECTIONS ** '
     sections = m.GetSections()
@@ -187,6 +187,7 @@ function homeTestSwitchHubLayout()
     ' change layout style
     m.layoutStyle = m.layoutStyle+1
 
+    ' TODO(rob) when should we clear any cached sections/headers?
     m.ClearCache()
 
     ' profit
