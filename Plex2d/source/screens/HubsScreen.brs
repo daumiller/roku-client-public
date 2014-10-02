@@ -141,7 +141,7 @@ sub hubsGetComponents()
     m.components.Push(hbox)
 
     ' set the placement of the description box (manualComponent)
-    m.DescriptionBox().setFrame(50, 620, 1280-50, 100)
+    m.DescriptionBox().setFrame(50, 630, 1280-50, 100)
 
 end sub
 
@@ -239,7 +239,7 @@ function hubsDescriptionBox() as object
 
         ' default placement: use m.setFrame to override
         obj.x = 50
-        obj.y = 620
+        obj.y = 630
         obj.width = 500
         obj.height = 100
         obj.spacing = 0
