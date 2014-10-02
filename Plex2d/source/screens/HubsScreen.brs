@@ -10,13 +10,15 @@ function HubsScreen() as object
         obj.OnResponse = HubsOnResponse
         obj.ClearCache = HubsClearCache
         obj.GetComponents = HubsGetComponents
-        obj.AfterItemFocused = HubsAfterItemFocused
 
         ' Hubs and Sections (get/create)
         obj.GetHubs = HubsGetHubs
         obj.CreateHub = HubsCreateHub
         obj.GetSections = HubsGetSections
         obj.CreateSection = HubsCreateSection
+
+        ' Description Box
+        obj.DescriptionBox = hubsDescriptionBox
 
         m.HubsScreen = obj
     end if
@@ -225,23 +227,40 @@ sub HubsClearCache()
     if m.sectionsContainer <> invalid then m.sectionsContainer.clear()
 end sub
 
-sub HubsAfterItemFocused(item as object)
-    components = m.GetManualComponents("description_footer")
+function hubsDescriptionBox() as object
+    if m.HubsDescriptionBox = invalid then
+        obj = CreateObject("roAssociativeArray")
 
-    descriptionShown = (components.count() > 0)
-    if descriptionShown then
-        for each comp in components
+        ' properties
+        obj.components = m.GetManualComponents("HubsDescriptionBox")
+
+        ' methods
+        obj.Show = HubsDescriptionBoxShow
+        obj.Hide = HubsDescriptionBoxHide
+        obj.IsDisplayed = function() : return (m.components.count() > 0) : end function
+
+        m.HubsDescriptionBox = obj
+    end if
+
+    return m.HubsDescriptionBox
+end function
+
+function hubsDescriptionBoxHide() as boolean
+    pendingDraw = false
+    if m.IsDisplayed() then
+        pendingDraw = true
+        for each comp in m.components
             comp.Destroy()
         end for
-        components.clear()
-        ' avoid drawing now to avoid flashes if we are redrawing description
+        m.components.clear()
     end if
 
-    ' exit early if we are not drawing the description and draw if applicable
-    if item.plexObject = invalid or item.plexObject.islibrarysection() then
-        if descriptionShown then CompositorScreen().drawAll()
-        return
-    end if
+    return pendingDraw
+end function
+
+function hubsDescriptionBoxShow(item as object) as boolean
+    pendingDraw = m.Hide()
+    if item.plexObject = invalid then return pendingDraw
 
     ' *** Component Description *** '
     compDesc = createVBox(false, false, false, 0)
@@ -269,10 +288,11 @@ sub HubsAfterItemFocused(item as object)
     label.SetColor(&hc0c0c0c0)
     compDesc.AddComponent(label)
 
-    components.push(compDesc)
+    m.components.push(compDesc)
 
-    for each comp in components
+    for each comp in m.components
         CompositorScreen().DrawComponent(comp)
     end for
-    CompositorScreen().drawAll()
-end sub
+
+    return (pendingDraw or m.IsDisplayed())
+end function

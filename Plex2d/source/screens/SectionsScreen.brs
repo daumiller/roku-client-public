@@ -4,6 +4,7 @@ function SectionsScreen() as object
         obj.Append(HubsScreen())
 
         obj.Show = SectionsShow
+        obj.AfterItemFocused = sectionsAfterItemFocused
 
         obj.screenName = "Sections Screen"
 
@@ -51,4 +52,14 @@ sub SectionsShow()
     else
         Debug("HubsShow:: waiting for all requests to be completed")
     end if
+end sub
+
+sub sectionsAfterItemFocused(item as object)
+    if item.plexObject = invalid or item.plexObject.isDirectory() then
+        pendingDraw = m.DescriptionBox().Hide()
+    else
+        pendingDraw = m.DescriptionBox().Show(item)
+    end if
+
+    if pendingDraw then m.screen.DrawAll()
 end sub

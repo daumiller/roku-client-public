@@ -4,6 +4,7 @@ function HomeScreen() as object
         obj.Append(HubsScreen())
 
         obj.Show = HomeShow
+        obj.AfterItemFocused = homeAfterItemFocused
 
         obj.screenName = "Home Screen"
 
@@ -52,3 +53,12 @@ sub HomeShow()
     end if
 end sub
 
+sub homeAfterItemFocused(item as object)
+    if item.plexObject = invalid or item.plexObject.islibrarysection() then
+        pendingDraw = m.DescriptionBox().Hide()
+    else
+        pendingDraw = m.DescriptionBox().Show(item)
+    end if
+
+    if pendingDraw then m.screen.DrawAll()
+end sub
