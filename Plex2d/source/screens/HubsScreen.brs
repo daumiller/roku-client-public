@@ -140,6 +140,9 @@ sub HubsGetComponents()
     end if
     m.components.Push(hbox)
 
+    ' set the placement of the description box (manualComponent)
+    m.DescriptionBox().setFrame(50, 620, 1280-50, 100)
+
 end sub
 
 function HubsCreateHub(container) as dynamic
@@ -234,7 +237,19 @@ function hubsDescriptionBox() as object
         ' properties
         obj.components = m.GetManualComponents("HubsDescriptionBox")
 
+        ' default placement: use m.setFrame to override
+        obj.x = 50
+        obj.y = 620
+        obj.width = 500
+        obj.height = 100
+        obj.spacing = 0
+
+        ' default fonts/colors
+        obj.line1 = { font: FontRegistry().font18b, color: Colors().TextClr}
+        obj.line2 = { font: FontRegistry().font18, color: &hc0c0c0c0 }
+
         ' methods
+        obj.SetFrame = compSetFrame
         obj.Show = HubsDescriptionBoxShow
         obj.Hide = HubsDescriptionBoxHide
         obj.IsDisplayed = function() : return (m.components.count() > 0) : end function
@@ -263,12 +278,13 @@ function hubsDescriptionBoxShow(item as object) as boolean
     if item.plexObject = invalid then return pendingDraw
 
     ' *** Component Description *** '
-    compDesc = createVBox(false, false, false, 0)
-    compDesc.SetFrame(50, 630, 1280, 100)
+    compDesc = createVBox(false, false, false, m.spacing)
+    compDesc.SetFrame(m.x, m.y, m.width, m.height)
 
-    label = createLabel(item.plexObject.getlongertitle(), FontRegistry().font18b)
+    label = createLabel(item.plexObject.getlongertitle(), m.line1.font)
     label.halign = label.JUSTIFY_LEFT
     label.valign = label.ALIGN_MIDDLE
+    label.SetColor(m.line1.color)
     compDesc.AddComponent(label)
 
     line2 = []
@@ -282,10 +298,10 @@ function hubsDescriptionBoxShow(item as object) as boolean
         line2.unshift(item.plexObject.Get("title"))
     end if
 
-    label = createLabel(joinArray(line2, " / "), FontRegistry().font18)
+    label = createLabel(joinArray(line2, " / "), m.line2.font)
     label.halign = label.JUSTIFY_LEFT
     label.valign = label.ALIGN_MIDDLE
-    label.SetColor(&hc0c0c0c0)
+    label.SetColor(m.line2.color)
     compDesc.AddComponent(label)
 
     m.components.push(compDesc)
