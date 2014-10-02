@@ -32,6 +32,7 @@ function ComponentsScreen() as object
         obj.Init = compInit
         obj.Show = compShow
         obj.Deactivate = compDeactivate
+        obj.Activate = compActivate
         obj.OnAccountChange = compOnAccountChange
 
         obj.GetComponents = compGetComponents
@@ -62,6 +63,11 @@ function ComponentsScreen() as object
 
     return m.ComponentsScreen
 end function
+
+sub compActivate()
+    m.Init()
+    m.show()
+end sub
 
 sub compInit()
     ApplyFunc(BaseScreen().Init, m)
