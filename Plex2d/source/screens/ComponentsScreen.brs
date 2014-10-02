@@ -53,6 +53,8 @@ function ComponentsScreen() as object
         obj.OnKeyRelease = compOnKeyRelease
         obj.OnInfoButton = compOnInfoButton
 
+        obj.AfterItemFocused = function() : Debug("AfterItemFocused::no-op") : end function
+
         Application().On("change:user", createCallable("OnAccountChange", obj))
 
         m.ComponentsScreen = obj
@@ -262,6 +264,7 @@ end sub
 
 sub compOnItemFocused(item as object)
     m.screen.DrawFocus(item, true)
+    m.AfterItemFocused(item)
 end sub
 
 sub compOnItemSelected(item as object)
