@@ -310,6 +310,8 @@ sub compOnItemSelected(item as object)
                 Application().pushScreen(createHomeScreen(item.metadata))
             end if
         else
+            dialog = createDialog("Command not defined", "command: " + tostr(item.command), m)
+            dialog.Show()
             Debug("command not defined: " + tostr(item.command))
         end if
     end if
