@@ -226,12 +226,7 @@ sub HubsClearCache()
 end sub
 
 sub HubsAfterItemFocused(item as object)
-    manualKey = "descriptionComponents"
-    components = m.componentsManual[manualKey]
-    if components = invalid then
-        m.componentsManual[manualKey] = []
-        components = m.componentsManual[manualKey]
-    end if
+    components = m.GetManualComponents("description_footer")
 
     descriptionShown = (components.count() > 0)
     if descriptionShown then

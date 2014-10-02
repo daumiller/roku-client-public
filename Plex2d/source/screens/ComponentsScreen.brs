@@ -36,6 +36,7 @@ function ComponentsScreen() as object
         obj.OnAccountChange = compOnAccountChange
 
         obj.GetComponents = compGetComponents
+        obj.GetManualComponents = compGetManualComponents
 
         ' Manual focus methods
         obj.GetFocusManual = compGetFocusManual
@@ -84,7 +85,7 @@ sub compInit()
     m.keyPressTimer = invalid
     m.lastKey = -1
     m.customFonts = CreateObject("roAssociativeArray")
-    m.componentsManual = CreateObject("roAssociativeArray")
+    m.manualComponents = CreateObject("roAssociativeArray")
 
     ' lazy load timer ( loading off screen components )
     m.lazyLoadTimer = createTimer("lazyLoad")
@@ -123,20 +124,27 @@ sub compDeactivate(screen = invalid as dynamic)
         comp.Destroy()
     end for
     ' components we have created manually (AA of roList)
-    for each key in m.componentsManual
-        for each comp in m.componentsManual[key]
+    for each key in m.manualComponents
+        for each comp in m.manualComponents[key]
             comp.Destroy()
         end for
-        m.componentsManual[key].clear()
+        m.manualComponents[key].clear()
     end for
     m.components.clear()
-    m.componentsManual.clear()
+    m.manualComponents.clear()
     m.customFonts.clear()
     m.focusedItem = invalid
 end sub
 
 sub compGetComponents()
 end sub
+
+function compGetManualComponents(key as string) as object
+    if m.manualComponents[key] = invalid then
+        m.manualComponents[key] = CreateObject("roList")
+    end if
+    return m.manualComponents[key]
+end function
 
 function compHandleMessage(msg as object) as boolean
     handled = false
