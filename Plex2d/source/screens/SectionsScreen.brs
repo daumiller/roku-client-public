@@ -3,7 +3,7 @@ function SectionsScreen() as object
         obj = CreateObject("roAssociativeArray")
         obj.Append(HubsScreen())
 
-        obj.Show = SectionsShow
+        obj.Show = sectionsShow
         obj.AfterItemFocused = sectionsAfterItemFocused
 
         obj.screenName = "Sections Screen"
@@ -26,7 +26,7 @@ function createSectionsScreen(item as object) as object
     return obj
 end function
 
-sub SectionsShow()
+sub sectionsShow()
     ' create the hub requests or show cached hubs. We'll need a way to refresh a
     ' hub to update watched status, and maybe other attributes. We do need caching
     ' because some hubs are very dynamic (maybe not on the home screen)

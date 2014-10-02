@@ -3,7 +3,7 @@ function HomeScreen() as object
         obj = CreateObject("roAssociativeArray")
         obj.Append(HubsScreen())
 
-        obj.Show = HomeShow
+        obj.Show = homeShow
         obj.AfterItemFocused = homeAfterItemFocused
 
         obj.screenName = "Home Screen"
@@ -25,7 +25,7 @@ function createHomeScreen(server as object) as object
     return obj
 end function
 
-sub HomeShow()
+sub homeShow()
     ' create the hub requests or show cached hubs. We'll need a way to refresh a
     ' hub to update watched status, and maybe other attributes. We do need caching
     ' because some hubs are very dynamic (maybe not on the home screen)

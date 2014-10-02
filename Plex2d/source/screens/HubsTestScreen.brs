@@ -7,9 +7,9 @@ function HubsTestScreen() as object
 
         ' Methods for debugging
         obj.GetSections = function() : return []: end function
-        obj.GetHubs = HubsTestGetHubs
-        obj.CreateDummyHub = HubsTestCreateDummyHub
-        obj.OnRewindButton = HubsTestSwitchHubLayout
+        obj.GetHubs = hubsTestGetHubs
+        obj.CreateDummyHub = hubsTestCreateDummyHub
+        obj.OnRewindButton = hubsTestSwitchHubLayout
 
         m.HubsTestScreen = obj
     end if
@@ -29,7 +29,7 @@ function createHubsTestScreen(server as object) as object
     return obj
 end function
 
-function HubsTestGetHubs() as object
+function hubsTestGetHubs() as object
     hubs = []
 
     if m.layoutStyle = 1 then
@@ -57,7 +57,7 @@ function HubsTestGetHubs() as object
     return hubs
 end function
 
-function HubsTestCreateDummyHub(orientation as integer, layout as integer, name as string, more = true as boolean) as object
+function hubsTestCreateDummyHub(orientation as integer, layout as integer, name as string, more = true as boolean) as object
     hub = createHub("HUB " + name, orientation, layout, 10)
     hub.height = 500
     ' set the test poset url based on the orientation (square/landscape = art)
@@ -76,7 +76,7 @@ function HubsTestCreateDummyHub(orientation as integer, layout as integer, name 
     return hub
 end function
 
-function HubsTestSwitchHubLayout()
+function hubsTestSwitchHubLayout()
     ' clear memory!
     m.Deactivate(invalid)
     ' start fresh on the components screen

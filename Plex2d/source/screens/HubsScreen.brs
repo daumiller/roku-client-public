@@ -6,16 +6,16 @@ function HubsScreen() as object
         obj.screenName = "Hubs Screen"
 
         ' Hubs methods
-        obj.Init = HubsInit
-        obj.OnResponse = HubsOnResponse
-        obj.ClearCache = HubsClearCache
-        obj.GetComponents = HubsGetComponents
+        obj.Init = hubsInit
+        obj.OnResponse = hubsOnResponse
+        obj.ClearCache = hubsClearCache
+        obj.GetComponents = hubsGetComponents
 
         ' Hubs and Sections (get/create)
-        obj.GetHubs = HubsGetHubs
-        obj.CreateHub = HubsCreateHub
-        obj.GetSections = HubsGetSections
-        obj.CreateSection = HubsCreateSection
+        obj.Gethubs = HubsGetHubs
+        obj.CreateHub = hubsCreateHub
+        obj.GetSections = hubsGetSections
+        obj.CreateSection = hubsCreateSection
 
         ' Description Box
         obj.DescriptionBox = hubsDescriptionBox
@@ -26,7 +26,7 @@ function HubsScreen() as object
     return m.HubsScreen
 end function
 
-sub HubsInit()
+sub hubsInit()
     ApplyFunc(ComponentsScreen().Init, m)
 
     ' Standard Properties
@@ -38,7 +38,7 @@ sub HubsInit()
     m.sectionsContainer = CreateObject("roAssociativeArray")
 end sub
 
-function HubsOnResponse(request as object, response as object, context as object) as object
+function hubsOnResponse(request as object, response as object, context as object) as object
     response.ParseResponse()
     context.response = response
     context.items = response.items
@@ -46,7 +46,7 @@ function HubsOnResponse(request as object, response as object, context as object
     m.show()
 end function
 
-sub HubsGetComponents()
+sub hubsGetComponents()
     m.components.Clear()
     m.focusedItem = invalid
 
@@ -145,7 +145,7 @@ sub HubsGetComponents()
 
 end sub
 
-function HubsCreateHub(container) as dynamic
+function hubsCreateHub(container) as dynamic
     if container.items = invalid or container.items.count() = 0 return invalid
     ' TODO(rob): we need a way to determine the orientation and layout for the hub. I'd expect we
     ' can determine orientation here, but I'd expect the 'createHub' function to calculate a
@@ -194,7 +194,7 @@ function HubsCreateHub(container) as dynamic
     return hub
 end function
 
-function HubsCreateSection(container as object) as object
+function hubsCreateSection(container as object) as object
     button = createButton(container.GetSingleLineTitle(), FontRegistry().font16, "section_button")
     button.setMetadata(container.attrs)
     button.plexObject = container
@@ -205,7 +205,7 @@ function HubsCreateSection(container as object) as object
     return button
 end function
 
-function HubsGetSections() as object
+function hubsGetSections() as object
     sections = []
     for each container in m.sectionsContainer.items
         sections.push(m.createSection(container))
@@ -214,7 +214,7 @@ function HubsGetSections() as object
     return sections
 end function
 
-function HubsGetHubs() as object
+function hubsGetHubs() as object
     hubs = []
 
     for each container in m.hubsContainer.items
@@ -225,7 +225,7 @@ function HubsGetHubs() as object
     return hubs
 end function
 
-sub HubsClearCache()
+sub hubsClearCache()
     if m.hubsContainer <> invalid then m.hubsContainer.clear()
     if m.sectionsContainer <> invalid then m.sectionsContainer.clear()
 end sub
