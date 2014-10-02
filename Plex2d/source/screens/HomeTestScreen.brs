@@ -10,6 +10,7 @@ function HomeTestScreen() as object
         obj.OnResponse = homeTestOnResponse
         obj.ClearCache = homeTestClearCache
         obj.GetComponents = homeTestGetComponents
+        obj.AfterItemFocused = homeTestAfterItemFocused
 
         ' Hubs and Sections (get/create)
         obj.GetHubs = homeTestGetHubs
@@ -238,8 +239,8 @@ function homeTestCreateHub(container) as object
         image = { url: m.server.BuildUrl(thumb, true), server: m.server }
 
         card = createCard(image, item.GetSingleLineTitle())
-        card.setMetadata(container.attrs)
-        card.plexObject = container
+        card.setMetadata(item.attrs)
+        card.plexObject = item
         card.SetFocusable("card")
         if m.focusedItem = invalid then m.focusedItem = card
         hub.AddComponent(card)
@@ -314,4 +315,61 @@ end function
 sub homeTestClearCache()
     if m.hubsContainer <> invalid then m.hubsContainer.clear()
     if m.sectionsContainer <> invalid then m.sectionsContainer.clear()
+end sub
+
+sub homeTestAfterItemFocused(item as object)
+    manualKey = "descriptionComponents"
+    components = m.componentsManual[manualKey]
+    if components = invalid then
+        m.componentsManual[manualKey] = []
+        components = m.componentsManual[manualKey]
+    end if
+
+    descriptionShown = (components.count() > 0)
+    if descriptionShown then
+        for each comp in components
+            comp.Destroy()
+        end for
+        components.clear()
+        ' avoid drawing now to avoid flashes if we are redrawing description
+    end if
+
+    ' exit early if we are not drawing the description and draw if applicable
+    if item.plexObject = invalid or item.plexObject.islibrarysection() then
+        if descriptionShown then CompositorScreen().drawAll()
+        return
+    end if
+
+    ' *** Component Description *** '
+    compDesc = createVBox(false, false, false, 0)
+    compDesc.SetFrame(50, 630, 1280, 100)
+
+    label = createLabel(item.plexObject.getlongertitle(), FontRegistry().font18b)
+    label.halign = label.JUSTIFY_LEFT
+    label.valign = label.ALIGN_MIDDLE
+    compDesc.AddComponent(label)
+
+    line2 = []
+    line2.push(item.plexObject.GetOriginallyAvailableAt())
+    if line2.peek()  = "" then
+        line2.pop()
+        line2.push(item.plexObject.GetAddedAt())
+    end if
+    line2.push(item.plexObject.GetDuration())
+    if item.plexObject.type = "episode" then
+        line2.unshift(item.plexObject.Get("title"))
+    end if
+
+    label = createLabel(joinArray(line2, " / "), FontRegistry().font18)
+    label.halign = label.JUSTIFY_LEFT
+    label.valign = label.ALIGN_MIDDLE
+    label.SetColor(&hc0c0c0c0)
+    compDesc.AddComponent(label)
+
+    components.push(compDesc)
+
+    for each comp in components
+        CompositorScreen().DrawComponent(comp)
+    end for
+    CompositorScreen().drawAll()
 end sub
