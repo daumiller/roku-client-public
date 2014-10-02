@@ -15,8 +15,8 @@ function BaseScreen()
         obj.HandleMessage = bsHandleMessage
 
         ' debugging
-        obj.OnInfoButton = function(): print "OnInfoButton:no-op": end function
-        obj.OnRewindButton = function(): print "OnRewindButton:no-op": end function
+        obj.OnInfoButton = function() : Debug("OnInfoButton:no-op") : end function
+        obj.OnRewindButton = function() : Debug("OnRewindButton:no-op") : end function
 
         obj.reset()
         m.BaseScreen = obj
