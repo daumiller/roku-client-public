@@ -7,6 +7,7 @@ function DropDownClass() as object
         obj.Init = dropdownInit
         obj.Hide = dropdownHide
         obj.Show = dropdownShow
+        obj.Destroy = dropdownDestroy
 
         m.DropDownClass = obj
     end if
@@ -32,15 +33,15 @@ sub dropdownInit(text as string, font as object)
     m.valign = m.ALIGN_MIDDLE
 
     ' components (buttons) container
-    m.components = []
+    m.components = createObject("roList")
 
-    ' options AA to build components
-    m.options = []
+    ' options roList of AA to build components
+    m.options = createObject("roList")
 end sub
 
 function dropdownHide(drawAllNow=true as boolean) as boolean
-    EnableBackButton()
     if m.components.count() = 0 then return false
+    EnableBackButton()
 
     for each comp in m.components
         comp.Destroy()
@@ -79,4 +80,9 @@ sub dropdownShow(screen as object)
     end for
 
     CompositorScreen().DrawFocus(screen.focusedItem, true)
+end sub
+
+sub dropdownDestroy()
+    ApplyFunc(ComponentClass().Destroy, m)
+    EnableBackButton()
 end sub
