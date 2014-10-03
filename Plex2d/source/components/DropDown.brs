@@ -39,6 +39,7 @@ sub dropdownInit(text as string, font as object)
 end sub
 
 function dropdownHide(drawAllNow=true as boolean) as boolean
+    EnableBackButton()
     if m.components.count() = 0 then return false
 
     for each comp in m.components
@@ -53,6 +54,7 @@ end function
 
 sub dropdownShow(screen as object)
     m.hide(false)
+    DisableBackButton()
 
     screen.focusedItem = invalid
 

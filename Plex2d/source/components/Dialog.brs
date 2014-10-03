@@ -74,6 +74,7 @@ sub dialogInit(title as string, text as dynamic)
 end sub
 
 function dialogClose() as boolean
+    EnableBackButton()
     for each comp in m.components
         comp.Destroy()
     end for
@@ -91,6 +92,7 @@ function dialogClose() as boolean
 end function
 
 sub dialogShow()
+    DisableBackButton()
     dialogBox = createVBox(false, false, false, m.spacing)
     dialogBox.SetFrame(m.x, m.y, m.width, m.height)
 
