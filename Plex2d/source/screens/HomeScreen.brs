@@ -26,6 +26,8 @@ function createHomeScreen(server as object) as object
 end function
 
 sub homeShow()
+    if NOT Application().IsActiveScreen(m) then return
+
     ' create the hub requests or show cached hubs. We'll need a way to refresh a
     ' hub to update watched status, and maybe other attributes. We do need caching
     ' because some hubs are very dynamic (maybe not on the home screen)
