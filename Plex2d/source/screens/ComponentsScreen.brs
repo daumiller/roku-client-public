@@ -74,7 +74,6 @@ sub compInit()
     ApplyFunc(BaseScreen().Init, m)
 
     m.screen = CompositorScreen()
-    m.screen.Reset()
 
     m.components = CreateObject("roList")
     m.focusedItem = invalid
