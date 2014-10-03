@@ -21,7 +21,7 @@ function DialogClass() as object
     return m.DialogClass
 end function
 
-function createDialog(title as string, text as string, screen as object) as object
+function createDialog(title as string, text as dynamic, screen as object) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(DialogClass())
 
@@ -52,12 +52,12 @@ sub dialogButtonOnSelected()
     m.dialog.HandleButton(m)
 end sub
 
-sub dialogInit(title as string, text as string)
+sub dialogInit(title as string, text as dynamic)
     ' TODO(rob) should this be unique? I am assuming dialogs should NOT stack
     m.components = m.screen.GetManualComponents(m.ClassName)
     m.buttons = []
     m.title = title
-    m.text = text
+    if text <> invalid then m.text = text
 
     ' TODO(rob) how do we handle dynamic width/height along with center placment?
     m.width = 500
