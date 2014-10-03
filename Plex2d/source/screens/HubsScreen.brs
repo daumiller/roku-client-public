@@ -125,6 +125,7 @@ sub hubsGetComponents()
             moreButton.width = 72
             moreButton.height = 44
             moreButton.fixed = false
+            moreButton.phalign = moreButton.JUSTIFY_RIGHT
             vbox.AddComponent(moreButton)
         end if
     end if
