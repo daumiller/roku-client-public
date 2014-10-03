@@ -59,13 +59,18 @@ sub hboxPerformLayout()
 
         if m.fill then
             width = maxWidth
+            height = m.height
         else
             width = component.GetPreferredWidth()
             if width > maxWidth then width = maxWidth
             offset = offset + int((maxWidth - width) / 2)
+
+            height = component.GetPreferredHeight()
+            if height = 0 or height > m.height then height = m.height
         end if
 
-        component.SetFrame(offset, m.y, width, m.height)
+        yOffset = m.GetYOffsetAlignment(m.y, m.height, height, firstOf(component.pvalign, component.valign))
+        component.SetFrame(offset, yOffset, width, height)
     end while
 end sub
 

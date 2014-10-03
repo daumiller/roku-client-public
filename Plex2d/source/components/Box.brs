@@ -4,6 +4,10 @@ function BoxClass() as object
         obj.Append(ContainerClass())
         obj.Append(AlignmentMixin())
 
+        ' AlignmentMixin Methods Overrides
+        obj.GetXOffsetAlignment = boxGetXOffsetAlignment
+        obj.GetYOffsetAlignment = boxGetYOffsetAlignment
+
         obj.lastFocusableItem = invalid
 
         obj.AddComponent = boxAddComponent
@@ -103,3 +107,28 @@ sub boxAddComponent(child as object)
         m.lastFocusableItem = child
     end if
 end sub
+
+' AlignmentMixin for BOX Containers
+function boxGetXOffsetAlignment(xOffset as integer, contWidth as integer, compWidth as integer, halign=invalid as dynamic) as integer
+    if halign = invalid then return xOffset
+
+    if halign = m.JUSTIFY_CENTER then
+        xOffset = xOffset - int((compWidth - contWidth) / 2)
+    else if halign = m.JUSTIFY_RIGHT then
+        xOffset = xOffset + contWidth - compWidth
+    end if
+
+    return xOffset
+end function
+
+function boxGetYOffsetAlignment(yOffset as integer, contHeight as integer, compHeight as integer, valign=invalid as dynamic) as integer
+    if valign = invalid then return yOffset
+
+    if valign = m.ALIGN_MIDDLE then
+        yOffset = yOffset - int((compHeight - contHeight) / 2)
+    else if valign = m.ALIGN_BOTTOM then
+        yOffset = yOffset + contHeight - compHeight
+    end if
+
+    return yOffset
+end function

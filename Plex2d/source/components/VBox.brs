@@ -59,13 +59,18 @@ sub vboxPerformLayout()
 
         if m.fill then
             height = maxHeight
+            width = m.width
         else
             height = component.GetPreferredHeight()
             if height > maxHeight then height = maxHeight
             offset = offset + int((maxHeight - height) / 2)
+
+            width = component.GetPreferredWidth()
+            if width = 0 or width > m.width then width = m.width
         end if
 
-        component.SetFrame(m.x, offset, m.width, height)
+        xOffset = m.GetXOffsetAlignment(m.x, m.width, width, firstOf(component.phalign, component.halign))
+        component.SetFrame(xOffset, offset, width, height)
     end while
 end sub
 
