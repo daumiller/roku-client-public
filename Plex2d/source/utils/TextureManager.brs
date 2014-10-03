@@ -7,6 +7,12 @@ function TextureManager() as object
 
         obj.RequestList = {}
 
+        ' track by screen (clear by screen)
+        obj.ScreenList = {}
+        obj.UsageList = {}
+        obj.TrackByScreenID = tmTrackByScreenID
+        obj.RemoveTextureByScreenID = tmRemoveTextureByScreenID
+
         obj.SendCount = 0
         obj.ReceiveCount = 0
 
@@ -38,6 +44,46 @@ function TextureManager() as object
 
     return m.TextureManager
 end function
+
+' track texture usage by screen id and total screens
+sub tmTrackByScreenID(url as string, screenIdInt as integer)
+    screenID = tostr(screenIdInt)
+
+    ' initiate the list for the URL if empty
+    if m.ScreenList[screenID] = invalid then m.ScreenList[screenID] = {}
+
+    ' set the url in use by X screen
+    m.ScreenList[screenID][url] = true
+
+    ' set the usage count by screens for the url
+    m.UsageList[url] = 0
+    for each id in m.ScreenList
+        if m.ScreenList[id][url] = true then
+            m.UsageList[url] = m.UsageList[url]+1
+        end if
+    end for
+end sub
+
+' remove all textures used by the screen id (exclude texture in use by multiple)
+sub tmRemoveTextureByScreenId(screenIdInt as integer)
+    screenID = tostr(screenIdInt)
+    unloadCount = 0
+    if m.ScreenList[screenID] <> invalid then
+        for each url in m.ScreenList[screenID]
+            ' other screens are using this bitmap (not probable yet)
+            if m.UsageList[url] <> invalid and m.UsageList[url] > 1 then
+                m.UsageList[url] = m.UsageList[url] - 1
+            else
+                unloadCount = unloadCount + 1
+                m.TManager.UnloadBitmap(url)
+            end if
+        end for
+        ' consider this screen empty
+        m.ScreenList[screenID].clear()
+    end if
+
+    Debug("Texture Manager: cleared " + tostr(unloadCount) + " textures from screenID:" + screenID)
+end sub
 
 ' remove a texture from the texture manager
 sub tmRemoveTexture(url as dynamic, doLog = false as boolean)
@@ -152,7 +198,7 @@ function tmCreateTextureRequest(context as object) as object
 end function
 
 ' This function receives the texture and processes it, if successful it increments the receive count
-function tmReceiveTexture(tmsg as object) as boolean
+function tmReceiveTexture(tmsg as object, screenID as integer) as boolean
     Debug("Received texture event")
     ' Get the returned state
     state = tmsg.GetState()
@@ -188,6 +234,9 @@ function tmReceiveTexture(tmsg as object) as boolean
             context.textureRequest = invalid
 
             ' Debug("texture request recv: " + tostr(m.ReceiveCount) + "; " + context.Url)
+
+            ' track the used bitmap by screenId
+            m.TrackByScreenID(tmsg.GetURI(), screenID)
 
             context.component.SetBitmap(bitmap)
 

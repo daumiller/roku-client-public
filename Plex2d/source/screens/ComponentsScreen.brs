@@ -119,7 +119,7 @@ end sub
 ' also need to exclude resetting the compositor.
 sub compDeactivate(screen = invalid as dynamic)
     Debug("Deactivate ComponentsScreen: clear components, texture manager, and custom fonts")
-    TextureManager().Reset()
+    TextureManager().RemoveTextureByScreenId(m.screenID)
     for each comp in m.components
         comp.Destroy()
     end for
