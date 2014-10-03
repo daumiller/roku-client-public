@@ -17,7 +17,7 @@ function LoadingScreen() as object
     return m.LoadingScreen
 end function
 
-sub loadingDeactivate(screen as dynamic)
+sub loadingDeactivate(screen=invalid as dynamic)
     m.screen.close()
 end sub
 
