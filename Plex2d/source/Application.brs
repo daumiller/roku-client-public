@@ -281,14 +281,19 @@ function appStartRequest(request as object, context as object, body=invalid as d
         ' the app is cleaned up, so no need to waste the bytes tracking them
         ' here.
 
-        listener = context.callbackCtx
-        if listener <> invalid and listener.screenID >= 0 then
-            screenID = listener.screenID.toStr()
+        screen = context.callbackCtx
+        if screen <> invalid and screen.screenID <> invalid and screen.screenID >= 0 then
+            screenID = screen.screenID.toStr()
+        else if context.screenID <> invalid and context.screenID >= 0 then
+            screenID = context.screenID.toStr()
+        else
+            screenID = invalid
+        end if
 
+        if screenID <> invalid then
             if not m.requestsByScreen.DoesExist(screenID) then
                 m.requestsByScreen[screenID] = []
             end if
-
             m.requestsByScreen[screenID].Push(id)
         end if
 
@@ -317,8 +322,8 @@ sub appCancelRequests(screenID)
     requests = m.requestsByScreen[screenID]
     if requests <> invalid then
         for each requestID in requests
-            request = m.pendingRequests[requestID]
-            if request <> invalid then request.Cancel()
+            context = m.pendingRequests[requestID]
+            if context <> invalid and context.request <> invalid then context.request.Cancel()
             m.pendingRequests.Delete(requestID)
         next
         m.requestsByScreen.Delete(screenID)

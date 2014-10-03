@@ -119,6 +119,7 @@ function httpCreateRequestContext(requestType as string, callback=invalid as dyn
     if callback <> invalid then
         obj.callback = createCallable(m.OnResponse, m)
         obj.completionCallback = callback
+        obj.callbackCtx = callback.context
     end if
 
     return obj
