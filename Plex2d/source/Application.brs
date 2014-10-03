@@ -54,6 +54,7 @@ function Application()
         ' models based on the current screen type.
         obj.ShowLoadingModal = appShowLoadingModal
         obj.CloseLoadingModal = appCloseLoadingModal
+        obj.CheckLoadingModal = appCheckLoadingModal
         obj.OnLoadingModalTimeout = appOnLoadingModalTimeout
 
         obj.reset()
@@ -407,6 +408,12 @@ sub appOnLoadingModalTimeout(timer as object)
     end if
 
     m.LoadingModalTimer = invalid
+end sub
+
+sub appCheckLoadingModal()
+    if m.LoadingModalTimer <> invalid and m.LoadingModalTimer.isExpired() then
+        m.OnLoadingModalTimeout(m.LoadingModalTimer)
+    end if
 end sub
 
 sub appCloseLoadingModal()

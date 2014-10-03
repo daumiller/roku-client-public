@@ -98,9 +98,11 @@ sub compShow()
     ' m.screen.Reset()
     m.screen.HideFocus(true)
 
+    Application().CheckLoadingModal()
     m.GetComponents()
 
     for each comp in m.components
+        Application().CheckLoadingModal()
         m.screen.DrawComponent(comp)
     next
 
