@@ -82,8 +82,12 @@ function dialogClose() as boolean
 
     ' draw the previous focused item we came from before the dialog
     m.screen.lastFocusedItem = invalid
-    m.screen.FocusedItem = m.fromFocusedItem
-    m.screen.screen.DrawFocus(m.screen.focusedItem, true)
+    if m.fromFocusedItem <> invalid then
+        m.screen.FocusedItem = m.fromFocusedItem
+        m.screen.screen.DrawFocus(m.screen.focusedItem, true)
+    else
+        m.screen.screen.HideFocus(true, true)
+    end if
 end function
 
 sub dialogShow()
