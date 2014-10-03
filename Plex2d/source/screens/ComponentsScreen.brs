@@ -93,7 +93,10 @@ end sub
 
 sub compShow()
     ' TODO(schuyler): Can we avoid always resetting and drawing everything?
-    m.screen.Reset()
+    ' TODO(rob): update -- we no longer need to reset the screen. Components
+    ' are destroyed properly now (have been for a while)
+    ' m.screen.Reset()
+    m.screen.HideFocus(true)
 
     m.GetComponents()
 
