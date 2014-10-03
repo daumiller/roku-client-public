@@ -48,6 +48,14 @@ function Application()
         obj.ClearInitializer = appClearInitializer
         obj.IsInitialized = appIsInitialized
 
+
+        ' Modals. It seems to be a better fit to place the loading modals
+        ' within the application singleton. We can adapt and show different
+        ' models based on the current screen type.
+        obj.ShowLoadingModal = appShowLoadingModal
+        obj.CloseLoadingModal = appCloseLoadingModal
+        obj.OnLoadingModalTimeout = appOnLoadingModalTimeout
+
         obj.reset()
         m.Application = obj
 
@@ -67,6 +75,7 @@ end sub
 sub appPushScreen(screen)
     if m.screens.Count() > 0 then
         oldScreen = m.screens.Peek()
+        m.ShowLoadingModal(oldScreen, oldScreen.Deactivate)
     else
         oldScreen = invalid
     end if
@@ -76,10 +85,6 @@ sub appPushScreen(screen)
 
     Analytics().TrackScreen(screen.screenName)
     Debug("Pushing screenID " + tostr(screen.screenID) + " onto stack - " + screen.screenName + ", total screens:" + tostr(m.screens.Count()))
-
-    if oldScreen <> invalid then
-        oldScreen.Deactivate(screen)
-    end if
 
     screen.Show()
 end sub
@@ -96,7 +101,7 @@ sub appPopScreen(screen)
         ' standard dialogs? Presumably not...
         callActivate = false
     else
-        screen.Destroy()
+        m.ShowLoadingModal(screen, screen.Destroy)
         m.screens.Pop()
     end if
 
@@ -367,3 +372,50 @@ function appIsInitialized()
     m.initializers.Reset()
     return m.initializers.IsEmpty()
 end function
+
+sub appShowLoadingModal(screen as object, screenCallBack=invalid as dynamic)
+    timer = m.LoadingModalTimer
+    if timer = invalid then
+        timer = createTimer("LoadingModal")
+        timer.SetDuration(500)
+        m.LoadingModalTimer = timer
+    else if timer.screenCallBack <> invalid then
+        ApplyFunc(timer.screenCallBack, timer.screen)
+    end if
+
+    timer.screenCallBack = screenCallBack
+    timer.screen = screen
+    timer.active = true
+    timer.Mark()
+
+    m.AddTimer(timer, createCallable("OnLoadingModalTimeout", m))
+end sub
+
+sub appOnLoadingModalTimeout(timer as object)
+    screen = timer.screen
+
+    ' Loading Modal for roScreens
+    if type(screen.screen) = "roAssociativeArray" and type(screen.screen.screen) = "roScreen" then
+        loadingModal = createLoadingModal(screen)
+        loadingModal.show()
+    end if
+
+    ' Modals for other screen types?
+
+    if timer.screenCallBack <> invalid then
+        ApplyFunc(timer.screenCallBack, timer.screen)
+    end if
+
+    m.LoadingModalTimer = invalid
+end sub
+
+sub appCloseLoadingModal()
+    if m.LoadingModalTimer = invalid then return
+
+    if m.LoadingModalTimer.screenCallBack <> invalid then
+        ApplyFunc(m.LoadingModalTimer.screenCallBack, m.LoadingModalTimer.screen)
+    end if
+
+    m.LoadingModalTimer.active = false
+    m.LoadingModalTimer = invalid
+end sub

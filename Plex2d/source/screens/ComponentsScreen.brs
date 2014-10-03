@@ -101,6 +101,9 @@ sub compShow()
         m.screen.DrawComponent(comp)
     next
 
+    ' close any loading modal before our first draw
+    Application().CloseLoadingModal()
+
     if m.focusedItem <> invalid then
         ' Make sure that we set an initial focus point.
         if m.focusX = invalid or m.focusY = invalid then
