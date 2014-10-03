@@ -280,7 +280,11 @@ sub compOnKeyRelease(keyCode as integer)
         end if
     else if keyCode = m.kp_BK then
         ' TODO(schuyler): Lock remote events?
-        Application().popScreen(m)
+        if Locks().IsLocked("BackButton") then
+            Debug(KeyCodeToString(keyCode) + " is disabled")
+        else
+            Application().popScreen(m)
+        end if
     else if keyCode = m.kp_RW then
         m.OnRewindButton()
     else if keyCode = m.kp_INFO then
