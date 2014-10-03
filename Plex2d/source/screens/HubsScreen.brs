@@ -52,44 +52,6 @@ sub hubsGetComponents()
 
     ' *** HEADER *** '
 
-    ' TODO(rob) make pretty - testing just to see interaction with buttons
-    headBkg = createBlock(&h000000e0)
-    headBkg.SetFrame(0, 0, 1280, 72)
-    m.components.Push(headBkg)
-
-    headLogo = createImage("pkg:/images/plex_logo_HD_62x20.png", 62, 20)
-    headLogo.SetFrame(100, 35, 62, 20)
-    m.components.Push(headLogo)
-
-    hbHeadButtons = createHBox(false, false, false, 25)
-    hbHeadButtons.SetFrame(900, 35, 1280, 25)
-
-    ' Server List Drop Down
-    btnServers = createDropDown(m.server.name, FontRegistry().font16)
-    btnServers.width = 128
-    ' TODO(?): PlexNet server list and sorted?
-    servers = PlexServerManager().getServers()
-    for each server in servers
-        if server.isReachable() = true then
-            btnServers.options.push({text: server.name, command: "selected_server", font: FontRegistry().font16, metadata: server })
-        end if
-    end for
-    hbHeadButtons.AddComponent(btnServers)
-
-    ' Options Drop Down: Settings, Sign Out/In
-    if MyPlexAccount().IsSignedIn then
-        connect = {text: "Sign Out", command: "sign_out"}
-    else
-        connect = {text: "Sign In", command: "sign_in"}
-    end if
-    btnOptions = createDropDown(firstOf(MyPlexAccount().username, "Options"), FontRegistry().font16)
-    btnOptions.width = 128
-    btnOptions.options.push({text: "Settings", command: "settings", font: FontRegistry().font16 })
-    btnOptions.options.push({text: connect.text, command: connect.command, font: FontRegistry().font16 })
-    hbHeadButtons.AddComponent(btnOptions)
-
-    m.components.Push(hbHeadButtons)
-
     ' *** SECTIONS & HUBS *** '
     hbox = createHBox(false, false, false, 25)
     hbox.SetFrame(50, 125, 2000*2000, 500)
