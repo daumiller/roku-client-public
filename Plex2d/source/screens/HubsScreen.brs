@@ -51,6 +51,7 @@ sub hubsGetComponents()
     m.focusedItem = invalid
 
     ' *** HEADER *** '
+    m.components.Push(createHeader(m))
 
     ' *** SECTIONS & HUBS *** '
     hbox = createHBox(false, false, false, 25)
