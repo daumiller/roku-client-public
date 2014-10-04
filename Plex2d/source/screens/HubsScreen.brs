@@ -11,11 +11,11 @@ function HubsScreen() as object
         obj.ClearCache = hubsClearCache
         obj.GetComponents = hubsGetComponents
 
-        ' Hubs and Sections (get/create)
+        ' Hubs and Buttons
         obj.Gethubs = HubsGetHubs
         obj.CreateHub = hubsCreateHub
-        obj.GetSections = hubsGetSections
-        obj.CreateSection = hubsCreateSection
+        obj.GetButtons = hubsGetButtons
+        obj.CreateButton = hubsCreateButton
 
         ' Description Box
         obj.DescriptionBox = hubsDescriptionBox
@@ -30,12 +30,12 @@ sub hubsInit()
     ApplyFunc(ComponentsScreen().Init, m)
 
     ' Standard Properties
-    m.sectionsMaxRows = 6
-    m.sectionsMaxCols = 2
+    m.buttonsMaxRows = 6
+    m.buttonsMaxCols = 2
 
     ' Section and Hub containers
     m.hubsContainer = CreateObject("roAssociativeArray")
-    m.sectionsContainer = CreateObject("roAssociativeArray")
+    m.buttonsContainer = CreateObject("roAssociativeArray")
 end sub
 
 function hubsOnResponse(request as object, response as object, context as object) as object
@@ -53,36 +53,35 @@ sub hubsGetComponents()
     ' *** HEADER *** '
     m.components.Push(createHeader(m))
 
-    ' *** SECTIONS & HUBS *** '
+    ' *** BUTTONS & HUBS *** '
     hbox = createHBox(false, false, false, 25)
     hbox.SetFrame(50, 125, 2000*2000, 500)
 
-    ' ** SECTIONS ** '
-    sections = m.GetSections()
+    ' ** BUTTONS ** '
+    buttons = m.GetButtons()
 
-    ' Section Buttons
-    if sections.count() > 0 then
+    if buttons.count() > 0 then
         ' Calculate how many columns we need and allow
-        cols = int(sections.count()/m.sectionsMaxRows + .9)
-        if cols > m.sectionsMaxCols then cols = m.sectionsMaxCols
+        cols = int(buttons.count()/m.buttonsMaxRows + .9)
+        if cols > m.buttonsMaxCols then cols = m.buttonsMaxCols
 
         for col = 0 to cols-1
             vbox = createVBox(false, false, false, 10)
             vbox.SetFrame(100, 125, 300, 500)
 
-            for row = 0 to m.sectionsMaxRows-1
-                index = m.sectionsMaxRows*col + row
-                if index >= sections.count() then exit for
-                if sections[index] <> invalid then
-                    vbox.AddComponent(sections[index])
-                    if m.focusedItem = invalid then m.focusedItem = sections[index]
+            for row = 0 to m.buttonsMaxRows-1
+                index = m.buttonsMaxRows*col + row
+                if index >= buttons.count() then exit for
+                if buttons[index] <> invalid then
+                    vbox.AddComponent(buttons[index])
+                    if m.focusedItem = invalid then m.focusedItem = buttons[index]
                 end if
             end for
             hbox.AddComponent(vbox)
         end for
 
         ' TODO(rob/schuyler): allow the width to be specified and not overridden
-        if sections.count() > m.sectionsMaxRows*cols then
+        if buttons.count() > m.buttonsMaxRows*cols then
             moreButton = createButton("More", FontRegistry().font16, "more")
             moreButton.SetColor(&hffffffff, &h1f1f1fff)
             moreButton.width = 72
@@ -158,7 +157,7 @@ function hubsCreateHub(container) as dynamic
     return hub
 end function
 
-function hubsCreateSection(container as object) as object
+function hubsCreateButton(container as object) as object
     button = createButton(container.GetSingleLineTitle(), FontRegistry().font16, "section_button")
     button.setMetadata(container.attrs)
     button.plexObject = container
@@ -169,13 +168,13 @@ function hubsCreateSection(container as object) as object
     return button
 end function
 
-function hubsGetSections() as object
-    sections = []
-    for each container in m.sectionsContainer.items
-        sections.push(m.createSection(container))
+function hubsGetButtons() as object
+    buttons = []
+    for each container in m.buttonsContainer.items
+        buttons.push(m.createButton(container))
     end for
 
-    return sections
+    return buttons
 end function
 
 function hubsGetHubs() as object
@@ -191,7 +190,7 @@ end function
 
 sub hubsClearCache()
     if m.hubsContainer <> invalid then m.hubsContainer.clear()
-    if m.sectionsContainer <> invalid then m.sectionsContainer.clear()
+    if m.buttonsContainer <> invalid then m.buttonsContainer.clear()
 end sub
 
 function hubsDescriptionBox() as object

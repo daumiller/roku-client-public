@@ -33,11 +33,11 @@ sub homeShow()
     ' because some hubs are very dynamic (maybe not on the home screen)
 
     ' section requests
-    if m.sectionsContainer.request = invalid then
+    if m.buttonsContainer.request = invalid then
         request = createPlexRequest(m.server, "/library/sections")
         context = request.CreateRequestContext("sections", createCallable("OnResponse", m))
         Application().StartRequest(request, context)
-        m.sectionsContainer = context
+        m.buttonsContainer = context
     end if
 
     ' hub requests
@@ -48,7 +48,7 @@ sub homeShow()
         m.hubsContainer = context
     end if
 
-    if m.hubsContainer.response <> invalid and m.sectionsContainer.response <> invalid then
+    if m.hubsContainer.response <> invalid and m.buttonsContainer.response <> invalid then
         ApplyFunc(ComponentsScreen().Show, m)
     else
         Debug("HubsShow:: waiting for all requests to be completed")
