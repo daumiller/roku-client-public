@@ -6,6 +6,9 @@ function SectionsScreen() as object
         obj.Show = sectionsShow
         obj.AfterItemFocused = sectionsAfterItemFocused
 
+        obj.GetButtons = sectionsGetButtons
+        obj.CreateButton = sectionsCreateButton
+
         obj.screenName = "Sections Screen"
 
         m.SectionsScreen = obj
@@ -65,3 +68,25 @@ sub sectionsAfterItemFocused(item as object)
 
     if pendingDraw then m.screen.DrawAll()
 end sub
+
+function sectionsCreateButton(container as object) as object
+    button = createButton(container.GetSingleLineTitle(), FontRegistry().font16, "grid_button")
+    button.setMetadata(container.attrs)
+    button.plexObject = container
+    button.width = 200
+    button.height = 66
+    button.fixed = false
+    button.setColor(Colors().TextClr, Colors().BtnBkgClr)
+    return button
+end function
+
+function sectionsGetButtons() as object
+    buttons = []
+    for each container in m.buttonsContainer.items
+        if container.attrs.secondary = invalid then
+            buttons.push(m.createButton(container))
+        end if
+    end for
+
+    return buttons
+end function
