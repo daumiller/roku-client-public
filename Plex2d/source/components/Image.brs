@@ -34,7 +34,9 @@ function imageDraw() as object
         width = firstOf(m.preferredWidth, m.width)
         height = firstOf(m.preferredHeight, m.height)
         if m.server <> invalid and m.server.supportsphototranscoding then
-            m.source = m.server.transcodeImage(m.sourceOrig, tostr(width), tostr(height), "1f1f1f", { minSize: 1})
+            transcodeOpts = { minSize: 1 }
+            if m.transcodeOpts <> invalid then transcodeOpts.Append(m.transcodeOpts)
+            m.source = m.server.transcodeImage(m.sourceOrig, tostr(width), tostr(height), "1f1f1f", transcodeOpts)
         else if instr(1, m.source, "roku.rarforge.com") > 0 then
             ' TODO(rob) remove this in production or when we start querying the PMS
             ' for now, we want the url to be unique to the size of the image
@@ -71,6 +73,7 @@ function createImage(source as dynamic, width=0 as integer, height=0 as integer)
     if type(source) = "roAssociativeArray" then
         obj.source = source.url
         obj.server = source.server
+        obj.transcodeOpts = source.transcodeOpts
     else
         obj.source = source
     end if
