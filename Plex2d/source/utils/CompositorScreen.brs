@@ -3,6 +3,7 @@ function CompositorScreen() as object
         obj = CreateObject("roAssociativeArray")
 
         obj.Reset = compositorReset
+        obj.Clear = compositorClear
         obj.DrawAll = compositorDrawAll
         obj.DrawComponent = compositorDrawComponent
         obj.Destroy = compositorDestroy
@@ -39,6 +40,11 @@ sub compositorReset()
     m.compositor = CreateObject("roCompositor")
     m.compositor.SetDrawTo(m.screen, Colors().ScrBkgClr)
 
+    m.HideFocus(true)
+end sub
+
+sub compositorClear(color=invalid as dynamic)
+    m.screen.clear(firstOf(color, Colors().ScrBkgClr))
     m.HideFocus(true)
 end sub
 

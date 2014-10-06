@@ -96,7 +96,7 @@ sub compShow()
     ' TODO(rob): update -- we no longer need to reset the screen. Components
     ' are destroyed properly now (have been for a while)
     ' m.screen.Reset()
-    m.screen.HideFocus(true)
+    m.screen.Clear()
 
     Application().CheckLoadingModal()
     m.GetComponents()
