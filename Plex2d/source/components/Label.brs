@@ -137,7 +137,7 @@ function labelWrapText() as object
 
             breakPos = startPos
             for index = startPos+1 to m.text.len()
-                if m.text.mid(index, 1) = " " then
+                if m.text.mid(index, 1) = " " or index >= m.text.len() then
                     if m.font.GetOneLineWidth(m.text.mid(startPos, index - startPos), 1280) > contentArea.width then
                         exit for
                     else
