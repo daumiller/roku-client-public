@@ -55,7 +55,7 @@ function ComponentsScreen() as object
         obj.OnKeyRelease = compOnKeyRelease
         obj.OnInfoButton = compOnInfoButton
 
-        obj.AfterItemFocused = function() : Debug("AfterItemFocused::no-op") : end function
+        obj.AfterItemFocused = function(item as dynamic) : Debug("AfterItemFocused::no-op") : end function
 
         Application().On("change:user", createCallable("OnAccountChange", obj))
 
