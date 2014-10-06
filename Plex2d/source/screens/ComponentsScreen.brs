@@ -109,6 +109,14 @@ sub compShow()
     ' close any loading modal before our first draw
     Application().CloseLoadingModal()
 
+    if m.focusedItem = invalid then
+        candidates = []
+        for each component in m.components
+            component.GetFocusableItems(candidates)
+        next
+        m.focusedItem = candidates[0]
+    end if
+
     if m.focusedItem <> invalid then
         ' Make sure that we set an initial focus point.
         if m.focusX = invalid or m.focusY = invalid then
