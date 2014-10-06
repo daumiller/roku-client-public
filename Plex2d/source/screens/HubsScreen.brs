@@ -197,9 +197,6 @@ function hubsDescriptionBox() as object
     if m.HubsDescriptionBox = invalid then
         obj = CreateObject("roAssociativeArray")
 
-        ' properties
-        obj.components = m.GetManualComponents("HubsDescriptionBox")
-
         ' default placement: use m.setFrame to override
         obj.x = 50
         obj.y = 630
@@ -219,6 +216,9 @@ function hubsDescriptionBox() as object
 
         m.HubsDescriptionBox = obj
     end if
+
+    ' Initialize the manual components outside
+    m.HubsDescriptionBox.components = m.GetManualComponents("HubsDescriptionBox")
 
     return m.HubsDescriptionBox
 end function
