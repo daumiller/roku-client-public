@@ -630,6 +630,10 @@ sub compShiftComponents(shift)
         if minMax.right = invalid or focusRect.right > minMax.right then minMax.right = focusRect.right
         if minMax.left = invalid or focusRect.left < minMax.left then minMax.left = focusRect.left
     end for
+
+    ' ALL Components fit on screen, ignore shifting.
+    if minMax.right <= shift.safeRight and minMax.left >= shift.safeLeft then return
+
     minMax.right = minMax.right + shift.x
     minMax.left = minMax.left + shift.x
     if minMax.right < shift.safeRight then
