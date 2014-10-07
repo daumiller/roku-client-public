@@ -317,7 +317,15 @@ sub compOnItemSelected(item as object)
         item.show(m)
     else if item.command <> invalid then
         if item.command = "card" then
-            Application().PushScreen(createPreplayScreen(item.plexObject))
+            itemType = item.plexObject.Get("type")
+            if itemType = invalid then
+                Debug("card object type is invalid")
+            else if itemType = "movie" or itemType = "episode" or itemType = "clip" or itemType = "playlist" then
+                Application().PushScreen(createPreplayScreen(item.plexObject))
+            else
+                dialog = createDialog("card type not handled yet", "type: " + itemType, m)
+                dialog.Show()
+            end if
         else if item.command = "cardTestScreen" then
             Application().PushScreen(createCardTestScreen())
         else if item.command = "section_button" then
