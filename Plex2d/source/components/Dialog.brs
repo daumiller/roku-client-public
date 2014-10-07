@@ -92,6 +92,7 @@ function dialogClose() as boolean
 end function
 
 sub dialogShow()
+    Application().CloseLoadingModal()
     DisableBackButton()
     dialogBox = createVBox(false, false, false, m.spacing)
     dialogBox.SetFrame(m.x, m.y, m.width, m.height)
