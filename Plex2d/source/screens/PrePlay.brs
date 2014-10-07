@@ -37,7 +37,7 @@ function createPreplayScreen(item as object) as object
 
     obj.Init()
 
-    obj.item = item
+    obj.requestedItem = item
     obj.server = item.container.server
 
     return obj
@@ -47,22 +47,32 @@ sub preplayShow()
     if not application().isactivescreen(m) then return
 
     if m.itemcontainer.request = invalid then
-        request = createPlexRequest(m.server, m.item.Get("key"))
+        request = createPlexRequest(m.server, m.requestedItem.Get("key"))
         context = request.CreateRequestContext("preplay_item", createCallable("OnResponse", m))
         Application().StartRequest(request, context)
         m.itemContainer = context
-    else
+    else if m.item <> invalid then
         ApplyFunc(ComponentsScreen().Show, m)
     end if
 end sub
 
-function preplayOnResponse(request as object, response as object, context as object) as object
+sub preplayOnResponse(request as object, response as object, context as object)
     response.ParseResponse()
     context.response = response
     context.items = response.items
+    if context.items = invalid then return
+
+    if context.items.count() = 1 then
+        m.item = context.items[0]
+    else
+        ' Context - Playlist or other context?
+        m.curIndex = 0
+        m.items = context.items
+        m.item = m.items[0]
+    end if
 
     m.show()
-end function
+end sub
 
 sub preplayGetComponents()
     m.components.Clear()
