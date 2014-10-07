@@ -53,6 +53,11 @@ sub preplayShow()
         m.itemContainer = context
     else if m.item <> invalid then
         ApplyFunc(ComponentsScreen().Show, m)
+    else
+        dialog = createDialog("Unable to load", "Sorry, we couldn't load the requested item.", m)
+        dialog.AddButton("OK", "close_screen")
+        dialog.HandleButton = preplayDialogHandleButton
+        dialog.Show()
     end if
 end sub
 
@@ -288,3 +293,15 @@ function preplayGetButtons() as object
 
     return components
 end function
+
+sub preplayDialogHandleButton(button as object)
+    Debug("dialog button selected with command: " + tostr(button.command))
+
+    if button.command = "close_screen" then
+        m.Close()
+        Application().popScreen(m.screen)
+    else
+        Debug("command not defined: (closing dialog now) " + tostr(button.command))
+        m.Close()
+    end if
+end sub
