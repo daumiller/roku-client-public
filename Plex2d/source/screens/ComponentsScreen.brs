@@ -316,7 +316,9 @@ sub compOnItemSelected(item as object)
         if item.hide() then return
         item.show(m)
     else if item.command <> invalid then
-        if item.command = "cardTestScreen" then
+        if item.command = "card" then
+            Application().PushScreen(createPreplayScreen(item.plexObject))
+        else if item.command = "cardTestScreen" then
             Application().PushScreen(createCardTestScreen())
         else if item.command = "section_button" then
             Application().PushScreen(createSectionsScreen(item.plexObject))
