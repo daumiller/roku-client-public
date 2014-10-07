@@ -71,7 +71,7 @@ sub headerPerformLayout()
     buttons = createObject("roList")
     if tostr(m.screen.screenName) = "Home Screen" then
         ' Server List Drop Down
-        button = createDropDown(m.screen.server.name, FontRegistry().font16)
+        button = createDropDown(m.screen.server.name, m.buttons.font)
         button.width = m.buttons.width
         button.pvalign = button.ALIGN_MIDDLE
         ' TODO(?): PlexNet server list and sorted?
@@ -115,4 +115,6 @@ sub headerPerformLayout()
         hbox.setFrame(xOffset, m.buttons.yOffset, buttonsWidth, m.height)
         m.AddComponent(hbox)
     end if
+
+    m.buttons.font = invalid
 end sub
