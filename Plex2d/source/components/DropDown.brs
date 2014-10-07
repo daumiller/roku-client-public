@@ -83,6 +83,10 @@ sub dropdownShow(screen as object)
 end sub
 
 sub dropdownDestroy()
+    ' destroy any font references
+    for each option in m.options
+        option.font = invalid
+    end for
     ApplyFunc(ComponentClass().Destroy, m)
     EnableBackButton()
 end sub
