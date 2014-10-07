@@ -253,6 +253,7 @@ sub compDestroy()
     m.Off(invalid, invalid)
 
     ' Clean any objects in memory (bitmaps, regions and sprites)
+    m.font = invalid
     m.region = invalid
     m.bitmap = invalid
     if m.sprite <> invalid then
