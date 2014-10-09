@@ -29,17 +29,29 @@ function createCard(imageSource as dynamic, text as string) as object
     return obj
 end function
 
-sub cardInit(imageSource as dynamic, text as string)
+function createCardPlaceholder() as object
+    obj = CreateObject("roAssociativeArray")
+    obj.Append(CardClass())
+
+    obj.Init(invalid, invalid)
+
+    return obj
+end function
+
+sub cardInit(imageSource=invalid as dynamic, text=invalid as dynamic)
     ApplyFunc(CompositeClass().Init, m)
 
-    m.image = createImage(imageSource)
+    if imageSource <> invalid then
+        m.image = createImage(imageSource)
+        m.AddComponent(m.image)
+    end if
 
-    m.overlay = createLabel(text, FontRegistry().font16)
-    m.overlay.SetPadding(10)
-    m.overlay.SetColor(&hffffffff, &h000000e0)
-
-    m.AddComponent(m.image)
-    m.AddComponent(m.overlay)
+    if text <> invalid then
+        m.overlay = createLabel(text, FontRegistry().font16)
+        m.overlay.SetPadding(10)
+        m.overlay.SetColor(&hffffffff, &h000000e0)
+        m.AddComponent(m.overlay)
+    end if
 end sub
 
 sub cardPerformLayout()
@@ -48,7 +60,11 @@ sub cardPerformLayout()
     ' Since we're a composite, the coordinates of our children are relative to
     ' our own x,y.
 
-    m.image.SetFrame(0, 0, m.width, m.height)
+    if m.image <> invalid then
+        m.image.SetFrame(0, 0, m.width, m.height)
+    end if
 
-    m.overlay.SetFrame(0, m.height - m.overlay.GetPreferredHeight(), m.width, m.overlay.GetPreferredHeight())
+    if m.overlay <> invalid then
+        m.overlay.SetFrame(0, m.height - m.overlay.GetPreferredHeight(), m.width, m.overlay.GetPreferredHeight())
+    end if
 end sub
