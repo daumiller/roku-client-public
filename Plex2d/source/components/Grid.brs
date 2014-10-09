@@ -84,8 +84,8 @@ sub gridPerformLayout()
     yOffsets[rows - 1] = yOffset + availableHeight - itemHeight
 
     count = 0
-    for rowNum = 0 to rows - 1
-        for colNum = 0 to cols - 1
+    for colNum = 0 to cols - 1
+        for rowNum = 0 to rows - 1
             component = m.components.Next()
             count = count + 1
             if component = invalid then exit for
