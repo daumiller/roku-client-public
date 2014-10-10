@@ -8,6 +8,8 @@ function CardClass() as object
 
         ' Methods
         obj.Init = cardInit
+        obj.Reinit = cardReinit
+        obj.InitComponents = cardInitComponents
         obj.PerformLayout = cardPerformLayout
 
         m.CardClass = obj
@@ -40,18 +42,7 @@ end function
 
 sub cardInit(imageSource=invalid as dynamic, text=invalid as dynamic)
     ApplyFunc(CompositeClass().Init, m)
-
-    if imageSource <> invalid then
-        m.image = createImage(imageSource)
-        m.AddComponent(m.image)
-    end if
-
-    if text <> invalid then
-        m.overlay = createLabel(text, FontRegistry().font16)
-        m.overlay.SetPadding(10)
-        m.overlay.SetColor(&hffffffff, &h000000e0)
-        m.AddComponent(m.overlay)
-    end if
+    m.InitComponents(imageSource, text)
 end sub
 
 sub cardPerformLayout()
@@ -66,5 +57,28 @@ sub cardPerformLayout()
 
     if m.overlay <> invalid then
         m.overlay.SetFrame(0, m.height - m.overlay.GetPreferredHeight(), m.width, m.overlay.GetPreferredHeight())
+    end if
+end sub
+
+' destroy and reinit the components for the card (lazy-loading)
+sub cardReinit(imageSource=invalid as dynamic, text=invalid as dynamic)
+    for each component in m.components
+        component.destroy()
+    end for
+    m.components.clear()
+    m.InitComponents(imageSource, text)
+end sub
+
+sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic)
+    if imageSource <> invalid then
+        m.image = createImage(imageSource)
+        m.AddComponent(m.image)
+    end if
+
+    if text <> invalid then
+        m.overlay = createLabel(text, FontRegistry().font16)
+        m.overlay.SetPadding(10)
+        m.overlay.SetColor(&hffffffff, &h000000e0)
+        m.AddComponent(m.overlay)
     end if
 end sub
