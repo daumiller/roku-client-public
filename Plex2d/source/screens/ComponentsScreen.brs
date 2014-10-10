@@ -728,7 +728,7 @@ sub compShiftComponents(shift)
 
         ' add any off screen component withing range
         for each candidate in fullShift
-            if candidate.SpriteIsLoaded() = false and candidate.IsOnScreen(0, 0, ComponentsScreen().ll_load) then
+            if candidate.SpriteIsLoaded() = false and candidate.IsOnScreen(0, 0, m.ll_load) then
                 lazyLoad.components.Push(candidate)
             end if
         end for
