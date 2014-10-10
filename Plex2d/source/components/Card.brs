@@ -35,6 +35,8 @@ function createCardPlaceholder() as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(CardClass())
 
+    obj.bgcolor = Colors().CardBkgClr
+
     obj.Init(invalid, invalid)
 
     return obj
