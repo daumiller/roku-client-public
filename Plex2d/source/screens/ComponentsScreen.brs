@@ -86,6 +86,10 @@ sub compInit()
     m.customFonts = CreateObject("roAssociativeArray")
     m.manualComponents = CreateObject("roAssociativeArray")
 
+    ' focus helpers
+    m.onScreenComponents = CreateObject("roList")
+    m.fixedComponents = CreateObject("roList")
+
     ' lazy load timer ( loading off screen components )
     m.lazyLoadTimer = createTimer("lazyLoad")
     m.lazyLoadTimer.SetDuration(m.ll_timerDur)
@@ -104,7 +108,18 @@ sub compShow()
     for each comp in m.components
         Application().CheckLoadingModal()
         m.screen.DrawComponent(comp)
+        comp.GetFocusableItems(m.onScreenComponents)
     next
+
+    ' Obtain a list of fixed components. These will be used as a helper
+    ' along with the onScreenComponents, when manually trying to focus.
+    ' note: onScreenComponents will change over time when shifting and
+    ' will only include non-fixed (shiftable) components.
+    for each comp in m.onScreenComponents
+        if comp.fixed = true then
+            m.FixedComponents.push(comp)
+        end if
+    end for
 
     ' close any loading modal before our first draw
     Application().CloseLoadingModal()
@@ -397,10 +412,25 @@ function compGetFocusManual(direction as string) as dynamic
 
     candidates = CreateObject("roList")
 
-    ' Ask each component to add to our list of candidates.
-    for each component in m.components
-        component.GetFocusableItems(candidates)
-    next
+    ' Quick bypass to only check the onScreen components. This is already done on
+    ' first load and when shifting. We can fall back to checking all components
+    ' if we end up with no candidates
+    if m.onScreenComponents <> invalid then
+        for each component in m.onScreenComponents
+            if component.focusable then candidates.push(component)
+        next
+        for each component in m.FixedComponents
+            if component.focusable then candidates.push(component)
+        next
+    end if
+
+    ' fall back to the slower list
+    if candidates.count() = 0 then
+        ' Ask each component to add to our list of candidates.
+        for each component in m.components
+            component.GetFocusableItems(candidates)
+        next
+    end if
 
     ' Move our current focus point to the edge of the current component in
     ' the direction we're moving.
@@ -617,6 +647,9 @@ sub compShiftComponents(shift)
         component.GetShiftableItems(partShift, fullShift, lazyLoad, shift.x, shift.y)
     next
     perfTimer().Log("Determined shiftable items: " + "onscreen=" + tostr(partShift.count()) + ", offScreen=" + tostr(fullShift.count()))
+
+    ' set the onScreen components (helper for the manual Focus)
+    m.OnScreenComponents = partShift
 
     ' verify we are not shifting the components to far (first or last component). This
     ' will modify shift.x based on the first or last component viewable on screen. It
