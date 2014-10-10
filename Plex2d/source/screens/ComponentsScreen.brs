@@ -23,10 +23,10 @@ function ComponentsScreen() as object
         ' ll_timerDur: ms to wait before lazy loading the pending off screen components
         obj.LazyLoadOnTimer = compLazyLoadOnTimer
         obj.LazyLoadExec = compLazyLoadExec
-        obj.ll_unload = int(1280*4)
-        obj.ll_trigger = int(1280*2)
-        obj.ll_load = int(1280*4)
-        obj.ll_timerDur = 2000
+        obj.ll_unload = int(1280*2.5)
+        obj.ll_trigger = int(1280*1.5)
+        obj.ll_load = int(1280*2.5)
+        obj.ll_timerDur = 1500
 
         ' Standard screen methods
         obj.Init = compInit
