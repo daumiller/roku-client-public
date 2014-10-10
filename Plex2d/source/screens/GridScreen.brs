@@ -438,7 +438,7 @@ sub gsShiftComponents(shift)
 
         ' add any off screen component withing range
         for each candidate in fullShift
-        if m.ChunkIsLoaded(candidate.parent) = true and candidate.SpriteIsLoaded() = false and candidate.IsOnScreen(0, 0, m.ll_load) then
+            if m.ChunkIsLoaded(candidate.parent) = true and candidate.SpriteIsLoaded() = false and candidate.IsOnScreen(0, 0, m.ll_load) then
                 lazyLoad.Push(candidate)
             end if
         end for
