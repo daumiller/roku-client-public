@@ -316,7 +316,9 @@ sub compOnItemSelected(item as object)
         if item.hide() then return
         item.show(m)
     else if item.command <> invalid then
-        if item.command = "card" then
+        if item.command = "grid_button" then
+            Application().PushScreen(createGridScreen(item.plexObject))
+        else if item.command = "card" then
             itemType = item.plexObject.Get("type")
             if itemType = invalid then
                 Debug("card object type is invalid")
