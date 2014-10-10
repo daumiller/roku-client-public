@@ -782,7 +782,7 @@ end sub
 ' Handle expiration of lazy load timer. We expect all components contained
 ' to be off screen. Shifting the components will reset the list.
 sub compLazyLoadOnTimer(timer as object)
-    if timer.components = invalid or timer.components.count() = 0 then return
+    if timer.chunks = invalid and (timer.components = invalid or timer.components.count() = 0) then return
 
     ' TODO(rob) we should set device as an AppSettings global
     device = CreateObject("roDeviceInfo")
@@ -790,7 +790,14 @@ sub compLazyLoadOnTimer(timer as object)
     ' mark timer to retry if the last keypress is < timer duration
     if device.TimeSinceLastKeypress()*1000 >= timer.durationmillis then
         Debug("compLazyLoadOnTimer:: exec lazy load")
-        m.LazyLoadExec(timer.components, -1)
+        ' process the grid chunks first
+        if timer.chunks <> invalid then
+            m.LoadGridChunk(timer.chunks, 0, timer.chunks.count())
+        end if
+        ' process any components last
+        if timer.components <> invalid then
+            m.LazyLoadExec(timer.components, -1)
+        end if
     else
         ' re-mark the timer to retry when the user has stopped moving
         Debug("compLazyLoadOnTimer:: re-mark and retry")
