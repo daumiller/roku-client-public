@@ -37,6 +37,7 @@ sub gsInit()
 
     m.gridContainer = CreateObject("roAssociativeArray")
     m.placeholders = CreateObject("roList")
+    m.shiftableComponents = CreateObject("roList")
 end sub
 
 function createGridScreen(item as object, rows=2 as integer) as object
@@ -75,7 +76,6 @@ sub gsShow()
         ApplyFunc(ComponentsScreen().Show, m)
 
         ' obtain a list of the shiftable components now (cache it)
-        m.shiftableComponents = []
         for each component in m.components
             component.GetShiftableItems(m.shiftableComponents, m.shiftableComponents)
         end for
