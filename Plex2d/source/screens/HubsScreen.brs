@@ -96,9 +96,15 @@ sub hubsGetComponents()
     hubs = m.GetHubs()
     ' always focus the first HUB to the left of the screen
     if hubs.count() > 0 then
-        hubs[0].demandLeft = 50
-        for each hub in hubs
-            hbox.AddComponent(hub)
+        for index = 0 to hubs.count()-1
+            if index = 0 then
+                ' move first HUB to the left of screen
+                hubs[index].demandLeft = 50
+            else
+                ' move all other hubs to another offset
+                hubs[index].demandLeft = 300
+            end if
+            hbox.AddComponent(hubs[index])
         end for
     end if
     m.components.Push(hbox)

@@ -542,10 +542,6 @@ sub compCalculateShift(toFocus as object)
         y: 0
         safeRight: 1230
         safeLeft: 50
-        ' place parent container of the component as this position
-        ' * if invalid, the container will be shifted on screen to
-        '   the shift.safeLeft or shift.safeRight position
-        demandLeft: 300
     }
 
     ' verify the component is on the screen if no parent exists
@@ -569,7 +565,6 @@ sub compCalculateShift(toFocus as object)
         ' adhere to the parents wanted left position when focused
         if toFocus.parent.demandLeft <> invalid then
             shift.demandLeft = toFocus.parent.demandLeft
-            shift.forceShift = true
         end if
 
         ' calculate the min/max left/right offsets in the parent container
@@ -582,7 +577,7 @@ sub compCalculateShift(toFocus as object)
         ' calculate the shift
 
         ' shift left: only if the container right is off the screen (safeRight)
-        if cont.right > shift.safeRight or shift.forceShift = true then
+        if (cont.right > shift.safeRight) or (shift.demandLeft <> invalid and cont.left <> shift.demandLeft) then
             if shift.demandLeft <> invalid then
                 shift.x = (cont.left - shift.demandLeft) * -1
             else
