@@ -38,6 +38,24 @@ sub gsInit()
     m.gridContainer = CreateObject("roAssociativeArray")
     m.placeholders = CreateObject("roList")
     m.shiftableComponents = CreateObject("roList")
+
+    ' lazy style loading. We might allow the user to modify this, but the different platforms
+    ' seem to need a different style to make them work a little better. The Roku 3 is about
+    ' the only platform that can keep up with background tasks without causing lag in the UI.
+    ' 0: load after key release (non Roku 3)
+    ' 1: load inline (Roku 3)
+    if appSettings().GetGlobal("animationFull") then
+        m.lazyStyle = 1
+        m.chunkSize = 200
+    else
+        m.lazyStyle = 0
+        m.chunkSize = 30
+        m.chunkLoadLimit = 10
+    end if
+
+    ' use a smaller chunk for the inital load size. This may need to vary
+    ' depending on the grid type (artwork, poster)
+    m.chunkSizeInitial = 16
 end sub
 
 function createGridScreen(item as object, rows=2 as integer) as object
@@ -88,10 +106,16 @@ function gsOnResponse(request as object, response as object, context as object) 
     context.response = response
 
     m.totalSize = response.container.getint("totalSize")
-    chunkSize = 200
 
-    for index = 0 to m.totalsize-1 step chunkSize
-        size = chunkSize
+    placeholder = {
+        start: 0,
+        size: m.chunkSizeInitial,
+        path: request.path,
+    }
+    m.placeholders.push(placeholder)
+
+    for index = m.chunkSizeInitial to m.totalsize-1 step m.chunkSize
+        size = m.chunkSize
         if index + size > m.totalsize then
             size = size - ((index + size) - m.totalsize)
         end if
@@ -122,10 +146,16 @@ sub gsGetComponents()
     if chunks.count() > 0 then
         for index = 0 to chunks.count()-1
             hbox.AddComponent(chunks[index])
-            if index = 0 then m.LoadGridChunk(chunks[index])
         end for
     end if
     m.components.Push(hbox)
+
+    ' TODO(rob) determine how many chunks to initially load (xml data)
+    if m.chunkLoadLimit = invalid then
+        m.LoadGridChunk(chunks, 0, chunks.count())
+    else
+        m.LoadGridChunk(chunks, 0, m.chunkLoadLimit)
+    end if
 
     ' set the placement of the description box (manualComponent)
     m.DescriptionBox().setFrame(50, 630, 1280-50, 100)
@@ -261,38 +291,38 @@ end sub
 sub gsCalculateShift(toFocus as object)
     if toFocus.fixed = true then return
 
-    ' check loading status (this should never happen)
-    if m.ChunkIsLoaded(tofocus.parent) = false then
-        m.LoadGridChunk(tofocus.parent)
+    ' load the grid chunk if the focused items chunk isn't loaded yet
+    if m.lazyStyle = 1 and m.ChunkIsLoaded(tofocus.parent) = false then
+        m.LoadGridChunk([tofocus.parent])
     end if
 
     ' TODO(rob) handle vertical shifting. revisit safeLeft/safeRight - we can't
     ' just assume these arbitary numbers are right.
-    shift = {
-        x: 0
-        y: 0
-        safeRight: 1230
-        safeLeft: 50
-    }
+    if m.shift = invalid then
+        m.shift = {
+            safeRight: 1230
+            safeLeft: 50
+            demandX: int( (1280/toFocus.width)/2) * toFocus.width
+        }
+    end if
+    shift = { x: 0, y:0 }
+    shift.Append(m.shift)
 
-    ' verify the component is on the screen if no parent exists
+    ' shift the component so the "middle" if off screen
     focusRect = computeRect(toFocus)
-    if focusRect.right > shift.safeRight
-        shift.demandX = shift.safeLeft
+    if focusRect.right > shift.safeRight then
         shift.x = (focusRect.left - shift.demandX) * -1
     else if focusRect.left < shift.safeLeft then
-        shift.demandX = shift.safeRight - toFocus.width
         shift.x = shift.demandX - focusRect.left
     end if
 
     if (shift.x <> 0 or shift.y <> 0) then
         TextureManager().CancelAll()
-        m.screen.hideFocus()
         m.shiftComponents(shift)
     end if
 end sub
 
-sub gsShiftComponents(shift)
+sub gsShiftComponents(shift as object)
     ' TODO(rob) the logic below has only been testing shifting the x axis.
     Debug("shift components by: " + tostr(shift.x) + "," + tostr(shift.y))
     perfTimer().mark()
@@ -306,16 +336,23 @@ sub gsShiftComponents(shift)
 
     ' this is quicker than using IsOnScreen() for each component
     triggerLazyLoad = false
+    ' minX/maxX: are all components on screen during shift
     minX = curWidth*-1 + abs(shift.x)*-1
     maxX = (1280 + curWidth) + abs(shift.x)
+    ' llminX/llmaxX: lazy load any componenet within this range if not loaded
     llminX = m.ll_trigger*-1 + abs(shift.x)*-1
-    llmaxX = (1280 + m.ll_trigger) + abs(shift.x)
+    llmaxX = (m.ll_trigger) + abs(shift.x)
 
+    chunksToLoad = CreateObject("roList")
     for each component in m.shiftableComponents
         compX = component.x+shift.x
         if compX > minX and compX < maxX then
             if m.ChunkIsLoaded(component.parent) = false then
-                m.loadGridChunk(component.parent)
+                if m.lazyStyle = 1 then
+                    m.loadGridChunk([component.parent])
+                else
+                    chunksToLoad.Push(component.parent)
+                end if
             end if
             partShift.push(component)
         else if triggerLazyLoad = false and compX > llminX and compX < llmaxX and component.SpriteIsLoaded() = false then
@@ -326,6 +363,9 @@ sub gsShiftComponents(shift)
         end if
     end for
     perfTimer().Log("Determined shiftable items: " + "onscreen=" + tostr(partShift.count()) + ", offScreen=" + tostr(fullShift.count()))
+
+    ' set the onScreen components (helper for the manual Focus)
+    m.OnScreenComponents = partShift
 
     ' verify we are not shifting the components to far (first or last component). This
     ' will modify shift.x based on the first or last component viewable on screen. It
@@ -339,6 +379,9 @@ sub gsShiftComponents(shift)
 
     ' ALL Components fit on screen, ignore shifting.
     if minMax.right <= shift.safeRight and minMax.left >= shift.safeLeft then return
+
+    ' hide the focus box before we shift
+    m.screen.hideFocus()
 
     minMax.right = minMax.right + shift.x
     minMax.left = minMax.left + shift.x
@@ -421,6 +464,9 @@ sub gsShiftComponents(shift)
     end for
     perfTimer().Log("Shifted ON screen items, expect *high* ms  (partShift)")
 
+    ' draw the focus directly after shifting all on screen components
+    m.screen.DrawFocus(m.focusedItem, true)
+
     ' shift all off screen components. This will set the x,y postition and
     ' unload the components if offscreen by enough pixels (ll_unload)
     for each comp in fullShift
@@ -428,14 +474,11 @@ sub gsShiftComponents(shift)
     end for
     perfTimer().Log("Shifted OFF screen items (fullShift)")
 
-    ' draw the focus before we lazy load
-    m.screen.DrawFocus(m.focusedItem, true)
-
     ' lazy-load any components off screen, but within our range (ll_trigger)
     ' create a timer to load when the user has stopped shifting (LazyLoadOnTimer)
+    lazyLoad = CreateObject("roList")
     if triggerLazyLoad = true then
-        lazyLoad = CreateObject("roList")
-
+        perfTimer().Mark()
         ' add any off screen component withing range
         for each candidate in fullShift
             if m.ChunkIsLoaded(candidate.parent) = true and candidate.SpriteIsLoaded() = false and candidate.IsOnScreen(0, 0, m.ll_load) then
@@ -443,17 +486,23 @@ sub gsShiftComponents(shift)
             end if
         end for
         perfTimer().Log("Determined lazy load components (off screen): total=" + tostr(lazyLoad.count()))
+    end if
 
-        if lazyLoad.count() > 0 then
-            m.lazyLoadTimer.active = true
-            m.lazyLoadTimer.components = lazyLoad
-            Application().AddTimer(m.lazyLoadTimer, createCallable("LazyLoadOnTimer", m))
-            m.lazyLoadTimer.mark()
+    if lazyLoad.count() > 0 or chunksToLoad.count() > 0 then
+        m.lazyLoadTimer.active = true
+        m.lazyLoadTimer.components = lazyLoad
+        if chunksToLoad.count() > 0 then
+            m.lazyLoadTimer.chunks = chunksToLoad
+            m.lazyLoadTimer.SetDuration(100)
+        else
+            m.lazyLoadTimer.SetDuration(m.ll_timerDur)
         end if
+        Application().AddTimer(m.lazyLoadTimer, createCallable("LazyLoadOnTimer", m))
+        m.lazyLoadTimer.mark()
     else
         m.lazyLoadTimer.active = false
         m.lazyLoadTimer.components = invalid
-        m.lazyLoadTimer.grid = invalid
+        m.lazyLoadTimer.chunks = invalid
     end if
 end sub
 
@@ -494,21 +543,34 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
 
     ' set the grid chunk load status complete
     gridChunk.loadStatus = 2
+
+    ' continue loading next chunk if applicable
+    if context.loadNext > 0 then
+        m.LoadGridChunk(context.gridChunks, context.nextIndex, context.loadNext)
+    end if
 end function
 
 ' request the Grid chunk from the PMS
-sub gsLoadGridChunk(gridChunk as object)
+sub gsLoadGridChunk(gridChunks as object, offset=0 as integer, loadMax=0 as integer)
+    gridChunk = gridChunks[offset]
+    if gridChunk = invalid then return
     if gridChunk.loadStatus <> 0 then
         Debug("Ignore load request. Current status=" + tostr(gridChunk.loadStatus))
         return
     end if
 
-    Debug("---------------- Load Grid Chunk: start=" + tostr(gridChunk.placeholder.start) + ", size=" + tostr(gridChunk.placeholder.size))
+    Debug("Loading Grid Chunk: start=" + tostr(gridChunk.placeholder.start) + ", size=" + tostr(gridChunk.placeholder.size))
     request = createPlexRequest(m.server, gridChunk.placeholder.path)
     request.AddHeader("X-Plex-Container-Start", tostr(gridChunk.placeholder.start))
     request.AddHeader("X-Plex-Container-Size", tostr(gridChunk.placeholder.size))
     context = request.CreateRequestContext("grid", createCallable("OnLoadGridChunk", m))
     context.gridChunk = gridChunk
+
+    ' next grid chunk to load
+    context.gridChunks = gridChunks
+    context.nextIndex = offset+1
+    context.loadNext = loadMax-1
+
     gridChunk.loadStatus = 1
 
     Application().StartRequest(request, context)
