@@ -227,6 +227,10 @@ end sub
 ' the destory method, but I wanted something specific for now to unload.
 '  @nest: is just for debug print
 sub compUnload(nest=0 as integer)
+    ' Ignore fixed components, but only at the first layer. E.G. we still want to unload
+    ' all children of a non-fixed components. Use destroy() to "unload" fixed components
+    if m.fixed = true and nest=0 then return
+
     Debug(string(nest," ") + "-- unload component " + tostr(m))
 
     ' Clean any objects in memory (bitmaps, regions and sprites)
