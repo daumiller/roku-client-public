@@ -324,6 +324,11 @@ sub gsCalculateShift(toFocus as object)
 end sub
 
 sub gsShiftComponents(shift as object)
+    ' disable any lazyLoad timer
+    m.lazyLoadTimer.active = false
+    m.lazyLoadTimer.components = invalid
+    m.lazyLoadTimer.chunks = invalid
+
     ' TODO(rob) the logic below has only been testing shifting the x axis.
     Debug("shift components by: " + tostr(shift.x) + "," + tostr(shift.y))
     perfTimer().mark()
@@ -483,10 +488,6 @@ sub gsShiftComponents(shift as object)
         end if
         Application().AddTimer(m.lazyLoadTimer, createCallable("LazyLoadOnTimer", m))
         m.lazyLoadTimer.mark()
-    else
-        m.lazyLoadTimer.active = false
-        m.lazyLoadTimer.components = invalid
-        m.lazyLoadTimer.chunks = invalid
     end if
 end sub
 
