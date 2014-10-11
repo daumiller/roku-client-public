@@ -810,6 +810,7 @@ end sub
 ' by passing a list of components either on screen or off (which may not
 ' alway be true in the future)
 sub compLazyLoadExec(components as object, zOrder=1 as integer)
+    if NOT Application().IsActiveScreen(m) then return
     if components.count() = 0 then return
     for each comp in components
         if comp.SpriteIsLoaded() = false then
