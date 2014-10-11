@@ -72,7 +72,7 @@ function createGridScreen(item as object, rows=2 as integer) as object
     obj.rows = rows
     obj.orientation = 1
     obj.spacing = 10
-    obj.height = 500
+    obj.height = 450
 
     return obj
 end function
@@ -140,7 +140,7 @@ sub gsGetComponents()
 
     ' *** Grid *** '
     hbox = createHBox(false, false, false, 10)
-    hbox.SetFrame(50, 125, 2000*2000, 500)
+    hbox.SetFrame(50, 120, 2000*2000, m.height)
 
     ' Grid Chunks / Placeholders
     chunks = m.GetGridChunks()
