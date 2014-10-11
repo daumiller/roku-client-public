@@ -331,7 +331,16 @@ sub compOnItemSelected(item as object)
         if item.hide() then return
         item.show(m)
     else if item.command <> invalid then
-        if item.command = "grid_button" then
+        if item.command = "jump_button" then
+            for each component in m.shiftableComponents
+                if component.jumpIndex = item.metadata.index then
+                    m.focusedItem = component
+                    m.CalculateShift(m.focusedItem)
+                    m.OnItemFocused(m.focusedItem)
+                    exit for
+                end if
+            end for
+        else if item.command = "grid_button" then
             Application().PushScreen(createGridScreen(item.plexObject))
         else if item.command = "card" then
             itemType = item.plexObject.Get("type")

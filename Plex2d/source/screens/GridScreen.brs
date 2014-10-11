@@ -8,7 +8,8 @@ function GridScreen() as object
         ' Methods
         obj.Show = gsShow
         obj.Init = gsInit
-        obj.OnResponse = gsOnResponse
+        obj.OnGridResponse = gsOnGridResponse
+        obj.OnJumpResponse = gsOnJumpResponse
         obj.GetComponents = gsGetComponents
         obj.AfterItemFocused = gsAfterItemFocused
 
@@ -37,6 +38,7 @@ sub gsInit()
     ApplyFunc(ComponentsScreen().Init, m)
 
     m.gridContainer = CreateObject("roAssociativeArray")
+    m.jumpContainer = CreateObject("roAssociativeArray")
     m.placeholders = CreateObject("roList")
     m.shiftableComponents = CreateObject("roList")
 
@@ -86,12 +88,20 @@ sub gsShow()
         request.AddHeader("X-Plex-Container-Start", "0")
         request.AddHeader("X-Plex-Container-Size", "0")
 
-        context = request.CreateRequestContext("grid", createCallable("OnResponse", m))
+        context = request.CreateRequestContext("grid", createCallable("OnGridResponse", m))
         Application().StartRequest(request, context)
         m.gridContainer = context
     end if
 
-    if m.gridContainer.response <> invalid then
+    ' create requests for the size of the endpoint
+    if m.jumpContainer.request = invalid then
+        request = createPlexRequest(m.server, m.item.container.getAbsolutePath("firstCharacter"))
+        context = request.CreateRequestContext("jump", createCallable("OnJumpResponse", m))
+        Application().StartRequest(request, context)
+        m.jumpContainer = context
+    end if
+
+    if m.gridContainer.response <> invalid and m.jumpContainer.response <> invalid then
         ApplyFunc(ComponentsScreen().Show, m)
 
         ' obtain a list of the shiftable components now (cache it)
@@ -101,8 +111,28 @@ sub gsShow()
     end if
 end sub
 
+' Handle jump response (firstCharacter)
+function gsOnJumpResponse(request as object, response as object, context as object) as object
+    response.ParseResponse()
+    context.response = response
+
+    m.jump = createObject("roList")
+    m.jumpKeys = {}
+    incr = 0
+    for each item in response.items
+        m.jumpKeys[item.Get("key")] = m.jump.count()
+        m.jump.push({
+            index: incr,
+            key: item.Get("key")
+            title: item.Get("title")
+            size: item.GetInt("size")
+        })
+        incr = incr + item.GetInt("size")
+    end for
+end function
+
 ' Handle initial response from the endpoint request
-function gsOnResponse(request as object, response as object, context as object) as object
+function gsOnGridResponse(request as object, response as object, context as object) as object
     response.ParseResponse()
     context.response = response
 
@@ -158,6 +188,24 @@ sub gsGetComponents()
         m.LoadGridChunk(chunks, 0, m.chunkLoadLimit)
     end if
 
+    ' *** Jump Box *** '
+    hbJump = createHBox(false, false, false, 5)
+    font = FontRegistry().font14
+    btnHeight = font.getOneLineHeight()
+    jumpWidth = 0
+    for each jump in m.jump
+        button = createButton(jump.title, font, "jump_button")
+        button.SetColor(&hc0c0c0c0)
+        button.width = btnHeight
+        button.height = btnHeight
+        button.SetMetadata(jump)
+        hbJump.AddComponent(button)
+        jumpWidth = jumpWidth + button.width + hbJump.spacing
+    end for
+    xOffset = int(1280/2 - jumpWidth/2)
+    hbJump.SetFrame(xOffset, 120 + m.height, jumpWidth, 50)
+    m.components.Push(hbJump)
+
     ' set the placement of the description box (manualComponent)
     m.DescriptionBox().setFrame(50, 630, 1280-50, 100)
 end sub
@@ -176,6 +224,7 @@ function gsCreateGridChunk(placeholder as object) as dynamic
         card = createCardPlaceholder()
         card.SetFocusable(invalid)
         if m.focusedItem = invalid then m.focusedItem = card
+        card.jumpIndex = placeholder.start + index
         grid.AddComponent(card)
     end for
 
@@ -328,6 +377,53 @@ sub gsShiftComponents(shift as object)
     m.lazyLoadTimer.active = false
     m.lazyLoadTimer.components = invalid
     m.lazyLoadTimer.chunks = invalid
+
+    ' If we are shifting by a lot, we'll need to "jump" and clear some components
+    ' as we cannot animate it (for real) due to memory limitations (and speed).
+    if shift.x > 1280 or shift.x < -1280 then
+        ' Two Passes:
+        '  1. Get a list of components on the screen after shift
+        '      while unloading components offscreen
+        '  2: Recalculate the shift (first last grid check) and
+        '     shift all coponents without shifting sprites. Then
+        '     fire off events to lazy load if needed.
+
+        ' Pass 1
+
+        onScreen = CreateObject("roList")
+        for each comp in m.shiftableComponents
+            if comp.IsOnScreen(shift.x, shift.x) then
+                onScreen.push(comp)
+            end if
+        end for
+
+        ' Pass 2
+        shift.x = m.CalculateFirstOrLast(onScreen, shift)
+        onScreen.clear()
+        loadChunks = []
+        for each comp in m.shiftableComponents
+            comp.ShiftPosition(shift.x, shift.y, false)
+            if comp.IsOnScreen() then
+                comp.ShiftPosition(0, 0)
+                onScreen.push(comp)
+                if m.ChunkIsLoaded(comp.parent) = false then
+                    m.loadGridChunk([comp.parent])
+                end if
+            else if comp.sprite <> invalid or comp.region <> invalid then
+                comp.Unload()
+            end if
+        end for
+
+        m.onScreenComponents = onScreen
+
+        ' Test memory cleanup by calling a DrawAll and Stop
+        ' and run r2d2_bitmaps on port 8080
+        ' m.screen.drawall()
+        ' stop
+
+        m.LazyLoadExec(onScreen)
+        return
+    end if
 
     ' TODO(rob) the logic below has only been testing shifting the x axis.
     Debug("shift components by: " + tostr(shift.x) + "," + tostr(shift.y))
