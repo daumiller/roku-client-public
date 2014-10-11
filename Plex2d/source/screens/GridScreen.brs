@@ -15,6 +15,7 @@ function GridScreen() as object
         ' Shifting Methods
         obj.CalculateShift = gsCalculateShift
         obj.ShiftComponents = gsShiftComponents
+        obj.CalculateFirstOrLast = gsCalculateFirstOrLast
 
         ' Grid Methods
         obj.GetGridChunks = gsGetGridChunks
@@ -370,30 +371,13 @@ sub gsShiftComponents(shift as object)
     ' verify we are not shifting the components to far (first or last component). This
     ' will modify shift.x based on the first or last component viewable on screen. It
     ' should be quick to iterate partShift (on screen components after shifting).
-    minMax = {}
-    for each comp in partShift
-        focusRect = computeRect(comp)
-        if minMax.right = invalid or focusRect.right > minMax.right then minMax.right = focusRect.right
-        if minMax.left = invalid or focusRect.left < minMax.left then minMax.left = focusRect.left
-    end for
-
-    ' ALL Components fit on screen, ignore shifting.
-    if minMax.right <= shift.safeRight and minMax.left >= shift.safeLeft then return
-
-    ' hide the focus box before we shift
-    m.screen.hideFocus()
-
-    minMax.right = minMax.right + shift.x
-    minMax.left = minMax.left + shift.x
-    if minMax.right < shift.safeRight then
-        shift.x = shift.x - (minMax.right - shift.safeRight)
-    else if minMax.left > shift.safeLeft then
-        shift.x = shift.x + (shift.safeLeft - minMax.left)
-    end if
-    perfTimer().Log("verified first/last on-screen component offsets: left=" + tostr(minMax.left) + ", right=" + tostr(minMax.right))
+    shift.x = m.CalculateFirstOrLast(partShift, shift)
 
     ' return if we calculated zero shift
     if shift.x = 0 and shift.y = 0 then return
+
+    ' hide the focus box before we shift
+    m.screen.hideFocus()
 
     ' lazy-load any components that will be on-screen after we shift
     m.LazyLoadExec(partShift)
@@ -581,4 +565,27 @@ function gsChunkIsLoaded(grid as object) as boolean
     ' 1: loading/pending
     ' 2: loaded
     return (grid.loadStatus = 2)
+end function
+
+function gsCalculateFirstOrLast(components as object, shift as object) as integer
+    minMax = {}
+    for each comp in components
+        focusRect = computeRect(comp)
+        if minMax.right = invalid or focusRect.right > minMax.right then minMax.right = focusRect.right
+        if minMax.left = invalid or focusRect.left < minMax.left then minMax.left = focusRect.left
+    end for
+
+    ' ALL Components fit on screen, ignore shifting.
+    if minMax.right <= shift.safeRight and minMax.left >= shift.safeLeft then return 0
+
+    minMax.right = minMax.right + shift.x
+    minMax.left = minMax.left + shift.x
+    if minMax.right < shift.safeRight then
+        shift.x = shift.x - (minMax.right - shift.safeRight)
+    else if minMax.left > shift.safeLeft then
+        shift.x = shift.x + (shift.safeLeft - minMax.left)
+    end if
+    perfTimer().Log("verified first/last on-screen component offsets: left=" + tostr(minMax.left) + ", right=" + tostr(minMax.right))
+
+    return shift.x
 end function
