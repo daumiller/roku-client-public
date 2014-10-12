@@ -610,7 +610,7 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
             gridItem.SetFocusable("card")
 
             ' update focused item if we are replacing the context
-            if m.focuseditem.equals(gridItem) then
+            if m.focusedItem <> invalid and m.focuseditem.equals(gridItem) then
                 m.focusedItem = gridItem
                 m.OnItemFocused(m.focusedItem)
             end if
