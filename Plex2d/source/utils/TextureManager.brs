@@ -150,6 +150,8 @@ end sub
 ' Each texture object is sent to this function, which creates the texturerequest and sends it
 ' It also increments the sendcount
 sub tmRequestTexture(component as object, context as object)
+    component.pendingTexture = true
+
     if m.timerTextureManger = invalid then m.timerTextureManger = createtimer("textureManagerRequest")
     if m.SendCount = m.ReceiveCount then m.timerTextureManger.mark()
 
@@ -238,6 +240,7 @@ function tmReceiveTexture(tmsg as object, screenID as integer) as boolean
             ' track the used bitmap by screenId
             m.TrackByScreenID(tmsg.GetURI(), screenID)
 
+            context.component.pendingTexture = false
             context.component.SetBitmap(bitmap)
 
             return true

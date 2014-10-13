@@ -16,6 +16,8 @@ function ContainerClass() as object
         obj.GetFocusableItems = contGetFocusableItems
         obj.GetShiftableItems = contGetShiftableItems
 
+        obj.IsPendingTexture = contIsPendingTexture
+
         m.ContainerClass = obj
     end if
 
@@ -117,3 +119,12 @@ sub contGetShiftableItems(partShift as object, fullShift as object, lazyLoad = i
         component.GetShiftableItems(partShift, fullShift, lazyLoad, deltaX, deltaY)
     next
 end sub
+
+function contIsPendingTexture() as boolean
+    for each component in m.components
+        if component.IsPendingTexture() = true then
+            return true
+        end if
+    next
+    return false
+end function

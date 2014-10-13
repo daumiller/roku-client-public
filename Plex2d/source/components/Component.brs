@@ -53,6 +53,8 @@ function ComponentClass() as object
         obj.ToString = compToString
         obj.Equals = compEquals
 
+        obj.IsPendingTexture = compIsPendingTexture
+
         m.ComponentClass = obj
     end if
 
@@ -298,6 +300,9 @@ function compSpriteIsLoaded() as boolean
     ' not loaded if sprite is invalid
     if m.sprite = invalid return false
 
+    ' check if any child component is loading
+    if m.IsPendingTexture() then return false
+
     ' not loaded if sprites data contains a lazyLoad key
     if m.sprite.getData() <> invalid and m.sprite.getData().lazyLoad = true then return false
 
@@ -308,3 +313,7 @@ end function
 sub compSetMetadata(metadata=invalid as dynamic)
     m.metadata = metadata
 end sub
+
+function compIsPendingTexture() as boolean
+    return (m.pendingTexture = true)
+end function
