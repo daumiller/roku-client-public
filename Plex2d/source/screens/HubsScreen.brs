@@ -128,6 +128,7 @@ function hubsCreateHub(container) as dynamic
 
     hub = createHub(container.GetSingleLineTitle(), orientation, layout, 10)
     hub.height = 500
+    hub.container = container
 
     ' TODO(rob): we'll need to determing the orientation (and possibly layout) first. As of now,
     ' we'll just keep appending the last item to fill out the hub if we have less than expected.
@@ -155,9 +156,9 @@ function hubsCreateHub(container) as dynamic
     ' any count up to 5? If we end up having the HUB class calculate the orientation/layout,
     ' I'd expect it will also be able to calculate the more button status as well.
     if container.items.count()-1 > hub.MaxChildrenForLayout() then
-        hub.ShowMoreButton("more")
+        hub.ShowMoreButton("grid_button")
     else if container.get("more") <> "0" then
-        hub.ShowMoreButton("more")
+        hub.ShowMoreButton("grid_button")
     end if
 
     return hub

@@ -234,6 +234,8 @@ sub hubShowMoreButton(moreCommand as dynamic)
         m.moreButton.width = 72
         m.moreButton.height = 44
         m.moreButton.fixed = false
+        m.moreButton.setMetadata(m.container.attrs)
+        m.moreButton.plexObject = m.container
         ' TODO(rob) any reason we used AddTail intead of AddComponent? changed this to utilized some extra
         ' logic in AddComponent (adding the parent to the component)
         ' m.components.AddTail(m.moreButton)
