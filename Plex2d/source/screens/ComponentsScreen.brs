@@ -86,9 +86,13 @@ sub compInit()
     m.customFonts = CreateObject("roAssociativeArray")
     m.manualComponents = CreateObject("roAssociativeArray")
 
+    ' reset the nextComponentId
+    GetGlobalAA().AddReplace("nextComponentId", 1)
+
     ' focus helpers
     m.onScreenComponents = CreateObject("roList")
     m.fixedComponents = CreateObject("roList")
+    m.shiftableComponents = CreateObject("roList")
 
     ' lazy load timer ( loading off screen components )
     m.lazyLoadTimer = createTimer("lazyLoad")
@@ -109,6 +113,10 @@ sub compShow()
         Application().CheckLoadingModal()
         m.screen.DrawComponent(comp)
         comp.GetFocusableItems(m.onScreenComponents)
+
+        ' obtain a list of the shiftable components now (cache it)
+        ' TODO(rob) use on the HUB screens
+        comp.GetShiftableItems(m.shiftableComponents, m.shiftableComponents)
     next
 
     ' Obtain a list of fixed components. These will be used as a helper
@@ -132,7 +140,21 @@ sub compShow()
         m.focusedItem = candidates[0]
     end if
 
+    ' try to refocus if applicable
+    if m.reFocusItemId <> invalid then
+        for each component in m.shiftableComponents
+            if component.id = m.reFocusItemId
+                m.focusedItem = component
+                exit for
+            end if
+        end for
+        m.reFocusItemId = invalid
+    end if
+
     if m.focusedItem <> invalid then
+        m.CalculateShift(m.focusedItem)
+        m.OnItemFocused(m.focusedItem)
+
         ' Make sure that we set an initial focus point.
         if m.focusX = invalid or m.focusY = invalid then
             m.focusX = m.focusedItem.x
@@ -168,6 +190,12 @@ sub compDeactivate(screen = invalid as dynamic)
     end for
     m.components.clear()
     m.manualComponents.clear()
+
+    ' references to m.components
+    m.shiftableComponents.clear()
+    m.fixedComponents.clear()
+    m.onScreenComponents.clear()
+
     m.customFonts.clear()
     m.focusedItem = invalid
 
@@ -342,6 +370,7 @@ sub compOnItemSelected(item as object)
         if item.command = "jump_button" then
             for each component in m.shiftableComponents
                 if component.jumpIndex = item.metadata.index then
+                    m.lastFocusedItem = invalid
                     m.focusedItem = component
                     m.CalculateShift(m.focusedItem)
                     m.OnItemFocused(m.focusedItem)

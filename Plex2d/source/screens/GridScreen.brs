@@ -40,7 +40,6 @@ sub gsInit()
     m.gridContainer = CreateObject("roAssociativeArray")
     m.jumpContainer = CreateObject("roAssociativeArray")
     m.placeholders = CreateObject("roList")
-    m.shiftableComponents = CreateObject("roList")
 
     ' lazy style loading. We might allow the user to modify this, but the different platforms
     ' seem to need a different style to make them work a little better. The Roku 3 is about
@@ -103,11 +102,6 @@ sub gsShow()
 
     if m.gridContainer.response <> invalid and m.jumpContainer.response <> invalid then
         ApplyFunc(ComponentsScreen().Show, m)
-
-        ' obtain a list of the shiftable components now (cache it)
-        for each component in m.components
-            component.GetShiftableItems(m.shiftableComponents, m.shiftableComponents)
-        end for
     end if
 end sub
 
@@ -389,7 +383,6 @@ sub gsShiftComponents(shift as object)
         '     fire off events to lazy load if needed.
 
         ' Pass 1
-
         onScreen = CreateObject("roList")
         for each comp in m.shiftableComponents
             if comp.IsOnScreen(shift.x, shift.x) then

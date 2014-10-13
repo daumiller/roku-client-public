@@ -77,6 +77,11 @@ sub appPushScreen(screen)
     if m.screens.Count() > 0 then
         oldScreen = m.screens.Peek()
 
+        ' Remember the last focus ID to refocus
+        if oldScreen.focusedItem <> invalid then
+            oldScreen.reFocusItemId = oldScreen.focusedItem.id
+        end if
+
         ' Clean up any requests initiated by this screen
         m.CancelRequests(tostr(oldScreen.screenID))
 
