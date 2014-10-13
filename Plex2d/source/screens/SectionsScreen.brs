@@ -83,7 +83,7 @@ end function
 function sectionsGetButtons() as object
     buttons = []
     for each container in m.buttonsContainer.items
-        if container.attrs.secondary = invalid then
+        if container.Get("key") = "all" then
             buttons.push(m.createButton(container))
         end if
     end for
