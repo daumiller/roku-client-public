@@ -681,6 +681,10 @@ sub compCalculateShift(toFocus as object)
 end sub
 
 sub compShiftComponents(shift)
+    ' disable any lazyLoad timer
+    m.lazyLoadTimer.active = false
+    m.lazyLoadTimer.components = invalid
+
     ' TODO(rob) the logic below has only been testing shifting the x axis.
     Debug("shift components by: " + tostr(shift.x) + "," + tostr(shift.y))
     perfTimer().mark()
