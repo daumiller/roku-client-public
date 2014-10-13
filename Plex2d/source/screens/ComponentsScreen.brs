@@ -150,6 +150,11 @@ end sub
 ' also need to exclude resetting the compositor.
 sub compDeactivate(screen = invalid as dynamic)
     Debug("Deactivate ComponentsScreen: clear components, texture manager, and custom fonts")
+
+    ' disable any lazyLoad timer
+    m.lazyLoadTimer.active = false
+    m.lazyLoadTimer = invalid
+
     TextureManager().RemoveTextureByScreenId(m.screenID)
     for each comp in m.components
         comp.Destroy()
