@@ -170,6 +170,9 @@ sub compDeactivate(screen = invalid as dynamic)
     m.manualComponents.clear()
     m.customFonts.clear()
     m.focusedItem = invalid
+
+    ' Encourage some extra memory cleanup
+    RunGarbageCollector()
 end sub
 
 sub compGetComponents()
