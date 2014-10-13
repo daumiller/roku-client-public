@@ -76,6 +76,10 @@ end sub
 sub appPushScreen(screen)
     if m.screens.Count() > 0 then
         oldScreen = m.screens.Peek()
+
+        ' Clean up any requests initiated by this screen
+        m.CancelRequests(tostr(oldScreen.screenID))
+
         m.ShowLoadingModal(oldScreen, oldScreen.Deactivate)
     else
         oldScreen = invalid
