@@ -685,6 +685,43 @@ sub compShiftComponents(shift)
     m.lazyLoadTimer.active = false
     m.lazyLoadTimer.components = invalid
 
+    ' If we are shifting by a lot, we'll need to "jump" and clear some components
+    ' as we cannot animate it (for real) due to memory limitations (and speed).
+    if shift.x > 1280 or shift.x < -1280 then
+        ' Two Passes:
+        '  1. Get a list of components on the screen after shift
+        '      while unloading components offscreen
+        '  2: Recalculate the shift (first last grid check) and
+        '     shift all coponents without shifting sprites. Then
+        '     fire off events to lazy load if needed.
+
+        ' Pass 1
+        onScreen = CreateObject("roList")
+        for each comp in m.shiftableComponents
+            if comp.IsOnScreen(shift.x, shift.x) then
+                onScreen.push(comp)
+            end if
+        end for
+
+        ' Pass 2
+        shift.x = m.CalculateFirstOrLast(onScreen, shift)
+        onScreen.clear()
+        for each comp in m.shiftableComponents
+            comp.ShiftPosition(shift.x, shift.y, false)
+            if comp.IsOnScreen() then
+                comp.ShiftPosition(0, 0)
+                onScreen.push(comp)
+            else if comp.sprite <> invalid or comp.region <> invalid then
+                comp.Unload()
+            end if
+        end for
+
+        m.onScreenComponents = onScreen
+
+        m.LazyLoadExec(onScreen)
+        return
+    end if
+
     ' TODO(rob) the logic below has only been testing shifting the x axis.
     Debug("shift components by: " + tostr(shift.x) + "," + tostr(shift.y))
     perfTimer().mark()
