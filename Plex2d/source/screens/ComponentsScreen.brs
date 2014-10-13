@@ -45,6 +45,7 @@ function ComponentsScreen() as object
         ' Shifting methods
         obj.CalculateShift = compCalculateShift
         obj.ShiftComponents = compShiftComponents
+        obj.CalculateFirstOrLast = compCalculateFirstOrLast
 
         ' Message handling
         obj.HandleMessage = compHandleMessage
@@ -700,24 +701,7 @@ sub compShiftComponents(shift)
     ' verify we are not shifting the components to far (first or last component). This
     ' will modify shift.x based on the first or last component viewable on screen. It
     ' should be quick to iterate partShift (on screen components after shifting).
-    minMax = {}
-    for each comp in partShift
-        focusRect = computeRect(comp)
-        if minMax.right = invalid or focusRect.right > minMax.right then minMax.right = focusRect.right
-        if minMax.left = invalid or focusRect.left < minMax.left then minMax.left = focusRect.left
-    end for
-
-    ' ALL Components fit on screen, ignore shifting.
-    if minMax.right <= shift.safeRight and minMax.left >= shift.safeLeft then return
-
-    minMax.right = minMax.right + shift.x
-    minMax.left = minMax.left + shift.x
-    if minMax.right < shift.safeRight then
-        shift.x = shift.x - (minMax.right - shift.safeRight)
-    else if minMax.left > shift.safeLeft then
-        shift.x = shift.x + (shift.safeLeft - minMax.left)
-    end if
-    perfTimer().Log("verified first/last on-screen component offsets: left=" + tostr(minMax.left) + ", right=" + tostr(minMax.right))
+    shift.x = m.CalculateFirstOrLast(partShift, shift)
 
     ' return if we calculated zero shift
     if shift.x = 0 and shift.y = 0 then return
@@ -890,3 +874,26 @@ sub compOnInfoButton()
     print "---- item.command ----"
     print item.command
 end sub
+
+function compCalculateFirstOrLast(components as object, shift as object) as integer
+    minMax = {}
+    for each comp in components
+        focusRect = computeRect(comp)
+        if minMax.right = invalid or focusRect.right > minMax.right then minMax.right = focusRect.right
+        if minMax.left = invalid or focusRect.left < minMax.left then minMax.left = focusRect.left
+    end for
+
+    ' ALL Components fit on screen, ignore shifting.
+    if minMax.right <= shift.safeRight and minMax.left >= shift.safeLeft then return 0
+
+    minMax.right = minMax.right + shift.x
+    minMax.left = minMax.left + shift.x
+    if minMax.right < shift.safeRight then
+        shift.x = shift.x - (minMax.right - shift.safeRight)
+    else if minMax.left > shift.safeLeft then
+        shift.x = shift.x + (shift.safeLeft - minMax.left)
+    end if
+    perfTimer().Log("verified first/last on-screen component offsets: left=" + tostr(minMax.left) + ", right=" + tostr(minMax.right))
+
+    return shift.x
+end function

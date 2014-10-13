@@ -16,7 +16,6 @@ function GridScreen() as object
         ' Shifting Methods
         obj.CalculateShift = gsCalculateShift
         obj.ShiftComponents = gsShiftComponents
-        obj.CalculateFirstOrLast = gsCalculateFirstOrLast
 
         ' Grid Methods
         obj.GetGridChunks = gsGetGridChunks
@@ -655,27 +654,4 @@ function gsChunkIsLoaded(grid as object) as boolean
     ' 1: loading/pending
     ' 2: loaded
     return (grid.loadStatus = 2)
-end function
-
-function gsCalculateFirstOrLast(components as object, shift as object) as integer
-    minMax = {}
-    for each comp in components
-        focusRect = computeRect(comp)
-        if minMax.right = invalid or focusRect.right > minMax.right then minMax.right = focusRect.right
-        if minMax.left = invalid or focusRect.left < minMax.left then minMax.left = focusRect.left
-    end for
-
-    ' ALL Components fit on screen, ignore shifting.
-    if minMax.right <= shift.safeRight and minMax.left >= shift.safeLeft then return 0
-
-    minMax.right = minMax.right + shift.x
-    minMax.left = minMax.left + shift.x
-    if minMax.right < shift.safeRight then
-        shift.x = shift.x - (minMax.right - shift.safeRight)
-    else if minMax.left > shift.safeLeft then
-        shift.x = shift.x + (shift.safeLeft - minMax.left)
-    end if
-    perfTimer().Log("verified first/last on-screen component offsets: left=" + tostr(minMax.left) + ", right=" + tostr(minMax.right))
-
-    return shift.x
 end function
