@@ -12,6 +12,7 @@ function ImageClass() as object
         obj.SetPlaceholder = imageSetPlaceholder
         obj.FromLocal = imageFromLocal
 
+        obj.SetOrientation = imageSetOrientation
         m.ImageClass = obj
     end if
 
@@ -71,9 +72,7 @@ function createImage(source as dynamic, width=0 as integer, height=0 as integer)
     obj.Init()
 
     if type(source) = "roAssociativeArray" then
-        obj.source = source.url
-        obj.server = source.server
-        obj.transcodeOpts = source.transcodeOpts
+        obj.append(source)
     else
         obj.source = source
     end if
@@ -156,4 +155,15 @@ sub imageScaleRegion(width as integer, height as integer)
         scaledRegion.DrawScaledObject(0, 0, scaleX, scaleY, m.region)
         m.region = scaledRegion
     end if
+end sub
+
+sub imageSetOrientation(orientation as integer)
+    if orientation = m.ORIENTATION_SQUARE then
+        m.source = firstOf(m.composite, m.art, m.poster, m.source)
+    else if orientation = m.ORIENTATION_PORTRAIT then
+        m.source = firstOf(m.poster, m.source)
+    else if orientation = m.ORIENTATION_LANDSCAPE then
+        m.source = firstOf(m.art, m.source)
+    end if
+    m.sourceOrig = m.source
 end sub

@@ -140,7 +140,7 @@ function hubsCreateHub(container) as dynamic
         ' TODO(rob): proper image transcoding + how we determine the correct image type to use
         attrs = item.attrs
         thumb = firstOfArr([attrs.grandparentThumb, attrs.parentThumb, attrs.thumb, attrs.art, attrs.composite, ""])
-        image = { url: m.server.BuildUrl(thumb, true), server: m.server }
+        image = { source: m.server.BuildUrl(thumb, true), server: m.server }
 
         card = createCard(image, item.GetSingleLineTitle())
         card.setMetadata(item.attrs)

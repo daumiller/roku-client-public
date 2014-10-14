@@ -85,7 +85,7 @@ sub preplayGetComponents()
 
     ' *** Background Artwork *** '
     if m.item.Get("art") <> invalid then
-        image = { url: m.server.BuildUrl(m.item.Get("art"), true), server: m.server, transcodeOpts: {blur: 2} }
+        image = { source: m.server.BuildUrl(m.item.Get("art"), true), server: m.server, transcodeOpts: {blur: 2} }
         background = createImage(image, 1280, 720)
         m.components.Push(background)
 
@@ -257,12 +257,12 @@ function preplayGetImages() as object
 
     ' TODO(rob): better way to choose which thumb to use?
     posterThumb = firstOfArr([m.item.Get("parentThumb"), m.item.Get("grandparentThumb"), m.item.Get("thumb"), m.item.Get("composite"), ""])
-    image = { url: m.server.BuildUrl(posterThumb, true), server: m.server, }
+    image = { source: m.server.BuildUrl(posterThumb, true), server: m.server, }
     posterThumb = createImage(image, posterSize.width, posterSize.height)
     container.components.push(posterThumb)
 
     if mediaSize <> invalid then
-        image = { url: m.server.BuildUrl(m.item.Get("thumb"), true), server: m.server, }
+        image = { source: m.server.BuildUrl(m.item.Get("thumb"), true), server: m.server, }
         mediaThumb = createImage(image, mediaSize.width, mediaSize.height)
         container.components.push(mediaThumb)
     else

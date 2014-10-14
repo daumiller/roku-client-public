@@ -5,6 +5,11 @@ function ComponentClass() as object
 
         m.nextComponentId = 1
 
+        ' STATIC
+        obj.ORIENTATION_SQUARE = 0
+        obj.ORIENTATION_PORTRAIT = 1
+        obj.ORIENTATION_LANDSCAPE = 2
+
         ' Properties
         obj.x = 0
         obj.y = 0
@@ -54,6 +59,8 @@ function ComponentClass() as object
         obj.Equals = compEquals
 
         obj.IsPendingTexture = compIsPendingTexture
+
+        obj.SetOrientation = compSetOrientation
 
         m.ComponentClass = obj
     end if
@@ -317,3 +324,6 @@ end sub
 function compIsPendingTexture() as boolean
     return (m.pendingTexture = true)
 end function
+
+sub compSetOrientation(orientation as integer)
+end sub

@@ -5,9 +5,9 @@ function HubClass() as object
         obj.ClassName = "Hub"
 
         ' Constants
-        obj.ORIENTATION_SQUARE = 0
-        obj.ORIENTATION_PORTRAIT = 1
-        obj.ORIENTATION_LANDSCAPE = 2
+        obj.ORIENTATION_SQUARE = ComponentClass().ORIENTATION_SQUARE
+        obj.ORIENTATION_PORTRAIT = ComponentClass().ORIENTATION_PORTRAIT
+        obj.ORIENTATION_LANDSCAPE = ComponentClass().ORIENTATION_LANDSCAPE
 
         ' TODO(schuyler): Kind of making these up
         obj.LAYOUT_HERO_4 = 1

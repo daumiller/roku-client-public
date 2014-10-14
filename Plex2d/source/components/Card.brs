@@ -11,6 +11,7 @@ function CardClass() as object
         obj.Reinit = cardReinit
         obj.InitComponents = cardInitComponents
         obj.PerformLayout = cardPerformLayout
+        obj.SetOrientation = cardSetOrientation
 
         m.CardClass = obj
     end if
@@ -82,5 +83,11 @@ sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic)
         m.overlay.SetPadding(10)
         m.overlay.SetColor(&hffffffff, &h000000e0)
         m.AddComponent(m.overlay)
+    end if
+end sub
+
+sub cardSetOrientation(orientation as integer)
+    if m.image <> invalid then
+        m.image.SetOrientation(orientation)
     end if
 end sub

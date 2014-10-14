@@ -593,7 +593,7 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
 
             attrs = item.attrs
             thumb = firstOfArr([attrs.grandparentThumb, attrs.parentThumb, attrs.thumb, attrs.art, attrs.composite, ""])
-            image = { url: m.server.BuildUrl(thumb, true), server: m.server }
+            image = { source: m.server.BuildUrl(thumb, true), server: m.server }
 
             ' reinit the card - set metadata and plexObject and focusability
             gridItem.ReInit(image, item.GetSingleLineTitle())
