@@ -127,8 +127,8 @@ function hubsCreateHub(container) as dynamic
     layout = 1
 
     hub = createHub(container.GetSingleLineTitle(), orientation, layout, 10)
+    hub.CalculateStyle(container)
     hub.height = 500
-    hub.container = container
 
     ' TODO(rob): we'll need to determing the orientation (and possibly layout) first. As of now,
     ' we'll just keep appending the last item to fill out the hub if we have less than expected.

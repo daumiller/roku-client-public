@@ -10,10 +10,17 @@ function HubClass() as object
         obj.ORIENTATION_LANDSCAPE = ComponentClass().ORIENTATION_LANDSCAPE
 
         ' TODO(schuyler): Kind of making these up
-        obj.LAYOUT_HERO_4 = 1
-        obj.LAYOUT_ART_3 = 2
-        obj.LAYOUT_ART_2 = 3
-        obj.LAYOUT_HERO_3 = 4
+
+        ' Hero (grid optional) start at int:0
+        obj.LAYOUT_HERO_2 = 2
+        obj.LAYOUT_HERO_3 = 3
+        obj.LAYOUT_HERO_5 = 5
+
+        ' Grid (no hero) start at int:10
+        obj.LAYOUT_GRID_1 = 11
+        obj.LAYOUT_GRID_2 = 12
+        obj.LAYOUT_GRID_3 = 13
+        obj.LAYOUT_GRID_4 = 14
 
         ' Methods
         obj.PerformLayout = hubPerformLayout
@@ -22,12 +29,16 @@ function HubClass() as object
         obj.GetWidthForOrientation = hubGetWidthForOrientation
         obj.GetPreferredWidth = hubGetPreferredWidth
 
+        obj.CalculateStyle = hubCalculateStyle
+
         m.HubClass = obj
     end if
 
     return m.HubClass
 end function
 
+' TODO(rob): layout is not calculated on the fly. Can we remove this or do we need an option
+' to force layout, and even orientation?
 function createHub(title as string, orientation as integer, layout as integer, spacing=0 as integer) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(HubClass())
@@ -81,7 +92,7 @@ sub hubPerformLayout()
     title.SetFrame(xOffset, yOffset-m.spacing-title.font.GetOneLineHeight(), 0, title.font.GetOneLineHeight())
     title.fixed = false
 
-    if m.layout = m.LAYOUT_HERO_4 or m.layout = m.LAYOUT_HERO_3 then
+    if m.layout = m.LAYOUT_HERO_2 or m.layout = m.LAYOUT_HERO_3 or m.layout = m.LAYOUT_HERO_5 then
         component = m.components.Next()
         component.fixed = false
 
@@ -92,100 +103,133 @@ sub hubPerformLayout()
         ' subclass that knows to tweak the URL based on the SetFrame call
         ' (which should always happen before Draw anyway)?
 
-        heroWidth = m.GetWidthForOrientation(m.ORIENTATION_PORTRAIT, availableHeight)
-        component.SetFrame(xOffset, yOffset, heroWidth, availableHeight)
+        ' TODO(rob): ^^ SetOrientation() implements choosing image based on
+        ' the orientation.
+
+        if m.layout = m.LAYOUT_HERO_3 and (m.ORIENTATION = m.ORIENTATION_LANDSCAPE or m.ORIENTATION = m.ORIENTATION_SQUARE) then
+            childHeight = int(availableHeight/3)
+            heroHeight = availableHeight - childHeight - m.spacing
+            heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight) + m.spacing*2
+            availableHeight = childHeight
+        else
+            heroHeight = availableHeight
+            heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight)
+            ' Set the focus for the more button, but not the reverse behavior.
+            if m.moreButton <> invalid then
+                component.SetFocusSibling("down", m.moreButton)
+            end if
+            lastHero = component
+        end if
+
+        component.SetFrame(xOffset, yOffset, heroWidth, heroHeight)
+        component.SetOrientation(m.orientation)
 
         xOffset = xOffset + heroWidth + m.spacing
         Debug("Hero width was " + tostr(heroWidth) + ", xOffset is now " + tostr(xOffset))
 
-        ' Set the focus for the more button, but not the reverse behavior.
-        if m.moreButton <> invalid then
-            component.SetFocusSibling("down", m.moreButton)
-        end if
-
-        if m.layout = m.LAYOUT_HERO_4 then
+        if m.layout = m.LAYOUT_HERO_2 then
+            rows = 1
+            cols = 1
+        else if m.layout = m.LAYOUT_HERO_3 then
+            if m.ORIENTATION = m.ORIENTATION_LANDSCAPE or m.ORIENTATION = m.ORIENTATION_SQUARE then
+                yOffset = yOffset + component.height + m.spacing
+                xOffset = xOffset - component.width - m.spacing
+                rows = 1
+                cols = 2
+            else
+                rows = 2
+                cols = 1
+            end if
+        else if m.layout = m.LAYOUT_HERO_5 then
             rows = 2
             cols = 2
-        else if m.layout = m.LAYOUT_HERO_3 then
-            rows = 3
-            cols = 1
         end if
 
-        lastHero = component
-    else if m.layout = m.LAYOUT_ART_2 then
+    else if m.layout = m.LAYOUT_GRID_4 then
+        rows = 2
+        cols = 2
+    else if m.layout = m.LAYOUT_GRID_3 then
+        rows = 3
+        cols = 1
+    else if m.layout = m.LAYOUT_GRID_2 then
         rows = 2
         cols = 1
-    else if m.layout = m.LAYOUT_ART_3 then
-        rows = 3
+    else if m.layout = m.LAYOUT_GRID_1 then
+        rows = 1
         cols = 1
     else
         Error("Unknown hub layout: " + tostr(m.layout))
         stop
     end if
 
-    grid = CreateObject("roArray", rows * cols, false)
+    if rows = 0 or cols = 0 then
+        rightX = xOffset - m.spacing
+    else
+        grid = CreateObject("roArray", rows * cols, false)
 
-    ' Ok, at this point the components cursor should be pointing at the
-    ' next child to render and rows and cols should both be set. We can
-    ' figure out the height of each element, and then start laying them
-    ' out.
+        ' Ok, at this point the components cursor should be pointing at the
+        ' next child to render and rows and cols should both be set. We can
+        ' figure out the height of each element, and then start laying them
+        ' out.
 
-    itemHeight = int((availableHeight - (m.spacing * (rows - 1))) / rows)
-    itemWidth = m.GetWidthForOrientation(m.orientation, itemHeight)
+        itemHeight = int((availableHeight - (m.spacing * (rows - 1))) / rows)
+        itemWidth = m.GetWidthForOrientation(m.orientation, itemHeight)
 
-    Debug("Each grid item will be " + tostr(itemWidth) + "x" + tostr(itemHeight))
+        Debug("Each grid item will be " + tostr(itemWidth) + "x" + tostr(itemHeight))
 
-    xOffsets = CreateObject("roArray", cols, false)
-    xOffsets[0] = xOffset
-    for i = 1 to cols - 1
-        xOffsets[i] = xOffsets[i-1] + m.spacing + itemWidth
-    end for
-
-    yOffsets = CreateObject("roArray", rows, false)
-    yOffsets[0] = yOffset
-    for i = 1 to rows - 2
-        yOffsets[i] = yOffsets[i-1] + m.spacing + itemHeight
-    end for
-    yOffsets[rows - 1] = yOffset + availableHeight - itemHeight
-
-    for rowNum = 0 to rows - 1
-        for colNum = 0 to cols - 1
-            component = m.components.Next()
-            if component = invalid then exit for
-            component.fixed = false
-
-            component.SetFrame(xOffsets[colNum], yOffsets[rowNum], itemWidth, itemHeight)
-
-            grid[rowNum*cols + colNum] = component
-
-            ' Set focus relationships. If there's a more button, always
-            ' set the down button to there but not vice versa.
-            if m.moreButton <> invalid then
-                component.SetFocusSibling("down", m.moreButton)
-            end if
-
-            if rowNum > 0 then
-                sibling = grid[(rowNum-1)*cols + colNum]
-                component.SetFocusSibling("up", sibling)
-                sibling.SetFocusSibling("down", component)
-            end if
-
-            if colNum > 0 then
-                sibling = grid[rowNum*cols + colNum - 1]
-                component.SetFocusSibling("left", sibling)
-                sibling.SetFocusSibling("right", component)
-            else if lastHero <> invalid then
-                ' Set left from here to the last hero, but not vice versa.
-                component.SetFocusSibling("left", lastHero)
-            end if
+        xOffsets = CreateObject("roArray", cols, false)
+        xOffsets[0] = xOffset
+        for i = 1 to cols - 1
+            xOffsets[i] = xOffsets[i-1] + m.spacing + itemWidth
         end for
-    end for
 
+        yOffsets = CreateObject("roArray", rows, false)
+        yOffsets[0] = yOffset
+        for i = 1 to rows - 2
+            yOffsets[i] = yOffsets[i-1] + m.spacing + itemHeight
+        end for
+        yOffsets[rows - 1] = yOffset + availableHeight - itemHeight
+
+        for rowNum = 0 to rows - 1
+            for colNum = 0 to cols - 1
+                component = m.components.Next()
+                if component = invalid then exit for
+                component.fixed = false
+
+                component.SetFrame(xOffsets[colNum], yOffsets[rowNum], itemWidth, itemHeight)
+                component.SetOrientation(m.orientation)
+
+                grid[rowNum*cols + colNum] = component
+
+                ' Set focus relationships. If there's a more button, always
+                ' set the down button to there but not vice versa.
+                if m.moreButton <> invalid then
+                    component.SetFocusSibling("down", m.moreButton)
+                end if
+
+                if rowNum > 0 then
+                    sibling = grid[(rowNum-1)*cols + colNum]
+                    component.SetFocusSibling("up", sibling)
+                    sibling.SetFocusSibling("down", component)
+                end if
+
+                if colNum > 0 then
+                    sibling = grid[rowNum*cols + colNum - 1]
+                    component.SetFocusSibling("left", sibling)
+                    sibling.SetFocusSibling("right", component)
+                else if lastHero <> invalid then
+                    ' Set left from here to the last hero, but not vice versa.
+                    component.SetFocusSibling("left", lastHero)
+                end if
+            end for
+        end for
+
+        rightX = xOffsets[cols - 1] + itemWidth
+    end if
     ' TODO(schuyler): The hub basically wants to assert its width, but right now
     ' the frame is set by whoever created the hub (or its parent container). How
     ' should it tell that what it wants its width to be?
 
-    rightX = xOffsets[cols - 1] + itemWidth
     m.preferredWidth = rightX - m.x
     m.width = m.preferredWidth
 
@@ -203,18 +247,12 @@ sub hubPerformLayout()
 end sub
 
 function hubMaxChildrenForLayout() as integer
-    if m.layout = m.LAYOUT_ART_2 then
-        return 2
-    else if m.layout = m.LAYOUT_ART_3 then
-        return 3
-    else if m.layout = m.LAYOUT_HERO_4 then
-        return 5
-    else if m.layout = m.LAYOUT_HERO_3 then
-        return 4
+    if m.maxChildren <> invalid then
+        return m.maxChildren
+    else
+        Error("Unknown maxChildren for layout: " + tostr(m.layout))
+        stop
     end if
-
-    Error("Unknown hub layout: " + tostr(m.layout))
-    stop
 end function
 
 sub hubShowMoreButton(moreCommand as dynamic)
@@ -261,3 +299,48 @@ function hubGetPreferredWidth() as integer
 
     return m.preferredWidth
 end function
+
+sub hubCalculateStyle(container as object)
+    m.container = container
+    m.hubIdentifier = container.Get("hubIdentifier")
+    m.hubType = firstOf(container.Get("type"), "")
+
+    ' Force the orientation on a few known types [default poster]
+    if m.hubType = "playlist" or m.hubType = "album" or m.hubType = "artist" then
+        m.orientation = m.ORIENTATION_SQUARE
+    else if m.hubType = "clip" then
+        m.orientation = m.ORIENTATION_LANDSCAPE
+    else if m.hubType = "photo" then
+        m.orientation = m.ORIENTATION_LANDSCAPE
+    end if
+
+    size = container.GetInt("size")
+    if size > 5 then size = 5
+    m.maxChildren = size
+
+    if size = 1 then
+        m.layout = m.LAYOUT_GRID_1
+    else if size = 2 then
+        if m.orientation = m.ORIENTATION_LANDSCAPE or m.orientation = m.ORIENTATION_SQUARE then
+            m.layout = m.LAYOUT_GRID_2
+        else
+            m.layout = m.LAYOUT_HERO_2
+        end if
+    else if m.hubIdentifier = "home.continue" then
+        m.layout = m.LAYOUT_GRID_3
+        m.orientation = m.ORIENTATION_LANDSCAPE
+    else if size = 3 then
+        m.layout = m.LAYOUT_HERO_3
+        ' m.LAYOUT_HERO_3 handles landscape and portrait
+    else if size = 4 then
+        ' m.LAYOUT_GRID_4 handles all types
+        m.layout = m.LAYOUT_GRID_4
+    else if size = 5 then
+        m.layout = m.LAYOUT_HERO_5
+        ' landscape is too large for a hero+children
+        if m.orientation = m.ORIENTATION_LANDSCAPE or m.orientation = m.ORIENTATION_SQUARE then
+            m.maxChildren = 4
+            m.layout = m.LAYOUT_GRID_4
+        end if
+    end if
+end sub
