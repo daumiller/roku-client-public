@@ -758,9 +758,11 @@ sub compShiftComponents(shift)
     else if shift.y <> 0 and abs(shift.y / fps) < fps then
         fps = int(abs(shift.y / fps))
     end if
+    if fps = 0 then fps = 1
 
     ' TODO(rob) just a quick hack for slower roku's
     if appSettings().GetGlobal("animationFull") = false then fps = int(fps / 1.5)
+    if fps = 0 then fps = 1
 
     if shift.x < 0 then
         xd = int((shift.x / fps) + .9)
