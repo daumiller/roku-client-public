@@ -13,6 +13,8 @@ function ImageClass() as object
         obj.FromLocal = imageFromLocal
 
         obj.SetOrientation = imageSetOrientation
+        obj.BuildImgObj = imageBuildImgObj
+
         m.ImageClass = obj
     end if
 
@@ -167,3 +169,36 @@ sub imageSetOrientation(orientation as integer)
     end if
     m.sourceOrig = m.source
 end sub
+
+function imageBuildImgObj(item as object, server as object)
+    ' TODO(rob): proper image transcoding + how we determine the correct image type to use
+    attrs = item.attrs
+
+    ' Poster [default & fallback]
+    thumb = firstOfArr([attrs.grandparentThumb, attrs.parentThumb, attrs.thumb, attrs.art, attrs.composite, ""])
+    poster = server.BuildUrl(thumb, true)
+
+    ' Artwork
+    if attrs.art <> invalid then
+        art = server.BuildUrl(attrs.art, true)
+    else
+        art = invalid
+    end if
+
+    ' Composite
+    if attrs.composite <> invalid then
+        composite = server.BuildUrl(attrs.composite, true)
+    else
+        composite = invalid
+    end if
+
+    image = {
+        source: poster,
+        poster: poster,
+        art: art,
+        composite: composite,
+        server: server,
+    }
+
+    return image
+end function

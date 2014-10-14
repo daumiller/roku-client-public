@@ -589,14 +589,8 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
         item = items[index]
         gridItem = gridChunk.components[index]
         if item <> invalid and gridItem <> invalid then
-            ' TODO(rob): proper image transcoding + how we determine the correct image type to use
-
-            attrs = item.attrs
-            thumb = firstOfArr([attrs.grandparentThumb, attrs.parentThumb, attrs.thumb, attrs.art, attrs.composite, ""])
-            image = { source: m.server.BuildUrl(thumb, true), server: m.server }
-
             ' reinit the card - set metadata and plexObject and focusability
-            gridItem.ReInit(image, item.GetSingleLineTitle())
+            gridItem.ReInit(ImageClass().BuildImgObj(item, m.server), item.GetSingleLineTitle())
             gridItem.setMetadata(item.attrs)
             gridItem.plexObject = item
             gridItem.SetFocusable("card")

@@ -137,12 +137,7 @@ function hubsCreateHub(container) as dynamic
             item = container.items[i]
         end if
 
-        ' TODO(rob): proper image transcoding + how we determine the correct image type to use
-        attrs = item.attrs
-        thumb = firstOfArr([attrs.grandparentThumb, attrs.parentThumb, attrs.thumb, attrs.art, attrs.composite, ""])
-        image = { source: m.server.BuildUrl(thumb, true), server: m.server }
-
-        card = createCard(image, item.GetSingleLineTitle())
+        card = createCard(ImageClass().BuildImgObj(item, m.server), item.GetSingleLineTitle())
         card.setMetadata(item.attrs)
         card.plexObject = item
         card.SetFocusable("card")
