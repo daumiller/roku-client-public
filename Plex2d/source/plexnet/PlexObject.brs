@@ -164,6 +164,8 @@ function createPlexObjectFromElement(container as object, xml as object) as obje
         return createPlexHub(container, xml)
     else if xml.GetNamedElements("Media").Count() > 0 or container.Get("identifier") = "com.plexapp.plugins.itunes" then
         return createPlexItem(container, xml)
+    else if xml@ratingKey <> invalid then
+        return createPlexItem(container, xml)
     end if
 
     Info("Don't know what to do with " + xml.GetName() + ", creating generic PlexObject")
