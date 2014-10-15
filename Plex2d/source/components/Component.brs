@@ -49,6 +49,7 @@ function ComponentClass() as object
         obj.Unload = compUnload
         obj.SpriteIsLoaded = compSpriteIsLoaded
         obj.SetMetadata = compSetMetadata
+        obj.GetWidthForOrientation = compGetWidthForOrientation
 
         ' shifting methods
         obj.ShiftPosition = compShiftPosition
@@ -327,3 +328,16 @@ end function
 
 sub compSetOrientation(orientation as integer)
 end sub
+
+function compGetWidthForOrientation(orientation as integer, height as integer) as integer
+    if orientation = m.ORIENTATION_SQUARE then
+        return height
+    else if orientation = m.ORIENTATION_LANDSCAPE then
+        return int(height * 1.777)
+    else if orientation = m.ORIENTATION_PORTRAIT then
+        return int(height * 0.679)
+    else
+        Error("Unknown hub orientation: " + tostr(orientation))
+        stop
+    end if
+end function

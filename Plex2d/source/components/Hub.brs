@@ -26,7 +26,7 @@ function HubClass() as object
         obj.PerformLayout = hubPerformLayout
         obj.MaxChildrenForLayout = hubMaxChildrenForLayout
         obj.ShowMoreButton = hubShowMoreButton
-        obj.GetWidthForOrientation = hubGetWidthForOrientation
+        obj.GetWidthForOrientation = compGetWidthForOrientation
         obj.GetPreferredWidth = hubGetPreferredWidth
 
         obj.CalculateStyle = hubCalculateStyle
@@ -280,19 +280,6 @@ sub hubShowMoreButton(moreCommand as dynamic)
         m.AddComponent(m.moreButton)
     end if
 end sub
-
-function hubGetWidthForOrientation(orientation as integer, height as integer) as integer
-    if orientation = m.ORIENTATION_SQUARE then
-        return height
-    else if orientation = m.ORIENTATION_LANDSCAPE then
-        return int(height * 1.777)
-    else if orientation = m.ORIENTATION_PORTRAIT then
-        return int(height * 0.679)
-    else
-        Error("Unknown hub orientation: " + tostr(orientation))
-        stop
-    end if
-end function
 
 function hubGetPreferredWidth() as integer
     if m.needsLayout then m.PerformLayout()
