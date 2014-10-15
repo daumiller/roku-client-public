@@ -327,6 +327,7 @@ function compIsPendingTexture() as boolean
 end function
 
 sub compSetOrientation(orientation as integer)
+    m.orientation = orientation
 end sub
 
 function compGetWidthForOrientation(orientation as integer, height as integer) as integer

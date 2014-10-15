@@ -160,6 +160,7 @@ sub imageScaleRegion(width as integer, height as integer)
 end sub
 
 sub imageSetOrientation(orientation as integer)
+    ApplyFunc(CompositeClass().SetOrientation, m, [orientation])
     if orientation = m.ORIENTATION_SQUARE then
         m.source = firstOf(m.composite, m.art, m.poster, m.source)
     else if orientation = m.ORIENTATION_PORTRAIT then

@@ -87,6 +87,7 @@ sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic)
 end sub
 
 sub cardSetOrientation(orientation as integer)
+    ApplyFunc(CompositeClass().SetOrientation, m, [orientation])
     if m.image <> invalid then
         m.image.SetOrientation(orientation)
     end if
