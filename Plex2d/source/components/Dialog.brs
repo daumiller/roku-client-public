@@ -2,6 +2,7 @@
 function DialogClass() as object
     if m.DialogClass = invalid then
         obj = CreateObject("roAssociativeArray")
+        obj.Append(ComponentClass())
 
         obj.ClassName = "DialogClass"
 
