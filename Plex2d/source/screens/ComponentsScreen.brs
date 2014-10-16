@@ -760,13 +760,27 @@ sub compShiftComponents(shift)
 
     ' Calculate the FPS shift amount. 15 fps seems to be a workable arbitrary number.
     ' Verify the px shifting are > than the fps, otherwise it's sluggish (non Roku3)
-    fps = 15
+    minFPS = 8
+    maxFPS = 15
+
+    fps = maxFPS
     if shift.x <> 0 and abs(shift.x / fps) < fps then
         fps = int(abs(shift.x / fps))
     else if shift.y <> 0 and abs(shift.y / fps) < fps then
         fps = int(abs(shift.y / fps))
     end if
     if fps = 0 then fps = 1
+
+    ' Don't accept any calculate under the minFPS, it's too jarring
+    '  note: only set to check X axis shifting
+    if fps < minFps and shift.x <> invalid then
+        delta = 2
+        fps = int(abs(shift.x / delta))
+        while fps > maxFPS
+            delta = delta + 1
+            fps = int(abs(shift.x / delta))
+        end while
+    end if
 
     ' TODO(rob) just a quick hack for slower roku's
     if appSettings().GetGlobal("animationFull") = false then fps = int(fps / 1.5)
