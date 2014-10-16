@@ -130,7 +130,7 @@ function gsOnGridResponse(request as object, response as object, context as obje
     context.response = response
 
     m.totalSize = response.container.getint("totalSize")
-
+    if m.totalSize < m.chunkSizeInitial then m.chunkSizeInitial = m.totalSize
     placeholder = {
         start: 0,
         size: m.chunkSizeInitial,
