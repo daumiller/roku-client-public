@@ -91,12 +91,15 @@ sub gsShow()
         m.gridContainer = context
     end if
 
-    ' create requests for the size of the endpoint
-    if m.jumpContainer.request = invalid then
+    ' create requests for the jump items (only if we are using the ALL endpoint)
+    if instr(1, tostr(m.gridContainer.request.url), "/all") > 1 and m.jumpContainer.request = invalid then
+        ' TODO(rob): handle filters when we use them above
         request = createPlexRequest(m.server, m.item.container.getAbsolutePath("firstCharacter"))
         context = request.CreateRequestContext("jump", createCallable("OnJumpResponse", m))
         Application().StartRequest(request, context)
         m.jumpContainer = context
+    else
+        m.jumpContainer.response = {}
     end if
 
     if m.gridContainer.response <> invalid and m.jumpContainer.response <> invalid then
