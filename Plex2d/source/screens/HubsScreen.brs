@@ -240,7 +240,7 @@ end function
 
 function hubsDescriptionBoxShow(item as object) as boolean
     pendingDraw = m.Hide()
-    if item.plexObject = invalid then return pendingDraw
+    if item.plexObject = invalid or item.plexObject.Get("ratingKey") = invalid then return pendingDraw
 
     ' *** Component Description *** '
     compDesc = createVBox(false, false, false, m.spacing)
