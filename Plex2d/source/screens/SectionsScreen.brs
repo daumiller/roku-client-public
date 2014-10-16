@@ -25,6 +25,7 @@ function createSectionsScreen(item as object) as object
 
     obj.item = item
     obj.server = item.container.server
+    obj.contentType = item.Get("type")
 
     return obj
 end function
@@ -83,6 +84,7 @@ end function
 function sectionsGetButtons() as object
     buttons = []
     for each container in m.buttonsContainer.items
+        if container.Get("type") = invalid then container.attrs.type = m.contentType
         if container.Get("key") = "all" then
             buttons.push(m.createButton(container))
         end if
