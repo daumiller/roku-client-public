@@ -1,11 +1,11 @@
 function ModalClass() as object
     if m.ModalClass = invalid then
         obj = CreateObject("roAssociativeArray")
+        obj.Append(ComponentClass())
 
         obj.ClassName = "Modal"
         obj.Init = modalInit
         obj.Show = modalShow
-        obj.Destroy = modalDestroy
 
         m.ModalClass = obj
     end if
@@ -43,14 +43,6 @@ sub modalInit(title as string)
     m.font = FontRegistry().GetTextFont(18, false)
 
     m.components = createObject("roList")
-end sub
-
-sub modalDestroy()
-    for each comp in m.components
-        comp.Destroy()
-    end for
-    m.components.clear()
-    m.font = invalid
 end sub
 
 sub modalShow()
