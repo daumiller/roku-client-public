@@ -384,8 +384,16 @@ sub compOnItemSelected(item as object)
             itemType = item.plexObject.Get("type")
             if itemType = invalid then
                 Debug("card object type is invalid")
-            else if itemType = "movie" or itemType = "episode" or itemType = "clip" or itemType = "playlist" then
+            else if itemType = "movie" or itemType = "episode" or itemType = "clip" then
                 Application().PushScreen(createPreplayScreen(item.plexObject))
+            else if itemType = "playlist" then
+                ' TODO(rob): what type of preplay do we use for playlists? Do we even include
+                ' playlists, or wait for the next iteration when we have playQueue support?
+                Application().PushScreen(createPreplayContextScreen(item.plexObject))
+            else if itemType = "show" then
+                Application().PushScreen(createPreplayContextScreen(item.plexObject))
+            else if item.plexObject.IsDirectory() then
+                Application().PushScreen(createGridScreen(item.plexObject))
             else
                 dialog = createDialog("card type not handled yet", "type: " + itemType, m)
                 dialog.Show()
