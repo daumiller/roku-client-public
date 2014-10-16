@@ -97,8 +97,8 @@ function pncTranscodeImage(server as object, path as string, width as string, he
     ' TODO(rob) verify includeToken (copied from buildUrl)
     imageUrl = m.buildUrl(server, path, includeToken)
     if NOT server.supportsPhotoTranscoding then return imageUrl
-    ' TODO(rob) ConvertURLToLoopback - verify what this did and if it's needed
-    '    imageUrl = m.ConvertURLToLoopback(imageUrl)
+    ' TODO(rob) ConvertURLToLoopback: this is still needed, but it will be implemented
+    ' as part of PlexNext when done correctly.
     encodedUrl = UrlEscape(imageUrl)
     image = m.address + "/photo/:/transcode?url="+encodedUrl+"&width="+width+"&height="+height
     if forceBackgroundColor <> invalid then
@@ -109,6 +109,13 @@ function pncTranscodeImage(server as object, path as string, width as string, he
         for each key in extraOpts
             image = image + "&" + key + "=" + tostr(extraOpts[key])
         end for
+    end if
+
+    ' for now we'll ignore includeToken as the logic doesn't really matter until the
+    ' real implementation of transcoding has been added to PlexNet.
+    token = server.GetToken()
+    if token <> invalid then
+        image = image + "&X-Plex-Token=" + token
     end if
 
     return image
