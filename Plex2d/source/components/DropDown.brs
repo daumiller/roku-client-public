@@ -43,11 +43,8 @@ function dropdownHide(drawAllNow=true as boolean) as boolean
     if m.components.count() = 0 then return false
     EnableBackButton()
 
-    for each comp in m.components
-        comp.Destroy()
-    end for
+    m.DestroyComponents()
 
-    m.components.clear()
     if drawAllNow then CompositorScreen().drawAll()
 
     return true

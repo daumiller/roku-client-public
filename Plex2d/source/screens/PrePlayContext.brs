@@ -58,7 +58,7 @@ sub ppcShow()
 end sub
 
 sub ppcGetComponents()
-    m.components.Clear()
+    m.DestroyComponents()
     m.focusedItem = invalid
 
     ' *** Background Artwork *** '

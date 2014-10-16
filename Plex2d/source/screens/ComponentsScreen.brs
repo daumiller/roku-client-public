@@ -180,9 +180,7 @@ sub compDeactivate(screen = invalid as dynamic)
     m.lazyLoadTimer = invalid
 
     TextureManager().RemoveTextureByScreenId(m.screenID)
-    for each comp in m.components
-        comp.Destroy()
-    end for
+    m.DestroyComponents()
     ' components we have created manually (AA of roList)
     for each key in m.manualComponents
         for each comp in m.manualComponents[key]
@@ -190,7 +188,6 @@ sub compDeactivate(screen = invalid as dynamic)
         end for
         m.manualComponents[key].clear()
     end for
-    m.components.clear()
     m.manualComponents.clear()
 
     ' references to m.components

@@ -80,7 +80,7 @@ sub preplayOnResponse(request as object, response as object, context as object)
 end sub
 
 sub preplayGetComponents()
-    m.components.Clear()
+    m.DestroyComponents()
     m.focusedItem = invalid
 
     ' *** Background Artwork *** '

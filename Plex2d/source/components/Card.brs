@@ -65,10 +65,7 @@ end sub
 
 ' destroy and reinit the components for the card (lazy-loading)
 sub cardReinit(imageSource=invalid as dynamic, text=invalid as dynamic)
-    for each component in m.components
-        component.destroy()
-    end for
-    m.components.clear()
+    m.DestroyComponents()
     m.InitComponents(imageSource, text)
 end sub
 

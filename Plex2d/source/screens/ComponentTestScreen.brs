@@ -29,7 +29,7 @@ sub compTestActivate()
 end sub
 
 sub compTestGetComponents()
-    m.components.Clear()
+    m.DestroyComponents()
 
     ' Let's start simple, just add a colored block at a fixed position.
     'block = createBlock(Colors().PlexClr)

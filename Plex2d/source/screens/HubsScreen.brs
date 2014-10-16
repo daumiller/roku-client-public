@@ -47,7 +47,7 @@ function hubsOnResponse(request as object, response as object, context as object
 end function
 
 sub hubsGetComponents()
-    m.components.Clear()
+    m.DestroyComponents()
     m.focusedItem = invalid
 
     ' *** HEADER *** '
@@ -230,10 +230,7 @@ function hubsDescriptionBoxHide() as boolean
     pendingDraw = false
     if m.IsDisplayed() then
         pendingDraw = true
-        for each comp in m.components
-            comp.Destroy()
-        end for
-        m.components.clear()
+        m.DestroyComponents()
     end if
 
     return pendingDraw

@@ -76,10 +76,7 @@ end sub
 
 function dialogClose() as boolean
     EnableBackButton()
-    for each comp in m.components
-        comp.Destroy()
-    end for
-    m.components.clear()
+    m.DestroyComponents()
     m.customFonts.clear()
 
     ' draw the previous focused item we came from before the dialog

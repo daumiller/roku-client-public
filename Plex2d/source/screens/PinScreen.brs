@@ -136,7 +136,7 @@ sub pinGetComponents()
 
     ' TODO(schuyler): Make this pretty again. Rob's version was pretty.
 
-    m.components.Clear()
+    m.DestroyComponents()
 
     mainBox = createHBox(false, false, false, 50)
     mainBox.SetFrame(219, 200, 1000, 320)
