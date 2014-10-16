@@ -166,7 +166,7 @@ function labelTruncateText(fullText=invalid as dynamic) as string
 
     ' See if we need to truncate at all
     textWidth = m.font.GetOneLineWidth(fullText, 1280)
-    if textWidth <= m.GetContentArea().width then return fullText
+    if textWidth <= m.GetContentArea().width or fullText.len() = 1 then return fullText
 
     ' OK, we do need to trim the string. Start by adding an ellipsis so we can
     ' factor that width in. Then do a binary search to find the largest string
