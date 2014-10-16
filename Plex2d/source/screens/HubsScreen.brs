@@ -198,6 +198,7 @@ end sub
 function hubsDescriptionBox() as object
     if m.HubsDescriptionBox = invalid then
         obj = CreateObject("roAssociativeArray")
+        obj.DestroyComponents = compDestroyComponents
 
         ' default placement: use m.setFrame to override
         obj.x = 50

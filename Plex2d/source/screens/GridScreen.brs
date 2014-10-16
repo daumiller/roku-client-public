@@ -258,6 +258,7 @@ end function
 function gsDescriptionBox() as object
     if m.GridDescriptionBox = invalid then
         obj = CreateObject("roAssociativeArray")
+        obj.DestroyComponents = compDestroyComponents
 
         ' default placement: use m.setFrame to override
         obj.x = 50
