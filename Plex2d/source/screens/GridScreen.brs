@@ -59,7 +59,7 @@ sub gsInit()
     m.chunkSizeInitial = 16
 end sub
 
-function createGridScreen(item as object, rows=2 as integer) as object
+function createGridScreen(item as object, rows=2 as integer, orientation=invalid as dynamic) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(GridScreen())
 
@@ -68,9 +68,24 @@ function createGridScreen(item as object, rows=2 as integer) as object
     obj.item = item
     obj.server = item.container.server
 
+    ' TODO(rob): we need a better way to determine orientation, or we might just need to
+    ' always set it when calling the grid screen
+    containerType = item.Get("type")
+    if orientation <> invalid then
+        obj.orientation = orientation
+    else if containerType = invalid then
+        obj.orientation=ComponentClass().ORIENTATION_PORTRAIT
+    else if containerType = "movie" or containerType = "show" or containerType = "episode" or containerType = "mixed" then
+        obj.orientation=ComponentClass().ORIENTATION_PORTRAIT
+    else if containerType = "photo" or containerType = "artist" or containerType = "album" or containerType = "clip" then
+        obj.orientation=ComponentClass().ORIENTATION_SQUARE
+    else
+        obj.orientation = ComponentClass().ORIENTATION_LANDSCAPE
+    end if
+    Debug("GridScreen: containerType=" + tostr(containerType) + ", orientation=" + tostr(obj.orientation))
+
     ' how should we handle these variables?
     obj.rows = rows
-    obj.orientation = 1
     obj.spacing = 10
     obj.height = 450
 
