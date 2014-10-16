@@ -176,6 +176,10 @@ function imageBuildImgObj(item as object, server as object)
     attrs = item.attrs
 
     ' Poster [default & fallback]
+    ' TODO(rob): we still need a better way to figure out how to choose
+    ' the image type and we need to implement a better resizing algorithim
+    ' unless the PMS can do that.
+    '  note: there is also the potential usage for item.container.Get("thumb")
     thumb = firstOfArr([attrs.grandparentThumb, attrs.parentThumb, attrs.thumb, attrs.art, attrs.composite, ""])
     poster = server.BuildUrl(thumb, true)
 
