@@ -622,7 +622,7 @@ sub compCalculateShift(toFocus as object)
     }
 
     ' verify the component is on the screen if no parent exists
-    if toFocus.parent = invalid then
+    if toFocus.parent = invalid or toFocus.parent.ignoreParentShift = true then
         focusRect = computeRect(toFocus)
         if focusRect.right > shift.safeRight
             shift.x = shift.safeRight - focusRect.right
