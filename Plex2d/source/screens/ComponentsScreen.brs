@@ -37,6 +37,7 @@ function ComponentsScreen() as object
 
         obj.GetComponents = compGetComponents
         obj.GetManualComponents = compGetManualComponents
+        obj.DestroyComponents = compDestroyComponents
 
         ' Manual focus methods
         obj.GetFocusManual = compGetFocusManual
@@ -202,6 +203,21 @@ sub compDeactivate(screen = invalid as dynamic)
 
     ' Encourage some extra memory cleanup
     RunGarbageCollector()
+end sub
+
+sub compDestroyComponents(clear=true as boolean)
+    Debug("compDestroyComponents::start" + tostr(m.components.count()))
+    if m.components.count() > 0 then
+        for each comp in m.components
+            comp.Destroy()
+        end for
+    end if
+
+    if clear then
+        m.components.clear()
+    end if
+
+    Debug("compDestroyComponents::done" + tostr(m.components.count()))
 end sub
 
 sub compGetComponents()

@@ -46,6 +46,7 @@ function ComponentClass() as object
         obj.SetFocusable = compSetFocusable
         obj.GetFocusableItems = compGetFocusableItems
         obj.Destroy = compDestroy
+        obj.DestroyComponents = compDestroyComponents
         obj.Unload = compUnload
         obj.SpriteIsLoaded = compSpriteIsLoaded
         obj.SetMetadata = compSetMetadata
