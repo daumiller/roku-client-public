@@ -23,11 +23,22 @@ function createHttpRequest(url as string) as object
     obj.append(HttpRequestClass())
     obj.reset()
 
-    obj.url = url
     obj.hasParams = (Instr(1, url, "?") > 0)
 
     ' Initialize the actual transfer object
     obj.request = CreateObject("roUrlTransfer")
+
+    ' the roku does not allow ">" || "<"  in the string during setUrl()
+    if instr(1, url, ">") > 0 then
+        r_gt = CreateObject("roRegex", ">", "" )
+        url = r_gt.replaceAll(url, obj.request.escape(">"))
+    end if
+    if instr(1, url, "<") > 0 then
+        r_lt = CreateObject("roRegex", "<", "" )
+        url = r_lt.replaceAll(url, obj.request.escape("<"))
+    end if
+    obj.url = url
+
     obj.request.SetUrl(url)
     obj.request.EnableEncodings(true)
     obj.request.SetCertificatesFile("common:/certs/ca-bundle.crt")
