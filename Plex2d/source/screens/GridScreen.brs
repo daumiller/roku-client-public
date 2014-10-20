@@ -179,6 +179,13 @@ sub gsGetComponents()
     ' *** HEADER *** '
     m.components.Push(createHeader(m))
 
+    ' *** Grid Header *** '
+    label = createLabel(ucase(m.item.GetSingleLineTitle()), FontRegistry().font16)
+    label.height = FontRegistry().font16.getOneLineHeight()
+    label.width = FontRegistry().font16.getOneLineWidth(label.text, 1280)
+    label.SetFrame(50, 120 - m.spacing - label.height, label.width, label.height)
+    m.components.Push(label)
+
     ' *** Grid *** '
     hbox = createHBox(false, false, false, 10)
     hbox.SetFrame(50, 120, 2000*2000, m.height)
