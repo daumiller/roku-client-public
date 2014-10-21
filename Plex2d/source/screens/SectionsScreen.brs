@@ -61,12 +61,7 @@ sub sectionsShow()
 end sub
 
 sub sectionsAfterItemFocused(item as object)
-    if item.plexObject = invalid or item.plexObject.isDirectory() then
-        pendingDraw = m.DescriptionBox.Hide()
-    else
-        pendingDraw = m.DescriptionBox.Show(item)
-    end if
-
+    pendingDraw = m.DescriptionBox.Show(item)
     if pendingDraw then m.screen.DrawAll()
 end sub
 
