@@ -57,9 +57,9 @@ end sub
 
 sub homeAfterItemFocused(item as object)
     if item.plexObject = invalid or item.plexObject.islibrarysection() then
-        pendingDraw = m.DescriptionBox().Hide()
+        pendingDraw = m.DescriptionBox.Hide()
     else
-        pendingDraw = m.DescriptionBox().Show(item)
+        pendingDraw = m.DescriptionBox.Show(item)
     end if
 
     if pendingDraw then m.screen.DrawAll()

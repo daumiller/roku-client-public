@@ -17,9 +17,6 @@ function HubsScreen() as object
         obj.GetButtons = hubsGetButtons
         obj.CreateButton = hubsCreateButton
 
-        ' Description Box
-        obj.DescriptionBox = hubsDescriptionBox
-
         m.HubsScreen = obj
     end if
 
@@ -110,8 +107,8 @@ sub hubsGetComponents()
     m.components.Push(hbox)
 
     ' set the placement of the description box (manualComponent)
-    m.DescriptionBox().setFrame(50, 630, 1280-50, 100)
-
+    m.DescriptionBox = createDescriptionBox(m)
+    m.DescriptionBox.setFrame(50, 630, 1280-50, 100)
 end sub
 
 function hubsCreateHub(container) as dynamic
@@ -194,84 +191,3 @@ sub hubsClearCache()
     if m.hubsContainer <> invalid then m.hubsContainer.clear()
     if m.buttonsContainer <> invalid then m.buttonsContainer.clear()
 end sub
-
-function hubsDescriptionBox() as object
-    if m.HubsDescriptionBox = invalid then
-        obj = CreateObject("roAssociativeArray")
-        obj.DestroyComponents = compDestroyComponents
-
-        ' default placement: use m.setFrame to override
-        obj.x = 50
-        obj.y = 630
-        obj.width = 500
-        obj.height = 100
-        obj.spacing = 0
-
-        ' default fonts/colors
-        obj.line1 = { font: FontRegistry().font18b, color: Colors().TextClr}
-        obj.line2 = { font: FontRegistry().font18, color: &hc0c0c0c0 }
-
-        ' methods
-        obj.SetFrame = compSetFrame
-        obj.Show = HubsDescriptionBoxShow
-        obj.Hide = HubsDescriptionBoxHide
-        obj.IsDisplayed = function() : return (m.components.count() > 0) : end function
-
-        m.HubsDescriptionBox = obj
-    end if
-
-    ' Initialize the manual components outside
-    m.HubsDescriptionBox.components = m.GetManualComponents("HubsDescriptionBox")
-
-    return m.HubsDescriptionBox
-end function
-
-function hubsDescriptionBoxHide() as boolean
-    pendingDraw = false
-    if m.IsDisplayed() then
-        pendingDraw = true
-        m.DestroyComponents()
-    end if
-
-    return pendingDraw
-end function
-
-function hubsDescriptionBoxShow(item as object) as boolean
-    pendingDraw = m.Hide()
-    if item.plexObject = invalid or item.plexObject.Get("ratingKey") = invalid then return pendingDraw
-
-    ' *** Component Description *** '
-    compDesc = createVBox(false, false, false, m.spacing)
-    compDesc.SetFrame(m.x, m.y, m.width, m.height)
-
-    label = createLabel(item.plexObject.getlongertitle(), m.line1.font)
-    label.halign = label.JUSTIFY_LEFT
-    label.valign = label.ALIGN_MIDDLE
-    label.SetColor(m.line1.color)
-    compDesc.AddComponent(label)
-
-    line2 = []
-    line2.push(item.plexObject.GetOriginallyAvailableAt())
-    if line2.peek()  = "" then
-        line2.pop()
-        line2.push(item.plexObject.GetAddedAt())
-    end if
-    line2.push(item.plexObject.GetDuration())
-    if item.plexObject.type = "episode" then
-        line2.unshift(item.plexObject.Get("title"))
-    end if
-
-    label = createLabel(joinArray(line2, " / "), m.line2.font)
-    label.halign = label.JUSTIFY_LEFT
-    label.valign = label.ALIGN_MIDDLE
-    label.SetColor(m.line2.color)
-    compDesc.AddComponent(label)
-
-    m.components.push(compDesc)
-
-    for each comp in m.components
-        CompositorScreen().DrawComponent(comp)
-    end for
-
-    return (pendingDraw or m.IsDisplayed())
-end function
