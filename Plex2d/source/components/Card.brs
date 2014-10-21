@@ -19,11 +19,11 @@ function CardClass() as object
     return m.CardClass
 end function
 
-function createCard(imageSource as dynamic, text as string) as object
+function createCard(imageSource as dynamic, text=invalid as dynamic, watchedPercentage=invalid as dynamic) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(CardClass())
 
-    obj.Init(imageSource, text)
+    obj.Init(imageSource, text, watchedPercentage)
 
     ' TODO(schuyler): Lots, presumably. We need to expose some of the options
     ' of our children. Does the overlay have multiple lines of text? Does the
@@ -38,14 +38,14 @@ function createCardPlaceholder() as object
 
     obj.bgcolor = Colors().CardBkgClr
 
-    obj.Init(invalid, invalid)
+    obj.Init()
 
     return obj
 end function
 
-sub cardInit(imageSource=invalid as dynamic, text=invalid as dynamic)
+sub cardInit(imageSource=invalid as dynamic, text=invalid as dynamic, watchedPercentage=invalid as dynamic)
     ApplyFunc(CompositeClass().Init, m)
-    m.InitComponents(imageSource, text)
+    m.InitComponents(imageSource, text, watchedPercentage)
 end sub
 
 sub cardPerformLayout()
@@ -61,15 +61,25 @@ sub cardPerformLayout()
     if m.overlay <> invalid then
         m.overlay.SetFrame(0, m.height - m.overlay.GetPreferredHeight(), m.width, m.overlay.GetPreferredHeight())
     end if
+
+    if m.progress <> invalid and m.progress.percent > 0 then
+        height = 5
+        if m.overlay <> invalid then
+            yPos = m.overlay.y - height
+        else
+            yPos = m.height - height
+        end if
+        m.progress.SetFrame(0, yPos , m.width, height)
+    end if
 end sub
 
 ' destroy and reinit the components for the card (lazy-loading)
-sub cardReinit(imageSource=invalid as dynamic, text=invalid as dynamic)
+sub cardReinit(imageSource=invalid as dynamic, text=invalid as dynamic, watchedPercentage=invalid as dynamic)
     m.DestroyComponents()
-    m.InitComponents(imageSource, text)
+    m.InitComponents(imageSource, text, watchedPercentage)
 end sub
 
-sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic)
+sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, watchedPercentage=invalid as dynamic)
     if imageSource <> invalid then
         m.image = createImage(imageSource)
         m.AddComponent(m.image)
@@ -80,6 +90,11 @@ sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic)
         m.overlay.SetPadding(5, 5, 5, 10)
         m.overlay.SetColor(&hffffffff, Colors().ScrDrkOverlayClr)
         m.AddComponent(m.overlay)
+    end if
+
+    if watchedPercentage <> invalid and watchedPercentage > 0 then
+        m.progress = createProgressBar(watchedPercentage, Colors().ScrVeryDrkOverlayClr , Colors().PlexClr)
+        m.AddComponent(m.progress)
     end if
 end sub
 
