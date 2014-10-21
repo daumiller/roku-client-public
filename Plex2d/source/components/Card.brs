@@ -77,8 +77,8 @@ sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic)
 
     if text <> invalid then
         m.overlay = createLabel(text, FontRegistry().font16)
-        m.overlay.SetPadding(10)
-        m.overlay.SetColor(&hffffffff, &h000000e0)
+        m.overlay.SetPadding(5, 5, 5, 10)
+        m.overlay.SetColor(&hffffffff, Colors().ScrDrkOverlayClr)
         m.AddComponent(m.overlay)
     end if
 end sub
