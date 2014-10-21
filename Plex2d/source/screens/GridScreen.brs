@@ -530,7 +530,7 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
         gridItem = gridChunk.components[index]
         if item <> invalid and gridItem <> invalid then
             ' reinit the card - set metadata and plexObject and focusability
-            if tostr(item.Get("type")) = "movie" then
+            if tostr(item.Get("type")) = "movie" or tostr(item.Get("type")) = "show" then
                 title = invalid
             else
                 title = item.GetSingleLineTitle()
