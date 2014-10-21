@@ -134,7 +134,20 @@ function hubsCreateHub(container) as dynamic
             item = container.items[i]
         end if
 
-        card = createCard(ImageClass().BuildImgObj(item, m.server), item.GetSingleLineTitle(), item.GetViewOffsetPercentage())
+        ' Continue Watching Hub is special. Use the shows title instead of the episode string
+        if tostr(hub.hubIdentifier) = "home.continue" then
+            if item.Get("type") = "episode" then
+                title = firstOf(item.Get("grandparentTitle"), item.Get("parentTitle"))
+            else
+                title = item.GetSingleLineTitle()
+            end if
+        else if tostr(item.Get("type")) = "movie" or tostr(item.Get("type")) = "show" then
+            title = invalid
+        else
+            title = item.GetSingleLineTitle()
+        end if
+
+        card = createCard(ImageClass().BuildImgObj(item, m.server), title, item.GetViewOffsetPercentage())
         card.setMetadata(item.attrs)
         card.plexObject = item
         card.SetFocusable("card")
