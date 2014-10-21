@@ -48,7 +48,12 @@ function dboxShow(item as object) as boolean
     compDesc = createVBox(false, false, false, m.spacing)
     compDesc.SetFrame(m.x, m.y, m.width, m.height)
 
-    label = createLabel(item.plexObject.getlongertitle(), m.line1.font)
+    if contentType = "episode" and m.IsGrid = true then
+        title = item.plexObject.GetSingleLineTitle()
+    else
+        title = item.plexObject.GetLongerTitle()
+    end if
+    label = createLabel(title, m.line1.font)
     label.halign = label.JUSTIFY_LEFT
     label.valign = label.ALIGN_MIDDLE
     label.SetColor(m.line1.color)
@@ -70,7 +75,7 @@ function dboxShow(item as object) as boolean
         line2.push(item.plexObject.GetAddedAt())
     end if
     line2.push(item.plexObject.GetDuration())
-    if contentType = "episode" then
+    if contentType = "episode" and NOT (m.IsGrid = true) then
         line2.unshift(item.plexObject.Get("title"))
     end if
 

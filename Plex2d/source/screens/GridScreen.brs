@@ -228,6 +228,7 @@ sub gsGetComponents()
 
     ' set the placement of the description box (manualComponent)
     m.DescriptionBox = createDescriptionBox(m)
+    m.DescriptionBox.IsGrid = true
     m.DescriptionBox.setFrame(50, 630, 1280-50, 100)
 end sub
 
