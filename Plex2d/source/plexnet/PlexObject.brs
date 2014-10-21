@@ -29,6 +29,10 @@ function PlexObjectClass() as object
         obj.GetDuration = pnoGetDuration
         obj.GetAddedAt = pnoGetAddedAt
         obj.GetOriginallyAvailableAt = pnoGetOriginallyAvailableAt
+        obj.GetViewOffsetPercentage = pnoGetViewOffsetPercentage
+        obj.GetUnwatchedCount = pnoGetUnwatchedCount
+        obj.IsUnwatched = pnoIsUnwatched
+        obj.InProgress = pnoInProgress
 
         obj.ToString = pnoToString
 
@@ -174,4 +178,41 @@ function createPlexObjectFromElement(container as object, xml as object) as obje
     obj.Append(PlexObjectClass())
     obj.Init(container, xml)
     return obj
+end function
+
+function pnoGetViewOffsetPercentage() as float
+    if m.has("viewOffset") and m.has("duration") then
+        viewOffsetInMillis = m.GetInt("viewOffset")
+        durationInMillis = m.GetInt("duration")
+        return viewOffsetInMillis / durationInMillis
+    end if
+
+    return 0
+end function
+
+function pnoGetUnwatchedCount() as integer
+    if m.has("leafCount") and m.has("viewedLeafCount") then
+        return m.GetInt("leafCount") - m.GetInt("viewedLeafCount")
+    end if
+
+    return -1
+end function
+
+function pnoIsUnwatched() as boolean
+    if m.IsDirectory() then
+        if m.has("leafCount") and m.has("viewedLeafCount") then
+            return (m.GetInt("leafCount") <> m.GetInt("viewedLeafCount"))
+        end if
+        return true
+    end if
+
+    return (NOT m.has("viewCount") or m.GetInt("viewCount") = 0)
+end function
+
+function pnoInProgress() as boolean
+    if m.IsDirectory() then
+        return (m.GetInt("viewedLeafCount") > 0 and m.GetInt("viewedLeafCount") < m.GetInt("leafCount"))
+    end if
+
+    return (m.has("viewOffset") and m.GetInt("viewOffset") > 0)
 end function
