@@ -530,7 +530,12 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
         gridItem = gridChunk.components[index]
         if item <> invalid and gridItem <> invalid then
             ' reinit the card - set metadata and plexObject and focusability
-            gridItem.ReInit(ImageClass().BuildImgObj(item, m.server), item.GetSingleLineTitle())
+            if tostr(item.Get("type")) = "movie" then
+                title = invalid
+            else
+                title = item.GetSingleLineTitle()
+            end if
+            gridItem.ReInit(ImageClass().BuildImgObj(item, m.server), title)
             gridItem.setMetadata(item.attrs)
             gridItem.plexObject = item
             gridItem.SetFocusable("card")
