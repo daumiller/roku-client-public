@@ -147,7 +147,7 @@ function hubsCreateHub(container) as dynamic
             title = item.GetSingleLineTitle()
         end if
 
-        card = createCard(ImageClass().BuildImgObj(item, m.server), title, item.GetViewOffsetPercentage())
+        card = createCard(ImageClass().BuildImgObj(item, m.server), title, item.GetViewOffsetPercentage(), item.GetUnwatchedCount())
         card.setMetadata(item.attrs)
         card.plexObject = item
         card.SetFocusable("card")

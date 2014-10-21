@@ -112,7 +112,7 @@ sub ppcGetComponents()
             orientation = ComponentClass().ORIENTATION_LANDSCAPE
         end if
 
-        card = createCard(ImageClass().BuildImgObj(item, m.server), item.GetSingleLineTitle())
+        card = createCard(ImageClass().BuildImgObj(item, m.server), item.GetSingleLineTitle(), invalid, item.GetUnwatchedCount())
         card.SetOrientation(orientation)
         card.width = card.GetWidthForOrientation(card.orientation, hbGrid.Height)
         card.fixed = false
