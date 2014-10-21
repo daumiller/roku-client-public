@@ -177,7 +177,12 @@ sub gsGetComponents()
     m.components.Push(createHeader(m))
 
     ' *** Grid Header *** '
-    label = createLabel(ucase(m.item.GetSingleLineTitle()), FontRegistry().font16)
+    if tostr(m.item.type) = "season" then
+        title = m.item.GetLongerTitle()
+    else
+        title = m.item.GetSingleLineTitle()
+    end if
+    label = createLabel(ucase(title), FontRegistry().font16)
     label.height = FontRegistry().font16.getOneLineHeight()
     label.width = FontRegistry().font16.getOneLineWidth(label.text, 1280)
     label.SetFrame(50, 120 - m.spacing - label.height, label.width, label.height)
