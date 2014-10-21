@@ -42,6 +42,7 @@ end function
 function dboxShow(item as object) as boolean
     pendingDraw = m.Hide()
     if item.plexObject = invalid or item.plexObject.Get("ratingKey") = invalid then return pendingDraw
+    contentType = tostr(item.plexObject.Get("type"))
 
     ' *** Component Description *** '
     compDesc = createVBox(false, false, false, m.spacing)
@@ -54,17 +55,22 @@ function dboxShow(item as object) as boolean
     compDesc.AddComponent(label)
 
     line2 = []
-    if item.plexObject.Get("type") = "movie" then
+    if contentType = "movie" then
         line2.push(item.plexObject.Get("year"))
-    else
+    else if contentType = "show"
+        unwatched = item.plexObject.GetUnwatchedCount()
+        if unwatched > 0 then
+            text = tostr(unwatched) + " unwatched episode"
+            if unwatched > 1 then text = text + "s"
+            line2.push(text)
+        end if
+    else if item.plexObject.has("originallyAvailableAt") then
         line2.push(item.plexObject.GetOriginallyAvailableAt())
-    end if
-    if line2.peek() = "" or line2.peek() = invalid then
-        line2.pop()
+    else
         line2.push(item.plexObject.GetAddedAt())
     end if
     line2.push(item.plexObject.GetDuration())
-    if item.plexObject.type = "episode" then
+    if contentType = "episode" then
         line2.unshift(item.plexObject.Get("title"))
     end if
 
