@@ -169,7 +169,11 @@ function preplayGetMainInfo() as object
         label = createLabel( m.item.Getseasonstring() + " " + m.item.Getepisodestring() + " / " + m.item.GetOriginallyAvailableAt(), FontRegistry().font16)
         components.push(label)
 
-        label = createLabel("Watched Status todo", FontRegistry().font16)
+        if m.item.IsUnwatched() then
+            label = createLabel("Unwatched", FontRegistry().font16)
+        else
+            label = createSpacer(0, FontRegistry().font16.getOneLineHeight())
+        end if
         components.push(label)
 
         components.push(createSpacer(0, FontRegistry().font16.getOneLineHeight()))
@@ -186,7 +190,11 @@ function preplayGetMainInfo() as object
         label = createLabel(ucase(m.item.GetLimitedTagValues("Genre",3)), FontRegistry().font16)
         components.push(label)
 
-        label = createLabel(m.item.GetDuration(), FontRegistry().font16)
+        text = m.item.GetDuration()
+        if m.item.IsUnwatched() then
+            text = text + " / Unwatched"
+        end if
+        label = createLabel(text, FontRegistry().font16)
         components.push(label)
 
         components.push(createSpacer(0, FontRegistry().font16.getOneLineHeight()))
