@@ -57,7 +57,7 @@ function imageDraw() as object
             url: m.source,
             width: width,
             height: height,
-            scaleSize: true,
+            scaleSize: m.scaleSize,
             scaleMode: 1
         }
         TextureManager().RequestTexture(m, context)
@@ -71,6 +71,13 @@ function imageDraw() as object
     end if
 
     return [m]
+end function
+
+function createImageScaleToParent(source as dynamic, parent as object, width=0 as integer, height=0 as integer) as object
+    obj = createImage(source, width, height)
+    obj.scaleSize = false
+    obj.On("performParentLayout", createCallable("OnParentLayout", parent))
+    return obj
 end function
 
 function createImage(source as dynamic, width=0 as integer, height=0 as integer) as object
@@ -87,6 +94,7 @@ function createImage(source as dynamic, width=0 as integer, height=0 as integer)
     obj.sourceOrig = obj.source
     obj.width = width
     obj.height = height
+    obj.scaleSize = true
 
     obj.bitmap = invalid
     obj.placeholder = invalid
@@ -104,8 +112,13 @@ function imageFromLocal(source as string) as dynamic
 
     if bmp <> invalid then
         m.region = CreateObject("roRegion", bmp, 0, 0, bmp.GetWidth(), bmp.GetHeight())
-        m.ScaleRegion(firstOf(m.preferredWidth, m.width), firstOf(m.preferredHeight, m.height))
-        bmp = m.region.GetBitmap()
+        if m.scaleSize then
+            m.ScaleRegion(firstOf(m.preferredWidth, m.width), firstOf(m.preferredHeight, m.height))
+            bmp = m.region.GetBitmap()
+        else
+            m.preferredWidth = bmp.GetWidth()
+            m.preferredHeight = bmp.GetHeight()
+        end if
     else
         Error("Failed to load local image at " + source)
         m.InitRegion()
@@ -118,9 +131,16 @@ sub imageSetBitmap(bmp as object, makeCopy=false as boolean)
     perfTimer().mark()
 
     if makeCopy then
+        m.region = invalid
         m.bitmap = CreateObject("roBitmap", {width: bmp.GetWidth(), height: bmp.GetHeight(), alphaEnable: false})
         m.bitmap.DrawObject(0, 0, bmp)
         msg = "makeCopy"
+    else if m.scaleSize = false or m.region <> invalid and (m.region.GetWidth() <> bmp.GetWidth() or m.region.GetHeight() <> bmp.GetHeight()) then
+        m.region = invalid
+        m.bitmap = bmp
+        m.preferredWidth = bmp.GetWidth()
+        m.preferredHeight = bmp.GetHeight()
+        msg = "use original bitmap and size"
     else if m.region <> invalid then
         m.region.DrawObject(0, 0, bmp)
         m.bitmap = m.region.GetBitMap()
@@ -131,19 +151,24 @@ sub imageSetBitmap(bmp as object, makeCopy=false as boolean)
     end if
     perfTimer().Log("imageSetBitmap::" + msg)
 
-    ' create a region if invalid or if a copy was requested
-    if makeCopy or m.region = invalid then
+    ' create a region if invalid
+    if m.region = invalid then
         m.region = CreateObject("roRegion", m.bitmap, 0, 0, m.bitmap.GetWidth(), m.bitmap.GetHeight())
         perfTimer().Log("imageSetBitmap:: init new region")
     end if
 
     ' TODO(rob) we shouldn't need to scale here as the TextureManager handles
     ' scaling now. I'll verify this once we start loading real images.
-    m.ScaleRegion(firstOf(m.preferredWidth, m.width), firstOf(m.preferredHeight, m.height))
-    m.bitmap = m.region.GetBitmap()
+    if m.scaleSize then
+        m.ScaleRegion(firstOf(m.preferredWidth, m.width), firstOf(m.preferredHeight, m.height))
+        m.bitmap = m.region.GetBitmap()
+    end if
 
     ' Let whoever cares know that we should be redrawn.
     m.Trigger("redraw", [m])
+
+    ' Let whoever cares layout the component again.
+    m.Trigger("performParentLayout", [m])
 end sub
 
 sub imageSetPlaceholder(source as string)
