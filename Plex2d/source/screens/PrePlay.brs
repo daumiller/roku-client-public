@@ -120,7 +120,7 @@ sub preplayGetComponents()
     xOffset = xOffset + spacing + m.components.peek().width
 
     ' *** Poster, Episode thumb, and Media Flags *** '
-    vbImages = createVBox(false, false, false, 10)
+    vbImages = createVBox(false, false, false, 20)
     container = m.GetImages()
     for each comp in container.components
         vbImages.AddComponent(comp)
@@ -128,7 +128,6 @@ sub preplayGetComponents()
     vbImages.SetFrame(xOffset, 125, container.width, 720-125)
     m.components.Push(vbImages)
     xOffset = xOffset + spacing + m.components.peek().width
-
 
     ' *** Title, Media Info ***
     vbInfo = createVBox(false, false, false, 0)
@@ -278,7 +277,7 @@ function preplayGetImages() as object
     end if
 
     ' TODO(rob): Media Tags (placeholder)
-    container.components.push(createSpacer(0, 20))
+    container.components.push(createSpacer(0, 10))
     block = createLabel("Media Tags", FontRegistry().font16)
     block.halign = block.JUSTIFY_CENTER
     block.width = posterSize.width
