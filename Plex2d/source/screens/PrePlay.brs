@@ -276,13 +276,20 @@ function preplayGetImages() as object
         container.components.push(createSpacer(0, 0))
     end if
 
-    ' TODO(rob): Media Tags (placeholder)
-    container.components.push(createSpacer(0, 10))
-    block = createLabel("Media Tags", FontRegistry().font16)
-    block.halign = block.JUSTIFY_CENTER
-    block.width = posterSize.width
-    block.height = 30
-    container.components.push(block)
+
+    hbox = createHBox(false, false, false, 20)
+    hbox.halign = hbox.JUSTIFY_CENTER
+    hbox.width = posterSize.width
+    hbox.height = 20
+    tags = ["videoResolution", "audioCodec", "audioChannels"]
+    for each tag in tags
+        url = m.item.getMediaFlagTranscodeURL(tag, posterSize.width, hbox.height)
+        if url <> invalid then
+            image = createImageScaleToParent(url, hbox)
+            hbox.AddComponent(image)
+        end if
+    end for
+    container.components.push(hbox)
 
     return container
 end function
