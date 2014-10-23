@@ -83,6 +83,9 @@ sub preplayGetComponents()
     m.DestroyComponents()
     m.focusedItem = invalid
 
+    ' TODO(rob) position of items / HD2SD - where/when do we convert?
+    descBlock = { x: 0, y: 364, width: 1280, height: 239 }
+
     ' *** Background Artwork *** '
     if m.item.Get("art") <> invalid then
         image = { source: m.server.BuildUrl(m.item.Get("art"), true), server: m.server, transcodeOpts: {blur: 4} }
@@ -94,7 +97,7 @@ sub preplayGetComponents()
         m.components.Push(background)
 
         background = createBlock(Colors().ScrMedOverlayClr)
-        background.setFrame(0, 364, 1280, 239)
+        background.setFrame(descBlock.x, descBlock.y, descBlock.width, descBlock.height)
         m.components.Push(background)
     end if
 
@@ -104,7 +107,7 @@ sub preplayGetComponents()
     ' NOTE: the poster images can vary in height/width depending on the content.
     ' This means we will have to calculate the offsets ahead of time to know
     ' where to place the summary. That is, until we have a way to tell a HBox to
-    ' use all the left ofter space and resize accordingly.
+    ' use all the left over space and resize accordingly.
 
     xOffset = 50
     spacing = 30
@@ -119,17 +122,31 @@ sub preplayGetComponents()
     m.components.Push(vbButtons)
     xOffset = xOffset + spacing + m.components.peek().width
 
-    ' *** Poster, Episode thumb, and Media Flags *** '
+    ' *** Poster and Episode thumb *** '
     vbImages = createVBox(false, false, false, 20)
-    container = m.GetImages()
-    for each comp in container.components
+    components = m.GetImages()
+    for each comp in components
         vbImages.AddComponent(comp)
     end for
-    vbImages.SetFrame(xOffset, 125, container.width, 720-125)
+    vbImages.SetFrame(xOffset, 125, components.peek().width, 720-125)
     m.components.Push(vbImages)
-    xOffset = xOffset + spacing + m.components.peek().width
+
+    ' *** Media Flag *** '
+    hbMediaFlags = createHBox(false, false, false, 20)
+    hbMediaFlags.SetFrame(xOffset, descBlock.y + descBlock.height + spacing, m.components.peek().width, 20)
+    hbMediaFlags.halign = hbMediaFlags.JUSTIFY_CENTER
+    tags = ["videoResolution", "audioCodec", "audioChannels"]
+    for each tag in tags
+        url = m.item.getMediaFlagTranscodeURL(tag, hbMediaFlags.width, hbMediaFlags.height)
+        if url <> invalid then
+            image = createImageScaleToParent(url, hbMediaFlags)
+            hbMediaFlags.AddComponent(image)
+        end if
+    end for
+    m.components.push(hbMediaFlags)
 
     ' *** Title, Media Info ***
+    xOffset = xOffset + spacing + m.components.peek().width
     vbInfo = createVBox(false, false, false, 0)
     components = m.GetMainInfo()
     for each comp in components
@@ -247,51 +264,31 @@ function preplayGetSideInfo() as object
 end function
 
 function preplayGetImages() as object
-    container = createObject("roAssociativeArray")
-    container.components = createObject("roList")
+    components = createObject("roList")
 
     posterSize = invalid
     mediaSize = invalid
 
     if tostr(m.item.Get("type")) = "episode"  then
-        container.width = 210
         posterSize = { width: 210, height: 315 }
         mediaSize =  { width: 210, height: 118 }
     else
         posterSize = { width: 295, height: 434 }
-        container.width = 295
     end if
 
     ' TODO(rob): better way to choose which thumb to use?
     posterThumb = firstOfArr([m.item.Get("parentThumb"), m.item.Get("grandparentThumb"), m.item.Get("thumb"), m.item.Get("composite"), ""])
     image = { source: m.server.BuildUrl(posterThumb, true), server: m.server, }
     posterThumb = createImage(image, posterSize.width, posterSize.height)
-    container.components.push(posterThumb)
+    components.push(posterThumb)
 
     if mediaSize <> invalid then
         image = { source: m.server.BuildUrl(m.item.Get("thumb"), true), server: m.server, }
         mediaThumb = createImage(image, mediaSize.width, mediaSize.height)
-        container.components.push(mediaThumb)
-    else
-        container.components.push(createSpacer(0, 0))
+        components.push(mediaThumb)
     end if
 
-
-    hbox = createHBox(false, false, false, 20)
-    hbox.halign = hbox.JUSTIFY_CENTER
-    hbox.width = posterSize.width
-    hbox.height = 20
-    tags = ["videoResolution", "audioCodec", "audioChannels"]
-    for each tag in tags
-        url = m.item.getMediaFlagTranscodeURL(tag, posterSize.width, hbox.height)
-        if url <> invalid then
-            image = createImageScaleToParent(url, hbox)
-            hbox.AddComponent(image)
-        end if
-    end for
-    container.components.push(hbox)
-
-    return container
+    return components
 end function
 
 function preplayGetButtons() as object
