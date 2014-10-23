@@ -85,7 +85,7 @@ sub preplayGetComponents()
 
     ' *** Background Artwork *** '
     if m.item.Get("art") <> invalid then
-        image = { source: m.server.BuildUrl(m.item.Get("art"), true), server: m.server, transcodeOpts: {blur: 2} }
+        image = { source: m.server.BuildUrl(m.item.Get("art"), true), server: m.server, transcodeOpts: {blur: 4} }
         background = createImage(image, 1280, 720)
         m.components.Push(background)
 
