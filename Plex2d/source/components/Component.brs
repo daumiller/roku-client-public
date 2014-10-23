@@ -142,6 +142,10 @@ sub compSetFrame(x as integer, y as integer, width as integer, height as integer
     m.y = y
     m.width = width
     m.height = height
+    ' move the sprite components sprite if applicable
+    if m.sprite <> invalid and (m.x <> m.sprite.GetX() or m.y <> m.sprite.GetY()) then
+        m.sprite.moveTo(m.x, m.y)
+    end if
 end sub
 
 sub compSetPosition(x as integer, y as integer)
