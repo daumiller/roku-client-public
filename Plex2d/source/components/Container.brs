@@ -16,6 +16,7 @@ function ContainerClass() as object
         obj.GetFocusableItems = contGetFocusableItems
         obj.GetShiftableItems = contGetShiftableItems
 
+        obj.OnParentLayout = contOnParentLayout
         obj.IsPendingTexture = contIsPendingTexture
 
         m.ContainerClass = obj
@@ -128,3 +129,7 @@ function contIsPendingTexture() as boolean
     next
     return false
 end function
+
+sub contOnParentLayout(component as object)
+    m.performlayout()
+end sub
