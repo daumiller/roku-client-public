@@ -73,8 +73,10 @@ function imageDraw() as object
     return [m]
 end function
 
-function createImageScaleToParent(source as dynamic, parent as object, width=0 as integer, height=0 as integer) as object
-    obj = createImage(source, width, height)
+function createImageScaleToParent(source as dynamic, parent as object) as object
+    ' create a 1x1 image to handle creating a temporary regions
+    ' for the downloaded image to replace.
+    obj = createImage(source, 1, 1)
     obj.scaleSize = false
     obj.On("performParentLayout", createCallable("OnParentLayout", parent))
     return obj
