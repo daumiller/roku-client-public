@@ -31,6 +31,7 @@ function PlexObjectClass() as object
         obj.GetOriginallyAvailableAt = pnoGetOriginallyAvailableAt
         obj.GetViewOffsetPercentage = pnoGetViewOffsetPercentage
         obj.GetUnwatchedCount = pnoGetUnwatchedCount
+        obj.GetUnwatchedCountString = pnoGetUnwatchedCountString
         obj.IsUnwatched = pnoIsUnwatched
         obj.InProgress = pnoInProgress
 
@@ -215,4 +216,15 @@ function pnoInProgress() as boolean
     end if
 
     return (m.has("viewOffset") and m.GetInt("viewOffset") > 0)
+end function
+
+function pnoGetUnwatchedCountString() as string
+    count = m.GetUnwatchedCount()
+    if count > 0 then
+        text = tostr(count) + " unwatched episode"
+        if count > 1 then text = text + "s"
+        return text
+    end if
+
+    return ""
 end function
