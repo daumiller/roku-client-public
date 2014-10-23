@@ -160,7 +160,9 @@ function ppcGetMainInfo() as object
     label = createLabel(ucase(m.item.GetLimitedTagValues("Genre",3)), FontRegistry().font16)
     components.push(label)
 
-    label = createLabel(m.item.GetDuration(), FontRegistry().font16)
+    unwatched = m.item.GetUnwatchedCountString()
+    if unwatched <> "" then unwatched = unwatched + " / "
+    label = createLabel(unwatched + m.item.GetDuration(), FontRegistry().font16)
     components.push(label)
 
     return components

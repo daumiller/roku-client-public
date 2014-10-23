@@ -63,12 +63,8 @@ function dboxShow(item as object) as boolean
     if contentType = "movie" then
         line2.push(item.plexObject.Get("year"))
     else if contentType = "show"
-        unwatched = item.plexObject.GetUnwatchedCount()
-        if unwatched > 0 then
-            text = tostr(unwatched) + " unwatched episode"
-            if unwatched > 1 then text = text + "s"
-            line2.push(text)
-        end if
+        unwatched = item.plexObject.GetUnwatchedCountString()
+        if unwatched <> "" then line2.push(unwatched)
     else if item.plexObject.has("originallyAvailableAt") then
         line2.push(item.plexObject.GetOriginallyAvailableAt())
     else
