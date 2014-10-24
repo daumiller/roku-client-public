@@ -208,6 +208,20 @@ function preplayGetMainInfo() as object
         components.push(createLabel("CAST" + spacer + m.item.GetLimitedTagValues("Role",5), normalFont))
     end if
 
+    ' Audio and Subtitles
+    audioText = "None"
+    subText = "None"
+    mediaItems = m.item.mediaitems
+    if mediaItems <> invalid and mediaItems.count() > 0 and mediaItems[0].HasStreams() then
+        audioStream = mediaItems[0].parts[0].GetSelectedStreamOfType(2)
+        if audioStream <> invalid then audioText = audioStream.GetTitle()
+
+        subStream = mediaItems[0].parts[0].GetSelectedStreamOfType(3)
+        if subStream <> invalid then subText = subStream.GetTitle()
+    end if
+    components.push(createLabel("AUDIO" + spacer + audioText, normalFont))
+    components.push(createLabel("SUBTITLES" + spacer + subText, normalFont))
+
     return components
 end function
 
