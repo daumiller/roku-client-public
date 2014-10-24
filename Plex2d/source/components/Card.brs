@@ -102,14 +102,14 @@ sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, 
     end if
 
     if watchedPercentage <> invalid and watchedPercentage > 0 then
-        m.progress = createProgressBar(watchedPercentage, Colors().ScrVeryDrkOverlayClr , Colors().PlexClr)
+        m.progress = createProgressBar(watchedPercentage, Colors().ScrVeryDrkOverlayClr , Colors().PlexAltClr)
         m.AddComponent(m.progress)
     end if
 
     if unwatchedCount <> invalid and unwatchedCount > 0 then
         m.unwatchedCount = createLabel(tostr(unwatchedCount), FontRegistry().font16)
         m.unwatchedCount.SetPadding(0, 5, 0, 5)
-        m.unwatchedCount.SetColor(&hffffffff, Colors().PlexClr)
+        m.unwatchedCount.SetColor(&hffffffff, Colors().PlexAltClr)
         m.AddComponent(m.unwatchedCount)
     end if
 
