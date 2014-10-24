@@ -347,3 +347,11 @@ function JoinArray(arr, sep, key1="", key2="") as string
 
     return result
 end function
+
+function iif(condition as boolean, trueValue as dynamic, falseValue as dynamic) as dynamic
+    if condition = true then
+        return trueValue
+    else
+        return falseValue
+    end if
+end function
