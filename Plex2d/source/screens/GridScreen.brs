@@ -539,7 +539,7 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
             contentType = tostr(item.Get("type"))
             if contentType = "movie" or contentType = "show" then
                 title = invalid
-            else if contentType = "episode" then
+            else if contentType = "episode" and item.Has("index") then
                 title = "Episode " + item.Get("index")
             else
                 title = item.GetSingleLineTitle()
