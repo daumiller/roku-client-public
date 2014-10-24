@@ -27,6 +27,7 @@ sub preplayInit()
 
     ' Intialize custom fonts for this screen
     m.customFonts.Large = FontRegistry().GetTextFont(28)
+    m.customFonts.button = FontRegistry().GetIconFont(32)
 
     m.itemContainer = CreateObject("roAssociativeArray")
 end sub
@@ -293,8 +294,22 @@ end function
 
 function preplayGetButtons() as object
     components = createObject("roList")
-    for count = 0 to 4
-        btn = createButton("todo", FontRegistry().font16, "TODO_buttons")
+
+    buttons = createObject("roList")
+    ' TODO(rob) I need to find a better font editor to map the fonts.
+    if m.item.InProgress() then
+        buttons.push({text: "g", command: "resume"})
+    end if
+    buttons.push({text: "g", command: "play"})
+    if m.item.IsUnwatched() then
+        buttons.push({text: "b", command: "scrobble"})
+    else
+        buttons.push({text: "c", command: "unscrobble"})
+    end if
+    buttons.push({text: "f", command: "more"})
+
+    for each button in buttons
+        btn = createButton(button.text, m.customFonts.button, button.command)
         btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
         btn.width = 100
         btn.height = 50
