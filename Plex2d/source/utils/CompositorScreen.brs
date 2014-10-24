@@ -98,13 +98,14 @@ sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
         numPixels = 2
     end if
 
+    spacing = 1
     focus = {
         color: &hff8a00ff,
-        x: component.x - numPixels,
-        y: component.y - numPixels,
+        x: component.x - numPixels - spacing,
+        y: component.y - numPixels - spacing,
         z: 995,
-        w: component.width + (numPixels * 2),
-        h: component.height + (numPixels * 2)
+        w: component.width + (numPixels * 2) + (spacing * 2),
+        h: component.height + (numPixels * 2) + (spacing * 2),
     }
 
     ' If we've already focused something of the same size, we can simply
