@@ -305,6 +305,10 @@ sub hubCalculateStyle(container as object)
     if size > 5 then size = 5
     m.maxChildren = size
 
+    if m.hubIdentifier = "home.continue" and size > 1 then
+        m.orientation = m.ORIENTATION_LANDSCAPE
+    end if
+
     if size = 1 then
         m.layout = m.LAYOUT_GRID_1
     else if size = 2 then
@@ -315,7 +319,6 @@ sub hubCalculateStyle(container as object)
         end if
     else if m.hubIdentifier = "home.continue" then
         m.layout = m.LAYOUT_GRID_3
-        m.orientation = m.ORIENTATION_LANDSCAPE
     else if size = 3 then
         m.layout = m.LAYOUT_HERO_3
         ' m.LAYOUT_HERO_3 handles landscape and portrait
