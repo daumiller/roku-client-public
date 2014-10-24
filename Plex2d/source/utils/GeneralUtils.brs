@@ -334,13 +334,15 @@ function JoinArray(arr, sep, key1="", key2="") as string
     first = true
 
     for each value in arr
-        if type(value) = "roassociativeArray" then value = firstOf(value[key1], value[key2])
-        if first then
-            first = false
-        else
-            result = result + sep
+        if value <> "" and value <> invalid then
+            if type(value) = "roassociativeArray" then value = firstOf(value[key1], value[key2])
+            if first then
+                first = false
+            else
+                result = result + sep
+            end if
+            result = result + value
         end if
-        result = result + value
     end for
 
     return result
