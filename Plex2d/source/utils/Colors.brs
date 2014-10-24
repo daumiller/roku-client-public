@@ -10,7 +10,7 @@ function Colors() as object
         obj.ScrBkgClr = &h111111FF
         obj.ScrBtnClr = &h1F1F1FFF
         obj.PlexClr = &hff8a00ff
-        obj.PlexClrTran = &hff8a0000
+        obj.PlexAltClr = &hcc7b19ff
         obj.CardBkgClr = &h272727ff
         obj.BtnBkgClr = &h272727ff
         obj.TextClr = &hffffffff
