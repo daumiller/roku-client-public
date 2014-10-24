@@ -140,7 +140,7 @@ function pncBuildUrl(server as object, path as string, includeToken=false as boo
         end if
 
         if token <> invalid then
-            url = url + "?X-Plex-Token=" + token
+            url = url +  iif(instr(1, url, "?") = 0, "?", "&") + "X-Plex-Token=" + token
         end if
     end if
 
