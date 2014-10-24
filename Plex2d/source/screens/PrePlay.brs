@@ -1,3 +1,4 @@
+' TODO(rob): check if media IsAccessible
 function PreplayScreen() as object
     if m.PreplayScreen = invalid then
         obj = CreateObject("roAssociativeArray")
@@ -157,7 +158,7 @@ sub preplayGetComponents()
     m.components.Push(vbInfo)
 
     ' TODO(rob): dynamic width
-    summary = createLabel(firstOf(m.item.Get("summary"),""), FontRegistry().font16)
+    summary = createLabel(m.item.Get("summary", ""), FontRegistry().font16)
     summary.SetPadding(20, 20, 20, 0)
     summary.wrap = true
     summary.SetFrame(xOffset, 364, 1230-xOffset, 239)
@@ -178,7 +179,7 @@ function preplayGetMainInfo() as object
 
     spacer = "   "
     normalFont = FontRegistry().font16
-    if tostr(m.item.Get("type")) = "episode" then
+    if m.item.Get("type", "") = "episode" then
         components.push(createLabel(m.item.Get("grandparentTitle", ""), m.customFonts.Large))
         components.push(createLabel(m.item.Get("title", ""), m.customFonts.Large))
 
@@ -195,7 +196,7 @@ function preplayGetMainInfo() as object
         components.push(createSpacer(0, normalFont.getOneLineHeight()))
     else
         components.push(createLabel(m.item.Get("title", ""), m.customFonts.Large))
-        components.push(createLabel(ucase(m.item.GetLimitedTagValues("Genre",3)), normalFont))
+        components.push(createLabel(ucase(m.item.GetLimitedTagValues("Genre", 3)), normalFont))
 
         text = m.item.GetDuration()
         if m.item.IsUnwatched() then
@@ -204,8 +205,8 @@ function preplayGetMainInfo() as object
         components.push(createLabel(text, normalFont))
 
         components.push(createSpacer(0, normalFont.getOneLineHeight()))
-        components.push(createLabel("DIRECTOR" + spacer + m.item.GetLimitedTagValues("Director",5), normalFont))
-        components.push(createLabel("CAST" + spacer + m.item.GetLimitedTagValues("Role",5), normalFont))
+        components.push(createLabel("DIRECTOR" + spacer + m.item.GetLimitedTagValues("Director", 5), normalFont))
+        components.push(createLabel("CAST" + spacer + m.item.GetLimitedTagValues("Role", 5), normalFont))
     end if
 
     ' Audio and Subtitles
@@ -229,30 +230,18 @@ function preplayGetSideInfo() as object
     components = createObject("roList")
 
     if tostr(m.item.Get("type")) = "episode" then
-        label = createLabel(firstOf(m.item.Get("year"),""), m.customFonts.Large)
-        label.halign = label.JUSTIFY_RIGHT
-        components.push(label)
-
-        label = createLabel(m.item.GetDuration(), m.customFonts.Large)
-        label.halign = label.JUSTIFY_RIGHT
-        components.push(label)
-
-        label = createLabel(firstOf(m.item.Get("rating"),""), FontRegistry().font16)
-        label.halign = label.JUSTIFY_RIGHT
-        components.push(label)
+        components.push(createLabel(m.item.Get("year", ""), m.customFonts.Large))
+        components.push(createLabel(m.item.GetDuration(), m.customFonts.Large))
+        components.push(createLabel(m.item.Get("rating", ""), FontRegistry().font16))
     else
-        label = createLabel(firstOf(m.item.Get("year"),""), m.customFonts.Large)
-        label.halign = label.JUSTIFY_RIGHT
-        components.push(label)
-
-        label = createLabel(firstOf(m.item.Get("rating"),""), FontRegistry().font16)
-        label.halign = label.JUSTIFY_RIGHT
-        components.push(label)
-
-        label = createLabel(firstOf(m.item.Get("contentRating"),""), FontRegistry().font16)
-        label.halign = label.JUSTIFY_RIGHT
-        components.push(label)
+        components.push(createLabel(m.item.Get("year", ""), m.customFonts.Large))
+        components.push(createLabel(m.item.Get("rating", ""), FontRegistry().font16))
+        components.push(createLabel(m.item.Get("contentRating", ""), FontRegistry().font16))
     end if
+
+    for each comp in components
+        comp.halign = comp.JUSTIFY_RIGHT
+    end for
 
     return components
 end function
@@ -262,8 +251,7 @@ function preplayGetImages() as object
 
     posterSize = invalid
     mediaSize = invalid
-
-    if tostr(m.item.Get("type")) = "episode"  then
+    if m.item.Get("type", "") = "episode" then
         posterSize = { width: 210, height: 315 }
         mediaSize =  { width: 210, height: 118 }
     else

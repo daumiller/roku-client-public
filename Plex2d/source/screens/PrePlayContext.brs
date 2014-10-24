@@ -134,7 +134,7 @@ sub ppcGetComponents()
     m.components.Push(vbInfo)
 
     ' TODO(rob): dynamic width
-    summary = createLabel(firstOf(m.item.Get("summary"),""), FontRegistry().font16)
+    summary = createLabel(m.item.Get("summary", ""), FontRegistry().font16)
     summary.SetPadding(20, 20, 20, 0)
     summary.wrap = true
     summary.SetFrame(xOffset, 265, 1230-xOffset, 239)
@@ -154,15 +154,11 @@ function ppcGetMainInfo() as object
     components = createObject("roList")
 
     ' TODO(rob): change the info based on content type
-    label = createLabel(firstOf(m.item.Get("title"),""), m.customFonts.Large)
-    components.push(label)
-
-    label = createLabel(ucase(m.item.GetLimitedTagValues("Genre",3)), FontRegistry().font16)
-    components.push(label)
+    components.push(createLabel(m.item.Get("title", ""), m.customFonts.Large))
+    components.push(createLabel(ucase(m.item.GetLimitedTagValues("Genre", 3)), FontRegistry().font16))
 
     text = joinArray([m.item.GetUnwatchedCountString(), m.item.GetDuration()], " / ")
-    label = createLabel(text, FontRegistry().font16)
-    components.push(label)
+    components.push(createLabel(text, FontRegistry().font16))
 
     return components
 end function
