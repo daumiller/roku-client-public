@@ -19,11 +19,11 @@ function CardClass() as object
     return m.CardClass
 end function
 
-function createCard(imageSource as dynamic, text=invalid as dynamic, watchedPercentage=invalid as dynamic, unwatchedCount=invalid as dynamic) as object
+function createCard(imageSource as dynamic, text=invalid as dynamic, watchedPercentage=invalid as dynamic, unwatchedCount=invalid as dynamic, unwatched=false as boolean) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(CardClass())
 
-    obj.Init(imageSource, text, watchedPercentage, unwatchedCount)
+    obj.Init(imageSource, text, watchedPercentage, unwatchedCount, unwatched)
 
     ' TODO(schuyler): Lots, presumably. We need to expose some of the options
     ' of our children. Does the overlay have multiple lines of text? Does the
@@ -43,9 +43,9 @@ function createCardPlaceholder() as object
     return obj
 end function
 
-sub cardInit(imageSource=invalid as dynamic, text=invalid as dynamic, watchedPercentage=invalid as dynamic, unwatchedCount=invalid as dynamic)
+sub cardInit(imageSource=invalid as dynamic, text=invalid as dynamic, watchedPercentage=invalid as dynamic, unwatchedCount=invalid as dynamic, unwatched=false as boolean)
     ApplyFunc(CompositeClass().Init, m)
-    m.InitComponents(imageSource, text, watchedPercentage, unwatchedCount)
+    m.InitComponents(imageSource, text, watchedPercentage, unwatchedCount, unwatched)
 end sub
 
 sub cardPerformLayout()
@@ -60,6 +60,10 @@ sub cardPerformLayout()
 
     if m.overlay <> invalid then
         m.overlay.SetFrame(0, m.height - m.overlay.GetPreferredHeight(), m.width, m.overlay.GetPreferredHeight())
+    end if
+
+    if m.unwatched <> invalid then
+        m.unwatched.SetFrame(0, m.height - m.unwatched.GetPreferredHeight(), m.width, m.unwatched.GetPreferredHeight())
     end if
 
     if m.unwatchedCount <> invalid then
@@ -83,12 +87,12 @@ sub cardPerformLayout()
 end sub
 
 ' destroy and reinit the components for the card (lazy-loading)
-sub cardReinit(imageSource=invalid as dynamic, text=invalid as dynamic, watchedPercentage=invalid as dynamic, unwatchedCount=invalid as dynamic)
+sub cardReinit(imageSource=invalid as dynamic, text=invalid as dynamic, watchedPercentage=invalid as dynamic, unwatchedCount=invalid as dynamic, unwatched=false as boolean)
     m.DestroyComponents()
-    m.InitComponents(imageSource, text, watchedPercentage, unwatchedCount)
+    m.InitComponents(imageSource, text, watchedPercentage, unwatchedCount, unwatched)
 end sub
 
-sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, watchedPercentage=invalid as dynamic, unwatchedCount=invalid as dynamic)
+sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, watchedPercentage=invalid as dynamic, unwatchedCount=invalid as dynamic, unwatched=false as boolean)
     if imageSource <> invalid then
         m.image = createImage(imageSource)
         m.AddComponent(m.image)
@@ -111,6 +115,9 @@ sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, 
         m.unwatchedCount.SetPadding(0, 5, 0, 5)
         m.unwatchedCount.SetColor(&hffffffff, Colors().PlexAltClr)
         m.AddComponent(m.unwatchedCount)
+    else if unwatched then
+        m.unwatched = createIndicator(Colors().PlexAltClr, FontRegistry().font16.GetOneLineHeight(), 10)
+        m.AddComponent(m.unwatched)
     end if
 
 end sub
