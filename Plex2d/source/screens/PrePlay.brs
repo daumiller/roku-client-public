@@ -176,61 +176,36 @@ end sub
 function preplayGetMainInfo() as object
     components = createObject("roList")
 
+    spacer = "   "
+    normalFont = FontRegistry().font16
     if tostr(m.item.Get("type")) = "episode" then
-        label = createLabel(firstOf(m.item.Get("grandparentTitle"),""), m.customFonts.Large)
-        components.push(label)
-
-        label = createLabel(firstOf(m.item.Get("title"),""), m.customFonts.Large)
-        components.push(label)
+        components.push(createLabel(m.item.Get("grandparentTitle", ""), m.customFonts.Large))
+        components.push(createLabel(m.item.Get("title", ""), m.customFonts.Large))
 
         text = m.item.GetOriginallyAvailableAt()
         if m.item.Has("index") and m.item.Has("parentIndex") then
             text = "Season " + tostr(m.item.Get("parentIndex")) + " Episode " + m.item.Get("index") + " / " + text
         end if
-        label = createLabel(text, FontRegistry().font16)
-        components.push(label)
+        components.push(createLabel(text, normalFont))
 
         if m.item.IsUnwatched() then
-            label = createLabel("Unwatched", FontRegistry().font16)
-        else
-            label = createSpacer(0, FontRegistry().font16.getOneLineHeight())
+            components.push(createLabel("Unwatched", normalFont))
         end if
-        components.push(label)
 
-        components.push(createSpacer(0, FontRegistry().font16.getOneLineHeight()))
-
-        label = createLabel("AUDIO todo", FontRegistry().font16)
-        components.push(label)
-
-        label = createLabel("SUBTITLES todo", FontRegistry().font16)
-        components.push(label)
+        components.push(createSpacer(0, normalFont.getOneLineHeight()))
     else
-        label = createLabel(firstOf(m.item.Get("title"),""), m.customFonts.Large)
-        components.push(label)
-
-        label = createLabel(ucase(m.item.GetLimitedTagValues("Genre",3)), FontRegistry().font16)
-        components.push(label)
+        components.push(createLabel(m.item.Get("title", ""), m.customFonts.Large))
+        components.push(createLabel(ucase(m.item.GetLimitedTagValues("Genre",3)), normalFont))
 
         text = m.item.GetDuration()
         if m.item.IsUnwatched() then
             text = text + " / Unwatched"
         end if
-        label = createLabel(text, FontRegistry().font16)
-        components.push(label)
+        components.push(createLabel(text, normalFont))
 
-        components.push(createSpacer(0, FontRegistry().font16.getOneLineHeight()))
-
-        label = createLabel("DIRECTOR " + m.item.GetLimitedTagValues("Director",3), FontRegistry().font16)
-        components.push(label)
-
-        label = createLabel("CAST " + m.item.GetLimitedTagValues("Role",3), FontRegistry().font16)
-        components.push(label)
-
-        label = createLabel("AUDIO todo", FontRegistry().font16)
-        components.push(label)
-
-        label = createLabel("SUBTITLES todo", FontRegistry().font16)
-        components.push(label)
+        components.push(createSpacer(0, normalFont.getOneLineHeight()))
+        components.push(createLabel("DIRECTOR" + spacer + m.item.GetLimitedTagValues("Director",5), normalFont))
+        components.push(createLabel("CAST" + spacer + m.item.GetLimitedTagValues("Role",5), normalFont))
     end if
 
     return components
