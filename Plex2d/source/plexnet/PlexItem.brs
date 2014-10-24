@@ -214,5 +214,5 @@ function pniGetMediaFlagTranscodeURL(flag as string, width as integer, height as
     server = m.container.server
     port = "32400"
 
-    return server.BuildUrl("/photo/:/transcode?url=http%3A%2F%2F127.0.0.1:" + port + UrlEscape(url) + params)
+    return server.BuildUrl("/photo/:/transcode?url=http%3A%2F%2F127.0.0.1:" + port + UrlEscape(url) + params, true)
 end function
