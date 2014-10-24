@@ -183,7 +183,11 @@ function preplayGetMainInfo() as object
         label = createLabel(firstOf(m.item.Get("title"),""), m.customFonts.Large)
         components.push(label)
 
-        label = createLabel( m.item.Getseasonstring() + " " + m.item.Getepisodestring() + " / " + m.item.GetOriginallyAvailableAt(), FontRegistry().font16)
+        text = m.item.GetOriginallyAvailableAt()
+        if m.item.Has("index") and m.item.Has("parentIndex") then
+            text = "Season " + tostr(m.item.Get("parentIndex")) + " Episode " + m.item.Get("index") + " / " + text
+        end if
+        label = createLabel(text, FontRegistry().font16)
         components.push(label)
 
         if m.item.IsUnwatched() then
