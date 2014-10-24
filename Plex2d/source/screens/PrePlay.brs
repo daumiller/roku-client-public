@@ -96,11 +96,11 @@ sub preplayGetComponents()
         background = createBlock(Colors().ScrDrkOverlayClr)
         background.setFrame(0, 72, 1280, 720)
         m.components.Push(background)
-
-        background = createBlock(Colors().ScrMedOverlayClr)
-        background.setFrame(descBlock.x, descBlock.y, descBlock.width, descBlock.height)
-        m.components.Push(background)
     end if
+
+    background = createBlock(Colors().ScrMedOverlayClr)
+    background.setFrame(descBlock.x, descBlock.y, descBlock.width, descBlock.height)
+    m.components.Push(background)
 
     ' *** HEADER *** '
     m.components.Push(createHeader(m))
