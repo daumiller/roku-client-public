@@ -137,7 +137,7 @@ sub ppcGetComponents()
     summary = createLabel(m.item.Get("summary", ""), FontRegistry().font16)
     summary.SetPadding(20, 20, 20, 0)
     summary.wrap = true
-    summary.SetFrame(xOffset, 265, 1230-xOffset, 239)
+    summary.SetFrame(xOffset, 265, 1230-xOffset, 200)
     m.components.push(summary)
 
     ' *** Right Side Info *** '
