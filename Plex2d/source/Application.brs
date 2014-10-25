@@ -39,6 +39,9 @@ function Application()
 
         obj.Run = appRun
         obj.ProcessOneMessage = appProcessOneMessage
+        obj.ProcessNonBlocking = appProcessNonBlocking
+        obj.ProcessUrlEvent = appProcessUrlEvent
+        obj.ProcessTextureEvent = appProcessTextureEvent
         obj.OnInitialized = appOnInitialized
 
         ' Track anything that needs to be initialized before the app can start
@@ -189,11 +192,7 @@ function appProcessOneMessage(timeout)
         end for
 
         if type(msg) = "roTextureRequestEvent" then
-            ' TODO(rob) we should be tracking roTextureRequestEvent by screenID
-            ' Only one roScreen is available at a time, but we want to ignore
-            ' any requests that might come in for a prevoius screen. The logic
-            ' to handle that should just be added to the TextureManager
-             TextureManager().ReceiveTexture(msg, m.screens.peek().screenID)
+            m.ProcessTextureEvent(msg)
         else if type(msg) = "roSocketEvent" then
             callback = m.socketCallbacks[msg.getSocketID().tostr()]
             if callback <> invalid then
@@ -203,23 +202,7 @@ function appProcessOneMessage(timeout)
                 WebServer().PostWait()
             end if
         else if type(msg) = "roUrlEvent" and msg.GetInt() = 1 then
-            id = msg.GetSourceIdentity().tostr()
-            requestContext = m.pendingRequests[id]
-            if requestContext <> invalid then
-                Debug("Got a " + tostr(msg.GetResponseCode()) + " from " + requestContext.request.url)
-                m.pendingRequests.Delete(id)
-
-                ' Clear our timeout timer
-                if requestContext.timer <> invalid then
-                    requestContext.timer.active = false
-                    requestContext.timer.requestContext = invalid
-                    requestContext.timer = invalid
-                end if
-
-                if requestContext.callback <> invalid then
-                    requestContext.callback.Call([msg, requestContext])
-                end if
-            end if
+            m.ProcessUrlEvent(msg)
         else if type(msg) = "roChannelStoreEvent" then
             AppManager().HandleChannelStoreEvent(msg)
         end if
@@ -434,4 +417,43 @@ sub appCloseLoadingModal()
 
     m.LoadingModalTimer.active = false
     m.LoadingModalTimer = invalid
+end sub
+
+sub appProcessUrlEvent(msg as object)
+    id = msg.GetSourceIdentity().tostr()
+    requestContext = m.pendingRequests[id]
+    if requestContext <> invalid then
+        Debug("Got a " + tostr(msg.GetResponseCode()) + " from " + requestContext.request.url)
+        m.pendingRequests.Delete(id)
+
+        ' Clear our timeout timer
+        if requestContext.timer <> invalid then
+            requestContext.timer.active = false
+            requestContext.timer.requestContext = invalid
+            requestContext.timer = invalid
+        end if
+
+        if requestContext.callback <> invalid then
+            requestContext.callback.Call([msg, requestContext])
+        end if
+    end if
+end sub
+
+sub appProcessTextureEvent(msg as object)
+    ' TODO(rob) we should be tracking roTextureRequestEvent by screenID
+    ' Only one roScreen is available at a time, but we want to ignore
+    ' any requests that might come in for a prevoius screen. The logic
+    ' to handle that should just be added to the TextureManager
+     TextureManager().ReceiveTexture(msg, m.screens.peek().screenID)
+end sub
+
+sub appProcessNonBlocking()
+    msg = m.Port.PeekMessage()
+    if type(msg) = "roTextureRequestEvent" then
+        msg = m.Port.GetMessage()
+        m.ProcessTextureEvent(msg)
+    else if type(msg) = "roUrlEvent" and msg.GetInt() = 1 then
+        msg = m.Port.GetMessage()
+        m.ProcessUrlEvent(msg)
+    end if
 end sub
