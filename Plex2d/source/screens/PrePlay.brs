@@ -146,9 +146,17 @@ sub preplayGetComponents()
         end if
     end for
     m.components.push(hbMediaFlags)
+    xOffset = xOffset + spacing + m.components.peek().width
+
+    ' *** Progress Bar *** '
+    if m.item.GetViewOffsetPercentage() > 0 then
+        progress = createProgressBar(m.item.GetViewOffsetPercentage(), &h00000000, Colors().PlexAltClr)
+        progress.setFrame(xOffset - spacing, descBlock.y, descBlock.width - xOffset + spacing, 6)
+        progress.animate = true
+        m.components.Push(progress)
+    end if
 
     ' *** Title, Media Info ***
-    xOffset = xOffset + spacing + m.components.peek().width
     vbInfo = createVBox(false, false, false, 0)
     components = m.GetMainInfo()
     for each comp in components
