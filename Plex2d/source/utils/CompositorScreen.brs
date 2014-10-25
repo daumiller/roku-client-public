@@ -47,7 +47,7 @@ sub compositorDrawAll()
     m.screen.SwapBuffers()
 end sub
 
-sub compositorDrawComponent(component as object)
+sub compositorDrawComponent(component as object, screen=invalid as dynamic)
     ' Let the component draw itself to its own regions
     drawableComponents = component.Draw()
 
@@ -61,6 +61,9 @@ sub compositorDrawComponent(component as object)
         Debug("******** Drawing " + tostr(comp) + " zOrder:" + tostr(zOrder))
         comp.sprite = m.compositor.NewSprite(comp.x, comp.y, comp.region, zOrder)
         comp.On("redraw", createCallable("OnComponentRedraw", m, "compositorRedraw"))
+        if screen <> invalid and comp.IsAnimated = true then
+            screen.animatedComponents.push(comp)
+        end if
     next
 end sub
 

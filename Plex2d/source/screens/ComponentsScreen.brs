@@ -91,10 +91,11 @@ sub compInit()
     ' reset the nextComponentId
     GetGlobalAA().AddReplace("nextComponentId", 1)
 
-    ' focus helpers
+    ' quick references to m.components
     m.onScreenComponents = CreateObject("roList")
     m.fixedComponents = CreateObject("roList")
     m.shiftableComponents = CreateObject("roList")
+    m.animatedComponents = CreateObject("roList")
 
     ' lazy load timer ( loading off screen components )
     m.lazyLoadTimer = createTimer("lazyLoad")
@@ -113,7 +114,7 @@ sub compShow()
 
     for each comp in m.components
         Application().CheckLoadingModal()
-        m.screen.DrawComponent(comp)
+        m.screen.DrawComponent(comp, m)
         comp.GetFocusableItems(m.onScreenComponents)
 
         ' obtain a list of the shiftable components now (cache it)
@@ -167,6 +168,12 @@ sub compShow()
     end if
 
     m.screen.DrawAll()
+
+    ' process any animated components
+    for each comp in m.animatedComponents
+        comp.Animate()
+    end for
+
 end sub
 
 ' TODO(rob) screen is not required to be passed, but we might want to ignore
@@ -194,6 +201,7 @@ sub compDeactivate(screen = invalid as dynamic)
     m.shiftableComponents.clear()
     m.fixedComponents.clear()
     m.onScreenComponents.clear()
+    m.animatedComponents.clear()
 
     m.customFonts.clear()
     m.focusedItem = invalid
