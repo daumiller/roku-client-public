@@ -45,9 +45,7 @@ function pbDraw(redraw=false as boolean) as object
     m.InitRegion()
 
     ' draw the progress bar on the existing region
-    bmp = CreateObject("roBitmap", {width: m.fgWidth, height: m.height, alphaEnable: false})
-    bmp.Clear(m.fgColor)
-    m.region.DrawObject(0, 0, bmp)
+    m.region.DrawRect(0, 0, m.fgWidth, m.height, m.fgColor)
 
     return [m]
 end function
