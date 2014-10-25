@@ -4,7 +4,8 @@ function ProgressBarClass() as object
         obj.Append(ComponentClass())
         obj.ClassName = "ProgressBar"
 
-        obj.draw = pbDraw
+        obj.Draw = pbDraw
+        obj.Animate = pbAnimate
 
         m.ProgressBarClass = obj
     end if
@@ -29,6 +30,7 @@ function createProgressBar(watchedPercent as dynamic, bgColor as integer, fgColo
 
     obj.bgColor = bgColor
     obj.fgColor = fgColor
+    obj.IsAnimated = false
 
     return obj
 end function
@@ -45,7 +47,26 @@ function pbDraw(redraw=false as boolean) as object
     m.InitRegion()
 
     ' draw the progress bar on the existing region
-    m.region.DrawRect(0, 0, m.fgWidth, m.height, m.fgColor)
+    if m.IsAnimated = false then
+        m.region.DrawRect(0, 0, m.fgWidth, m.height, m.fgColor)
+    end if
 
     return [m]
 end function
+
+sub pbAnimate()
+    if m.sprite = invalid or m.sprite.GetRegion() = invalid then return
+    region = m.sprite.GetRegion()
+
+    incr = int(m.fgWidth/30)
+    if incr < 5 then incr = 5
+
+    for width = 0 to m.fgWidth step incr
+        Application().ProcessNonBlocking()
+        m.region.DrawRect(0, 0, width, m.height, m.fgColor)
+        CompositorScreen().DrawAll()
+    end for
+
+    m.region.DrawRect(0, 0, m.fgWidth, m.height, m.fgColor)
+    CompositorScreen().DrawAll()
+end sub
