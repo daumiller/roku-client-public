@@ -335,13 +335,20 @@ sub compSetOrientation(orientation as integer)
     m.orientation = orientation
 end sub
 
-function compGetWidthForOrientation(orientation as integer, height as integer) as integer
+function compGetWidthForOrientation(orientation as integer, height as integer, component=invalid as dynamic) as integer
+    if component <> invalid and component.overlay <> invalid and component.intrusiveOverlay = false then
+        ' the posters look awkward when they are so tall and skinny
+        minus = int(component.overlay.GetPreferredHeight() / 2)
+    else
+        minus = 0
+    end if
+
     if orientation = m.ORIENTATION_SQUARE then
-        return height
+        return height - minus
     else if orientation = m.ORIENTATION_LANDSCAPE then
-        return int(height * 1.777)
+        return int(height * 1.777) - minus
     else if orientation = m.ORIENTATION_PORTRAIT then
-        return int(height * 0.679)
+        return int(height * 0.679) - minus
     else
         Error("Unknown hub orientation: " + tostr(orientation))
         stop

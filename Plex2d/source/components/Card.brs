@@ -5,6 +5,7 @@ function CardClass() as object
         obj.ClassName = "Card"
 
         obj.alphaEnable = true
+        obj.intrusiveOverlay = false
 
         ' Methods
         obj.Init = cardInit

@@ -114,7 +114,7 @@ sub ppcGetComponents()
 
         card = createCard(ImageClass().BuildImgObj(item, m.server), item.GetSingleLineTitle(), invalid, item.GetUnwatchedCount())
         card.SetOrientation(orientation)
-        card.width = card.GetWidthForOrientation(card.orientation, hbGrid.Height)
+        card.width = card.GetWidthForOrientation(card.orientation, hbGrid.Height, card)
         card.fixed = false
         card.setMetadata(item.attrs)
         card.plexObject = item

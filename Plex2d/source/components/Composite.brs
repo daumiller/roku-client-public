@@ -37,6 +37,10 @@ function compositeDraw() as object
     drawables = CreateObject("roList")
 
     for each comp in m.components
+        if comp.Equals(m.image) and m.intrusiveOverlay = false and m.imageResized = invalid and m.overlay <> invalid then
+            comp.preferredHeight = m.height - m.overlay.GetPreferredHeight()
+            comp.imageResized = true
+        end if
         childDrawables = comp.Draw()
         for each drawable in childDrawables
             drawables.Push(drawable)

@@ -26,7 +26,6 @@ function HubClass() as object
         obj.PerformLayout = hubPerformLayout
         obj.MaxChildrenForLayout = hubMaxChildrenForLayout
         obj.ShowMoreButton = hubShowMoreButton
-        obj.GetWidthForOrientation = compGetWidthForOrientation
         obj.GetPreferredWidth = hubGetPreferredWidth
 
         obj.CalculateStyle = hubCalculateStyle
@@ -109,11 +108,11 @@ sub hubPerformLayout()
         if m.layout = m.LAYOUT_HERO_3 and (m.ORIENTATION = m.ORIENTATION_LANDSCAPE or m.ORIENTATION = m.ORIENTATION_SQUARE) then
             childHeight = int(availableHeight/3)
             heroHeight = availableHeight - childHeight - m.spacing
-            heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight) + m.spacing*2
+            heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight, component) + m.spacing*2
             availableHeight = childHeight
         else
             heroHeight = availableHeight
-            heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight)
+            heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight, component)
             ' Set the focus for the more button, but not the reverse behavior.
             if m.moreButton <> invalid then
                 component.SetFocusSibling("down", m.moreButton)
@@ -173,7 +172,7 @@ sub hubPerformLayout()
         ' out.
 
         itemHeight = int((availableHeight - (m.spacing * (rows - 1))) / rows)
-        itemWidth = m.GetWidthForOrientation(m.orientation, itemHeight)
+        itemWidth = m.GetWidthForOrientation(m.orientation, itemHeight, m.components.peek())
 
         Debug("Each grid item will be " + tostr(itemWidth) + "x" + tostr(itemHeight))
 
