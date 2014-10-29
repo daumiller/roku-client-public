@@ -641,6 +641,13 @@ end function
 
 sub compCalculateShift(toFocus as object)
     if toFocus.fixed = true then return
+
+    ' allow the component to override the method
+    if toFocus.parent <> invalid and type(toFocus.parent.CalculateShift) = "roFunction" then
+        toFocus.parent.CalculateShift(toFocus)
+        return
+    end if
+
     ' TODO(rob) handle vertical shifting. revisit safeLeft/safeRight - we can't
     ' just assume these arbitary numbers are right.
     shift = {
