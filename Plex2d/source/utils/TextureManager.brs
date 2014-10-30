@@ -116,6 +116,7 @@ function tmGetItem(id as integer) as dynamic
 end function
 
 sub tmCancelAll()
+    Debug("cancel pending textures")
     if m.ListCount <> invalid and m.ListCount > 0 then
         for each key in m.RequestList
             m.CancelTexture(m.RequestList[key])
@@ -128,6 +129,7 @@ end sub
 ' Resets the list by emptying the manager and clearing
 ' out any items remaing, resets all values
 sub tmReset()
+    Debug("reset texture manager")
     ' cancel any pending requests
     m.CancelAll()
 
