@@ -8,6 +8,7 @@ function DropDownClass() as object
         obj.Hide = dropdownHide
         obj.Show = dropdownShow
         obj.Destroy = dropdownDestroy
+        obj.SetDropDownPosition = dropdownSetDropDownPosition
 
         m.DropDownClass = obj
     end if
@@ -38,6 +39,8 @@ sub dropdownInit(text as string, font as object, maxHeight as integer)
 
     ' options roList of AA to build components
     m.options = createObject("roList")
+
+    m.SetDropDownPosition("down")
 end sub
 
 function dropdownHide(drawAllNow=true as boolean) as boolean
@@ -135,4 +138,19 @@ sub dropdownShiftComponents(shift)
         ' set the visibility based on the constraints
         component.SetVisibility(invalid, invalid, shift.safeUp, shift.safeDown)
     end for
+end sub
+
+sub dropdownSetDropDownPosition(direction as string)
+    m.dropDownPosition = direction
+
+    ' allowed direction to close the drop down when
+    ' there are no focus siblings left
+    allowed = [OppositeDirection(direction)]
+    if direction = "down" then
+        allowed.append(["left","right"])
+    else if direction = "right" then
+        allowed.append(["up","right"])
+    end if
+
+    m.closeDirection = joinArray(allowed, " ")
 end sub

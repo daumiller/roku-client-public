@@ -301,7 +301,7 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
 
                 ' DropDowns: focus should stay contained to focus siblings, except UP
                 if m.focusedItem.dropDown <> invalid then
-                    if direction <> "up" then return
+                    if instr(1, m.focusedItem.dropDown.closeDirection, direction) = 0 then return
 
                     m.focusedItem.dropDown.hide()
                     toFocus = m.focusedItem.dropDown
