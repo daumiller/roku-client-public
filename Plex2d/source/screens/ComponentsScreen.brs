@@ -710,7 +710,6 @@ sub compCalculateShift(toFocus as object)
     end if
 
     if (shift.x <> 0 or shift.y <> 0) then
-        TextureManager().CancelAll()
         m.screen.hideFocus()
         m.shiftComponents(shift)
     end if
@@ -724,6 +723,9 @@ sub compShiftComponents(shift)
     ' If we are shifting by a lot, we'll need to "jump" and clear some components
     ' as we cannot animate it (for real) due to memory limitations (and speed).
     if shift.x > 1280 or shift.x < -1280 then
+        ' cancel any pending textures before we have a large shift
+        TextureManager().CancelAll()
+
         ' Two Passes:
         '  1. Get a list of components on the screen after shift
         '      while unloading components offscreen
@@ -784,6 +786,8 @@ sub compShiftComponents(shift)
     if shift.x = 0 and shift.y = 0 then return
 
     ' lazy-load any components that will be on-screen after we shift
+    ' and cancel any pending texture requests
+    TextureManager().CancelAll()
     m.LazyLoadExec(partShift)
 
     ' Calculate the FPS shift amount. 15 fps seems to be a workable arbitrary number.
