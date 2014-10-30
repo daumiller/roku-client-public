@@ -53,6 +53,10 @@ function ComponentClass() as object
         obj.SetMetadata = compSetMetadata
         obj.GetWidthForOrientation = compGetWidthForOrientation
 
+        ' no-op methods
+        obj.OnBlur = function(arg=invalid) : Debug("OnBlur:no-op") : end function
+        obj.OnFocus = function() : Debug("OnFocus:no-op") : end function
+
         ' shifting methods
         obj.ShiftPosition = compShiftPosition
         obj.GetShiftableItems = compGetShiftableItems

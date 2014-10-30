@@ -339,7 +339,7 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
 
                 m.CalculateShift(toFocus)
 
-                m.OnItemFocused(toFocus)
+                m.OnItemFocused(toFocus, m.lastFocusedItem)
             end if
         end if
     else if keyCode = m.kp_REV or keyCode = m.kp_FWD then
@@ -371,7 +371,11 @@ sub compOnKeyRelease(keyCode as integer)
     end if
 end sub
 
-sub compOnItemFocused(item as object)
+sub compOnItemFocused(item as object, prevItem=invalid as object)
+    ' let the components know about the blur/focus state
+    if prevItem <> invalid then prevItem.OnBlur(item)
+    item.OnFocus()
+
     m.screen.DrawFocus(item, true)
     m.AfterItemFocused(item)
 end sub
@@ -393,7 +397,7 @@ sub compOnItemSelected(item as object)
                     m.lastFocusedItem = invalid
                     m.focusedItem = component
                     m.CalculateShift(m.focusedItem)
-                    m.OnItemFocused(m.focusedItem)
+                    m.OnItemFocused(m.focusedItem, item)
                     exit for
                 end if
             end for
