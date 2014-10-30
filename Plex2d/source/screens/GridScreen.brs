@@ -36,6 +36,7 @@ sub gsInit()
     m.gridContainer = CreateObject("roAssociativeArray")
     m.jumpContainer = CreateObject("roAssociativeArray")
     m.placeholders = CreateObject("roList")
+    m.jumpItems = CreateObject("roList")
 
     ' lazy style loading. We might allow the user to modify this, but the different platforms
     ' seem to need a different style to make them work a little better. The Roku 3 is about
@@ -124,12 +125,10 @@ function gsOnJumpResponse(request as object, response as object, context as obje
     response.ParseResponse()
     context.response = response
 
-    m.jump = createObject("roList")
-    m.jumpKeys = {}
+    m.jumpItems.clear()
     incr = 0
     for each item in response.items
-        m.jumpKeys[item.Get("key")] = m.jump.count()
-        m.jump.push({
+        m.jumpItems.push({
             index: incr,
             key: item.Get("key")
             title: item.Get("title")
@@ -209,22 +208,8 @@ sub gsGetComponents()
     end if
 
     ' *** Jump Box *** '
-    hbJump = createHBox(false, false, false, 5)
-    font = FontRegistry().font14
-    btnHeight = font.getOneLineHeight()
-    jumpWidth = 0
-    for each jump in m.jump
-        button = createButton(jump.title, font, "jump_button")
-        button.SetColor(&hc0c0c0c0)
-        button.width = btnHeight
-        button.height = btnHeight
-        button.SetMetadata(jump)
-        hbJump.AddComponent(button)
-        jumpWidth = jumpWidth + button.width + hbJump.spacing
-    end for
-    xOffset = int(1280/2 - jumpWidth/2)
-    hbJump.SetFrame(xOffset, 120 + m.height, jumpWidth, 50)
-    m.components.Push(hbJump)
+    m.jumpBox = createJumpBox(m.jumpItems, FontRegistry().font14, 120 + m.height, 5)
+    m.components.Push(m.jumpBox)
 
     ' set the placement of the description box (manualComponent)
     m.DescriptionBox = createDescriptionBox(m)
@@ -267,6 +252,8 @@ function gsGetGridChunks() as object
 end function
 
 sub gsAfterItemFocused(item as object)
+    m.jumpBox.AfterItemFocused(item)
+
     if item.plexObject = invalid or item.plexObject.islibrarysection() then
         pendingDraw = m.DescriptionBox.Hide()
     else
