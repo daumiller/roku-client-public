@@ -95,24 +95,25 @@ sub gsShow()
 
     ' create requests for the size of the endpoint
     if m.gridContainer.request = invalid then
-        request = createPlexRequest(m.server, m.item.container.getAbsolutePath(m.item.Get("key")))
+        gridEndpoint = m.item.container.getAbsolutePath(m.item.Get("key"))
+        request = createPlexRequest(m.server, gridEndpoint)
         request.AddHeader("X-Plex-Container-Start", "0")
         request.AddHeader("X-Plex-Container-Size", "0")
 
         context = request.CreateRequestContext("grid", createCallable("OnGridResponse", m))
         Application().StartRequest(request, context)
         m.gridContainer = context
-    end if
 
-    ' create requests for the jump items (only if we are using the ALL endpoint)
-    if instr(1, tostr(m.gridContainer.request.url), "/all") > 1 and m.jumpContainer.request = invalid then
-        ' TODO(rob): handle filters when we use them above
-        request = createPlexRequest(m.server, m.item.container.getAbsolutePath("firstCharacter"))
-        context = request.CreateRequestContext("jump", createCallable("OnJumpResponse", m))
-        Application().StartRequest(request, context)
-        m.jumpContainer = context
-    else
-        m.jumpContainer.response = {}
+        ' create requests for the jump items (only if we are using the ALL endpoint)
+        if m.jumpContainer.request = invalid and instr(1, gridEndpoint, "/all") > 0 then
+            ' TODO(rob): handle filters when we use them above
+            request = createPlexRequest(m.server, m.item.container.getAbsolutePath("firstCharacter"))
+            context = request.CreateRequestContext("jump", createCallable("OnJumpResponse", m))
+            Application().StartRequest(request, context)
+            m.jumpContainer = context
+        else
+            m.jumpContainer.response = {}
+        end if
     end if
 
     if m.gridContainer.response <> invalid and m.jumpContainer.response <> invalid then
@@ -136,6 +137,8 @@ function gsOnJumpResponse(request as object, response as object, context as obje
         })
         incr = incr + item.GetInt("size")
     end for
+
+    m.show()
 end function
 
 ' Handle initial response from the endpoint request
