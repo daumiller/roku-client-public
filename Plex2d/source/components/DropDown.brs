@@ -77,8 +77,8 @@ sub dropdownShow(screen as object)
             btn.setPadding(5)
         end if
         if option.halign <> invalid then btn.halign = m[option.halign]
-        if option.width then btn.width = option.width
-        if option.height then btn.height = option.height
+        if option.width <> invalid then btn.width = option.width
+        if option.height <> invalid then btn.height = option.height
         ' TODO(rob): allow colors to be modified
         btn.setColor(Colors().TextClr, Colors().BtnBkgClr)
         btn.zOrder = 500
