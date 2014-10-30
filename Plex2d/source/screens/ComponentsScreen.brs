@@ -630,6 +630,19 @@ function compGetFocusManual(direction as string) as dynamic
         end if
     next
 
+    ' Let the pending focus item override what we will actually focus on. Basically,
+    ' this handles focusing on a desired item within the parent. e.g. jumpBox: focus
+    ' on the current character in use, instead of the closest character in relation
+    ' to the last focused item.
+    if best.item <> invalid and type(best.item.GetFocusManual) = "roFunction" then
+        candidate = best.item.GetFocusManual()
+        if candidate <> invalid then
+            best.item = candidate
+            best.x = best.item.x
+            best.y = best.item.y
+        end if
+    end if
+
     ' If we found something then return it. Otherwise, we can at least move the
     ' focus point to the edge of our current component.
     '
