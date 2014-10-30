@@ -78,7 +78,7 @@ sub headerPerformLayout()
         servers = PlexServerManager().getServers()
         for each server in servers
             if server.isReachable() = true then
-                button.options.push({text: server.name, command: "selected_server", font: m.buttons.font, metadata: server })
+                button.options.push({text: server.name, command: "selected_server", font: m.buttons.font, height: 66, width: 128, metadata: server })
             end if
         end for
         buttons.push(button)
@@ -92,8 +92,8 @@ sub headerPerformLayout()
         button = createDropDown(firstOf(MyPlexAccount().username, "Options"), m.buttons.font, int(720 * .80))
         button.width = m.buttons.width
         button.pvalign = button[m.buttons.valign]
-        button.options.push({text: "Settings", command: "settings", font: m.buttons.font })
-        button.options.push({text: connect.text, command: connect.command, font: m.buttons.font })
+        button.options.push({text: "Settings", command: "settings", font: m.buttons.font, height: 66, width: 128 })
+        button.options.push({text: connect.text, command: connect.command, font: m.buttons.font, height: 66, width: 128 })
         buttons.push(button)
     else
         button = createButton("Go Home", m.buttons.font, "go_home")
