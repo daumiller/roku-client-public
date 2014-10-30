@@ -61,25 +61,48 @@ sub dropdownShow(screen as object)
     screen.focusedItem = invalid
 
     ' TODO(rob): remove hard coded variables (position, dimensions, etc)
-    vbox = createVBox(false, false, false, 0)
-    vbox.SetFrame(m.x, m.y + m.height + 10, m.width, int((m.options.count() * 66) + (m.options.count() * vbox.spacing)))
+    vbox = createVBox(true, true, true, 0)
     ' override the default shifting methods
     vbox.ShiftComponents = dropdownShiftComponents
     vbox.CalculateShift = dropdownCalculateShift
 
+    dropDownWidth = m.width
+    dropDownHeight = 0
+
     for each option in m.options
         btn = createButton(option.text, option.font, option.command)
-        btn.SetMetadata(option.metadata)
-        btn.width = 128
-        btn.height = 66
+        if option.padding <> invalid then
+            btn.setPadding(option.padding.top, option.padding.right, option.padding.bottom, option.left)
+        else
+            btn.setPadding(5)
+        end if
+        if option.halign <> invalid then btn.halign = m[option.halign]
+        if option.width then btn.width = option.width
+        if option.height then btn.height = option.height
+        ' TODO(rob): allow colors to be modified
         btn.setColor(Colors().TextClr, Colors().BtnBkgClr)
         btn.zOrder = 500
         btn.dropDown = m
         btn.fixed = (option.fixed = true)
+        ' TODO(rob): option to set the plexObject
+        btn.SetMetadata(option.metadata)
         if screen.focusedItem = invalid then screen.focusedItem = btn
         vbox.AddComponent(btn)
+
+        ' calculate the required height and width for the homogeneous buttons
+        if btn.getPreferredWidth() > dropDownWidth then
+            dropDownWidth = btn.getPreferredWidth()
+        end if
+        dropDownHeight = dropDownHeight + btn.getPreferredHeight() + vbox.spacing
     end for
     m.components.push(vbox)
+
+    ' set the position of the drop down (supported: bottom [default]) and right)
+    if m.dropDownPosition = "right" then
+        vbox.SetFrame(m.x + m.width + m.parent.spacing, m.y, dropDownWidth, dropDownHeight)
+    else
+        vbox.SetFrame(m.x, m.y + m.height + m.parent.spacing, dropDownWidth, dropDownHeight)
+    end if
 
     for each comp in m.components
         CompositorScreen().DrawComponent(comp)
