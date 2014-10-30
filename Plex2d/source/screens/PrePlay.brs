@@ -295,7 +295,6 @@ function preplayGetButtons() as object
     else
         buttons.push({text: "c", command: "unscrobble"})
     end if
-    buttons.push({text: "f", command: "more"})
 
     for each button in buttons
         btn = createButton(button.text, m.customFonts.button, button.command)
@@ -305,6 +304,26 @@ function preplayGetButtons() as object
         if m.focusedItem = invalid then m.focusedItem = btn
         components.push(btn)
     end for
+
+    ' more/pivot button (drop-drown)
+    btn = createDropDown("f", m.customFonts.button, int(720 * .80))
+    btn.SetDropDownPosition("right")
+    btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
+    btn.width = 100
+    btn.height = 47
+    if m.focusedItem = invalid then m.focusedItem = btn
+    for count = 1 to 5
+        btn.options.push({
+            halign: "JUSTIFY_LEFT",
+            height: btn.height
+            padding: { right: 5, left: 5, top: 0, bottom: 0 }
+            text: "more... info... here " + string(count, ".")
+            command: "more_TODO",
+            font: FontRegistry().font16,
+            metadata: {},
+            })
+    end for
+    components.push(btn)
 
     return components
 end function
