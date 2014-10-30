@@ -211,18 +211,16 @@ sub compDeactivate(screen = invalid as dynamic)
 end sub
 
 sub compDestroyComponents(clear=true as boolean)
-    Debug("compDestroyComponents::start" + tostr(m.components.count()))
     if m.components.count() > 0 then
+        Debug("compDestroyComponents:: before: " + tostr(m.components.count()))
         for each comp in m.components
             comp.Destroy()
         end for
+        if clear then
+            m.components.clear()
+        end if
+        Debug("compDestroyComponents:: after: " + tostr(m.components.count()))
     end if
-
-    if clear then
-        m.components.clear()
-    end if
-
-    Debug("compDestroyComponents::done" + tostr(m.components.count()))
 end sub
 
 sub compGetComponents()
