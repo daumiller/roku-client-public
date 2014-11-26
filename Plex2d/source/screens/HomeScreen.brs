@@ -6,6 +6,10 @@ function HomeScreen() as object
         obj.Show = homeShow
         obj.AfterItemFocused = homeAfterItemFocused
 
+        ' TODO(rob): remove/modify to allow non-video sections
+        ' temporary override to exclude non-video sections
+        obj.GetButtons = homeGetButtons
+
         obj.screenName = "Home Screen"
 
         m.HomeScreen = obj
@@ -42,7 +46,8 @@ sub homeShow()
 
     ' hub requests
     if m.hubsContainer.request = invalid then
-        request = createPlexRequest(m.server, "/hubs")
+        ' TODO(rob): modify to allow non-video sections
+        request = createPlexRequest(m.server, "/hubs?excludePlaylists=1&excludeMusic=1&excludePhotos=1")
         context = request.CreateRequestContext("hubs", createCallable("OnResponse", m))
         Application().StartRequest(request, context)
         m.hubsContainer = context
@@ -59,3 +64,16 @@ sub homeAfterItemFocused(item as object)
     pendingDraw = m.DescriptionBox.Show(item)
     if pendingDraw then m.screen.DrawAll()
 end sub
+
+' TODO(rob): remove/modify to allow non-video sections
+' temporary override to exclude non-video sections
+function homeGetButtons() as object
+    buttons = []
+    for each container in m.buttonsContainer.items
+        if container.Get("type") = "show" or container.Get("type") = "movie" then
+            buttons.push(m.createButton(container))
+        end if
+    end for
+
+    return buttons
+end function
