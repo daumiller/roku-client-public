@@ -101,14 +101,20 @@ sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
         numPixels = 2
     end if
 
-    spacing = 1
+    ' pad the cards focus border for cards (watched status visibility)
+    if tostr(component.ClassName) = "Card" then
+        padding = 1
+    else
+        padding = 0
+    end if
+
     focus = {
         color: &hff8a00ff,
-        x: component.x - numPixels - spacing,
-        y: component.y - numPixels - spacing,
+        x: component.x - numPixels - padding,
+        y: component.y - numPixels - padding,
         z: 995,
-        w: component.width + (numPixels * 2) + (spacing * 2),
-        h: component.height + (numPixels * 2) + (spacing * 2),
+        w: component.width + (numPixels * 2) + (padding * 2),
+        h: component.height + (numPixels * 2) + (padding * 2),
     }
 
     ' If we've already focused something of the same size, we can simply
