@@ -28,6 +28,7 @@ function Application()
         obj.PushScreen = appPushScreen
         obj.PopScreen = appPopScreen
         obj.IsActiveScreen = appIsActiveScreen
+        obj.GoHome = appGoHome
 
         obj.AddTimer = appAddTimer
 
@@ -458,7 +459,7 @@ sub appProcessNonBlocking()
     end if
 end sub
 
-sub appClearScreens(keep = 0 as integer)
+sub appClearScreens(keep = 0 as integer, activateLastScreen=false as boolean)
     if m.screens.count() > keep then
         Debug("appClearScreens:: keep " + tostr(keep) + ", have:" + tostr(m.screens.count()))
         pushScreens = []
@@ -481,6 +482,16 @@ sub appClearScreens(keep = 0 as integer)
             m.screens.append(pushScreens)
         end if
 
+        if activateLastScreen then
+            newScreen = m.screens.Peek()
+            newScreen.Activate()
+            Analytics().TrackScreen(newScreen.screenName)
+        end if
+
         Debug("appClearScreens:: kept " + tostr(pushScreens.count()) + ", have:" + tostr(m.screens.count()))
     end if
+end sub
+
+sub appGoHome()
+    m.ClearScreens(2, true)
 end sub

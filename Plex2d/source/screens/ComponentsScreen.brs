@@ -401,6 +401,8 @@ sub compOnItemSelected(item as object)
                     exit for
                 end if
             end for
+        else if item.command = "go_home" then
+            Application().GoHome()
         else if item.command = "grid_button" then
             Application().PushScreen(createGridScreen(item.plexObject))
         else if item.command = "card" then
