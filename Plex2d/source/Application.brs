@@ -24,6 +24,7 @@ function Application()
         obj.initializers = {}
 
         obj.AssignScreenID = appAssignScreenID
+        obj.ClearScreens = appClearScreens
         obj.PushScreen = appPushScreen
         obj.PopScreen = appPopScreen
         obj.IsActiveScreen = appIsActiveScreen
@@ -102,11 +103,10 @@ sub appPushScreen(screen)
     screen.Show()
 end sub
 
-sub appPopScreen(screen)
+sub appPopScreen(screen as object, callActivate=true as boolean)
     ' TODO(schuyler): There's much more logic and paranoia in the old version of
     ' this method. Is any warranted here?
 
-    callActivate = true
     screenID = screen.ScreenID.toStr()
 
     if screen.screenID <> m.screens.Peek().screenID then
@@ -455,5 +455,32 @@ sub appProcessNonBlocking()
     else if type(msg) = "roUrlEvent" and msg.GetInt() = 1 then
         msg = m.Port.GetMessage()
         m.ProcessUrlEvent(msg)
+    end if
+end sub
+
+sub appClearScreens(keep = 0 as integer)
+    if m.screens.count() > keep then
+        Debug("appClearScreens:: keep " + tostr(keep) + ", have:" + tostr(m.screens.count()))
+        pushScreens = []
+
+        ' screens to keep (push back into the screens array)
+        if keep > 0 then
+            for index = 0 to keep-1
+                pushScreens.push(m.screens[index])
+            end for
+        end if
+
+        ' destroy the screen (clean memory)
+        for each screen in m.screens
+            Application().popScreen(screen, false)
+        end for
+        m.screens.clear()
+
+        ' push any screens we wanted to keep
+        if pushScreens.count() > 0 then
+            m.screens.append(pushScreens)
+        end if
+
+        Debug("appClearScreens:: kept " + tostr(pushScreens.count()) + ", have:" + tostr(m.screens.count()))
     end if
 end sub
