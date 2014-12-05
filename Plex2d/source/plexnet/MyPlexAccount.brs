@@ -7,7 +7,11 @@ function MyPlexAccount()
         obj.email = invalid
         obj.isPlexPass = false
         obj.authToken = invalid
-        obj.features = CreateObject("roList")
+
+        ' NOTE: We can't format an roList JSON, because... because. So if
+        ' we decide that we want things like features or entitlements, we'll
+        ' probably have to use roArray. We probably don't need to store those
+        ' though.
 
         obj.SaveState = mpaSaveState
         obj.LoadState = mpaLoadState
@@ -29,8 +33,7 @@ sub mpaSaveState()
         username: m.username,
         email: m.email,
         isPlexPass: m.isPlexPass,
-        authToken: m.authToken,
-        features: m.features
+        authToken: m.authToken
     }
 
     AppSettings().SetPreference("MyPlexAccount", FormatJson(obj), "myplex")
@@ -52,10 +55,6 @@ sub mpaLoadState()
             m.email = obj.email
             m.isPlexPass = obj.isPlexPass
             m.authToken = obj.authToken
-            m.features.Clear()
-            for each feature in obj.features
-                m.features.AddTail(feature)
-            next
         end if
     else
         m.authToken = settings.GetPreference("AuthToken", invalid, "myplex")
@@ -86,13 +85,6 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
         m.isSignedIn = true
         m.isPlexPass = (xml.subscription <> invalid and xml.subscription@active = "1")
         m.authToken = xml@authenticationToken
-        m.features.Clear()
-
-        if xml.subscription <> invalid then
-            for each feature in xml.subscription.feature
-                m.features.Push(feature@id)
-            next
-        end if
 
         Info("Authenticated as " + tostr(m.username))
 
@@ -127,7 +119,6 @@ sub mpaSignOut()
     m.isSignedIn = false
     m.isPlexPass = false
     m.authToken = invalid
-    m.features.Clear()
 
     Application().Trigger("change:user", [m])
 
