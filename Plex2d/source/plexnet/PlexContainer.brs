@@ -29,6 +29,11 @@ function createPlexContainer(server as object, address as string, xml as object)
         obj.address = address
     end if
 
+    ' TODO(schuyler): Do we need to make sure that we only hang onto the path here and not a full URL?
+    if left(obj.address, 1) <> "/" then
+        Fatal("Container address is not an expected path")
+    end if
+
     return obj
 end function
 

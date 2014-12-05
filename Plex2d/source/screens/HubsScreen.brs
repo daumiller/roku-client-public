@@ -135,20 +135,11 @@ function hubsCreateHub(container) as dynamic
         end if
 
         ' Continue Watching Hub is special. Use the shows title instead of the episode string
-        if tostr(hub.hubIdentifier) = "home.continue" then
-            if item.Get("type") = "episode" then
-                title = firstOf(item.Get("grandparentTitle"), item.Get("parentTitle"))
-            else
-                title = item.GetSingleLineTitle()
-            end if
-        else if tostr(item.Get("type")) = "movie" or tostr(item.Get("type")) = "show" then
-            title = invalid
-        else
-            title = item.GetSingleLineTitle()
-        end if
+        title = item.GetOverlayTitle(hub.hubIdentifier = "home.continue")
 
-        card = createCard(ImageClass().BuildImgObj(item, m.server), title, item.GetViewOffsetPercentage(), item.GetUnwatchedCount(), item.IsUnwatched())
-        card.setMetadata(item.attrs)
+        card = createCard(item, title, item.GetViewOffsetPercentage(), item.GetUnwatchedCount(), item.IsUnwatched())
+        ' TODO(schuyler): Do we need this? I don't think so.
+        ' card.setMetadata(item.attrs)
         card.plexObject = item
         card.SetFocusable("card")
         if m.focusedItem = invalid then m.focusedItem = card

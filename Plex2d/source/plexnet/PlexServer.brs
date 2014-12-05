@@ -25,6 +25,8 @@ function PlexServerClass() as object
 
         obj.BuildUrl = pnsBuildUrl
         obj.GetToken = pnsGetToken
+        obj.GetLocalServerPort = pnsGetLocalServerPort
+        obj.GetImageTranscodeURL = pnsGetImageTranscodeURL
         obj.CollectDataFromRoot = pnsCollectDataFromRoot
         obj.UpdateReachability = pnsUpdateReachability
         obj.OnReachabilityResult = pnsOnReachabilityResult
@@ -34,7 +36,6 @@ function PlexServerClass() as object
         obj.Merge = pnsMerge
         obj.Equals = pnsEquals
         obj.ToString = pnsToString
-        obj.TranscodeImage = pnsTranscodeImage
 
         m.PlexServerClass = obj
     end if
@@ -88,13 +89,23 @@ function pnsBuildUrl(path as string, includeToken=false as boolean) as dynamic
     end if
 end function
 
-function pnsTranscodeImage(path as string, width as string, height as string, forceBackgroundColor = "1f1f1f" as string, extraOpts = invalid as object, includeToken=false as boolean) as dynamic
-    ' TODO(rob) verify includeToken (copied from buildUrl)
-    if m.activeConnection <> invalid then
-        return m.activeConnection.TranscodeImage(m, path, width, height, forceBackgroundColor, extraOpts, includeToken)
-    else
-        return invalid
+function pnsGetImageTranscodeURL(path as string, width as integer, height as integer, extraOpts = invalid as object) as dynamic
+    ' Build up our parameters
+    params = "&width=" + tostr(width) + "&height=" + tostr(height)
+
+    if extraOpts <> invalid then
+        for each key in extraOpts
+            params = params + "&" + key + "=" + tostr(extraOpts[key])
+        next
     end if
+
+    if instr(1, path, "://") > 0 then
+        imageUrl = path
+    else
+        imageUrl = "http://127.0.0.1:" + m.GetLocalServerPort() + path
+    end if
+
+    return m.BuildUrl("/photo/:/transcode?url=" + UrlEscape(imageUrl) + params, true)
 end function
 
 function pnsIsReachable() as boolean
@@ -111,6 +122,13 @@ function pnsGetToken() as dynamic
     next
 
     return invalid
+end function
+
+function pnsGetLocalServerPort() as string
+    ' TODO(schuyler): The correct thing to do here is to iterate over local
+    ' connections and pull out the port. For now, we're always returning 32400.
+
+    return "32400"
 end function
 
 function pnsCollectDataFromRoot(xml as object) as boolean

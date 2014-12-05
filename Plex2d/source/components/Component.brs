@@ -357,6 +357,9 @@ function compSpriteIsLoaded() as boolean
     return true
 end function
 
+' TODO(schuyler): This is (at least sometimes?) being used to keep a copy of a
+' PlexObject's attributes. Should we just keep a reference to the PlexObject
+' instead?
 sub compSetMetadata(metadata=invalid as dynamic)
     m.metadata = metadata
 end sub

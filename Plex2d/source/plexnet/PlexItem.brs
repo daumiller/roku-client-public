@@ -10,7 +10,7 @@ function PlexItemClass() as object
         obj.GetLimitedTagValues = pniGetLimitedTagValues
         obj.GetSeasonString = pniGetSeasonString
         obj.GetEpisodeString = pniGetEpisodeString
-        obj.getMediaFlagTranscodeURL = pniGetMediaFlagTranscodeURL
+        obj.GetMediaFlagTranscodeURL = pniGetMediaFlagTranscodeURL
 
         m.PlexItemClass = obj
     end if
@@ -194,7 +194,6 @@ function pniGetEpisodeString() as string
 end function
 
 ' TODO(schuyler): Everything to do with resolutions, media choices, transcoding, and playback URLs
-' TODO(schuyler): getMediaFlagTranscodeURL
 
 function pniGetMediaFlagTranscodeURL(flag as string, width as integer, height as integer) as dynamic
     flagValue = invalid
@@ -207,12 +206,10 @@ function pniGetMediaFlagTranscodeURL(flag as string, width as integer, height as
     if flagValue = invalid then return invalid
 
     params = "&width=" + tostr(width) + "&height=" + tostr(height)
-    url = m.container.get("mediaTagPrefix") + flag + "/" + flagValue + "?t=" + m.container.get("mediaTagVersion")
+    url = m.container.Get("mediaTagPrefix") + flag + "/" + flagValue + "?t=" + m.container.Get("mediaTagVersion", "0")
 
-    ' TODO(rob): determine the local port, not sure about this one. I believe it may have to deal with the fact
-    ' other clients may also be a server, which the Roku is not.
-    server = m.container.server
-    port = "32400"
+    server = m.GetTranscodeServer(false)
+    port = server.getLocalServerPort()
 
     return server.BuildUrl("/photo/:/transcode?url=http%3A%2F%2F127.0.0.1:" + port + UrlEscape(url) + params, true)
 end function

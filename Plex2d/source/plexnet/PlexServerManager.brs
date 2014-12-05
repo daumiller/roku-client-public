@@ -20,6 +20,7 @@ function PlexServerManager()
         obj.UpdateReachabilityResult = psmUpdateReachabilityResult
 
         obj.IsValidForTranscoding = psmIsValidForTranscoding
+        obj.GetTranscodeServer = psmGetTranscodeServer
 
         obj.OnAccountChange = psmOnAccountChange
 
@@ -172,6 +173,11 @@ end sub
 
 function psmIsValidForTranscoding(server as dynamic) as boolean
     return (server <> invalid and server.activeConnection <> invalid and server.owned and not server.synced)
+end function
+
+function psmGetTranscodeServer() as dynamic
+    ' TODO(schuyler): Is there more to this?
+    return m.selectedServer
 end function
 
 sub psmOnAccountChange(account)

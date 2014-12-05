@@ -24,7 +24,7 @@ end function
 function imageDraw() as object
     if m.bitmap <> invalid then
         ' Nothing to do, region should already be set based on bitmap
-    else if left(m.source, 4) = "http" then
+    else if type(m.sourceOrig) = "roAssociativeArray" or left(m.source, 4) = "http" then
         if m.placeholder <> invalid then
             ' Draw the placeholder for now, but don't keep a reference to the bitmap.
             m.FromLocal(m.placeholder)
@@ -33,23 +33,31 @@ function imageDraw() as object
             m.InitRegion()
         end if
 
-        ' TODO(rob/schuyler) proper image transcoding
+        transcodeOpts = { minSize: 1 }
+        if m.transcodeOpts <> invalid then transcodeOpts.Append(m.transcodeOpts)
         width = firstOf(m.preferredWidth, m.width)
         height = firstOf(m.preferredHeight, m.height)
-        if m.server <> invalid and m.server.supportsphototranscoding then
-            transcodeOpts = { minSize: 1 }
-            if m.transcodeOpts <> invalid then transcodeOpts.Append(m.transcodeOpts)
-            ' images look a lot better resized from a larger source.
-            if width < 1280 and height < 720 then
-                mp = 1.5
-            else
-                mp = 1
-            end if
-            m.source = m.server.transcodeImage(m.sourceOrig, tostr(int(width*mp)), tostr(int(height*mp)), "1f1f1f", transcodeOpts)
+
+        ' images look a lot better resized from a larger source.
+        ' TODO(schuyler): Really? That's distressing.
+        if width < 1280 and height < 720 then
+            width = int(width * 1.5)
+            height = int(height * 1.5)
+        end if
+
+        if type(m.sourceOrig) = "roAssociativeArray" then
+            ' TODO(schuyler): Choose attribute based on orientation
+            m.source = m.sourceOrig.GetPosterTranscodeURL(width, height, transcodeOpts)
         else if instr(1, m.source, "roku.rarforge.com") > 0 then
             ' TODO(rob) remove this in production or when we start querying the PMS
             ' for now, we want the url to be unique to the size of the image
             m.source = m.source + "?width=" + tostr(width) + "&height=" + tostr(height)
+        else if m.server <> invalid then
+            ' TODO(schuyler): I don't think we'll ever have a reference to m.server
+            ' when we don't have a PlexItem (once that transition is complete).
+            ' So we'll either want to use the URL as is or (more likely) try to
+            ' find the best transcoding server through the server manager.
+            m.source = m.server.GetImageTranscodeURL(m.sourceOrig, width, height, transcodeOpts)
         end if
 
         ' Request texture through the TextureManager
@@ -89,7 +97,16 @@ function createImage(source as dynamic, width=0 as integer, height=0 as integer)
     obj.Init()
 
     if type(source) = "roAssociativeArray" then
-        obj.append(source)
+        ' TODO(schuyler): This is only here so I can incrementally move to
+        ' holding references to PlexObjects instead of other objects. We
+        ' basically want source to be either a simple URL or a full PlexObject.
+        ' Our lame way of distinguishing PlexObjects from other basic AAs is to
+        ' look for a ToString member.
+        if not source.DoesExist("ToString") then
+            obj.append(source)
+        else
+            obj.source = source
+        end if
     else
         obj.source = source
     end if
@@ -192,6 +209,9 @@ sub imageScaleRegion(width as integer, height as integer)
     end if
 end sub
 
+' TODO(schuyler): I think when we fully transition to keeping a reference to the
+' PlexObject then this is probably unnecessary. We won't need to override
+' the method and can operate on m.orientation in imageDraw.
 sub imageSetOrientation(orientation as integer)
     ApplyFunc(CompositeClass().SetOrientation, m, [orientation])
     if orientation = m.ORIENTATION_SQUARE then
@@ -204,6 +224,10 @@ sub imageSetOrientation(orientation as integer)
     m.sourceOrig = m.source
 end sub
 
+' TODO(schuyler): I don't think we need this at all, actually. I *think* we want
+' to operate in two modes: we're either showing an image for some PlexItem, in
+' which case we should keep the reference to the item, or we're showing something
+' else, in which case we should only need a URL.
 function imageBuildImgObj(item as object, server as object)
     ' TODO(rob): proper image transcoding + how we determine the correct image type to use
     attrs = item.attrs

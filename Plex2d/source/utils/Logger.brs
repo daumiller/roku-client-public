@@ -251,3 +251,9 @@ sub Error(msg)
     log = Logger()
     log.Log(log.LEVEL_ERROR, msg)
 end sub
+
+sub Fatal(msg)
+    log = Logger()
+    log.Log(log.LEVEL_ERROR, msg)
+    stop
+end sub

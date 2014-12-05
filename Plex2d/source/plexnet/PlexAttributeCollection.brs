@@ -9,6 +9,7 @@ function PlexAttributeCollectionClass()
         obj.Has = pnacHas
         obj.Get = pnacGet
         obj.GetInt = pnacGetInt
+        obj.GetFirst = pnacGetFirst
         obj.Set = pnacSet
         obj.TryCopy = pnacTryCopy
 
@@ -49,6 +50,14 @@ function pnacGetInt(attrName, defaultValue=0)
     else
         return defaultValue
     end if
+end function
+
+function pnacGetFirst(attrNames) as dynamic
+    for each attr in attrNames
+        if m.attrs[attr] <> invalid then return m.attrs[attr]
+    end for
+
+    return invalid
 end function
 
 sub pnacSet(attrName as string, attrValue as string)

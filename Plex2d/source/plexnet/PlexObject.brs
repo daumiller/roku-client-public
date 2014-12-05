@@ -26,6 +26,7 @@ function PlexObjectClass() as object
 
         obj.GetSingleLineTitle = pnoGetSingleLineTitle
         obj.GetLongerTitle = pnoGetLongerTitle
+        obj.GetOverlayTitle = pnoGetOverlayTitle
         obj.GetDuration = pnoGetDuration
         obj.GetAddedAt = pnoGetAddedAt
         obj.GetOriginallyAvailableAt = pnoGetOriginallyAvailableAt
@@ -34,6 +35,11 @@ function PlexObjectClass() as object
         obj.GetUnwatchedCountString = pnoGetUnwatchedCountString
         obj.IsUnwatched = pnoIsUnwatched
         obj.InProgress = pnoInProgress
+
+        obj.GetServer = pnoGetServer
+        obj.GetPosterTranscodeURL = pnoGetPosterTranscodeURL
+        obj.GetImageTranscodeURL = pnoGetImageTranscodeURL
+        obj.GetTranscodeServer = pnoGetTranscodeServer
 
         obj.ToString = pnoToString
 
@@ -128,6 +134,18 @@ function pnoGetLongerTitle() as string
         return parentTitle + " - " + childTitle
     else
         return firstOf(parentTitle, childTitle, m.Get("title", ""))
+    end if
+end function
+
+function pnoGetOverlayTitle(preferParent=false as boolean) as dynamic
+    if preferParent and m.type = "episode" then
+        return m.GetFirst(["grandparentTitle", "parentTitle"])
+    else if m.type = "movie" or m.type = "show" then
+        ' Movies and shows should have identifying posters, so they get no
+        ' overlay title.
+        return invalid
+    else
+        return m.GetSingleLineTitle()
     end if
 end function
 
@@ -227,4 +245,53 @@ function pnoGetUnwatchedCountString() as string
     end if
 
     return ""
+end function
+
+function pnoGetServer() as dynamic
+    return m.container.server
+end function
+
+function pnoGetPosterTranscodeURL(width as integer, height as integer, extraOpts=invalid as dynamic) as dynamic
+    if m.type = "episode" then
+        attrs = ["grandparentThumb", "thumb"]
+    else
+        attrs = "thumb"
+    end if
+
+    return m.GetImageTranscodeURL(attrs, width, height, extraOpts)
+end function
+
+function pnoGetImageTranscodeURL(attr, width as integer, height as integer, extraOpts=invalid as dynamic) as dynamic
+    ' TODO(schuyler): Do we need to force a background color often enough
+    ' anymore to warrant making it a parameter?
+
+    if isstr(attr) then
+        path = m.Get(attr)
+    else
+        path = m.GetFirst(attr)
+    end if
+
+    ' Convert the path to an absolute path
+    if path = invalid then return invalid
+    path = m.container.GetAbsolutePath(path)
+
+    server = m.GetTranscodeServer(false)
+    return server.GetImageTranscodeURL(path, width, height, extraOpts)
+end function
+
+function pnoGetTranscodeServer(localServerRequired as boolean) as dynamic
+    server = m.container.server
+
+    ' If the server is myPlex, try to use a different PMS for transcoding
+    if MyPlexServer().Equals(server) then
+        fallbackServer = PlexServerManager().GetTranscodeServer()
+
+        if fallbackServer <> invalid then
+            server = fallbackServer
+        else if localServerRequired then
+            return invalid
+        end if
+    end if
+
+    return server
 end function
