@@ -27,10 +27,10 @@ sub preplayInit()
     ApplyFunc(ComponentsScreen().Init, m)
 
     ' Intialize custom fonts for this screen
-    m.customFonts.Large = FontRegistry().GetTextFont(28)
+    m.customFonts.large = FontRegistry().GetTextFont(28)
     m.customFonts.button = FontRegistry().GetIconFont(32)
 
-    m.itemContainer = CreateObject("roAssociativeArray")
+    m.requestContext = invalid
 end sub
 
 function createPreplayScreen(item as object) as object
@@ -39,20 +39,20 @@ function createPreplayScreen(item as object) as object
 
     obj.Init()
 
-    obj.requestedItem = item
-    obj.server = item.container.server
+    obj.plexObject = item
+    obj.server = item.GetServer()
 
     return obj
 end function
 
 sub preplayShow()
-    if not application().isactivescreen(m) then return
+    if not Application().IsActiveScreen(m) then return
 
-    if m.itemcontainer.request = invalid then
-        request = createPlexRequest(m.server, m.requestedItem.Get("key"))
+    if m.requestContext = invalid then
+        request = createPlexRequest(m.server, m.plexObject.GetAbsolutePath("key"))
         context = request.CreateRequestContext("preplay_item", createCallable("OnResponse", m))
         Application().StartRequest(request, context)
-        m.itemContainer = context
+        m.requestContext = context
     else if m.item <> invalid then
         ApplyFunc(ComponentsScreen().Show, m)
     else
@@ -90,8 +90,8 @@ sub preplayGetComponents()
 
     ' *** Background Artwork *** '
     if m.item.Get("art") <> invalid then
-        image = { source: m.server.BuildUrl(m.item.Get("art"), true), server: m.server, transcodeOpts: {blur: 4} }
-        background = createImage(image, 1280, 720)
+        background = createImage(m.item, 1280, 720, { blur: 4 })
+        background.SetOrientation(background.ORIENTATION_LANDSCAPE)
         m.components.Push(background)
 
         background = createBlock(Colors().ScrDrkOverlayClr)
@@ -188,8 +188,8 @@ function preplayGetMainInfo() as object
     spacer = "   "
     normalFont = FontRegistry().font16
     if m.item.Get("type", "") = "episode" then
-        components.push(createLabel(m.item.Get("grandparentTitle", ""), m.customFonts.Large))
-        components.push(createLabel(m.item.Get("title", ""), m.customFonts.Large))
+        components.push(createLabel(m.item.Get("grandparentTitle", ""), m.customFonts.large))
+        components.push(createLabel(m.item.Get("title", ""), m.customFonts.large))
 
         text = m.item.GetOriginallyAvailableAt()
         if m.item.Has("index") and m.item.Has("parentIndex") then
@@ -203,7 +203,7 @@ function preplayGetMainInfo() as object
 
         components.push(createSpacer(0, normalFont.getOneLineHeight()))
     else
-        components.push(createLabel(m.item.Get("title", ""), m.customFonts.Large))
+        components.push(createLabel(m.item.Get("title", ""), m.customFonts.large))
         components.push(createLabel(ucase(m.item.GetLimitedTagValues("Genre", 3)), normalFont))
 
         text = m.item.GetDuration()
@@ -238,11 +238,11 @@ function preplayGetSideInfo() as object
     components = createObject("roList")
 
     if tostr(m.item.Get("type")) = "episode" then
-        components.push(createLabel(m.item.Get("year", ""), m.customFonts.Large))
-        components.push(createLabel(m.item.GetDuration(), m.customFonts.Large))
+        components.push(createLabel(m.item.Get("year", ""), m.customFonts.large))
+        components.push(createLabel(m.item.GetDuration(), m.customFonts.large))
         components.push(createLabel(m.item.Get("rating", ""), FontRegistry().font16))
     else
-        components.push(createLabel(m.item.Get("year", ""), m.customFonts.Large))
+        components.push(createLabel(m.item.Get("year", ""), m.customFonts.large))
         components.push(createLabel(m.item.Get("rating", ""), FontRegistry().font16))
         components.push(createLabel(m.item.Get("contentRating", ""), FontRegistry().font16))
     end if
@@ -266,15 +266,13 @@ function preplayGetImages() as object
         posterSize = { width: 295, height: 434 }
     end if
 
-    ' TODO(rob): better way to choose which thumb to use?
-    posterThumb = firstOfArr([m.item.Get("parentThumb"), m.item.Get("grandparentThumb"), m.item.Get("thumb"), m.item.Get("composite"), ""])
-    image = { source: m.server.BuildUrl(posterThumb, true), server: m.server, }
-    posterThumb = createImage(image, posterSize.width, posterSize.height)
+    posterThumb = createImage(m.item, posterSize.width, posterSize.height)
     components.push(posterThumb)
 
     if mediaSize <> invalid then
-        image = { source: m.server.BuildUrl(m.item.Get("thumb"), true), server: m.server, }
-        mediaThumb = createImage(image, mediaSize.width, mediaSize.height)
+        ' We need to force this one to use the thumb attr
+        mediaThumb = createImage(m.item, mediaSize.width, mediaSize.height)
+        mediaThumb.thumbAttr = "thumb"
         components.push(mediaThumb)
     end if
 

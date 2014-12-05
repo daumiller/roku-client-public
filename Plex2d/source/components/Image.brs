@@ -39,15 +39,27 @@ function imageDraw() as object
         height = firstOf(m.preferredHeight, m.height)
 
         ' images look a lot better resized from a larger source.
-        ' TODO(schuyler): Really? That's distressing.
-        if width < 1280 and height < 720 then
-            width = int(width * 1.5)
-            height = int(height * 1.5)
+        if m.useLargerSource and width < 1280 and height < 720 then
+            multiplier = 1.5
+        else
+            multiplier = 1
         end if
 
         if type(m.sourceOrig) = "roAssociativeArray" then
-            ' TODO(schuyler): Choose attribute based on orientation
-            m.source = m.sourceOrig.GetPosterTranscodeURL(width, height, transcodeOpts)
+            if m.thumbAttr = invalid then
+                ' Choose an attribute based on orientation
+                if m.orientation = m.ORIENTATION_SQUARE then
+                    m.thumbAttr = ["composite", "art", "thumb"]
+                else if m.orientation = m.ORIENTATION_LANDSCAPE then
+                    m.thumbAttr = ["art", "thumb"]
+                end if
+            end if
+
+            if m.thumbAttr <> invalid then
+                m.source = m.sourceOrig.GetImageTranscodeURL(m.thumbAttr, int(multiplier * width), int(multiplier * height), transcodeOpts)
+            else
+                m.source = m.sourceOrig.GetPosterTranscodeURL(int(multiplier * width), int(multiplier * height), transcodeOpts)
+            end if
         else if instr(1, m.source, "roku.rarforge.com") > 0 then
             ' TODO(rob) remove this in production or when we start querying the PMS
             ' for now, we want the url to be unique to the size of the image
@@ -90,7 +102,7 @@ function createImageScaleToParent(source as dynamic, parent as object) as object
     return obj
 end function
 
-function createImage(source as dynamic, width=0 as integer, height=0 as integer) as object
+function createImage(source as dynamic, width=0 as integer, height=0 as integer, options=invalid as dynamic) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(ImageClass())
 
@@ -114,6 +126,7 @@ function createImage(source as dynamic, width=0 as integer, height=0 as integer)
     obj.width = width
     obj.height = height
     obj.scaleSize = true
+    obj.useLargerSource = false
 
     obj.bitmap = invalid
     obj.placeholder = invalid
@@ -121,6 +134,10 @@ function createImage(source as dynamic, width=0 as integer, height=0 as integer)
     if width > 0 and height > 0 then
         obj.preferredWidth = width
         obj.preferredHeight = height
+    end if
+
+    if options <> invalid then
+        obj.transcodeOpts = options
     end if
 
     return obj

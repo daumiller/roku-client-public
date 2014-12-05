@@ -36,6 +36,7 @@ function PlexObjectClass() as object
         obj.IsUnwatched = pnoIsUnwatched
         obj.InProgress = pnoInProgress
 
+        obj.GetAbsolutePath = pnoGetAbsolutePath
         obj.GetServer = pnoGetServer
         obj.GetPosterTranscodeURL = pnoGetPosterTranscodeURL
         obj.GetImageTranscodeURL = pnoGetImageTranscodeURL
@@ -294,4 +295,13 @@ function pnoGetTranscodeServer(localServerRequired as boolean) as dynamic
     end if
 
     return server
+end function
+
+function pnoGetAbsolutePath(attr) as dynamic
+    path = m.Get(attr)
+    if path = invalid then
+        return invalid
+    else
+        return m.container.GetAbsolutePath(path)
+    end if
 end function
