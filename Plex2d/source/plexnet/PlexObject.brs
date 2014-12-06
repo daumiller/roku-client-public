@@ -4,6 +4,18 @@ function PlexObjectClass() as object
         obj.Append(PlexAttributeCollectionClass())
         obj.ClassName = "PlexObject"
 
+        ' Constants
+        obj.CONTAINER_TYPES = {
+            directory: true,
+            show: true,
+            season: true,
+            artist: true,
+            album: true,
+            photoalbum: true,
+            playlist: true,
+            podcast: true
+        }
+
         obj.type = invalid
         obj.container = invalid
 
@@ -20,6 +32,7 @@ function PlexObjectClass() as object
         obj.IsLibrarySection = pnoIsLibrarySection
         obj.IsLibraryItem = pnoIsLibraryItem
         obj.IsITunes = pnoIsITunes
+        obj.IsContainer = pnoIsContainer
 
         ' TODO(schuyler): There are a hundred more helper methods on here, but
         ' perhaps we can start adding them only when we're using them.
@@ -37,6 +50,7 @@ function PlexObjectClass() as object
         obj.InProgress = pnoInProgress
 
         obj.GetAbsolutePath = pnoGetAbsolutePath
+        obj.GetItemPath = pnoGetItemPath
         obj.GetServer = pnoGetServer
         obj.GetPosterTranscodeURL = pnoGetPosterTranscodeURL
         obj.GetImageTranscodeURL = pnoGetImageTranscodeURL
@@ -103,6 +117,10 @@ end function
 
 function pnoIsITunes() as boolean
     return (m.Get("identifier", "") = "com.plexapp.plugins.itunes")
+end function
+
+function pnoIsContainer() as boolean
+    return m.CONTAINER_TYPES.DoesExist(m.type)
 end function
 
 function pnoGetSingleLineTitle() as string
@@ -189,6 +207,10 @@ function createPlexObjectFromElement(container as object, xml as object) as obje
     else if xml.GetNamedElements("Media").Count() > 0 or container.Get("identifier") = "com.plexapp.plugins.itunes" then
         return createPlexItem(container, xml)
     else if xml@ratingKey <> invalid then
+        ' TODO(schuyler): I'm skeptical... I don't think things without media
+        ' need to be full PlexItems. It's possible this was done in order to
+        ' get GetLimitedTagValues, in which case we could just move that method
+        ' down to PlexObject.
         return createPlexItem(container, xml)
     end if
 
@@ -304,4 +326,31 @@ function pnoGetAbsolutePath(attr) as dynamic
     else
         return m.container.GetAbsolutePath(path)
     end if
+end function
+
+function pnoGetItemPath() as string
+    if m.IsLibrarySection() then
+        return "/library/sections/" + m.Get("key")
+    else if m.IsITunes() then
+        return m.GetAbsolutePath("key")
+    end if
+
+    key = m.GetAbsolutePath("key")
+
+    if m.IsContainer() then
+        suffixPos = key.Instr("/children")
+        if suffixPos > 0 then
+            key = key.Left(suffixPos) + key.Mid(suffixPos + 9)
+        end if
+    else if m.IsLibraryItem() then
+        ' If we're going to request this item specifically, then we might as
+        ' well get all the info.
+        key = key + iif(instr(1, key, "?") = 0, "?", "&") + "checkFiles=1"
+
+        if m.type = "movie" then
+            key = key + "&includeExtras=1"
+        end if
+    end if
+
+    return key
 end function

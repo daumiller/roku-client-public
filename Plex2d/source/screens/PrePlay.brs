@@ -49,7 +49,7 @@ sub preplayShow()
     if not Application().IsActiveScreen(m) then return
 
     if m.requestContext = invalid then
-        request = createPlexRequest(m.server, m.plexObject.GetAbsolutePath("key"))
+        request = createPlexRequest(m.server, m.plexObject.GetItemPath())
         context = request.CreateRequestContext("preplay_item", createCallable("OnResponse", m))
         Application().StartRequest(request, context)
         m.requestContext = context

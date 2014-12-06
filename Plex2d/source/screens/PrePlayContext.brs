@@ -1,51 +1,63 @@
+function PreplayContextScreen() as object
+    if m.PreplayContextScreen = invalid then
+        obj = CreateObject("roAssociativeArray")
+        obj.Append(PreplayScreen())
+
+        obj.screenName = "Preplay Context"
+
+        ' Methods
+        obj.Init = ppcInit
+        obj.Show = ppcShow
+        obj.OnChildResponse = ppcOnChildResponse
+        obj.GetComponents = ppcGetComponents
+        obj.GetMainInfo = ppcGetMainInfo
+        obj.GetImages = ppcGetImages
+
+        m.PreplayContextScreen = obj
+    end if
+
+    return m.PreplayContextScreen
+end function
+
 function createPreplayContextScreen(item as object) as object
     obj = CreateObject("roAssociativeArray")
-    obj.Append(PreplayScreen())
-    obj.screenName = "Preplay Context"
-
-    ' Method overrides
-    obj.Init = ppcInit
-    obj.Show = ppcShow
-    obj.OnChildResponse = ppcOnChildResponse
-    obj.GetComponents = ppcGetComponents
-    obj.GetMainInfo = ppcGetMainInfo
-    obj.GetImages = ppcGetImages
+    obj.Append(PreplayContextScreen())
 
     obj.Init()
 
-    obj.server = item.container.server
-    obj.requestedItem = item
+    obj.plexObject = item
+    obj.server = item.GetServer()
 
     return obj
 end function
 
 sub ppcInit()
     ApplyFunc(PreplayScreen().Init, m)
-    m.childContainer = CreateObject("roAssociativeArray")
+
+    m.requestContext = invalid
+    m.childRequestContext = invalid
     m.children = CreateObject("roList")
 end sub
 
 sub ppcShow()
     if not application().isactivescreen(m) then return
 
-    if m.itemContainer.request = invalid then
-        ' probably a more correct way to do this
-        path = "/library/metadata/" + m.requestedItem.Get("ratingKey")
-        request = createPlexRequest(m.server, path)
+    if m.requestContext = invalid then
+        request = createPlexRequest(m.server, m.plexObject.GetItemPath())
         context = request.CreateRequestContext("preplay_item", createCallable("OnResponse", m))
         Application().StartRequest(request, context)
-        m.itemContainer = context
+        m.requestContext = context
     end if
 
-    if m.childContainer.request = invalid then
-        path = m.requestedItem.Get("key") + "?excludeAllLeaves=1"
+    if m.childRequestContext = invalid then
+        path = m.plexObject.GetAbsolutePath("key") + "?excludeAllLeaves=1"
         request = createPlexRequest(m.server, path)
         context = request.CreateRequestContext("preplay_item", createCallable("OnChildResponse", m))
         Application().StartRequest(request, context)
-        m.childContainer = context
+        m.childRequestContext = context
     end if
 
-    if m.itemContainer.response <> invalid and m.childContainer.response <> invalid then
+    if m.requestContext.response <> invalid and m.childRequestContext.response <> invalid then
         if m.item <> invalid then
             ApplyFunc(ComponentsScreen().Show, m)
         else
@@ -63,8 +75,8 @@ sub ppcGetComponents()
 
     ' *** Background Artwork *** '
     if m.item.Get("art") <> invalid then
-        image = { source: m.server.BuildUrl(m.item.Get("art"), true), server: m.server, transcodeOpts: {blur: 4} }
-        background = createImage(image, 1280, 720)
+        background = createImage(m.item, 1280, 720, { blur: 4 })
+        background.SetOrientation(background.ORIENTATION_LANDSCAPE)
         m.components.Push(background)
 
         background = createBlock(Colors().ScrDrkOverlayClr)
@@ -112,11 +124,10 @@ sub ppcGetComponents()
             orientation = ComponentClass().ORIENTATION_LANDSCAPE
         end if
 
-        card = createCard(ImageClass().BuildImgObj(item, m.server), item.GetSingleLineTitle(), invalid, item.GetUnwatchedCount())
+        card = createCard(item, item.GetSingleLineTitle(), invalid, item.GetUnwatchedCount())
         card.SetOrientation(orientation)
         card.width = card.GetWidthForOrientation(card.orientation, hbGrid.Height, card)
         card.fixed = false
-        card.setMetadata(item.attrs)
         card.plexObject = item
         card.SetFocusable("card")
         if m.focusedItem = invalid then m.focusedItem = card
@@ -194,7 +205,7 @@ function ppcGetImages() as object
     container.height = 291
     container.width = ComponentClass().GetWidthForOrientation(orientation, container.height)
 
-    poster = createImage(ImageClass().BuildImgObj(m.item, m.server), container.width, container.height)
+    poster = createImage(m.item, container.width, container.height)
     poster.SetOrientation(orientation)
     container.components.push(poster)
 
