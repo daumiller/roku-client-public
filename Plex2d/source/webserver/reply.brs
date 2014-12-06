@@ -342,8 +342,7 @@ function reply_process_get() as Boolean
             ' check for wrapping
             if start>finish start = 0
         else
-            Error("Reply internal error - range start/finish logic inconsistency")
-            stop
+            Fatal("Reply internal error - range start/finish logic inconsistency")
         end if
 
         m.start = start

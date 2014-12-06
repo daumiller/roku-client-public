@@ -387,7 +387,6 @@ function compGetWidthForOrientation(orientation as integer, height as integer, c
     else if orientation = m.ORIENTATION_PORTRAIT then
         return int(height * 0.679) - minus
     else
-        Error("Unknown hub orientation: " + tostr(orientation))
-        stop
+        Fatal("Unknown hub orientation: " + tostr(orientation))
     end if
 end function

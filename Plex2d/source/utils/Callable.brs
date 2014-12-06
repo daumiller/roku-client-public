@@ -25,8 +25,7 @@ function createCallable(func as dynamic, context as dynamic, id=invalid as dynam
     obj.id = id
 
     if isstr(func) and type(context[func]) <> "roFunction" then
-        Error(func + " not found on object")
-        stop
+        Fatal(func + " not found on object")
     end if
 
     return obj
@@ -51,8 +50,7 @@ function callableCall(args=[] as object) as dynamic
     else if args.Count() = 3 then
         result = this[methodName](args[0], args[1], args[2])
     else
-        Error("Callable doesn't currently support " + tostr(args.Count()) + " arguments!")
-        stop
+        Fatal("Callable doesn't currently support " + tostr(args.Count()) + " arguments!")
     end if
 
     this.Delete("tempBoundFunc")

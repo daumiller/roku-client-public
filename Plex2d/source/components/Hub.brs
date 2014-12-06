@@ -157,8 +157,7 @@ sub hubPerformLayout()
         rows = 1
         cols = 1
     else
-        Error("Unknown hub layout: " + tostr(m.layout))
-        stop
+        Fatal("Unknown hub layout: " + tostr(m.layout))
     end if
 
     if rows = 0 or cols = 0 then
@@ -249,8 +248,7 @@ function hubMaxChildrenForLayout() as integer
     if m.maxChildren <> invalid then
         return m.maxChildren
     else
-        Error("Unknown maxChildren for layout: " + tostr(m.layout))
-        stop
+        Fatal("Unknown maxChildren for layout: " + tostr(m.layout))
     end if
 end function
 
