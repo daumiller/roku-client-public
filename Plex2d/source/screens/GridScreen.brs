@@ -538,7 +538,7 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
             else
                 title = item.GetSingleLineTitle()
             end if
-            gridItem.ReInit(ImageClass().BuildImgObj(item, m.server), title, item.GetViewOffsetPercentage(), item.GetUnwatchedCount(), item.IsUnwatched())
+            gridItem.ReInit(item, title, item.GetViewOffsetPercentage(), item.GetUnwatchedCount(), item.IsUnwatched())
             gridItem.setMetadata(item.attrs)
             gridItem.plexObject = item
             gridItem.SetFocusable("card")
