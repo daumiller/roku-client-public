@@ -12,9 +12,6 @@ function ImageClass() as object
         obj.SetPlaceholder = imageSetPlaceholder
         obj.FromLocal = imageFromLocal
 
-        obj.SetOrientation = imageSetOrientation
-        obj.BuildImgObj = imageBuildImgObj
-
         m.ImageClass = obj
     end if
 
@@ -64,12 +61,11 @@ function imageDraw() as object
             ' TODO(rob) remove this in production or when we start querying the PMS
             ' for now, we want the url to be unique to the size of the image
             m.source = m.source + "?width=" + tostr(width) + "&height=" + tostr(height)
-        else if m.server <> invalid then
-            ' TODO(schuyler): I don't think we'll ever have a reference to m.server
-            ' when we don't have a PlexItem (once that transition is complete).
-            ' So we'll either want to use the URL as is or (more likely) try to
-            ' find the best transcoding server through the server manager.
-            m.source = m.server.GetImageTranscodeURL(m.sourceOrig, width, height, transcodeOpts)
+        else
+            server = PlexServerManager().GetTranscodeServer()
+            if server <> invalid then
+                m.source = server.GetImageTranscodeURL(m.sourceOrig, width, height, transcodeOpts)
+            end if
         end if
 
         ' Request texture through the TextureManager
@@ -108,20 +104,7 @@ function createImage(source as dynamic, width=0 as integer, height=0 as integer,
 
     obj.Init()
 
-    if type(source) = "roAssociativeArray" then
-        ' TODO(schuyler): This is only here so I can incrementally move to
-        ' holding references to PlexObjects instead of other objects. We
-        ' basically want source to be either a simple URL or a full PlexObject.
-        ' Our lame way of distinguishing PlexObjects from other basic AAs is to
-        ' look for a ToString member.
-        if not source.DoesExist("ToString") then
-            obj.append(source)
-        else
-            obj.source = source
-        end if
-    else
-        obj.source = source
-    end if
+    obj.source = source
     obj.sourceOrig = obj.source
     obj.width = width
     obj.height = height
@@ -225,59 +208,3 @@ sub imageScaleRegion(width as integer, height as integer)
         m.region = scaledRegion
     end if
 end sub
-
-' TODO(schuyler): I think when we fully transition to keeping a reference to the
-' PlexObject then this is probably unnecessary. We won't need to override
-' the method and can operate on m.orientation in imageDraw.
-sub imageSetOrientation(orientation as integer)
-    ApplyFunc(CompositeClass().SetOrientation, m, [orientation])
-    if orientation = m.ORIENTATION_SQUARE then
-        m.source = firstOf(m.composite, m.art, m.poster, m.source)
-    else if orientation = m.ORIENTATION_PORTRAIT then
-        m.source = firstOf(m.poster, m.source)
-    else if orientation = m.ORIENTATION_LANDSCAPE then
-        m.source = firstOf(m.art, m.source)
-    end if
-    m.sourceOrig = m.source
-end sub
-
-' TODO(schuyler): I don't think we need this at all, actually. I *think* we want
-' to operate in two modes: we're either showing an image for some PlexItem, in
-' which case we should keep the reference to the item, or we're showing something
-' else, in which case we should only need a URL.
-function imageBuildImgObj(item as object, server as object)
-    ' TODO(rob): proper image transcoding + how we determine the correct image type to use
-    attrs = item.attrs
-
-    ' Poster [default & fallback]
-    ' TODO(rob): we still need a better way to figure out how to choose
-    ' the image type and we need to implement a better resizing algorithim
-    ' unless the PMS can do that.
-    '  note: there is also the potential usage for item.container.Get("thumb")
-    thumb = firstOfArr([attrs.grandparentThumb, attrs.parentThumb, attrs.thumb, attrs.art, attrs.composite, ""])
-    poster = server.BuildUrl(thumb, true)
-
-    ' Artwork
-    if attrs.art <> invalid then
-        art = server.BuildUrl(attrs.art, true)
-    else
-        art = invalid
-    end if
-
-    ' Composite
-    if attrs.composite <> invalid then
-        composite = server.BuildUrl(attrs.composite, true)
-    else
-        composite = invalid
-    end if
-
-    image = {
-        source: poster,
-        poster: poster,
-        art: art,
-        composite: composite,
-        server: server,
-    }
-
-    return image
-end function
