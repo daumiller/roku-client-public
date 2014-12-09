@@ -120,10 +120,12 @@ sub pinOnItemSelected(item as object)
 
     if item.command <> invalid then
         m.pollTimer.active = false
-        if item.command = "skip" then
-            ' TODO(schuyler): Go somewhere sensible. Replace this screen.
-            Application().PushScreen(createComponentTestScreen())
-        else if item.command = "refresh" then
+
+        ' TODO(rob): skip button removed, but we may need to allow it when
+        ' we add support for IAP. Same concept goes for the loading screen.
+        ' i.e. If the app isn't purchased, then we should just show the PIN
+        ' screen immediately.
+        if item.command = "refresh" then
             ' Request a new code
             m.RequestCode()
         end if
@@ -186,13 +188,6 @@ sub pinGetComponents()
 
     buttons = createHBox(false, false, false, 10)
     buttons.halign = buttons.JUSTIFY_RIGHT
-
-    skipButton = createButton("Skip", FontRegistry().font16, "skip")
-    skipButton.SetColor(&hffffffff, &h1f1f1fff)
-    skipButton.width = 72
-    skipButton.height = 44
-    m.focusedItem = skipButton
-    buttons.AddComponent(skipButton)
 
     if m.hasError then
         refreshButton = createButton("Refresh", FontRegistry().font16, "refresh")
