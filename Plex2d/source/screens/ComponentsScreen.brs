@@ -423,8 +423,6 @@ sub compOnItemSelected(item as object)
                 dialog = createDialog("card type not handled yet", "type: " + itemType, m)
                 dialog.Show()
             end if
-        else if item.command = "cardTestScreen" then
-            Application().PushScreen(createCardTestScreen())
         else if item.command = "section_button" then
             Application().PushScreen(createSectionsScreen(item.plexObject))
         else if item.command = "sign_out" then

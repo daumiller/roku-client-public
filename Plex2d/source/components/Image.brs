@@ -57,10 +57,6 @@ function imageDraw() as object
             else
                 m.source = m.sourceOrig.GetPosterTranscodeURL(int(multiplier * width), int(multiplier * height), transcodeOpts)
             end if
-        else if instr(1, m.source, "roku.rarforge.com") > 0 then
-            ' TODO(rob) remove this in production or when we start querying the PMS
-            ' for now, we want the url to be unique to the size of the image
-            m.source = m.source + "?width=" + tostr(width) + "&height=" + tostr(height)
         else
             server = PlexServerManager().GetTranscodeServer()
             if server <> invalid then
