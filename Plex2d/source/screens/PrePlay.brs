@@ -78,6 +78,10 @@ sub preplayOnResponse(request as object, response as object, context as object)
         m.item = m.items[0]
     end if
 
+    ' TODO(schuyler): This is temporary, just to show the invocation
+    choice = MediaDecisionEngine().ChooseMedia(m.item)
+    Debug("MDE: " + choice.ToString())
+
     m.show()
 end sub
 
