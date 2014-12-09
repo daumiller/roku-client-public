@@ -46,6 +46,7 @@ function PlexObjectClass() as object
         obj.GetViewOffsetPercentage = pnoGetViewOffsetPercentage
         obj.GetUnwatchedCount = pnoGetUnwatchedCount
         obj.GetUnwatchedCountString = pnoGetUnwatchedCountString
+        obj.GetLimitedTagValues = pnoGetLimitedTagValues
         obj.IsUnwatched = pnoIsUnwatched
         obj.InProgress = pnoInProgress
 
@@ -74,6 +75,22 @@ sub pnoInit(container as object, xml as object)
     if m.type = "photo" and m.IsDirectory() then
         m.type = "photoalbum"
     end if
+
+    ' Allow any PlexObject to have tags so that things like series don't
+    ' have to be full PlexItems.
+    '
+    m.tags = invalid
+
+    for each elem in xml.GetChildElements()
+        if elem.HasAttribute("tag") then
+            if m.tags = invalid then m.tags = CreateObject("roAssociativeArray")
+            if not m.tags.DoesExist(elem.GetName()) then
+                m.tags[elem.GetName()] = CreateObject("roList")
+            end if
+
+            m.tags[elem.GetName()].Push(createPlexTag(elem))
+        end if
+    next
 end sub
 
 sub pnoInitSynthetic(container as object, name as string)
@@ -206,12 +223,6 @@ function createPlexObjectFromElement(container as object, xml as object) as obje
         return createPlexHub(container, xml)
     else if xml.GetNamedElements("Media").Count() > 0 or container.Get("identifier") = "com.plexapp.plugins.itunes" then
         return createPlexItem(container, xml)
-    else if xml@ratingKey <> invalid then
-        ' TODO(schuyler): I'm skeptical... I don't think things without media
-        ' need to be full PlexItems. It's possible this was done in order to
-        ' get GetLimitedTagValues, in which case we could just move that method
-        ' down to PlexObject.
-        return createPlexItem(container, xml)
     end if
 
     Info("Don't know what to do with " + xml.GetName() + ", creating generic PlexObject")
@@ -268,6 +279,28 @@ function pnoGetUnwatchedCountString() as string
     end if
 
     return ""
+end function
+
+function pnoGetLimitedTagValues(tagClass as string, limit as integer, sep=", " as string) as string
+    if m.tags = invalid then return ""
+
+    result = ""
+    numFound = 0
+    tags = m.tags[tagClass]
+
+    if tags <> invalid then
+        for each tag in tags
+            if numFound > 0 then
+                result = result + sep
+            end if
+
+            result = result + tag.Get("tag")
+            numFound = numFound + 1
+            if numFound >= limit then exit for
+        next
+    end if
+
+    return result
 end function
 
 function pnoGetServer() as dynamic

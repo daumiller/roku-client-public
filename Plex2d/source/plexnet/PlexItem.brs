@@ -7,7 +7,6 @@ function PlexItemClass() as object
         obj.isMediaSynthesized = false
 
         obj.IsAccessible = pniIsAccessible
-        obj.GetLimitedTagValues = pniGetLimitedTagValues
         obj.GetSeasonString = pniGetSeasonString
         obj.GetEpisodeString = pniGetEpisodeString
         obj.GetMediaFlagTranscodeURL = pniGetMediaFlagTranscodeURL
@@ -26,18 +25,10 @@ function createPlexItem(container as object, xml as object) as object
     obj.Init(container, xml)
 
     obj.mediaItems = CreateObject("roList")
-    obj.tags = CreateObject("roAssociativeArray")
 
     for each elem in xml.GetChildElements()
         if elem.GetName() = "Media" then
             obj.mediaItems.Push(createPlexMedia(container, elem))
-        else
-            ' Assume everything else is a tag
-            if not obj.tags.DoesExist(elem.GetName()) then
-                obj.tags[elem.GetName()] = CreateObject("roList")
-            end if
-
-            obj.tags[elem.GetName()].Push(createPlexTag(elem))
         end if
     next
 
@@ -153,26 +144,6 @@ function pniIsAccessible() as boolean
 
     ' If we have no media items, consider ourselves accessible
     return (m.mediaItems.Count() = 0)
-end function
-
-function pniGetLimitedTagValues(tagClass as string, limit as integer, sep=", " as string) as string
-    result = ""
-    numFound = 0
-    tags = m.tags[tagClass]
-
-    if tags <> invalid then
-        for each tag in tags
-            if numFound > 0 then
-                result = result + sep
-            end if
-
-            result = result + tag.Get("tag")
-            numFound = numFound + 1
-            if numFound >= limit then exit for
-        next
-    end if
-
-    return result
 end function
 
 function pniGetSeasonString() as string
