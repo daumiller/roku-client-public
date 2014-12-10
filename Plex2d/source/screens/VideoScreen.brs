@@ -15,6 +15,8 @@ function VideoScreen() as object
         obj.Stop = vsStop
         obj.Seek = vsSeek
 
+        obj.OnTimelineTimer = vcOnTimelineTimer
+
         m.VideoScreen = obj
     end if
 
@@ -34,10 +36,22 @@ sub vsInit(item as object, seekValue=invalid as dynamic)
     ApplyFunc(BaseScreen().Init, m)
     Debug("MediaPlayer::playVideo: Displaying video: " + tostr(item.GetLongerTitle()))
 
-    m.playBackError = false
     m.item = item
     m.seekValue = firstOf(seekValue, 0)
 
+    ' variables
+    m.lastPosition = 0
+    m.playBackError = false
+    m.isPlayed = false
+    m.playState = "buffering"
+
+    ' TODO(rob): timers
+    m.bufferingTimer = createTimer("buffering")
+    m.playbackTimer = createTimer("playback")
+    m.timelineTimer = invalid
+
+    ' TODO(rob): multi-parts offset (curPartOffset)
+    m.curPartOffset = 0
 
     ' TODO(rob): videoItem = server.ConstructVideoItem (plexnet)
     m.videoObject = CreateVideoObject(m.item, m.seekValue)
@@ -99,7 +113,11 @@ sub vsShow()
             'Debug("Starting to direct play video", m.item.GetServer())
         end if
 
-        ' TODO(rob): timers: timeline & playback, nowPlayingManager.location=fullScreenVideo
+        m.timelineTimer = createTimer("timeline")
+        m.timelineTimer.SetDuration(15000, true)
+        Application().AddTimer(m.timelineTimer, createCallable("OnTimelineTimer", m))
+
+        m.playbackTimer.Mark()
         m.Screen.Show()
     else
        ' TODO(rob): nowPlayingManager.location=navigation
@@ -238,4 +256,9 @@ sub vsSeek(offset, relative=false)
             m.Screen.Seek(offset)
         end if
     end if
+end sub
+
+sub vcOnTimelineTimer(timer as dynamic)
+    Debug("vcOnTimelineTimer::expired " + tostr(timer.name))
+    'm.UpdateNowPlaying()
 end sub
