@@ -401,6 +401,9 @@ sub compOnItemSelected(item as object)
                     exit for
                 end if
             end for
+        else if item.command = "play" or item.command = "resume" then
+            ' TODO(rob): resume offset
+            Application().PushScreen(createVideoScreen(item.plexObject))
         else if item.command = "go_home" then
             Application().GoHome()
         else if item.command = "grid_button" then
