@@ -303,7 +303,7 @@ function preplayGetButtons() as object
         btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
         btn.width = 100
         btn.height = 50
-        btn.plexObject = m.plexObject
+        btn.plexObject = m.item
         if m.focusedItem = invalid then m.focusedItem = btn
         components.push(btn)
     end for
