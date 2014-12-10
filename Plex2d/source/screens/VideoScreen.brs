@@ -32,16 +32,17 @@ end function
 
 sub vsInit(item as object, seekValue=invalid as dynamic)
     ApplyFunc(BaseScreen().Init, m)
+    Debug("MediaPlayer::playVideo: Displaying video: " + tostr(item.GetLongerTitle()))
 
     m.playBackError = false
     m.item = item
     m.seekValue = firstOf(seekValue, 0)
 
-    Debug("MediaPlayer::playVideo: Displaying video: " + tostr(item.GetLongerTitle()))
 
     ' TODO(rob): videoItem = server.ConstructVideoItem (plexnet)
-    m.videoObject = CreateVideoObject(m.Item, m.seekValue)
-    if m.videoObject.videoItem = invalid then
+    m.videoObject = CreateVideoObject(m.item, m.seekValue)
+    videoItem = m.videoObject.videoItem
+    if videoItem = invalid then
         Fatal("invalid video item")
     end if
 
@@ -58,16 +59,17 @@ sub vsInit(item as object, seekValue=invalid as dynamic)
     screen.SetCertificatesFile("common:/certs/ca-bundle.crt")
     screen.SetCertificatesDepth(5)
 
-    screen.SetContent(m.videoObject.videoItem)
+    screen.SetContent(videoItem)
 
     ' TODO(rob): other headers (non direct play)
-    'if m.videoItem.IsTranscoded then
-    '    cookie = server.StartTranscode(m.videoItem.StreamUrls[0])
+    m.IsTranscoded = videoItem.IsTranscoded
+    'if m.IsTranscoded then
+    '    cookie = server.StartTranscode(videoItem.StreamUrls[0])
     '    if cookie <> invalid then
     '        screen.AddHeader("Cookie", cookie)
     '    end if
     'else
-    '    for each header in m.videoItem.IndirectHttpHeaders
+    '    for each header in videoItem.IndirectHttpHeaders
     '        for each name in header
     '            screen.AddHeader(name, header[name])
     '        next
@@ -79,13 +81,29 @@ end sub
 
 sub vsShow()
     if m.Screen <> invalid then
-        Debug("Starting to direct play video")
+        if m.IsTranscoded then
+            ' TODO(rob): log to pms
+            'Debug("Starting to play transcoded video", m.item.GetServer())
+
+            ' TODO(rob): pingTimer
+            'if m.pingTimer = invalid then
+            '    m.pingTimer = createTimer()
+            '    m.pingTimer.Name = "ping"
+            '    m.pingTimer.SetDuration(60005, true)
+            '    m.ViewController.AddTimer(m.pingTimer, m)
+            'end if
+            'm.pingTimer.Active = true
+            'm.pingTimer.Mark()
+        else
+            ' TODO(rob): log to pms
+            'Debug("Starting to direct play video", m.item.GetServer())
+        end if
 
         ' TODO(rob): timers: timeline & playback, nowPlayingManager.location=fullScreenVideo
         m.Screen.Show()
     else
        ' TODO(rob): nowPlayingManager.location=navigation
-       Application().PopScreen(m)
+        Application().PopScreen(m)
     end if
 end sub
 
@@ -99,7 +117,7 @@ end sub
 
 function vsHandleMessage(msg) as boolean
     handled = false
-    server = m.Item.GetServer()
+    server = m.item.GetServer()
 
     if type(msg) = "roVideoScreenEvent" then
         handled = true
@@ -128,31 +146,31 @@ function vsHandleMessage(msg) as boolean
             '    m.UpdateNowPlaying(true)
             'end if
         else if msg.isRequestFailed() then
-            Debug("MediaPlayer::playVideo::VideoScreenEvent::isRequestFailed - message = " + tostr(msg.GetMessage()))
-            Debug("MediaPlayer::playVideo::VideoScreenEvent::isRequestFailed - data = " + tostr(msg.GetData()))
-            Debug("MediaPlayer::playVideo::VideoScreenEvent::isRequestFailed - index = " + tostr(msg.GetIndex()))
+            Debug("vsHandleMessage::isRequestFailed - message = " + tostr(msg.GetMessage()))
+            Debug("vsHandleMessage::isRequestFailed - data = " + tostr(msg.GetData()))
+            Debug("vsHandleMessage::isRequestFailed - index = " + tostr(msg.GetIndex()))
             m.playbackError = true
         else if msg.isPaused() then
-            Debug("MediaPlayer::playVideo::VideoScreenEvent::isPaused: position -> " + tostr(m.lastPosition))
+            Debug("vsHandleMessage::isPaused: position -> " + tostr(m.lastPosition))
             m.playState = "paused"
             'm.UpdateNowPlaying()
         else if msg.isResumed() then
-            Debug("MediaPlayer::playVideo::VideoScreenEvent::isResumed")
+            Debug("vsHandleMessage::isResumed")
             m.playState = "playing"
             'm.UpdateNowPlaying()
         else if msg.isPartialResult() then
-            Debug("MediaPlayer::playVideo::VideoScreenEvent::isPartialResult: position -> " + tostr(m.lastPosition))
+            Debug("vsHandleMessage::isPartialResult: position -> " + tostr(m.lastPosition))
             m.playState = "stopped"
             'm.UpdateNowPlaying()
             'if m.IsTranscoded then server.StopVideo()
         else if msg.isFullResult() then
-            Debug("MediaPlayer::playVideo::VideoScreenEvent::isFullResult: position -> " + tostr(m.lastPosition))
+            Debug("vsHandleMessage::isFullResult: position -> " + tostr(m.lastPosition))
             m.isPlayed = true
             m.playState = "stopped"
             'm.UpdateNowPlaying()
-            if m.IsTranscoded then server.StopVideo()
+            'if m.IsTranscoded then server.StopVideo()
         else if msg.isStreamStarted() then
-            Debug("MediaPlayer::playVideo::VideoScreenEvent::isStreamStarted: position -> " + tostr(m.lastPosition))
+            Debug("vsHandleMessage::isStreamStarted: position -> " + tostr(m.lastPosition))
             Debug("Message data -> " + tostr(msg.GetInfo()))
 
             ' m.StartTranscodeSessionRequest()
