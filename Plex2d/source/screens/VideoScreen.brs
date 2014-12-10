@@ -40,8 +40,8 @@ sub vsInit(item as object, seekValue=invalid as dynamic)
     Debug("MediaPlayer::playVideo: Displaying video: " + tostr(item.GetLongerTitle()))
 
     ' TODO(rob): videoItem = server.ConstructVideoItem (plexnet)
-    m.videoItem = tempConstructVideoItem(m.Item, m.seekValue)
-    if m.videoItem = invalid then
+    m.videoObject = CreateVideoObject(m.Item, m.seekValue)
+    if m.videoObject.videoItem = invalid then
         Fatal("invalid video item")
     end if
 
@@ -52,13 +52,13 @@ sub vsInit(item as object, seekValue=invalid as dynamic)
 
     ' TODO(rob): helper required to add token with appropriate
     'if server.IsRequestToServer(videoItem.StreamUrls[0]) then
-    AddPlexHeaders(screen, m.videoItem.server.GetToken())
+    AddPlexHeaders(screen, m.item.GetServer().GetToken())
     'end if
 
     screen.SetCertificatesFile("common:/certs/ca-bundle.crt")
     screen.SetCertificatesDepth(5)
 
-    screen.SetContent(m.videoItem)
+    screen.SetContent(m.videoObject.videoItem)
 
     ' TODO(rob): other headers (non direct play)
     'if m.videoItem.IsTranscoded then
@@ -221,65 +221,3 @@ sub vsSeek(offset, relative=false)
         end if
     end if
 end sub
-
-function tempConstructVideoItem(item as object, seekValue as integer) as object
-    ' this is mainly bogus for now. We'll add logic when we have the MDE
-    ' for things like isAvailable, transocoding, etc...
-
-    media = item.mediaitems[0]
-    part = media.parts[0]
-
-    ' TODO(rob): add logic of other media types
-    if item.islibraryitem() then
-        mediaKey = media.parts[0].Get("key")
-        videoRes = media.Get("videoResolution")
-    else
-        Fatal("cannot play non library video")
-    end if
-
-    video = CreateObject("roAssociativeArray")
-    video.PlayStart = seekValue
-    video.Server = item.GetServer()
-
-    video.Title = item.GetLongerTitle()
-    video.ReleaseDate = item.Get("originallyAvailableAt")
-
-    video.StreamQualities = iif(appSettings().GetGlobal("DisplayType") = "HDTV", ["HD"], ["SD"])
-    video.HDBranded = val(videoRes) >= 720
-    video.fullHD = iif(videoRes = "1080", true, false)
-
-    video.StreamUrls = [item.GetServer().BuildUrl(mediaKey)]
-    video.StreamBitrates = [media.Get("bitrate")]
-    video.StreamFormat = media.Get("container", "mp4")
-    if video.StreamFormat = "hls" then video.SwitchingStrategy = "full-adaptation"
-    video.IsTranscoded = false
-
-    frameRate = media.Get("frameRate", "24p")
-    if frameRate = "24p" then
-        video.FrameRate = 24
-    else if frameRate = "NTSC"
-        video.FrameRate = 30
-    end if
-
-    ' TODO(rob): indexes (sd only) we can get fancy later...
-    if part.Get("indexes") <> invalid then
-        video.SDBifUrl = item.GetServer().BuildUrl("/library/parts/" + part.Get("id") + "/indexes/sd?interval=10000")
-    end if
-
-    ' TODO(rob): subtitles
-    'if part <> invalid AND part.subtitles <> invalid AND part.subtitles.Codec = "srt" AND part.subtitles.key <> invalid then
-    '    video.SubtitleUrl = FullUrl(m.serverUrl, "", part.subtitles.key) + "?encoding=utf-8"
-    '    ' this forces showing the subtitle regardless of the Roku setting
-    '    video.SubtitleConfig = { ShowSubtitle: 1 }
-    'end if
-
-    ' TODO(rob): language
-    'if part <> invalid AND part.audioStream <> invalid AND part.audioStream.languageCode <> invalid then
-    '    video.AudioLanguageSelected = part.audioStream.languageCode
-    'end if
-
-    Debug("Setting stream quality: " + tostr(video.StreamQualities[0]))
-    Debug("Will try to direct play " + tostr(video.StreamUrls[0]))
-
-    return video
-end function
