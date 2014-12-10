@@ -81,13 +81,22 @@ function pnpGetStreamsOfType(streamType as integer) as object
 end function
 
 function pnpGetSelectedStreamOfType(streamType as integer) as dynamic
+    ' Video streams, in particular, may not be selected. Pretend like the
+    ' first one was selected.
+    '
+    default = invalid
+
     for each stream in m.streams
-        if stream.GetInt("streamType") = streamType and stream.IsSelected() then
-            return stream
+        if stream.GetInt("streamType") = streamType then
+            if stream.IsSelected() then
+                return stream
+            else if default = invalid and streamType <> stream.TYPE_SUBTITLE then
+                default = stream
+            end if
         end if
     next
 
-    return invalid
+    return default
 end function
 
 function pnpIsIndexed() as boolean
