@@ -15,6 +15,7 @@ function VideoScreen() as object
         obj.Stop = vsStop
         obj.Seek = vsSeek
 
+        obj.UpdateNowPlaying = vcUpdateNowPlaying
         obj.OnTimelineTimer = vcOnTimelineTimer
 
         m.VideoScreen = obj
@@ -119,8 +120,9 @@ sub vsShow()
 
         m.playbackTimer.Mark()
         m.Screen.Show()
+        NowPlayingManager().location = "fullScreenVideo"
     else
-       ' TODO(rob): nowPlayingManager.location=navigation
+        NowPlayingManager().location = "navigation"
         Application().PopScreen(m)
     end if
 end sub
@@ -142,27 +144,26 @@ function vsHandleMessage(msg) as boolean
 
         if msg.isScreenClosed() then
             ' TODO(rob): timelines, fallback, parts, etc.. look at original
+
+            m.timelineTimer.active = false
+            m.playState = "stopped"
+            Debug("vsHandleMessage::isScreenClosed: position -> " + tostr(m.lastPosition))
+            NowPlayingManager().location = "navigation"
+            m.UpdateNowPlaying()
+
+            ' TODO(rob): multi-parts and fallback transcode
             Application().PopScreen(m)
         else if msg.isPlaybackPosition() then
-            'mediaItem = m.Item.preferredMediaItem
-            'm.lastPosition = m.curPartOffset + msg.GetIndex()
-            'Debug("MediaPlayer::playVideo::VideoScreenEvent::isPlaybackPosition: set progress -> " + tostr(1000*m.lastPosition))
-            Debug("isPlaybackPosition: " + tostr(msg.GetIndex()))
+            m.lastPosition = m.curPartOffset + msg.GetIndex()
+            Debug("vsHandleMessage::isPlaybackPosition: set progress -> " + tostr(1000*m.lastPosition))
 
-            'if mediaItem <> invalid AND validint(mediaItem.duration) > 0 then
-            '    playedFraction = (m.lastPosition * 1000)/mediaItem.duration
-            '    if playedFraction > 0.90 then
-            '        m.isPlayed = true
-            '    end if
-            'end if
-
-            'if m.bufferingTimer <> invalid AND msg.GetIndex() > 0 then
-            '    AnalyticsTracker().TrackTiming(m.bufferingTimer.GetElapsedMillis(), "buffering", tostr(m.IsTranscoded), tostr(m.Item.mediaContainerIdentifier))
-            '    m.bufferingTimer = invalid
-            'else
-            '    m.playState = "playing"
-            '    m.UpdateNowPlaying(true)
-            'end if
+            if m.bufferingTimer <> invalid AND msg.GetIndex() > 0 then
+            '   AnalyticsTracker().TrackTiming(m.bufferingTimer.GetElapsedMillis(), "buffering", tostr(m.IsTranscoded), tostr(m.Item.mediaContainerIdentifier))
+                m.bufferingTimer = invalid
+            else
+                m.playState = "playing"
+                m.UpdateNowPlaying(true)
+            end if
         else if msg.isRequestFailed() then
             Debug("vsHandleMessage::isRequestFailed - message = " + tostr(msg.GetMessage()))
             Debug("vsHandleMessage::isRequestFailed - data = " + tostr(msg.GetData()))
@@ -171,21 +172,21 @@ function vsHandleMessage(msg) as boolean
         else if msg.isPaused() then
             Debug("vsHandleMessage::isPaused: position -> " + tostr(m.lastPosition))
             m.playState = "paused"
-            'm.UpdateNowPlaying()
+            m.UpdateNowPlaying()
         else if msg.isResumed() then
             Debug("vsHandleMessage::isResumed")
             m.playState = "playing"
-            'm.UpdateNowPlaying()
+            m.UpdateNowPlaying()
         else if msg.isPartialResult() then
             Debug("vsHandleMessage::isPartialResult: position -> " + tostr(m.lastPosition))
             m.playState = "stopped"
-            'm.UpdateNowPlaying()
+            m.UpdateNowPlaying()
             'if m.IsTranscoded then server.StopVideo()
         else if msg.isFullResult() then
             Debug("vsHandleMessage::isFullResult: position -> " + tostr(m.lastPosition))
             m.isPlayed = true
             m.playState = "stopped"
-            'm.UpdateNowPlaying()
+            m.UpdateNowPlaying()
             'if m.IsTranscoded then server.StopVideo()
         else if msg.isStreamStarted() then
             Debug("vsHandleMessage::isStreamStarted: position -> " + tostr(m.lastPosition))
@@ -258,7 +259,24 @@ sub vsSeek(offset, relative=false)
     end if
 end sub
 
+sub vcUpdateNowPlaying(force=false as boolean)
+    ' We can only send the event if we have some basic info about the item
+    if m.item.Get("ratingKey") = invalid or m.item.Get("duration") = invalid or m.item.GetServer() = invalid then
+        m.timelineTimer.Active = false
+        return
+    end if
+
+    ' Avoid duplicates
+    if m.playState = m.lastTimelineState and not force then return
+
+    m.lastTimelineState = m.playState
+    m.timelineTimer.Mark()
+
+    NowPlayingManager().UpdatePlaybackState("video", m.item, m.playState, 1000 * m.lastPosition)
+    Debug("vcUpdateNowPlaying:: " + m.playState + " " + tostr(1000 * m.lastPosition))
+end sub
+
 sub vcOnTimelineTimer(timer as dynamic)
     Debug("vcOnTimelineTimer::expired " + tostr(timer.name))
-    'm.UpdateNowPlaying()
+    m.UpdateNowPlaying()
 end sub
