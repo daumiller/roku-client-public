@@ -143,7 +143,7 @@ function vsHandleMessage(msg) as boolean
         handled = true
 
         if msg.isScreenClosed() then
-            ' TODO(rob): timelines, fallback, parts, etc.. look at original
+            ' if m.IsTranscoded then server.StopVideo()
 
             ' Send an analytics event.
             startOffset = int(m.SeekValue/1000)
