@@ -8,6 +8,8 @@ function PlexMediaClass() as object
         obj.IsIndirect = pnmIsIndirect
         obj.IsAccessible = pnmIsAccessible
 
+        obj.ResolveIndirect = pnmResolveIndirect
+
         obj.ToString = pnmToString
         obj.Equals = pnmEquals
 
@@ -54,6 +56,13 @@ function pnmIsAccessible() as boolean
     return true
 end function
 
+function pnmResolveIndirect() as object
+    if not m.IsIndirect() then return m
+
+    ' TODO(schuyler): Actually resolve the indirect
+    Fatal("Indirect resolution isn't supported yet")
+end function
+
 function pnmToString() as string
     resolution = UCase(m.Get("videoResolution", ""))
 
@@ -70,4 +79,4 @@ function pnmEquals(other as dynamic) as boolean
     return (m.Get("id") = other.Get("id"))
 end function
 
-' TODO(schuyler): getParts, resolveIndirect, getVideoResolution
+' TODO(schuyler): getParts, getVideoResolution
