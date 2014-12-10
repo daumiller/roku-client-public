@@ -145,6 +145,16 @@ function vsHandleMessage(msg) as boolean
         if msg.isScreenClosed() then
             ' TODO(rob): timelines, fallback, parts, etc.. look at original
 
+            ' Send an analytics event.
+            startOffset = int(m.SeekValue/1000)
+            amountPlayed = m.lastPosition - startOffset
+            if amountPlayed > m.playbackTimer.GetElapsedSeconds() then amountPlayed = m.playbackTimer.GetElapsedSeconds()
+
+            if amountPlayed > 0 then
+                Debug("Sending analytics event, appear to have watched video for " + tostr(amountPlayed) + " seconds")
+                Analytics().TrackEvent("Playback", m.item.Get("type", "clip"), tostr(m.item.container.Get("identifier")), amountPlayed)
+            end if
+
             m.timelineTimer.active = false
             m.playState = "stopped"
             Debug("vsHandleMessage::isScreenClosed: position -> " + tostr(m.lastPosition))
@@ -158,7 +168,8 @@ function vsHandleMessage(msg) as boolean
             Debug("vsHandleMessage::isPlaybackPosition: set progress -> " + tostr(1000*m.lastPosition))
 
             if m.bufferingTimer <> invalid AND msg.GetIndex() > 0 then
-            '   AnalyticsTracker().TrackTiming(m.bufferingTimer.GetElapsedMillis(), "buffering", tostr(m.IsTranscoded), tostr(m.Item.mediaContainerIdentifier))
+                ' TODO(rob): should the identifier be accessible from the item (plexnet?) -- m.item.container.Get("identifier")
+                Analytics().TrackTiming(m.bufferingTimer.GetElapsedMillis(), "buffering", tostr(m.IsTranscoded), tostr(m.item.container.Get("identifier")))
                 m.bufferingTimer = invalid
             else
                 m.playState = "playing"
