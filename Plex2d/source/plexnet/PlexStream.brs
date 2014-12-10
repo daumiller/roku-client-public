@@ -10,10 +10,34 @@ function PlexStreamClass() as object
         obj.TYPE_AUDIO = 2
         obj.TYPE_SUBTITLE = 3
 
+        ' We have limited font support, so make a very modest effort at using
+        ' English names for common unsupported languages.
+        '
+        obj.SAFE_LANGUAGE_NAMES = {
+            ara: "Arabic",
+            arm: "Armenian",
+            bel: "Belarusian",
+            ben: "Bengali",
+            bul: "Bulgarian",
+            chi: "Chinese",
+            cze: "Czech",
+            gre: "Greek",
+            heb: "Hebrew",
+            hin: "Hindi",
+            jpn: "Japanese",
+            kor: "Korean",
+            rus: "Russian",
+            srp: "Serbian",
+            tha: "Thai",
+            ukr: "Ukrainian",
+            yid: "Yiddish"
+        }
+
         ' Methods
         obj.GetTitle = pnstrGetTitle
         obj.GetCodec = pnstrGetCodec
         obj.GetChannels = pnstrGetChannels
+        obj.GetLanguageName = pnstrGetLanguageName
         obj.IsSelected = pnstrIsSelected
         obj.ToString = pnstrToString
         obj.Equals = pnstrEquals
@@ -35,7 +59,7 @@ function createPlexStream(xml as object) as object
 end function
 
 function pnstrGetTitle() as string
-    title = firstOf(m.Get("language"), "Unknown")
+    title = m.GetLanguageName()
 
     if m.GetInt("streamType") = m.TYPE_AUDIO then
         codec = m.GetCodec()
@@ -75,6 +99,14 @@ function pnstrGetChannels() as string
     else
         return ""
     end if
+end function
+
+function pnstrGetLanguageName() as string
+    code = m.Get("languageCode")
+
+    if code = invalid then return "Unknown"
+
+    return firstOf(m.SAFE_LANGUAGE_NAMES[code], m.Get("language"), "Unknown")
 end function
 
 function pnstrIsSelected() as boolean
