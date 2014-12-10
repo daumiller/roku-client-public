@@ -167,6 +167,14 @@ function vsHandleMessage(msg) as boolean
             m.lastPosition = m.curPartOffset + msg.GetIndex()
             Debug("vsHandleMessage::isPlaybackPosition: set progress -> " + tostr(1000*m.lastPosition))
 
+            duration = int(val(m.videoObject.media.Get("duration","0")))
+            if duration > 0 then
+                playedFraction = (m.lastPosition * 1000)/duration
+                if playedFraction > 0.90 then
+                    m.isPlayed = true
+                end if
+            end if
+
             if m.bufferingTimer <> invalid AND msg.GetIndex() > 0 then
                 ' TODO(rob): should the identifier be accessible from the item (plexnet?) -- m.item.container.Get("identifier")
                 Analytics().TrackTiming(m.bufferingTimer.GetElapsedMillis(), "buffering", tostr(m.IsTranscoded), tostr(m.item.container.Get("identifier")))
