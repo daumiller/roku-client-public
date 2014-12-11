@@ -107,14 +107,17 @@ sub loadingOnWaitTimer(timer as object)
             if MyPlexAccount().IsSignedIn = false
                 Application().PushScreen(createPinScreen())
             else
-                dialog = createBaseDialog()
-                dialog.Title = "Plex Media Server not found"
-                dialog.Text = "We could not locate or contact the Plex Media Server. Please make sure the sever is running and is accessible. TODO: add signout button"
-                dialog.SetButton("reload", "Try again")
-                dialog.SetButton("signin", "Sign In")
-                Application().pushScreen(dialog)
+                ' TODO(schuyler): Show something to the user. Our current dialog
+                ' is based on the ComponentsScreen but this is an image canvas.
+                ' Perhaps we should make this use an roScreen?
+                '
+                ' dialog = createBaseDialog()
+                ' dialog.Title = "Plex Media Server not found"
+                ' dialog.Text = "We could not locate or contact the Plex Media Server. Please make sure the sever is running and is accessible. TODO: add signout button"
+                ' dialog.SetButton("reload", "Try again")
+                ' dialog.SetButton("signin", "Sign In")
+                ' Application().pushScreen(dialog)
             end if
-            Debug("TODO:loadingOnTimerExpired::show a help screen, we can't find any servers!")
             timer.Active = false
         else if timer.Attempts >= timer.maxPrimaryAttempts then
             Debug("waiting for primary/owned or shared server: " + tostr(timer.maxAttempts-timer.attempts) + " attempts left until we fallback to shared server")
