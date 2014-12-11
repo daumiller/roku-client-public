@@ -54,11 +54,12 @@ sub vsInit()
     ' TODO(rob): multi-parts offset (curPartOffset)
     m.curPartOffset = 0
 
-    ' TODO(rob): videoItem = server.ConstructVideoItem (plexnet)
     m.videoObject = CreateVideoObject(m.item, m.seekValue)
     videoItem = m.videoObject.videoItem
+    ' TODO(rob): better UX error handling
     if videoItem = invalid then
-        Fatal("invalid video item")
+        m.screenError = "invalid video item"
+        return
     end if
 
     screen = CreateObject("roVideoScreen")

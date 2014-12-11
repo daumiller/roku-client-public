@@ -37,7 +37,7 @@ function voBuild(transcode=invalid as dynamic) as object
 end function
 
 sub voBuildTranscode()
-    Fatal("voBuildTranscode::TB")
+    Debug("cannot build transcoded video: not implemented")
 end sub
 
 sub voBuildDirectPlay()

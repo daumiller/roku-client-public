@@ -402,7 +402,13 @@ sub compOnItemSelected(item as object)
                 end if
             end for
         else if item.command = "play" or item.command = "resume" then
-            Application().PushScreen(createVideoScreen(item.plexObject, (item.command = "resume")))
+            screen = createVideoScreen(item.plexObject, (item.command = "resume"))
+            if screen.screenError <> invalid then
+                dialog = createDialog("command failed: " + item.command, screen.screenError, m)
+                dialog.Show()
+            else
+                Application().PushScreen(screen)
+            end if
         else if item.command = "go_home" then
             Application().GoHome()
         else if item.command = "grid_button" then
