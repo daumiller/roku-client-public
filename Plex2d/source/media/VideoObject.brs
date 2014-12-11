@@ -44,11 +44,13 @@ sub voBuildDirectPlay()
     ' TODO(rob): select curPart from seekValue. e.g. original: obj.curPart = metadata.SelectPartForOffset(seekValue)
     part = m.media.parts[0]
 
+    server = m.item.GetServer()
+
     ' TODO(rob): this is all sort of a mess. Transcoded material may also
     ' use some of the same info... definitely a temporary mess.
     obj = CreateObject("roAssociativeArray")
     obj.PlayStart = int(m.seekValue/1000)
-    obj.Server = m.item.GetServer()
+    obj.Server = server
 
     obj.Title = m.item.GetLongerTitle()
     obj.ReleaseDate = m.item.Get("originallyAvailableAt")
@@ -57,7 +59,7 @@ sub voBuildDirectPlay()
     obj.HDBranded = val(videoRes) >= 720
     obj.fullHD = iif(videoRes = "1080", true, false)
 
-    obj.StreamUrls = [m.item.GetServer().BuildUrl(part.Get("key"))]
+    obj.StreamUrls = [server.BuildUrl(part.GetAbsolutePath("key"))]
     obj.StreamFormat = m.media.Get("container", "mp4")
     obj.StreamQualities = iif(appSettings().GetGlobal("DisplayType") = "HDTV", ["HD"], ["SD"])
     obj.StreamBitrates = [m.media.Get("bitrate")]
@@ -76,7 +78,7 @@ sub voBuildDirectPlay()
         obj.HDBifUrl = part.GetIndexUrl("hd")
     end if
     if part.Get("indexes") <> invalid then
-        obj.SDBifUrl = m.item.GetServer().BuildUrl("/library/parts/" + part.Get("id") + "/indexes/sd?interval=10000")
+        obj.SDBifUrl = server.BuildUrl("/library/parts/" + part.Get("id") + "/indexes/sd?interval=10000")
     end if
 
     if m.audioStream <> invalid then
