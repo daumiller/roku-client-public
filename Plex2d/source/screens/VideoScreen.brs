@@ -119,6 +119,7 @@ sub vsShow()
         Application().AddTimer(m.timelineTimer, createCallable("OnTimelineTimer", m))
 
         m.playbackTimer.Mark()
+        m.bufferingTimer.Mark()
         m.Screen.Show()
         NowPlayingManager().location = "fullScreenVideo"
     else
