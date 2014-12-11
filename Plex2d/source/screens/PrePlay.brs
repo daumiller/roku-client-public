@@ -289,7 +289,7 @@ function preplayGetButtons() as object
     buttons = createObject("roList")
     ' TODO(rob) I need to find a better font editor to map the fonts.
     if m.item.InProgress() then
-        buttons.push({text: "g", command: "resume"})
+        buttons.push({text: "h", command: "resume"})
     end if
     buttons.push({text: "g", command: "play"})
     if m.item.IsUnwatched() then
