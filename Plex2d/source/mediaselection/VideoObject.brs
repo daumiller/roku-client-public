@@ -15,11 +15,12 @@ end function
 
 function CreateVideoObject(item as object, seekValue=0 as integer) as object
     obj = CreateObject("roAssociativeArray")
-    obj.Append(MediaDecisionEngine().ChooseMedia(item))
     obj.Append(VideoObjectClass())
 
     obj.item = item
     obj.seekValue = seekValue
+    obj.choice = MediaDecisionEngine().ChooseMedia(item)
+    obj.media = obj.choice.media
 
     obj.Build()
 
@@ -27,7 +28,7 @@ function CreateVideoObject(item as object, seekValue=0 as integer) as object
 end function
 
 function voBuild(transcode=invalid as dynamic) as object
-    isdirectplayable = firstOf(transcode, m.isdirectplayable)
+    isdirectplayable = firstOf(transcode, m.choice.isdirectplayable)
     if isdirectplayable then
         m.BuildDirectPlay()
     else
