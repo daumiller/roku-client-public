@@ -6,6 +6,7 @@ function HomeScreen() as object
         obj.Show = homeShow
         obj.AfterItemFocused = homeAfterItemFocused
         obj.HandleCommand = homeHandleCommand
+        obj.OnKeyRelease = homeOnKeyRelease
 
         ' TODO(rob): remove/modify to allow non-video sections
         ' temporary override to exclude non-video sections
@@ -97,3 +98,36 @@ function homeGetButtons() as object
 
     return buttons
 end function
+
+sub homeOnKeyRelease(keyCode as integer)
+    if keyCode = m.kp_BK and m.exitDialog = invalid then
+        dialog = createDialog("Are you ready to exit Plex?", invalid, m)
+        dialog.enableBackButton = true
+        dialog.buttonsSingleLine = true
+        dialog.AddButton("Yes", "exit")
+        dialog.AddButton("No", "no_exit")
+        dialog.HandleButton = homeDialogHandleButton
+        dialog.Show()
+        m.exitDialog = dialog
+    else
+        ' exit the channel on back button in the dialog
+        if keyCode = m.kp_BK and m.exitDialog <> invalid then
+            m.exitDialog.Close()
+            m.exitDialog = invalid
+        end if
+        ApplyFunc(ComponentsScreen().OnKeyRelease, m, [keyCode])
+    end if
+end sub
+
+sub homeDialogHandleButton(button as object)
+    Debug("dialog button selected with command: " + tostr(button.command))
+
+    m.Close()
+    if button.command = "exit" then
+        Application().popScreen(m.screen)
+    else if button.command = "no_exit" then
+        m.screen.exitDialog = invalid
+    else
+        Debug("command not defined: " + tostr(button.command))
+    end if
+end sub
