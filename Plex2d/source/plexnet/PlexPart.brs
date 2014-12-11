@@ -9,6 +9,7 @@ function PlexPartClass() as object
         obj.GetStreamsOfType = pnpGetStreamsOfType
         obj.GetSelectedStreamOfType = pnpGetSelectedStreamOfType
         obj.IsIndexed = pnpIsIndexed
+        obj.GetIndexUrl = pnpGetIndexUrl
         obj.HasStreams = pnpHasStreams
 
         obj.ToString = pnpToString
@@ -34,6 +35,14 @@ function createPlexPart(container as object, xml as dynamic) as object
         for each stream in xml.Stream
             obj.streams.Push(createPlexStream(stream))
         next
+
+        if obj.Has("indexes") then
+            obj.indexes = CreateObject("roAssociativeArray")
+            indexKeys = obj.Get("indexes", "").Tokenize(",")
+            for each indexKey in indexKeys
+                obj.indexes[indexKey] = true
+            next
+        end if
     else
         obj.InitSynthetic(container, "Part")
     end if
@@ -101,6 +110,14 @@ end function
 
 function pnpIsIndexed() as boolean
     return m.Has("indexes")
+end function
+
+function pnpGetIndexUrl(indexKey as string) as dynamic
+    if m.indexes <> invalid and m.indexes.DoesExist(indexKey) then
+        return m.container.server.BuildUrl("/library/parts/" + m.Get("id") + "/indexes/" + indexKey + "?interval=10000")
+    else
+        return invalid
+    end if
 end function
 
 function pnpHasStreams() as boolean
