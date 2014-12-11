@@ -24,21 +24,21 @@ function VideoScreen() as object
     return m.VideoScreen
 end function
 
-function createVideoScreen(item as object, seekValue=invalid as dynamic) as object
+function createVideoScreen(item as object, resume=false as boolean) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(VideoScreen())
 
-    obj.Init(item, seekValue)
+    obj.item = item
+    obj.seekValue = iif(resume, item.GetInt("viewOffset"), 0)
+
+    obj.Init()
 
     return obj
 end function
 
-sub vsInit(item as object, seekValue=invalid as dynamic)
+sub vsInit()
     ApplyFunc(BaseScreen().Init, m)
-    Debug("MediaPlayer::playVideo: Displaying video: " + tostr(item.GetLongerTitle()))
-
-    m.item = item
-    m.seekValue = firstOf(seekValue, 0)
+    Debug("init videoscreen: " + tostr(m.item.GetLongerTitle()))
 
     ' variables
     m.lastPosition = 0

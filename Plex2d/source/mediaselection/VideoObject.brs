@@ -41,13 +41,13 @@ sub voBuildTranscode()
 end sub
 
 sub voBuildDirectPlay()
-    ' TODO(rob): part choice will be part of MDE?
+    ' TODO(rob): select curPart from seekValue. e.g. original: obj.curPart = metadata.SelectPartForOffset(seekValue)
     part = m.media.parts[0]
 
     ' TODO(rob): this is all sort of a mess. Transcoded material may also
     ' use some of the same info... definitely a temporary mess.
     obj = CreateObject("roAssociativeArray")
-    obj.PlayStart = m.seekValue
+    obj.PlayStart = int(m.seekValue/1000)
     obj.Server = m.item.GetServer()
 
     obj.Title = m.item.GetLongerTitle()
