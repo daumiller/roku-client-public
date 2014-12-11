@@ -10,9 +10,10 @@ function HubsScreen() as object
         obj.OnResponse = hubsOnResponse
         obj.ClearCache = hubsClearCache
         obj.GetComponents = hubsGetComponents
+        obj.HandleCommand = hubsHandleCommand
 
         ' Hubs and Buttons
-        obj.Gethubs = HubsGetHubs
+        obj.GetHubs = hubsGetHubs
         obj.CreateHub = hubsCreateHub
         obj.GetButtons = hubsGetButtons
         obj.CreateButton = hubsCreateButton
@@ -41,6 +42,20 @@ function hubsOnResponse(request as object, response as object, context as object
     context.items = response.items
 
     m.show()
+end function
+
+function hubsHandleCommand(command as string, item as dynamic) as boolean
+    handled = true
+
+    if command = "show_section" then
+        Application().PushScreen(createSectionsScreen(item.plexObject))
+    else if command = "show_grid" then
+        Application().PushScreen(createGridScreen(item.plexObject))
+    else if not ApplyFunc(ComponentsScreen().HandleCommand, m, [command, item])
+        handled = false
+    end if
+
+    return handled
 end function
 
 sub hubsGetComponents()
@@ -141,7 +156,7 @@ function hubsCreateHub(container) as dynamic
         ' TODO(schuyler): Do we need this? I don't think so.
         ' card.setMetadata(item.attrs)
         card.plexObject = item
-        card.SetFocusable("card")
+        card.SetFocusable("show_item")
         if m.focusedItem = invalid then m.focusedItem = card
         hub.AddComponent(card)
     end for
@@ -152,16 +167,16 @@ function hubsCreateHub(container) as dynamic
     ' any count up to 5? If we end up having the HUB class calculate the orientation/layout,
     ' I'd expect it will also be able to calculate the more button status as well.
     if container.items.count()-1 > hub.MaxChildrenForLayout() then
-        hub.ShowMoreButton("grid_button")
+        hub.ShowMoreButton("show_grid")
     else if container.get("more") <> "0" then
-        hub.ShowMoreButton("grid_button")
+        hub.ShowMoreButton("show_grid")
     end if
 
     return hub
 end function
 
 function hubsCreateButton(container as object) as object
-    button = createButton(container.GetSingleLineTitle(), FontRegistry().font16, "section_button")
+    button = createButton(container.GetSingleLineTitle(), FontRegistry().font16, "show_section")
     button.setMetadata(container.attrs)
     button.plexObject = container
     button.width = 200

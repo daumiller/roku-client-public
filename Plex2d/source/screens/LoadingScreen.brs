@@ -1,16 +1,17 @@
 function LoadingScreen() as object
     if m.LoadingScreen = invalid then
         obj = CreateObject("roAssociativeArray")
+        obj.Append(BaseScreen())
         obj.screenName = "Loading Screen"
 
-        obj.show = loadingScreenShow
-        obj.activate = loadingActivate
-        obj.deactivate = loadingDeactivate
-        obj.handleMessage = loadingHandleMessage
-        obj.onWaitTimer = loadingOnWaitTimer
-        obj.createBackground = loadingCreateBackground
+        obj.Show = loadingScreenShow
+        obj.Activate = loadingActivate
+        obj.Deactivate = loadingDeactivate
+        obj.HandleMessage = loadingHandleMessage
+        obj.OnWaitTimer = loadingOnWaitTimer
+        obj.CreateBackground = loadingCreateBackground
 
-        obj.reset()
+        obj.Reset()
         m.LoadingScreen = obj
     end if
 
@@ -23,7 +24,6 @@ end sub
 
 Function createLoadingScreen() As Object
     obj = CreateObject("roAssociativeArray")
-    obj.append(BaseScreen())
     obj.append(LoadingScreen())
 
     obj.screen = CreateObject("roImageCanvas")
@@ -32,8 +32,6 @@ Function createLoadingScreen() As Object
     obj.canvasrect = obj.screen.GetCanvasRect()
 
     obj.createBackground()
-
-    ' Application().clearScreens()
 
     return obj
 End Function

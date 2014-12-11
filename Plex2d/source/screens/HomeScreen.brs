@@ -5,6 +5,7 @@ function HomeScreen() as object
 
         obj.Show = homeShow
         obj.AfterItemFocused = homeAfterItemFocused
+        obj.HandleCommand = homeHandleCommand
 
         ' TODO(rob): remove/modify to allow non-video sections
         ' temporary override to exclude non-video sections
@@ -67,6 +68,22 @@ sub homeAfterItemFocused(item as object)
     pendingDraw = m.DescriptionBox.Show(item)
     if pendingDraw then m.screen.DrawAll()
 end sub
+
+function homeHandleCommand(command as string, item as dynamic) as boolean
+    handled = true
+
+    if command = "sign_out" then
+        MyPlexAccount().SignOut()
+    else if command = "sign_in" then
+        Application().PushScreen(createPinScreen())
+    else if command = "selected_server" then
+        Application().PushScreen(createHomeScreen(item.metadata))
+    else if not ApplyFunc(HubsScreen().HandleCommand, m, [command, item])
+        handled = false
+    end if
+
+    return handled
+end function
 
 ' TODO(rob): remove/modify to allow non-video sections
 ' temporary override to exclude non-video sections

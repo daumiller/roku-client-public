@@ -10,6 +10,7 @@ function GridScreen() as object
         obj.Init = gsInit
         obj.OnGridResponse = gsOnGridResponse
         obj.OnJumpResponse = gsOnJumpResponse
+        obj.HandleCommand = gsHandleCommand
         obj.GetComponents = gsGetComponents
         obj.AfterItemFocused = gsAfterItemFocused
 
@@ -169,6 +170,26 @@ function gsOnGridResponse(request as object, response as object, context as obje
     end for
 
     m.show()
+end function
+
+function gsHandleCommand(command as string, item as dynamic) as boolean
+    handled = true
+
+    if command = "jump_button" then
+        for each component in m.shiftableComponents
+            if component.jumpIndex = item.metadata.index then
+                m.lastFocusedItem = invalid
+                m.focusedItem = component
+                m.CalculateShift(m.focusedItem)
+                m.OnItemFocused(m.focusedItem, item)
+                exit for
+            end if
+        next
+    else if not ApplyFunc(ComponentsScreen().HandleCommand, m, [command, item])
+        handled = false
+    end if
+
+    return handled
 end function
 
 sub gsGetComponents()
@@ -541,7 +562,7 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
             gridItem.ReInit(item, title, item.GetViewOffsetPercentage(), item.GetUnwatchedCount(), item.IsUnwatched())
             gridItem.setMetadata(item.attrs)
             gridItem.plexObject = item
-            gridItem.SetFocusable("card")
+            gridItem.SetFocusable("show_item")
 
             ' update focused item if we are replacing the context
             if m.focusedItem <> invalid and m.focuseditem.equals(gridItem) then

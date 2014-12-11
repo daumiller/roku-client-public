@@ -7,6 +7,7 @@ function DropDownClass() as object
         obj.Init = dropdownInit
         obj.Hide = dropdownHide
         obj.Show = dropdownShow
+        obj.Toggle = dropdownToggle
         obj.Destroy = dropdownDestroy
         obj.SetDropDownPosition = dropdownSetDropDownPosition
 
@@ -33,6 +34,8 @@ sub dropdownInit(text as string, font as object, maxHeight as integer)
     m.halign = m.JUSTIFY_CENTER
     m.valign = m.ALIGN_MIDDLE
     m.maxHeight = maxHeight
+    m.expanded = false
+    m.command = "toggle_control"
 
     ' components (buttons) container
     m.components = createObject("roList")
@@ -44,6 +47,7 @@ sub dropdownInit(text as string, font as object, maxHeight as integer)
 end sub
 
 function dropdownHide(drawAllNow=true as boolean) as boolean
+    m.expanded = false
     if m.components.count() = 0 then return false
     EnableBackButton()
 
@@ -57,6 +61,7 @@ end function
 sub dropdownShow(screen as object)
     m.hide(false)
     DisableBackButton()
+    m.expanded = true
 
     screen.focusedItem = invalid
 
@@ -114,6 +119,14 @@ sub dropdownShow(screen as object)
     end for
 
     CompositorScreen().DrawFocus(screen.focusedItem, true)
+end sub
+
+sub dropdownToggle(screen)
+    if m.expanded then
+        m.Hide()
+    else
+        m.Show(screen)
+    end if
 end sub
 
 sub dropdownDestroy()

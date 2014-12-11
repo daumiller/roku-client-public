@@ -46,6 +46,9 @@ function Application()
         obj.ProcessTextureEvent = appProcessTextureEvent
         obj.OnInitialized = appOnInitialized
 
+        obj.OnAccountChange = appOnAccountChange
+        obj.ShowInitialScreen = appShowInitialScreen
+
         ' Track anything that needs to be initialized before the app can start
         ' and an initial screen can be shown. These need to be important,
         ' generally related to whether the app is unlocked or not.
@@ -238,16 +241,27 @@ function appProcessOneMessage(timeout)
 end function
 
 sub appOnInitialized()
+    ' Wire up a few of our own listeners
+    m.On("change:user", createCallable("OnAccountChange", m))
+
     m.Trigger("init", [])
 
     ' Make sure we have a current app state
     AppManager().ResetState()
 
-    ' TODO(schuyler): This is clearly bogus, but we need to show some sort of screen
     if m.screens.Count() = 0 then
-        ' TODO(rob): Temporarily forcing CardTest screen
-        m.pushScreen(createLoadingScreen())
+        m.ShowInitialScreen()
     end if
+end sub
+
+sub appOnAccountChange(account as dynamic)
+    Debug("Account changed to " + tostr(account.username))
+    m.ShowInitialScreen()
+end sub
+
+sub appShowInitialScreen()
+    m.ClearScreens()
+    m.pushScreen(createLoadingScreen())
 end sub
 
 sub appAddTimer(timer as object, callback as object, screenID=invalid as dynamic)

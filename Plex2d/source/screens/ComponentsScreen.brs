@@ -33,7 +33,6 @@ function ComponentsScreen() as object
         obj.Show = compShow
         obj.Deactivate = compDeactivate
         obj.Activate = compActivate
-        obj.OnAccountChange = compOnAccountChange
 
         obj.GetComponents = compGetComponents
         obj.GetManualComponents = compGetManualComponents
@@ -50,6 +49,7 @@ function ComponentsScreen() as object
 
         ' Message handling
         obj.HandleMessage = compHandleMessage
+        obj.HandleCommand = compHandleCommand
         obj.OnItemFocused = compOnItemFocused
         obj.OnItemSelected = compOnItemSelected
         obj.OnKeyPress = compOnKeyPress
@@ -58,8 +58,6 @@ function ComponentsScreen() as object
         obj.OnInfoButton = compOnInfoButton
 
         obj.AfterItemFocused = function(item as dynamic) : Debug("AfterItemFocused::no-op") : end function
-
-        Application().On("change:user", createCallable("OnAccountChange", obj))
 
         m.ComponentsScreen = obj
     end if
@@ -387,67 +385,54 @@ sub compOnItemSelected(item as object)
 
     if item.OnSelected <> invalid then
         item.OnSelected()
-    else if tostr(item.classname) = "DropDown" then
-        if item.hide() then return
-        item.show(m)
     else if item.command <> invalid then
-        if item.command = "jump_button" then
-            for each component in m.shiftableComponents
-                if component.jumpIndex = item.metadata.index then
-                    m.lastFocusedItem = invalid
-                    m.focusedItem = component
-                    m.CalculateShift(m.focusedItem)
-                    m.OnItemFocused(m.focusedItem, item)
-                    exit for
-                end if
-            end for
-        else if item.command = "play" or item.command = "resume" then
-            screen = createVideoScreen(item.plexObject, (item.command = "resume"))
-            if screen.screenError <> invalid then
-                dialog = createDialog("command failed: " + item.command, screen.screenError, m)
-                dialog.Show()
-            else
-                Application().PushScreen(screen)
-            end if
-        else if item.command = "go_home" then
-            Application().GoHome()
-        else if item.command = "grid_button" then
-            Application().PushScreen(createGridScreen(item.plexObject))
-        else if item.command = "card" then
-            itemType = item.plexObject.Get("type")
-            if itemType = invalid then
-                Debug("card object type is invalid")
-            else if itemType = "movie" or itemType = "episode" or itemType = "clip" then
-                Application().PushScreen(createPreplayScreen(item.plexObject))
-            else if itemType = "playlist" then
-                ' TODO(rob): what type of preplay do we use for playlists? Do we even include
-                ' playlists, or wait for the next iteration when we have playQueue support?
-                Application().PushScreen(createPreplayContextScreen(item.plexObject))
-            else if itemType = "show" then
-                Application().PushScreen(createPreplayContextScreen(item.plexObject))
-            else if item.plexObject.IsDirectory() then
-                Application().PushScreen(createGridScreen(item.plexObject))
-            else
-                dialog = createDialog("card type not handled yet", "type: " + itemType, m)
-                dialog.Show()
-            end if
-        else if item.command = "section_button" then
-            Application().PushScreen(createSectionsScreen(item.plexObject))
-        else if item.command = "sign_out" then
-            MyPlexAccount().SignOut()
-        else if item.command = "sign_in" then
-            Application().pushScreen(createPinScreen())
-        else if item.command = "selected_server" then
-            if item.metadata <> invalid then
-                Application().pushScreen(createHomeScreen(item.metadata))
-            end if
-        else
+        if not m.HandleCommand(item.command, item) then
             dialog = createDialog("Command not defined", "command: " + tostr(item.command), m)
             dialog.Show()
             Debug("command not defined: " + tostr(item.command))
         end if
     end if
 end sub
+
+function compHandleCommand(command as string, item as dynamic) as boolean
+    handled = true
+
+    ' Handle some generic commands here. Anything specific to a screen type
+    ' should be handled in that screen type.
+
+    if command = "go_home" then
+        Application().GoHome()
+    else if command = "toggle_control" then
+        item.Toggle(m)
+    else if command = "show_item" and item.plexObject <> invalid then
+        ' We want to show a screen for a PlexObject of some sort. Look at the
+        ' type and try to choose the best screen type.
+        '
+        itemType = item.plexObject.Get("type")
+
+        if itemType = invalid then
+            Error("Don't know how to show an item with no type")
+        else if itemType = "movie" or itemType = "episode" or itemType = "clip" then
+            ' Simple preplay
+            Application().PushScreen(createPreplayScreen(item.plexObject))
+        else if itemType = "playlist" then
+            ' TODO(rob): what type of preplay do we use for playlists? Do we even include
+            ' playlists, or wait for the next iteration when we have playQueue support?
+            Application().PushScreen(createPreplayContextScreen(item.plexObject))
+        else if itemType = "show" then
+            Application().PushScreen(createPreplayContextScreen(item.plexObject))
+        else if item.plexObject.IsDirectory() then
+            Application().PushScreen(createGridScreen(item.plexObject))
+        else
+            dialog = createDialog("Item type not handled yet", "type: " + itemType, m)
+            dialog.Show()
+        end if
+    else
+        handled = false
+    end if
+
+    return handled
+end function
 
 function computeRect(component as object) as object
     return {
@@ -976,11 +961,6 @@ sub compLazyLoadExec(components as object, zOrder=1 as integer)
         end if
     end for
     perfTimer().Log("lazy-load components")
-end sub
-
-sub compOnAccountChange(account as dynamic)
-    Debug("Account changed to " + tostr(account.username) )
-    Application().pushScreen(createLoadingScreen())
 end sub
 
 sub compOnInfoButton()

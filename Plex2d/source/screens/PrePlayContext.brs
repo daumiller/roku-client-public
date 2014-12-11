@@ -129,7 +129,7 @@ sub ppcGetComponents()
         card.width = card.GetWidthForOrientation(card.orientation, hbGrid.Height, card)
         card.fixed = false
         card.plexObject = item
-        card.SetFocusable("card")
+        card.SetFocusable("show_item")
         if m.focusedItem = invalid then m.focusedItem = card
         hbGrid.AddComponent(card)
     end for

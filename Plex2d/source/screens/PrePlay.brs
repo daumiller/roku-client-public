@@ -10,6 +10,7 @@ function PreplayScreen() as object
         obj.Show = preplayShow
         obj.Init = preplayInit
         obj.OnResponse = preplayOnResponse
+        obj.HandleCommand = preplayHandleCommand
         obj.GetComponents = preplayGetComponents
 
         obj.GetButtons = preplayGetButtons
@@ -78,12 +79,27 @@ sub preplayOnResponse(request as object, response as object, context as object)
         m.item = m.items[0]
     end if
 
-    ' TODO(schuyler): This is temporary, just to show the invocation
-    choice = MediaDecisionEngine().ChooseMedia(m.item)
-    Debug("MDE: " + choice.ToString())
-
-    m.show()
+    m.Show()
 end sub
+
+function preplayHandleCommand(command as string, item as dynamic) as boolean
+    handled = true
+
+    if command = "play" or command = "resume" then
+        handled = true
+        screen = createVideoScreen(m.item, (command = "resume"))
+        if screen.screenError = invalid then
+            Application().PushScreen(screen)
+        else
+            dialog = createDialog("command failed: " + command, screen.screenError, m)
+            dialog.Show()
+        end if
+    else if not ApplyFunc(ComponentsScreen().HandleCommand, m, [command, item])
+        handled = false
+    end if
+
+    return handled
+end function
 
 sub preplayGetComponents()
     m.DestroyComponents()
@@ -303,7 +319,6 @@ function preplayGetButtons() as object
         btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
         btn.width = 100
         btn.height = 50
-        btn.plexObject = m.item
         if m.focusedItem = invalid then m.focusedItem = btn
         components.push(btn)
     end for
