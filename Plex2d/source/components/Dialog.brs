@@ -74,6 +74,7 @@ sub dialogInit(title as string, text as dynamic)
     }
 
     m.enableBackButton = false
+    m.buttonsSingleLine = false
 end sub
 
 function dialogClose() as boolean
@@ -123,11 +124,18 @@ sub dialogShow()
         btn.zOrder = 100
         dialogBox.AddComponent(btn)
     else
+        if m.buttonsSingleLine then
+            btnCont = createHBox(false, false, false, 10)
+        else
+            btnCont = createVBox(false, false, false, 10)
+        end if
+        btnCont.phalign = btnCont.JUSTIFY_CENTER
         for each button in m.buttons
             btn = m.createButton(button.text, button.command)
             btn.zOrder = 100
-            dialogBox.AddComponent(btn)
+            btnCont.AddComponent(btn)
         end for
+        dialogBox.AddComponent(btnCont)
     end if
 
     m.components.push(dialogBox)
