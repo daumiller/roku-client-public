@@ -28,7 +28,7 @@ function createHomeScreen(server as object) as object
     obj.server = server
 
     ' TODO(rob): should we keep the loading screen in the stack?
-    Application().clearScreens(1)
+    Application().clearScreens()
 
     return obj
 end function
