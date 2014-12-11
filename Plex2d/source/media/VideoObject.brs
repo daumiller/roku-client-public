@@ -77,9 +77,6 @@ sub voBuildDirectPlay()
         obj.SDBifUrl = part.GetIndexUrl("sd")
         obj.HDBifUrl = part.GetIndexUrl("hd")
     end if
-    if part.Get("indexes") <> invalid then
-        obj.SDBifUrl = server.BuildUrl("/library/parts/" + part.Get("id") + "/indexes/sd?interval=10000")
-    end if
 
     if m.audioStream <> invalid then
         obj.AudioLanguageSelected = m.audioStream.Get("languageCode")
