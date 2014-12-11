@@ -72,10 +72,12 @@ sub dialogInit(title as string, text as dynamic)
         titleFont:  FontRegistry().font18b
         textFont:  FontRegistry().font18
     }
+
+    m.enableBackButton = false
 end sub
 
 function dialogClose() as boolean
-    EnableBackButton()
+    if m.enableBackButton = false then EnableBackButton()
     m.DestroyComponents()
     m.customFonts.clear()
 
@@ -91,7 +93,7 @@ end function
 
 sub dialogShow()
     Application().CloseLoadingModal()
-    DisableBackButton()
+    if m.enableBackButton = false then DisableBackButton()
     dialogBox = createVBox(false, false, false, m.spacing)
     dialogBox.SetFrame(m.x, m.y, m.width, m.height)
 
