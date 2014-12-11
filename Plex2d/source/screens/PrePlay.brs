@@ -29,7 +29,7 @@ sub preplayInit()
 
     ' Intialize custom fonts for this screen
     m.customFonts.large = FontRegistry().GetTextFont(28)
-    m.customFonts.button = FontRegistry().GetIconFont(32)
+    m.customFonts.glyphs = FontRegistry().GetIconFont(32)
 
     m.requestContext = invalid
 end sub
@@ -305,17 +305,17 @@ function preplayGetButtons() as object
     buttons = createObject("roList")
     ' TODO(rob) I need to find a better font editor to map the fonts.
     if m.item.InProgress() then
-        buttons.push({text: "h", command: "resume"})
+        buttons.push({text: Glyphs().RESUME, command: "resume"})
     end if
-    buttons.push({text: "g", command: "play"})
+    buttons.push({text: Glyphs().PLAY, command: "play"})
     if m.item.IsUnwatched() then
-        buttons.push({text: "b", command: "scrobble"})
+        buttons.push({text: Glyphs().SCROBBLE, command: "scrobble"})
     else
-        buttons.push({text: "c", command: "unscrobble"})
+        buttons.push({text: Glyphs().UNSCROBBLE, command: "unscrobble"})
     end if
 
     for each button in buttons
-        btn = createButton(button.text, m.customFonts.button, button.command)
+        btn = createButton(button.text, m.customFonts.glyphs, button.command)
         btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
         btn.width = 100
         btn.height = 50
@@ -324,7 +324,7 @@ function preplayGetButtons() as object
     end for
 
     ' more/pivot button (drop-drown)
-    btn = createDropDown("f", m.customFonts.button, int(720 * .80))
+    btn = createDropDown(Glyphs().MORE, m.customFonts.glyphs, int(720 * .80))
     btn.SetDropDownPosition("right")
     btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
     btn.width = 100
