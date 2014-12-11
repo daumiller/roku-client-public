@@ -287,7 +287,7 @@ end function
 
 function mdeCanUseSoftSubs(stream as object) as boolean
     ' TODO(schuyler): Do we need to reevaluate preferences?
-    if RegRead("softsubtitles", "preferences", "1") = "0" then return false
+    ' if RegRead("softsubtitles", "preferences", "1") = "0" then return false
 
     ' We only support soft subtitles for sidecar SRT.
     if stream.Get("codec") <> "srt" or stream.Get("key") = invalid then return false
