@@ -114,35 +114,7 @@ sub settingsInitGlobals()
     m.globals["appName"] = appInfo.GetTitle()
     m.globals["appID"] = appInfo.GetID()
 
-    knownModels = {}
-    knownModels["N1050"] = "Roku SD"
-    knownModels["N1000"] = "Roku HD"
-    knownModels["N1100"] = "Roku HD"
-    knownModels["2000C"] = "Roku HD"
-    knownModels["2050N"] = "Roku XD"
-    knownModels["2050X"] = "Roku XD"
-    knownModels["N1101"] = "Roku XD|S"
-    knownModels["2100X"] = "Roku XD|S"
-    knownModels["2400X"] = "Roku LT"
-    knownModels["2450X"] = "Roku LT"
-    knownModels["2400SK"] = "Now TV"
-    ' 2500X is also Roku HD, but the newer meaning of it... not sure how best to distinguish
-    knownModels["2500X"] = "Roku HD (New)"
-    knownModels["2700X"] = "Roku LT"
-    knownModels["2710X"] = "Roku 1"
-    knownModels["2720X"] = "Roku 2"
-    knownModels["3000X"] = "Roku 2 HD"
-    knownModels["3050X"] = "Roku 2 XD"
-    knownModels["3100X"] = "Roku 2 XS"
-    knownModels["3400X"] = "Roku Streaming Stick"
-    knownModels["3420X"] = "Roku Streaming Stick"
-    knownModels["3500X"] = "Roku Streaming Stick HDMI"
-    knownModels["4200R"] = "Roku 3"
-    knownModels["4200X"] = "Roku 3"
-
-    model = firstOf(knownModels[device.GetModel()], "Roku " + device.GetModel())
-    m.globals["rokuModel"] = model
-
+    m.globals["rokuModel"] = device.GetModelDisplayName()
     m.globals["rokuUniqueID"] = device.GetDeviceUniqueId()
     m.globals["clientIdentifier"] = m.globals["appName"] + m.globals["rokuUniqueID"]
 
