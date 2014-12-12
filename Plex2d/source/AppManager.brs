@@ -19,6 +19,7 @@ function AppManager()
         obj.FetchProducts = managerFetchProducts
         obj.HandleChannelStoreEvent = managerHandleChannelStoreEvent
         obj.StartPurchase = managerStartPurchase
+        obj.OnStoreTimer = managerOnStoreTimer
 
         ' Singleton
         m.AppManager = obj
@@ -62,6 +63,9 @@ sub managerFetchProducts()
     ' purchase on the older firmware.
 
     if CheckMinimumVersion(AppSettings().GetGlobal("rokuVersionArr", [0]), [5, 1]) then
+        ' TODO(rob): maybe we should ignore adding the initializer if the current
+        ' state is not limited? This would improve startup time.. basically:
+        ' if not m.IsPlaybackAllowed() then Application().AddInitializer("channelstore")
         Application().AddInitializer("channelstore")
 
         ' The docs suggest we can make two requests at the same time by using the
@@ -74,6 +78,10 @@ sub managerFetchProducts()
         store.GetPurchases()
         m.pendingStore = store
         m.pendingRequestPurchased = true
+
+        m.storeTimer = createTimer("channelStore")
+        m.storeTimer.SetDuration(10000)
+        Application().AddTimer(m.storeTimer, createCallable("OnStoreTimer", m))
     else
         ' Rather than force these users to have a Plex Pass, we'll exempt them.
         ' Among other things, this allows old users to continue to work, since
@@ -85,6 +93,7 @@ sub managerFetchProducts()
 end sub
 
 sub managerHandleChannelStoreEvent(msg)
+    m.storeTimer = invalid
     m.pendingStore = invalid
     atLeastOneProduct = false
 
@@ -147,4 +156,13 @@ sub managerStartPurchase()
     else
         Debug("Product not purchased")
     end if
+end sub
+
+sub managerOnStoreTimer(timer as dynamic)
+    if m.storeTimer <> invalid then
+        Debug("Channel Store timed out: " + tostr(m.storeTimer.GetElapsedSeconds()) + "s")
+        m.storeTimer = invalid
+        m.ResetState()
+        Application().ClearInitializer("channelstore")
+   end if
 end sub
