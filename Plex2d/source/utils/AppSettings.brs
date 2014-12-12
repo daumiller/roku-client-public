@@ -129,5 +129,5 @@ sub settingsInitGlobals()
 
     ' animation support - handle slower Rokus
     m.globals["animationSupport"] = true
-    m.globals["animationFull"] = (model = "Roku 3")
+    m.globals["animationFull"] = (device.GetModelDisplayName() = "Roku 3")
 end sub
