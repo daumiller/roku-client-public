@@ -90,8 +90,6 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
 
         m.SaveState()
         MyPlexManager().Publish()
-
-        ' TODO(schuyler): Just screwing around, remove this...
         MyPlexManager().RefreshResources()
     else if response.GetStatus() = 401 then
         ' The user is specifically unauthorized, clear everything
