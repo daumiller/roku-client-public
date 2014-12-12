@@ -255,7 +255,7 @@ sub appOnInitialized()
 end sub
 
 sub appOnAccountChange(account as dynamic)
-    Debug("Account changed to " + tostr(account.username))
+    Debug("Account changed to " + tostr(account.title))
     m.ShowInitialScreen()
 end sub
 

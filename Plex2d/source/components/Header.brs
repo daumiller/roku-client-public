@@ -89,7 +89,7 @@ sub headerPerformLayout()
         else
             connect = {text: "Sign In", command: "sign_in"}
         end if
-        button = createDropDown(firstOf(MyPlexAccount().username, "Options"), m.buttons.font, int(720 * .80))
+        button = createDropDown(firstOf(MyPlexAccount().title, "Options"), m.buttons.font, int(720 * .80))
         button.width = m.buttons.width
         button.pvalign = button[m.buttons.valign]
         button.options.push({text: "Settings", command: "settings", font: m.buttons.font, height: 66, width: 128 })
