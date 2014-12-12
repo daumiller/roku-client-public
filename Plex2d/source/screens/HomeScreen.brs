@@ -78,6 +78,7 @@ function homeHandleCommand(command as string, item as dynamic) as boolean
     else if command = "sign_in" then
         Application().PushScreen(createPinScreen())
     else if command = "selected_server" then
+        PlexServerManager().SetSelectedServer(item.metadata, true)
         Application().PushScreen(createHomeScreen(item.metadata))
     else if not ApplyFunc(HubsScreen().HandleCommand, m, [command, item])
         handled = false

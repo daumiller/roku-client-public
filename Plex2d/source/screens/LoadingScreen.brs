@@ -11,6 +11,8 @@ function LoadingScreen() as object
         obj.OnWaitTimer = loadingOnWaitTimer
         obj.CreateBackground = loadingCreateBackground
 
+        obj.OnServerSelected = loadingOnServerSelected
+
         obj.Reset()
         m.LoadingScreen = obj
     end if
@@ -35,6 +37,21 @@ Function createLoadingScreen() As Object
 
     return obj
 End Function
+
+sub loadingOnServerSelected(server as dynamic)
+    if m.callback <> invalid then
+        Application().Off("change:selectedServer", m.callback)
+        m.callback = invalid
+    end if
+
+    if server <> invalid then
+        Application().pushScreen(createHomeScreen(server))
+    else if not MyPlexAccount().IsSignedIn then
+        Application().PushScreen(createPinScreen())
+    else
+        Fatal("No servers, but signed in. We should show a dialog...")
+    end if
+end sub
 
 sub loadingCreateBackground()
     ' show the Plex Logo while loading..
@@ -61,7 +78,16 @@ sub loadingScreenShow(arg = invalid)
     timer.maxPrimaryAttempts = 2 ' wait for selectedServer (this really shouldn't take any time)
     timer.maxAttempts = 15       ' max attempts to try and find a server before giving up
     timer.SetDuration(1000, true)
-    Application().AddTimer(timer, createCallable("OnWaitTimer", m))
+    ' Application().AddTimer(timer, createCallable("OnWaitTimer", m))
+
+    server = PlexServerManager().GetSelectedServer()
+
+    if server = invalid then
+        m.callback = CreateCallable("OnServerSelected", m, Rnd(256))
+        Application().On("change:selectedServer", m.callback)
+    else
+        m.OnServerSelected(server)
+    end if
 end sub
 
 function loadingHandleMessage(msg)
