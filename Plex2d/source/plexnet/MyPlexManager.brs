@@ -37,7 +37,6 @@ sub mpPublish()
 end sub
 
 sub mpRefreshResources()
-    ' TODO(schuyler): This is just a demonstration that things are working, much more to do...
     request = createMyPlexRequest("/pms/resources")
     context = request.CreateRequestContext("resources", createCallable("OnResourcesResponse", m))
 

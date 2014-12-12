@@ -33,8 +33,8 @@ function PlexServerManager()
 
         m.PlexServerManager = obj
 
-        obj.LoadState()
         obj.StartSelectedServerSearch()
+        obj.LoadState()
 
         Application().On("change:user", createCallable("OnAccountChange", obj))
     end if
@@ -251,19 +251,69 @@ function psmCompareServers(first as dynamic, second as dynamic) as integer
 end function
 
 sub psmLoadState()
-    ' TODO(schuyler): Load from JSON
+    json = AppSettings().GetPreference("PlexServerManager", invalid, "misc")
+    if json = invalid then return
+
+    obj = ParseJson(json)
+    if obj = invalid then
+        Error("Failed to parse PlexServerManager JSON")
+        return
+    end if
+
+    m.searchContext.preferredServer = obj.lastServerId
+
+    for each serverObj in obj.servers
+        server = createPlexServerForName(serverObj.uuid, serverObj.name)
+        server.owned = serverObj.owned
+
+        for each conn in serverObj.connections
+            server.connections.Push(createPlexConnection(conn.sources, conn.address, conn.isLocal, conn.token))
+        next
+
+        m.serversByUuid[server.uuid] = server
+    next
+
+    Debug("Loaded " + tostr(obj.servers.Count()) + " servers from registry")
+    m.UpdateReachability(false)
 end sub
 
 sub psmSaveState()
-    ' TODO(schuyler): Serialize to registry as JSON
+    ' Serialize our important information to JSON and save it to the registry.
+    ' We'll always update server info upon connecting, so we don't need much
+    ' info here. We do have to use roArray instead of roList, because Brightscript.
+
+    obj = CreateObject("roAssociativeArray")
+
+    servers = m.GetServers()
+    obj.servers = CreateObject("roArray", servers.Count(), false)
+
+    for each server in servers
+        serverObj = {
+            name: server.name,
+            uuid: server.uuid,
+            owned: server.owned,
+            connections: CreateObject("roArray", server.connections.Count(), false)
+        }
+
+        for each conn in server.connections
+            serverObj.connections.Push({
+                sources: conn.sources,
+                address: conn.address,
+                isLocal: conn.isLocal,
+                token: conn.token
+            })
+        next
+
+        obj.servers.Push(serverObj)
+    next
 
     if m.selectedServer <> invalid then
-        uuid = m.selectedServer.uuid
+        obj.lastServerId = m.selectedServer.uuid
     else
-        uuid = invalid
+        obj.lastServerId = invalid
     end if
 
-    AppSettings().SetPreference("lastServerId", uuid, "misc")
+    AppSettings().SetPreference("PlexServerManager", FormatJson(obj), "misc")
 end sub
 
 function psmIsValidForTranscoding(server as dynamic) as boolean
@@ -285,7 +335,7 @@ sub psmStartSelectedServerSearch(reset=false as boolean)
     ' Keep track of some information during our search
     m.searchContext = {
         bestServer: invalid,
-        preferredServer: AppSettings().GetPreference("lastServerId", invalid, "misc")
+        preferredServer: invalid,
         waitingForResources: true
     }
 end sub
