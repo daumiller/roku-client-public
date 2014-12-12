@@ -37,6 +37,8 @@ end function
 sub managerResetState()
     if MyPlexAccount().isPlexPass then
         m.state = "Plex Pass"
+    else if MyPlexAccount().isEntitled then
+        m.state = "Entitlement"
     else if m.isExempt then
         m.state = "Exempt"
     else if m.isPurchased then
@@ -45,7 +47,13 @@ sub managerResetState()
         m.state = "Limited"
     end if
 
-    Info("App state is now: " + m.state)
+    if m.State <> "Limited" then
+        m.StateDisplay = "Unlocked"
+    else
+        m.StateDisplay = m.State
+    end if
+
+    Debug("App state is now: " + m.StateDisplay + " (" + m.State + ")")
 end sub
 
 sub managerFetchProducts()
