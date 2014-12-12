@@ -34,6 +34,7 @@ function PlexServerClass() as object
         obj.MarkUpdateFinished = pnsMarkUpdateFinished
         obj.IsReachable = pnsIsReachable
         obj.IsLocalConnection = pnsIsLocalConnection
+        obj.IsRequestToServer = pnsIsRequestToServer
         obj.Merge = pnsMerge
         obj.Equals = pnsEquals
         obj.ToString = pnsToString
@@ -115,6 +116,19 @@ end function
 
 function pnsIsLocalConnection() as boolean
     return (m.activeConnection <> invalid and m.activeConnection.isLocal = true)
+end function
+
+function pnsIsRequestToServer(url as string) as boolean
+    if m.activeconnection = invalid the return false
+
+    portIndex = instr(8, m.activeconnection.address, ":")
+    if portIndex > 0 then
+        schemeAndHost = left(m.activeconnection.address, portIndex - 1)
+    else
+        schemeAndHost = m.activeconnection.address
+    end if
+
+    return (left(url, len(schemeAndHost)) = schemeAndHost)
 end function
 
 function pnsGetToken() as dynamic

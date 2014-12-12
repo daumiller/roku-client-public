@@ -67,10 +67,10 @@ sub vsInit()
     screen.SetPositionNotificationPeriod(1)
     screen.EnableCookies()
 
-    ' TODO(rob): helper required to add token with appropriate
-    'if server.IsRequestToServer(videoItem.StreamUrls[0]) then
-    AddPlexHeaders(screen, m.item.GetServer().GetToken())
-    'end if
+    ' Add appropriate X-Plex header if it's a reqeust to the server
+    if videoItem.server <> invalid and videoItem.server.IsRequestToServer(videoItem.StreamUrls[0]) then
+        AddPlexHeaders(screen, videoItem.server.GetToken())
+    end if
 
     screen.SetCertificatesFile("common:/certs/ca-bundle.crt")
     screen.SetCertificatesDepth(5)
