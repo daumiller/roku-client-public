@@ -507,5 +507,5 @@ sub appClearScreens(keep = 0 as integer, activateLastScreen=false as boolean)
 end sub
 
 sub appGoHome()
-    m.ClearScreens(2, true)
+    m.ClearScreens(1, true)
 end sub
