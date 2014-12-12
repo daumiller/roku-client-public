@@ -50,14 +50,15 @@ function psmSetSelectedServer(server as dynamic, force as boolean) as boolean
     ' Don't do anything if the server is already selected.
     if m.selectedServer <> invalid and m.selectedServer.Equals(server) then return false
 
-    ' Don't select servers that don't have connections.
-    if server.activeConnection = invalid then return false
+    if server <> invalid then
+        ' Don't select servers that don't have connections.
+        if server.activeConnection = invalid then return false
 
-    ' Don't select synced servers.
-    if server.synced then return false
+        ' Don't select synced servers.
+        if server.synced then return false
+    end if
 
     if m.selectedServer = invalid or force then
-        stop
         Info("Setting selected server to " + tostr(server))
         m.selectedServer = server
 
@@ -178,7 +179,7 @@ sub psmUpdateReachabilityResult(server as object, reachable as boolean)
         if searching then
             ' If this is what we were hoping for, select it
             if server.uuid = m.searchContext.preferredServer then
-                m.SetSelectedServer(server)
+                m.SetSelectedServer(server, true)
             else if m.CompareServers(m.searchContext.bestServer, server) < 0 then
                 m.searchContext.bestServer = server
             end if
@@ -255,6 +256,14 @@ end sub
 
 sub psmSaveState()
     ' TODO(schuyler): Serialize to registry as JSON
+
+    if m.selectedServer <> invalid then
+        uuid = m.selectedServer.uuid
+    else
+        uuid = invalid
+    end if
+
+    AppSettings().SetPreference("lastServerId", uuid, "misc")
 end sub
 
 function psmIsValidForTranscoding(server as dynamic) as boolean
@@ -271,13 +280,12 @@ sub psmStartSelectedServerSearch(reset=false as boolean)
         m.selectedServer = invalid
     end if
 
-    ' TODO(schuyler): Set the preferredServer to our last used server
     ' TODO(schuyler): waitingForResources
 
     ' Keep track of some information during our search
     m.searchContext = {
         bestServer: invalid,
-        preferredServer: invalid,
+        preferredServer: AppSettings().GetPreference("lastServerId", invalid, "misc")
         waitingForResources: true
     }
 end sub
