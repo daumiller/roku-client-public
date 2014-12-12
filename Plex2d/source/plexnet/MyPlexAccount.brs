@@ -101,7 +101,7 @@ sub mpaLoadState()
 end sub
 
 sub mpaOnAccountResponse(request as object, response as object, context as object)
-    oldTitle = m.title
+    oldId = m.id
 
     if response.IsSuccess() then
         xml = response.GetBodyXml()
@@ -180,7 +180,7 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
     Application().ClearInitializer("myplex")
     AppManager().ResetState()
 
-    if oldTitle <> m.title then
+    if oldId <> m.id then
         Application().Trigger("change:user", [m])
     end if
 end sub
