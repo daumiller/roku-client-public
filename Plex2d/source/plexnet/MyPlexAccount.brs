@@ -197,6 +197,7 @@ sub mpaSignOut()
     m.pin = invalid
 
     ' Booleans
+    m.isSignedIn = false
     m.isPlexPass = false
     m.isEntitled = false
     m.isRestricted = false
