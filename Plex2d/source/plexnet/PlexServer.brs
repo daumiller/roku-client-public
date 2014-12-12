@@ -119,7 +119,7 @@ function pnsIsLocalConnection() as boolean
 end function
 
 function pnsIsRequestToServer(url as string) as boolean
-    if m.activeconnection = invalid the return false
+    if m.activeconnection = invalid then return false
 
     portIndex = instr(8, m.activeconnection.address, ":")
     if portIndex > 0 then
