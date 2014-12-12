@@ -110,6 +110,10 @@ sub psmUpdateFromConnectionType(servers as object, source as integer)
         m.MergeServer(server)
     next
 
+    if m.searchContext <> invalid and source = PlexConnectionClass().SOURCE_MYPLEX then
+        m.searchContext.waitingForResources = false
+    end if
+
     m.DeviceRefreshComplete(source)
     m.UpdateReachability(false)
     m.SaveState()
@@ -206,8 +210,7 @@ sub psmCheckSelectedServerSearch()
     if m.selectedServer = invalid and m.searchContext <> invalid then
         waitingForPreferred = false
         waitingForOwned = false
-        waitingForAnything = false
-        ' TODO(schuyler): waitingForResources
+        waitingForAnything = (m.searchContext.waitingForResources and MyPlexAccount().isSignedIn)
 
         ' Iterate over all our servers and see if we're waiting on any results
         servers = m.GetServers()
@@ -329,8 +332,6 @@ sub psmStartSelectedServerSearch(reset=false as boolean)
     if reset then
         m.selectedServer = invalid
     end if
-
-    ' TODO(schuyler): waitingForResources
 
     ' Keep track of some information during our search
     m.searchContext = {
