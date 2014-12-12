@@ -109,17 +109,10 @@ sub settingsInitGlobals()
     m.globals["rokuVersionStr"] = versionStr
     m.globals["rokuVersionArr"] = [major, minor, build]
 
-    manifest = ReadAsciiFile("pkg:/manifest")
-    lines = manifest.Tokenize(chr(10))
-    aa = {}
-    for each line in lines
-        entry = line.Tokenize("=")
-        aa.AddReplace(entry[0], entry[1])
-    next
-
-    appVersion = firstOf(aa["version"], "Unknown")
-    m.globals["appVersionStr"] = appVersion
-    m.globals["appName"] = firstOf(aa["title"], "Unknown")
+    appInfo = CreateObject("roAppInfo")
+    m.globals["appVersionStr"] = appInfo.GetVersion()
+    m.globals["appName"] = appInfo.GetTitle()
+    m.globals["appID"] = appInfo.GetID()
 
     knownModels = {}
     knownModels["N1050"] = "Roku SD"
