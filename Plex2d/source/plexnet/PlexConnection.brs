@@ -67,7 +67,7 @@ sub pncTestReachability(server as object)
     request = createHttpRequest(m.BuildUrl(server, "/"))
     context = request.CreateRequestContext("reachability", CreateCallable("OnReachabilityResponse", m))
     context.server = server
-    context.timeout = 20000
+    context.timeout = 10000
     AddPlexHeaders(request.request, server.GetToken())
 
     Application().StartRequest(request, context)
