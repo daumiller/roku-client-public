@@ -41,18 +41,19 @@ function createPinScreen(clearScreens=true as boolean) as object
 
     obj.Init()
 
+    if clearScreens then Application().clearScreens()
+
     ' TODO(rob): setting hasEntitlementError could be done on one line, but we
     ' also need to sign out the user without calling 'change:user'. We rely on
     ' change:user after pin validation, and that requires the ID's to differ
-    if MyPlexAccount().isSignedIn and MyPlexAccount().isEntitled = false then
+    obj.hasEntitlementError = (MyPlexAccount().isSignedIn and MyPlexAccount().isEntitled = false)
+    if obj.hasEntitlementError
         MyPlexAccount().id = invalid
-        obj.hasEntitlementError = true
+        obj.show()
+    else
+        ' Request a code
+        obj.RequestCode()
     end if
-
-    if clearScreens then Application().clearScreens()
-
-    ' Request a code
-    obj.RequestCode()
 
     return obj
 end function
@@ -64,11 +65,6 @@ sub pinActivate()
 end sub
 
 sub pinRequestCode()
-    if m.hasEntitlementError then
-        m.Show()
-        return
-    end if
-
     ' Kick off a request for the real pin
     m.pinCode = invalid
     m.pollUrl = invalid
