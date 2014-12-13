@@ -261,7 +261,11 @@ end sub
 
 sub appShowInitialScreen()
     m.ClearScreens()
-    m.pushScreen(createLoadingScreen())
+    if MyPlexAccount().isSignedIn = false or MyPlexAccount().isEntitled = false then
+        m.pushScreen(createPinScreen())
+    else
+        m.pushScreen(createLoadingScreen())
+    end if
 end sub
 
 sub appAddTimer(timer as object, callback as object, screenID=invalid as dynamic)

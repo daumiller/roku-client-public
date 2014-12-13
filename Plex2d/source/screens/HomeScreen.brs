@@ -76,7 +76,9 @@ function homeHandleCommand(command as string, item as dynamic) as boolean
     if command = "sign_out" then
         MyPlexAccount().SignOut()
     else if command = "sign_in" then
-        Application().PushScreen(createPinScreen())
+        ' TODO(rob): we should not recieve this command until the channel
+        ' is available to IAP users.
+        Application().PushScreen(createPinScreen(false))
     else if command = "selected_server" then
         PlexServerManager().SetSelectedServer(item.metadata, true)
         Application().PushScreen(createHomeScreen(item.metadata))

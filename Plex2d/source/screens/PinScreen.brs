@@ -35,13 +35,21 @@ sub pinInit()
     m.customFonts.info = FontRegistry().font16
 end sub
 
-function createPinScreen() as object
-    Debug("######## Creating PIN roScreen ########")
-
+function createPinScreen(clearScreens=true as boolean) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(PinScreen())
 
     obj.Init()
+
+    ' TODO(rob): setting hasEntitlementError could be done on one line, but we
+    ' also need to sign out the user without calling 'change:user'. We rely on
+    ' change:user after pin validation, and that requires the ID's to differ
+    if MyPlexAccount().isSignedIn and MyPlexAccount().isEntitled = false then
+        MyPlexAccount().id = invalid
+        obj.hasEntitlementError = true
+    end if
+
+    if clearScreens then Application().clearScreens()
 
     ' Request a code
     obj.RequestCode()
@@ -56,6 +64,11 @@ sub pinActivate()
 end sub
 
 sub pinRequestCode()
+    if m.hasEntitlementError then
+        m.Show()
+        return
+    end if
+
     ' Kick off a request for the real pin
     m.pinCode = invalid
     m.pollUrl = invalid
@@ -119,13 +132,14 @@ sub pinOnItemSelected(item as object)
     Debug("PIN item selected with command: " + tostr(item.command))
 
     if item.command <> invalid then
-        m.pollTimer.active = false
+        if m.polltimer <> invalid then m.pollTimer.active = false
 
         ' TODO(rob): skip button removed, but we may need to allow it when
         ' we add support for IAP. Same concept goes for the loading screen.
         ' i.e. If the app isn't purchased, then we should just show the PIN
         ' screen immediately.
         if item.command = "refresh" then
+            m.hasEntitlementError = false
             ' Request a new code
             m.RequestCode()
         end if
@@ -148,10 +162,20 @@ sub pinGetComponents()
 
     vb = createVBox(false, false, false, 5)
 
+    titleBox = createHBox(false, false, false, m.customFonts.welcome.GetOneLineWidth(" ", 1280))
     welcomeLabel = createLabel("Welcome to Plex", m.customFonts.welcome)
-    vb.AddComponent(welcomeLabel)
+    titleBox.AddComponent(welcomeLabel)
+    if m.hasEntitlementError then
+        previewLabel = createLabel("- Plex Pass Preview", m.customFonts.welcome)
+        previewLabel.SetColor(&h999999ff)
+        titleBox.AddComponent(previewLabel)
+    end if
+    vb.AddComponent(titleBox)
 
-    if m.hasError then
+    if m.hasEntitlementError then
+        infoLabel = createLabel("Plex Pass Required", m.customFonts.info)
+        infoLabel.SetColor(&hc23529ff)
+    else if m.hasError then
         if m.pinCode <> invalid then
             infoLabel = createLabel("The PIN has expired. Please 'Refresh' to try again.", m.customFonts.info)
         else
@@ -168,29 +192,43 @@ sub pinGetComponents()
 
     vb.AddSpacer(10)
 
-    pinDigits = createHBox(true, true, false, 20)
-    for i = 1 to 4
-        if m.pinCode <> invalid then
-            pinDigit = createLabel(Mid(m.pinCode, i, 1), m.customFonts.pin)
-        else
-            pinDigit = createLabel("-", m.customFonts.pin)
-        end if
-        pinDigit.SetColor(pinColor, &h1f1f1fff)
-        pinDigit.halign = pinDigit.JUSTIFY_CENTER
-        pinDigit.valign = pinDigit.ALIGN_MIDDLE
-        pinDigit.width = 113
-        pinDigit.height = 140
-        pinDigits.AddComponent(pinDigit)
-    end for
-    vb.AddComponent(pinDigits)
+    if m.hasEntitlementError then
+        message = "We're sorry, this application is currently only available for Plex "
+        message = message + "Pass subscribers. Don't worry though, we're working hard to have it "
+        message = message + "ready for everyone very soon. Can't wait? Buy a Plex Pass now."
+        msgLabel = createLabel(message, FontRegistry().font16)
+        msgLabel.wrap = true
+        msgLabel.SetFrame(0, 0, 500, FontRegistry().font16.getOneLineHeight() * 3)
+        vb.AddComponent(msgLabel)
+        vb.AddSpacer(10)
+        urlLabel = createLabel("http://plex.tv/plexpass", FontRegistry().font16)
+        urlLabel.SetColor(Colors().PlexClr)
+        vb.AddComponent(urlLabel)
+    else
+        pinDigits = createHBox(true, true, false, 20)
+        for i = 1 to 4
+            if m.pinCode <> invalid then
+                pinDigit = createLabel(Mid(m.pinCode, i, 1), m.customFonts.pin)
+            else
+                pinDigit = createLabel(" ", m.customFonts.pin)
+            end if
+            pinDigit.SetColor(pinColor, &h1f1f1fff)
+            pinDigit.halign = pinDigit.JUSTIFY_CENTER
+            pinDigit.valign = pinDigit.ALIGN_MIDDLE
+            pinDigit.width = 113
+            pinDigit.height = 140
+            pinDigits.AddComponent(pinDigit)
+        end for
+        vb.AddComponent(pinDigits)
+    end if
 
     vb.AddSpacer(15)
 
     buttons = createHBox(false, false, false, 10)
     buttons.halign = buttons.JUSTIFY_RIGHT
 
-    if m.hasError then
-        refreshButton = createButton("Refresh", FontRegistry().font16, "refresh")
+    if m.hasError or m.hasEntitlementError then
+        refreshButton = createButton(iif(m.hasEntitlementError, "Retry", "Refresh"), FontRegistry().font16, "refresh")
         refreshButton.SetColor(&hffffffff, &h1f1f1fff)
         refreshButton.width = 72
         refreshButton.height = 44
