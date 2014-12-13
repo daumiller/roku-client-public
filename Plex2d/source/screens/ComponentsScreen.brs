@@ -209,6 +209,12 @@ sub compDeactivate(screen = invalid as dynamic)
 end sub
 
 sub compDestroyComponents(clear=true as boolean)
+    if m.focusedItem <> invalid then
+        Debug("compDestroyComponents:: focusedItem")
+        m.focusedItem.Destroy()
+        m.focusedItem = invalid
+    end if
+
     if m.components.count() > 0 then
         Debug("compDestroyComponents:: before: " + tostr(m.components.count()))
         for each comp in m.components
