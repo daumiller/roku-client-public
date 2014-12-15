@@ -312,7 +312,9 @@ sub vpUpdateNowPlaying(force=false as boolean)
     Debug("vcUpdateNowPlaying:: " + m.playState + " " + tostr(1000 * m.lastPosition))
 end sub
 
-sub vpOnTimelineTimer(timer as dynamic)
-    Debug("vcOnTimelineTimer::expired " + tostr(timer.name))
-    m.UpdateNowPlaying()
+sub vpOnTimelineTimer(timer as object)
+    ' From the timeline timer, we need to force an update. This ensures
+    ' everything works correctly if you, say, leave a video paused for a while.
+    '
+    m.UpdateNowPlaying(true)
 end sub
