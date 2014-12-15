@@ -1,42 +1,59 @@
-function VideoScreen() as object
-    if m.VideoScreen = invalid then
+function VideoPlayer() as object
+    if m.VideoPlayer = invalid then
         obj = CreateObject("roAssociativeArray")
+
+        ' This is both an implementation of our player API (Pause, Resume, etc.)
+        ' and responsible for the actual screen playing the video. So we
+        ' inherit from BaseScreen even though we're a long-lived singleton.
+        '
         obj.Append(BaseScreen())
 
-        obj.Show = vsShow
-        obj.HandleMessage = vsHandleMessage
-        obj.Cleanup = vsCleanup
-        obj.Init = vsInit
+        ' Screen functions
+        obj.Show = vpShow
+        obj.HandleMessage = vpHandleMessage
+        obj.Init = vpInit
 
-        obj.Pause = vsPause
-        obj.Resume = vsResume
-        obj.Next = vsNext
-        obj.Prev = vsPrev
-        obj.Stop = vsStop
-        obj.Seek = vsSeek
+        ' Player API functions
+        obj.IsActive = vpIsActive
+        obj.Pause = vpPause
+        obj.Resume = vpResume
+        obj.Stop = vpStop
+        obj.Seek = vpSeek
+        obj.Prev = vpPrev
+        obj.Next = vpNext
 
-        obj.UpdateNowPlaying = vcUpdateNowPlaying
-        obj.OnTimelineTimer = vcOnTimelineTimer
+        obj.CreateVideoScreen = vpCreateVideoScreen
 
-        m.VideoScreen = obj
+        obj.UpdateNowPlaying = vpUpdateNowPlaying
+        obj.OnTimelineTimer = vpOnTimelineTimer
+
+        m.VideoPlayer = obj
     end if
 
-    return m.VideoScreen
+    return m.VideoPlayer
 end function
 
-function createVideoScreen(item as object, resume=false as boolean) as object
-    obj = CreateObject("roAssociativeArray")
-    obj.Append(VideoScreen())
+function vpCreateVideoScreen(item as object, resume=false as boolean) as object
+    ' We're supposed to create a video screen for a new item, we better not have
+    ' an old screen still.
+    '
+    if m.screen <> invalid then
+        Fatal("Can't create video screen on top of existing screen!")
+    end if
 
-    obj.item = item
-    obj.seekValue = iif(resume, item.GetInt("viewOffset"), 0)
+    m.item = item
+    m.seekValue = iif(resume, item.GetInt("viewOffset"), 0)
 
-    obj.Init()
+    ' To the extent that we're pretending to be a simple screen instance, we
+    ' were just created. So go ahead and call Init, get a new screen ID, etc.
+    '
+    m.Init()
 
-    return obj
+    return m
 end function
 
-sub vsInit()
+sub vpInit()
+    m.screenID = invalid
     ApplyFunc(BaseScreen().Init, m)
     Debug("init videoscreen: " + tostr(m.item.GetLongerTitle()))
 
@@ -65,15 +82,14 @@ sub vsInit()
     screen = CreateObject("roVideoScreen")
     screen.SetMessagePort(Application().port)
     screen.SetPositionNotificationPeriod(1)
+    screen.SetCertificatesFile("common:/certs/ca-bundle.crt")
+    screen.SetCertificatesDepth(5)
     screen.EnableCookies()
 
     ' Add appropriate X-Plex header if it's a reqeust to the server
     if videoItem.server <> invalid and videoItem.server.IsRequestToServer(videoItem.StreamUrls[0]) then
         AddPlexHeaders(screen, videoItem.server.GetToken())
     end if
-
-    screen.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    screen.SetCertificatesDepth(5)
 
     screen.SetContent(videoItem)
 
@@ -95,7 +111,7 @@ sub vsInit()
     m.screen = screen
 end sub
 
-sub vsShow()
+sub vpShow()
     if m.Screen <> invalid then
         if m.IsTranscoded then
             ' TODO(rob): log to pms
@@ -129,15 +145,7 @@ sub vsShow()
     end if
 end sub
 
-sub vsCleanup()
-    Debug("vsCleanup::no-op")
-end sub
-
-sub vsShowPlaybackError()
-    Debug("vsShowPlaybackError::no-op")
-end sub
-
-function vsHandleMessage(msg) as boolean
+function vpHandleMessage(msg) as boolean
     handled = false
     server = m.item.GetServer()
 
@@ -165,6 +173,8 @@ function vsHandleMessage(msg) as boolean
 
             ' TODO(rob): multi-parts and fallback transcode
             Application().PopScreen(m)
+
+            m.screen = invalid
         else if msg.isPlaybackPosition() then
             m.lastPosition = m.curPartOffset + msg.GetIndex()
             Debug("vsHandleMessage::isPlaybackPosition: set progress -> " + tostr(1000*m.lastPosition))
@@ -240,47 +250,52 @@ function vsHandleMessage(msg) as boolean
     return handled
 end function
 
-sub vsPause()
-    if m.Screen <> invalid then
-        m.Screen.Pause()
+function vpIsActive() as boolean
+    return (m.screen <> invalid)
+end function
+
+sub vpPause()
+    if m.screen <> invalid then
+        m.screen.Pause()
     end if
 end sub
 
-sub vsResume()
-    if m.Screen <> invalid then
-        m.Screen.Resume()
+sub vpResume()
+    if m.screen <> invalid then
+        m.screen.Resume()
     end if
 end sub
 
-sub vsNext()
-end sub
-
-sub vsPrev()
-end sub
-
-sub vsStop()
-    if m.Screen <> invalid then
-        m.Screen.Close()
+sub vpStop()
+    if m.screen <> invalid then
+        m.screen.Close()
     end if
 end sub
 
-sub vsSeek(offset, relative=false)
-    if m.Screen <> invalid then
-        if relative then
-            offset = offset + (1000 * m.lastPosition)
-            if offset < 0 then offset = 0
-        end if
+sub vpSeek(offset, relative=false as boolean)
+    if m.screen = invalid then return
 
-        if m.playState = "paused" then
-            m.Screen.Resume()
-            m.Screen.Seek(offset)
-        else
-            m.Screen.Seek(offset)
-        end if
+    if relative then
+        offset = offset + (1000 * m.lastPosition)
+        if offset < 0 then offset = 0
     end if
+
+    if m.playState = "paused" then
+        m.screen.Resume()
+    end if
+
+    m.screen.Seek(offset)
 end sub
 
-sub vcUpdateNowPlaying(force=false as boolean)
+sub vpPrev()
+    ' This is currently just a stub to provide a consistent player API (e.g. for remote control)
+end sub
+
+sub vpNext()
+    ' This is currently just a stub to provide a consistent player API (e.g. for remote control)
+end sub
+
+sub vpUpdateNowPlaying(force=false as boolean)
     ' We can only send the event if we have some basic info about the item
     if m.item.Get("ratingKey") = invalid or m.item.Get("duration") = invalid or m.item.GetServer() = invalid then
         m.timelineTimer.Active = false
@@ -297,7 +312,7 @@ sub vcUpdateNowPlaying(force=false as boolean)
     Debug("vcUpdateNowPlaying:: " + m.playState + " " + tostr(1000 * m.lastPosition))
 end sub
 
-sub vcOnTimelineTimer(timer as dynamic)
+sub vpOnTimelineTimer(timer as dynamic)
     Debug("vcOnTimelineTimer::expired " + tostr(timer.name))
     m.UpdateNowPlaying()
 end sub

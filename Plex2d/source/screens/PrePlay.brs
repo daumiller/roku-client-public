@@ -87,7 +87,7 @@ function preplayHandleCommand(command as string, item as dynamic) as boolean
 
     if command = "play" or command = "resume" then
         handled = true
-        screen = createVideoScreen(m.item, (command = "resume"))
+        screen = VideoPlayer().CreateVideoScreen(m.item, (command = "resume"))
         if screen.screenError = invalid then
             Application().PushScreen(screen)
         else

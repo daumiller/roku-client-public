@@ -34,6 +34,8 @@ function voBuild(transcode=invalid as dynamic) as object
     else
         m.BuildTranscode()
     end if
+
+    return m.videoItem
 end function
 
 sub voBuildTranscode()
