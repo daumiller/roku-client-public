@@ -108,14 +108,25 @@ sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
         padding = 0
     end if
 
-    focus = {
+    if component.focusInside = true then
+        focus = {
+            x: component.x
+            y: component.y
+            w: component.width
+            h: component.height
+        }
+    else
+        focus = {
+            x: component.x - numPixels - padding,
+            y: component.y - numPixels - padding,
+            w: component.width + (numPixels * 2) + (padding * 2),
+            h: component.height + (numPixels * 2) + (padding * 2),
+        }
+    end if
+    focus.append({
         color: &hff8a00ff,
-        x: component.x - numPixels - padding,
-        y: component.y - numPixels - padding,
         z: 995,
-        w: component.width + (numPixels * 2) + (padding * 2),
-        h: component.height + (numPixels * 2) + (padding * 2),
-    }
+    })
 
     ' If we've already focused something of the same size, we can simply
     ' move the focus box instead of destroying it and creating it again.
