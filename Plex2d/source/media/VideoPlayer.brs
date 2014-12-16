@@ -366,7 +366,7 @@ sub vpOnTranscodeInfoResponse(request as object, response as object, context as 
             else if session.Get("throttled") = "1" then
                 curState = " (> 1x)"
             else
-                curState = " (" + session.Get("speed", "?") + "x)"
+                curState = " (" + left(session.Get("speeds", "?"), 3) + "x)"
             end if
 
             video = iif(session.Get("videoDecision") = "transcode", "convert", "copy")
