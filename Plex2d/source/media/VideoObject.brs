@@ -61,9 +61,9 @@ function voBuild(directPlay=invalid as dynamic, directStream=true as boolean) as
     end if
 
     if directPlay then
-        m.BuildDirectPlay(obj, partIndex)
+        obj = m.BuildDirectPlay(obj, partIndex)
     else
-        m.BuildTranscode(obj, partIndex, directStream)
+        obj = m.BuildTranscode(obj, partIndex, directStream)
     end if
 
     m.videoItem = obj
@@ -73,15 +73,15 @@ function voBuild(directPlay=invalid as dynamic, directStream=true as boolean) as
     return m.videoItem
 end function
 
-sub voBuildTranscode(obj as object, partIndex as integer, directStream as boolean)
+function voBuildTranscode(obj as object, partIndex as integer, directStream as boolean) as dynamic
     ' TODO(schuyler): Kepler builds this URL in plexnet. And we build the
     ' image transcoding URL in plexnet. Should this move there?
 
     part = m.media.parts[partIndex]
     settings = AppSettings()
 
-    ' TODO(schuyler): What if this is invalid?
     transcodeServer = m.item.GetTranscodeServer(true)
+    if transcodeServer = invalid then return invalid
 
     obj.StreamFormat = "hls"
     obj.StreamBitrates = [0]
@@ -119,9 +119,11 @@ sub voBuildTranscode(obj as object, partIndex as integer, directStream as boolea
     builder.AddParam("X-Plex-Device", settings.GetGlobal("rokuModel"))
 
     obj.StreamUrls = [builder.GetUrl()]
-end sub
 
-sub voBuildDirectPlay(obj as object, partIndex as integer)
+    return obj
+end function
+
+function voBuildDirectPlay(obj as object, partIndex as integer) as dynamic
     part = m.media.parts[partIndex]
     server = m.item.GetServer()
 
@@ -138,4 +140,6 @@ sub voBuildDirectPlay(obj as object, partIndex as integer)
     if m.audioStream <> invalid then
         obj.AudioLanguageSelected = m.audioStream.Get("languageCode")
     end if
-end sub
+
+    return obj
+end function
