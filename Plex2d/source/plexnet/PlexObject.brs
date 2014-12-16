@@ -81,16 +81,19 @@ sub pnoInit(container as object, xml as object)
     '
     m.tags = invalid
 
-    for each elem in xml.GetChildElements()
-        if elem.HasAttribute("tag") then
-            if m.tags = invalid then m.tags = CreateObject("roAssociativeArray")
-            if not m.tags.DoesExist(elem.GetName()) then
-                m.tags[elem.GetName()] = CreateObject("roList")
-            end if
+    children = xml.GetChildElements()
+    if children <> invalid then
+        for each elem in xml.GetChildElements()
+            if elem.HasAttribute("tag") then
+                if m.tags = invalid then m.tags = CreateObject("roAssociativeArray")
+                if not m.tags.DoesExist(elem.GetName()) then
+                    m.tags[elem.GetName()] = CreateObject("roList")
+                end if
 
-            m.tags[elem.GetName()].Push(createPlexTag(elem))
-        end if
-    next
+                m.tags[elem.GetName()].Push(createPlexTag(elem))
+            end if
+        next
+    end if
 end sub
 
 sub pnoInitSynthetic(container as object, name as string)
