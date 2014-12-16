@@ -27,6 +27,7 @@ end function
 
 function voBuild(directPlay=invalid as dynamic, directStream=true as boolean) as object
     directPlay = firstOf(directPlay, m.choice.isDirectPlayable)
+    server = m.item.GetServer()
 
     ' A lot of our content metadata is independent of the direct play decision.
     ' Add that first.
@@ -50,7 +51,11 @@ function voBuild(directPlay=invalid as dynamic, directStream=true as boolean) as
         obj.FrameRate = 30
     end if
 
-    ' TODO(schuyler): Subtitle support
+    ' Add soft subtitle info
+    if m.choice.isExternalSoftSub then
+        obj.SubtitleUrl = server.BuildUrl(m.choice.subtitleStream.GetSubtitlePath(), true)
+        obj.SubtitleConfig = { ShowSubtitle: 1 }
+    end if
 
     ' TODO(schuyler): Actual multipart support
     partIndex = 0
@@ -107,7 +112,9 @@ function voBuildTranscode(obj as object, partIndex as integer, directStream as b
     builder.AddParam("videoResolution", settings.GetGlobal("transcodeVideoResolutions")[qualityIndex])
     builder.AddParam("maxVideoBitrate", settings.GetGlobal("transcodeVideoBitrates")[qualityIndex])
 
-    ' TODO(schuyler): Subtitles
+    if m.choice.isExternalSoftSub then
+        builder.AddParam("skipSubtitles", "1")
+    end if
 
     builder.AddParam("partIndex", tostr(partIndex))
 
@@ -137,7 +144,7 @@ function voBuildDirectPlay(obj as object, partIndex as integer) as dynamic
     part = m.media.parts[partIndex]
     server = m.item.GetServer()
 
-    obj.StreamUrls = [server.BuildUrl(part.GetAbsolutePath("key"))]
+    obj.StreamUrls = [server.BuildUrl(part.GetAbsolutePath("key"), true)]
     obj.StreamFormat = m.media.Get("container", "mp4")
     obj.StreamBitrates = [m.media.Get("bitrate")]
     if obj.StreamFormat = "hls" then obj.SwitchingStrategy = "full-adaptation"

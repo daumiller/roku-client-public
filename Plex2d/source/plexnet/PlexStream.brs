@@ -38,6 +38,7 @@ function PlexStreamClass() as object
         obj.GetCodec = pnstrGetCodec
         obj.GetChannels = pnstrGetChannels
         obj.GetLanguageName = pnstrGetLanguageName
+        obj.GetSubtitlePath = pnstrGetSubtitlePath
         obj.IsSelected = pnstrIsSelected
         obj.ToString = pnstrToString
         obj.Equals = pnstrEquals
@@ -109,6 +110,16 @@ function pnstrGetLanguageName() as string
     return firstOf(m.SAFE_LANGUAGE_NAMES[code], m.Get("language"), "Unknown")
 end function
 
+function pnstrGetSubtitlePath() as string
+    query = "?encoding=utf-8"
+
+    if m.Get("codec") = "smi" then
+        query = query + "&format=srt"
+    end if
+
+    return m.Get("key") + query
+end function
+
 function pnstrIsSelected() as boolean
     return (m.GetInt("selected") = 1)
 end function
@@ -142,4 +153,4 @@ function NoneStream() as object
     return m.NoneStream
 end function
 
-' TODO(schuyler): setSelected, getSubtitlePath
+' TODO(schuyler): setSelected
