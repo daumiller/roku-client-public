@@ -111,7 +111,7 @@ sub dialogShow()
         label.SetPadding(int(m.spacing/2))
         label.halign = label.JUSTIFY_CENTER
         label.valign = label.ALIGN_MIDDLE
-        label.zOrder = 100
+        label.zOrder = 200
         dialogBox.AddComponent(label)
     end if
 
@@ -122,14 +122,14 @@ sub dialogShow()
         label.SetPadding(int(m.spacing/2))
         label.halign = label.JUSTIFY_CENTER
         label.valign = label.ALIGN_MIDDLE
-        label.zOrder = 100
+        label.zOrder = 200
         dialogBox.AddComponent(label)
     end if
 
     ' Add buttons - or - add OK button if none exist
     if m.buttons.count() = 0 then
         btn = m.createButton("OK", "close")
-        btn.zOrder = 100
+        btn.zOrder = 200
         dialogBox.AddComponent(btn)
     else
         if m.buttonsSingleLine then
@@ -140,7 +140,7 @@ sub dialogShow()
         btnCont.phalign = btnCont.JUSTIFY_CENTER
         for each button in m.buttons
             btn = m.createButton(button.text, button.command)
-            btn.zOrder = 100
+            btn.zOrder = 200
             btnCont.AddComponent(btn)
         end for
         dialogBox.AddComponent(btnCont)
@@ -153,7 +153,7 @@ sub dialogShow()
     ' if we unshift instead of push the bkg.
     bkg = createBlock(Colors().ScrVeryDrkOverlayClr)
     bkg.SetFrame(m.x, m.y, m.width, m.height)
-    bkg.zOrder = 99
+    bkg.zOrder = 199
     m.components.push(bkg)
 
     for each comp in m.components
