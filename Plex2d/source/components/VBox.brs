@@ -11,6 +11,7 @@ function VBoxClass() as object
         obj.GetPreferredWidth = vboxGetPreferredWidth
         obj.GetPreferredHeight = vboxGetPreferredHeight
         obj.AddSpacer = vboxAddSpacer
+        obj.SetScrollable = vboxSetScrollable
 
         m.VBoxClass = obj
     end if
@@ -28,6 +29,7 @@ function createVBox(homogeneous as boolean, expand as boolean, fill as boolean, 
     obj.expand = expand
     obj.fill = fill
     obj.spacing = spacing
+    obj.scrollable = false
 
     return obj
 end function
@@ -90,3 +92,54 @@ function vboxGetPreferredHeight() as integer
     next
     return totalHeight
 end function
+
+sub vboxCalculateShift(toFocus as object)
+    if toFocus.fixed = true then return
+
+    shift = {
+        x: 0
+        y: 0
+        safeUp: m.y
+        safeDown: m.scrollHeight
+        shiftAmount: toFocus.height + m.spacing + firstOf(toFocus.scrollOffset, 0)
+    }
+
+    focusRect = computeRect(toFocus)
+    if focusRect.down > shift.safeDown
+        shift.y = shift.shiftAmount * -1
+    else if focusRect.up < shift.safeUp then
+        shift.y = shift.shiftAmount
+    end if
+
+    ' Verify we have shifted enough. We may have other non-focuseable components
+    ' between the scrollable list
+    if focusRect.down + shift.y > shift.safeDown
+        shift.y = shift.safeDown - focusRect.down
+    else if focusRect.up + shift.y < shift.safeUp then
+        shift.y = shift.safeUp - focusRect.up
+    end if
+
+    if shift.y <> 0 then
+        m.shiftComponents(shift)
+    end if
+end sub
+
+sub vboxShiftComponents(shift)
+    Debug("shift drop down by: " + tostr(shift.x) + "," + tostr(shift.y))
+
+    ' This is pretty simplistic compared to the default screen shifting. We
+    ' already have a list of components, and we are forgoing animation. All
+    ' we have to do is shift the position and set the sprites visbility.
+    for each component in m.components
+        component.ShiftPosition(shift.x, shift.y, true)
+        ' set the visibility based on the constraints
+        component.SetVisibility(invalid, invalid, shift.safeUp, shift.safeDown)
+    end for
+end sub
+
+sub vboxSetScrollable(scrollHeight as integer)
+    m.scrollable = true
+    m.scrollHeight = scrollHeight
+    m.ShiftComponents = vboxShiftComponents
+    m.CalculateShift = vboxCalculateShift
+end sub
