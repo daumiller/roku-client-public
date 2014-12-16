@@ -82,6 +82,10 @@ function homeHandleCommand(command as string, item as dynamic) as boolean
     else if command = "selected_server" then
         PlexServerManager().SetSelectedServer(item.metadata, true)
         Application().PushScreen(createHomeScreen(item.metadata))
+    else if command = "settings" then
+        ' TODO(rob): temporary placement and code
+        settings = createSettings(m)
+        settings.Show()
     else if not ApplyFunc(HubsScreen().HandleCommand, m, [command, item])
         handled = false
     end if
