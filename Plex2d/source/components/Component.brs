@@ -182,8 +182,8 @@ sub compSetVisibility(left=invalid as dynamic, right=invalid as dynamic, up=inva
         return
     end if
 
-    if m.sprite.GetZ() < 0 then
-        m.sprite.SeZ(firstOf(m.zOrder, 1))
+    if m.sprite.GetZ() < 0 or m.sprite.GetZ() < m.zOrder then
+        m.sprite.SetZ(firstOf(m.zOrder, 1))
     end if
 end sub
 
