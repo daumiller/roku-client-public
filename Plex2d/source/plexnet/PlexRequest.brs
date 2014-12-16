@@ -47,6 +47,17 @@ sub AddPlexHeaders(transferObj, token=invalid)
     AddAccountHeaders(transferObj, token)
 end sub
 
+sub AddPlexParameters(builder as object)
+    settings = AppSettings()
+    versionArr = settings.GetGlobal("rokuVersionArr")
+
+    builder.AddParam("X-Plex-Platform", "Roku")
+    builder.AddParam("X-Plex-Platform-Version", tostr(versionArr[0]) + "." + tostr(versionArr[1]))
+    builder.AddParam("X-Plex-Version", settings.GetGlobal("appVersionStr"))
+    builder.AddParam("X-Plex-Product", "Plex for Roku")
+    builder.AddParam("X-Plex-Device", settings.GetGlobal("rokuModel"))
+end sub
+
 sub AddAccountHeaders(transferObj, token=invalid)
     if token <> invalid then
         transferObj.AddHeader("X-Plex-Token", token)

@@ -113,13 +113,7 @@ function voBuildTranscode(obj as object, partIndex as integer, directStream as b
 
     ' TODO(schuyler): Surround sound and profile augmentation
 
-    ' TODO(schuyler): Can these be added from a helper?
-    versionArr = settings.GetGlobal("rokuVersionArr")
-    builder.AddParam("X-Plex-Platform", "Roku")
-    builder.AddParam("X-Plex-Platform-Version", tostr(versionArr[0]) + "." + tostr(versionArr[1]))
-    builder.AddParam("X-Plex-Version", settings.GetGlobal("appVersionStr"))
-    builder.AddParam("X-Plex-Product", "Plex for Roku")
-    builder.AddParam("X-Plex-Device", settings.GetGlobal("rokuModel"))
+    AddPlexParameters(builder)
 
     obj.StreamUrls = [builder.GetUrl()]
 
