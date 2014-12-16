@@ -22,24 +22,20 @@ function CreateVideoObject(item as object, seekValue=0 as integer) as object
     obj.choice = MediaDecisionEngine().ChooseMedia(item)
     obj.media = obj.choice.media
 
-    obj.Build()
-
     return obj
 end function
 
-function voBuild(transcode=invalid as dynamic) as object
-    ' TODO(schuyler): Only temporarily forcing transcodes to prove that it works
-    directPlay = false
-    ' isdirectplayable = firstOf(transcode, m.choice.isdirectplayable)
+function voBuild(directPlay=invalid as dynamic, directStream=true as boolean) as object
+    directPlay = firstOf(directPlay, m.choice.isDirectPlayable)
 
     ' A lot of our content metadata is independent of the direct play decision.
     ' Add that first.
 
     obj = CreateObject("roAssociativeArray")
     obj.PlayStart = int(m.seekValue/1000)
-    obj.Server = m.item.GetServer()
     obj.Title = m.item.GetLongerTitle()
     obj.ReleaseDate = m.item.Get("originallyAvailableAt")
+    obj.duration = m.media.GetInt("duration")
 
     videoRes = m.media.GetInt("videoResolution")
     obj.HDBranded = videoRes >= 720
@@ -67,7 +63,7 @@ function voBuild(transcode=invalid as dynamic) as object
     if directPlay then
         m.BuildDirectPlay(obj, partIndex)
     else
-        m.BuildTranscode(obj, partIndex)
+        m.BuildTranscode(obj, partIndex, directStream)
     end if
 
     m.videoItem = obj
@@ -77,7 +73,7 @@ function voBuild(transcode=invalid as dynamic) as object
     return m.videoItem
 end function
 
-sub voBuildTranscode(obj as object, partIndex as integer)
+sub voBuildTranscode(obj as object, partIndex as integer, directStream as boolean)
     ' TODO(schuyler): Kepler builds this URL in plexnet. And we build the
     ' image transcoding URL in plexnet. Should this move there?
 
@@ -91,6 +87,7 @@ sub voBuildTranscode(obj as object, partIndex as integer)
     obj.StreamBitrates = [0]
     obj.SwitchingStrategy = "no-adaptation"
     obj.IsTranscoded = true
+    obj.transcodeServer = transcodeServer
 
     builder = createHttpRequest(transcodeServer.BuildUrl("/video/:/transcode/universal/start.m3u8", true))
 
@@ -100,9 +97,7 @@ sub voBuildTranscode(obj as object, partIndex as integer)
     builder.AddParam("waitForSegments", "1")
     builder.AddParam("offset", tostr(int(m.seekValue/1000)))
     builder.AddParam("directPlay", "0")
-
-    ' TODO(schuyler): Based on settings
-    builder.AddParam("directStream", "1")
+    builder.AddParam("directStream", iif(directStream, "1", "0"))
 
     ' TODO(schuyler): Quality settings
     builder.AddParam("videoQuality", "100")

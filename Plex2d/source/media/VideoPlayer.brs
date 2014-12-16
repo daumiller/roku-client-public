@@ -12,6 +12,7 @@ function VideoPlayer() as object
         obj.Show = vpShow
         obj.HandleMessage = vpHandleMessage
         obj.Init = vpInit
+        obj.Cleanup = vpCleanup
 
         ' Player API functions
         obj.IsActive = vpIsActive
@@ -26,6 +27,8 @@ function VideoPlayer() as object
 
         obj.UpdateNowPlaying = vpUpdateNowPlaying
         obj.OnTimelineTimer = vpOnTimelineTimer
+        obj.OnPingTimer = vpOnPingTimer
+        obj.SendTranscoderCommand = vpSendTranscoderCommand
 
         m.VideoPlayer = obj
     end if
@@ -63,16 +66,17 @@ sub vpInit()
     m.isPlayed = false
     m.playState = "buffering"
 
-    ' TODO(rob): timers
     m.bufferingTimer = createTimer("buffering")
     m.playbackTimer = createTimer("playback")
     m.timelineTimer = invalid
+    m.pingTimer = invalid
 
     ' TODO(rob): multi-parts offset (curPartOffset)
     m.curPartOffset = 0
 
-    m.videoObject = CreateVideoObject(m.item, m.seekValue)
-    videoItem = m.videoObject.videoItem
+    ' TODO(schuyler): Only temporarily forcing transcodes to prove that it works
+    videoItem = CreateVideoObject(m.item, m.seekValue).Build(false)
+
     ' TODO(rob): better UX error handling
     if videoItem = invalid then
         m.screenError = "invalid video item"
@@ -93,22 +97,27 @@ sub vpInit()
 
     screen.SetContent(videoItem)
 
-    ' TODO(rob): other headers (non direct play)
     m.IsTranscoded = videoItem.IsTranscoded
-    'if m.IsTranscoded then
-    '    cookie = server.StartTranscode(videoItem.StreamUrls[0])
-    '    if cookie <> invalid then
-    '        screen.AddHeader("Cookie", cookie)
-    '    end if
-    'else
-    '    for each header in videoItem.IndirectHttpHeaders
-    '        for each name in header
-    '            screen.AddHeader(name, header[name])
-    '        next
-    '    next
-    'end if
+
+    ' TODO(schuyler): Extra headers for direct play of indirect items
 
     m.screen = screen
+    m.videoItem = videoItem
+end sub
+
+sub vpCleanup()
+    ' We're cleaning up after our screen, not anything long-lived.
+
+    timers = ["pingTimer", "timelineTimer", "playbackTimer", "bufferingTimer"]
+    for each name in timers
+        if m[name] <> invalid then
+            m[name].active = false
+            m[name] = invalid
+        end if
+    next
+
+    m.playState = "stopped"
+    m.screen = invalid
 end sub
 
 sub vpShow()
@@ -117,15 +126,9 @@ sub vpShow()
             ' TODO(rob): log to pms
             'Debug("Starting to play transcoded video", m.item.GetServer())
 
-            ' TODO(rob): pingTimer
-            'if m.pingTimer = invalid then
-            '    m.pingTimer = createTimer()
-            '    m.pingTimer.Name = "ping"
-            '    m.pingTimer.SetDuration(60005, true)
-            '    m.ViewController.AddTimer(m.pingTimer, m)
-            'end if
-            'm.pingTimer.Active = true
-            'm.pingTimer.Mark()
+            m.pingTimer = createTimer("ping")
+            m.pingTimer.SetDuration(60005, true)
+            Application().AddTimer(m.pingTimer, createCallable("OnPingTimer", m))
         else
             ' TODO(rob): log to pms
             'Debug("Starting to direct play video", m.item.GetServer())
@@ -153,7 +156,7 @@ function vpHandleMessage(msg) as boolean
         handled = true
 
         if msg.isScreenClosed() then
-            ' if m.IsTranscoded then server.StopVideo()
+            m.SendTranscoderCommand("stop")
 
             ' Send an analytics event.
             startOffset = int(m.SeekValue/1000)
@@ -165,7 +168,6 @@ function vpHandleMessage(msg) as boolean
                 Analytics().TrackEvent("Playback", m.item.Get("type", "clip"), tostr(m.item.container.Get("identifier")), amountPlayed)
             end if
 
-            m.timelineTimer.active = false
             m.playState = "stopped"
             Debug("vsHandleMessage::isScreenClosed: position -> " + tostr(m.lastPosition))
             NowPlayingManager().location = "navigation"
@@ -174,12 +176,12 @@ function vpHandleMessage(msg) as boolean
             ' TODO(rob): multi-parts and fallback transcode
             Application().PopScreen(m)
 
-            m.screen = invalid
+            m.Cleanup()
         else if msg.isPlaybackPosition() then
             m.lastPosition = m.curPartOffset + msg.GetIndex()
             Debug("vsHandleMessage::isPlaybackPosition: set progress -> " + tostr(1000*m.lastPosition))
 
-            duration = int(val(m.videoObject.media.Get("duration","0")))
+            duration = m.videoItem.duration
             if duration > 0 then
                 playedFraction = (m.lastPosition * 1000)/duration
                 if playedFraction > 0.90 then
@@ -212,13 +214,13 @@ function vpHandleMessage(msg) as boolean
             Debug("vsHandleMessage::isPartialResult: position -> " + tostr(m.lastPosition))
             m.playState = "stopped"
             m.UpdateNowPlaying()
-            'if m.IsTranscoded then server.StopVideo()
+            m.SendTranscoderCommand("stop")
         else if msg.isFullResult() then
             Debug("vsHandleMessage::isFullResult: position -> " + tostr(m.lastPosition))
             m.isPlayed = true
             m.playState = "stopped"
             m.UpdateNowPlaying()
-            'if m.IsTranscoded then server.StopVideo()
+            m.SendTranscoderCommand("stop")
         else if msg.isStreamStarted() then
             Debug("vsHandleMessage::isStreamStarted: position -> " + tostr(m.lastPosition))
             Debug("Message data -> " + tostr(msg.GetInfo()))
@@ -317,4 +319,17 @@ sub vpOnTimelineTimer(timer as object)
     ' everything works correctly if you, say, leave a video paused for a while.
     '
     m.UpdateNowPlaying(true)
+end sub
+
+sub vpOnPingTimer(timer as object)
+    m.SendTranscoderCommand("ping")
+end sub
+
+sub vpSendTranscoderCommand(command as string)
+    if m.videoItem <> invalid and m.videoItem.transcodeServer <> invalid then
+        path = "/video/:/transcode/universal/" + command + "?session=" + AppSettings().GetGlobal("clientIdentifier")
+        request = createPlexRequest(m.videoItem.transcodeServer, path)
+        context = request.CreateRequestContext(command)
+        Application().StartRequest(request, context)
+    end if
 end sub
