@@ -114,7 +114,7 @@ end function
 
 function pnpGetIndexUrl(indexKey as string) as dynamic
     if m.indexes <> invalid and m.indexes.DoesExist(indexKey) then
-        return m.container.server.BuildUrl("/library/parts/" + m.Get("id") + "/indexes/" + indexKey + "?interval=10000")
+        return m.container.server.BuildUrl("/library/parts/" + m.Get("id") + "/indexes/" + indexKey + "?interval=10000", true)
     else
         return invalid
     end if
