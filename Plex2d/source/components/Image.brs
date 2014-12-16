@@ -57,7 +57,7 @@ function imageDraw() as object
             else
                 m.source = m.sourceOrig.GetPosterTranscodeURL(int(multiplier * width), int(multiplier * height), transcodeOpts)
             end if
-        else
+        else if instr(1, m.sourceOrig, "/photo/:/transcode") = 0 then
             server = PlexServerManager().GetTranscodeServer()
             if server <> invalid then
                 m.source = server.GetImageTranscodeURL(m.sourceOrig, width, height, transcodeOpts)
