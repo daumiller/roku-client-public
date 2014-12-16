@@ -189,11 +189,12 @@ function vpHandleMessage(msg) as boolean
                 end if
             end if
 
-            if m.bufferingTimer <> invalid AND msg.GetIndex() > 0 then
-                ' TODO(rob): should the identifier be accessible from the item (plexnet?) -- m.item.container.Get("identifier")
-                Analytics().TrackTiming(m.bufferingTimer.GetElapsedMillis(), "buffering", tostr(m.IsTranscoded), tostr(m.item.container.Get("identifier")))
-                m.bufferingTimer = invalid
-            else
+            if msg.GetIndex() > 0 then
+                if m.bufferingTimer <> invalid then
+                    Analytics().TrackTiming(m.bufferingTimer.GetElapsedMillis(), "buffering", tostr(m.IsTranscoded), tostr(m.item.GetIdentifier()))
+                    m.bufferingTimer = invalid
+                end if
+
                 m.playState = "playing"
                 m.UpdateNowPlaying(true)
             end if
