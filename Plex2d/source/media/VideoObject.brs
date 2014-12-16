@@ -41,7 +41,7 @@ function voBuild(directPlay=invalid as dynamic, directStream=true as boolean) as
     videoRes = m.media.GetInt("videoResolution")
     obj.HDBranded = videoRes >= 720
     obj.fullHD = videoRes >= 1080
-    obj.StreamQualities = iif(videoRes >= 480 and AppSettings().GetGlobal("DisplayType") = "HDTV", ["HD"], ["SD"])
+    obj.StreamQualities = iif(videoRes >= 480 and AppSettings().GetGlobal("IsHD"), ["HD"], ["SD"])
 
     frameRate = m.media.Get("frameRate", "24p")
     if frameRate = "24p" then
@@ -101,10 +101,11 @@ function voBuildTranscode(obj as object, partIndex as integer, directStream as b
     builder.AddParam("directPlay", "0")
     builder.AddParam("directStream", iif(directStream, "1", "0"))
 
-    ' TODO(schuyler): Quality settings
-    builder.AddParam("videoQuality", "100")
-    builder.AddParam("videoResolution", "1280x720")
-    builder.AddParam("maxVideoBitrate", "4000")
+    ' TODO(schuyler): Get quality from prefs, local vs. remote, etc.
+    qualityIndex = 8
+    builder.AddParam("videoQuality", settings.GetGlobal("transcodeVideoQualities")[qualityIndex])
+    builder.AddParam("videoResolution", settings.GetGlobal("transcodeVideoResolutions")[qualityIndex])
+    builder.AddParam("maxVideoBitrate", settings.GetGlobal("transcodeVideoBitrates")[qualityIndex])
 
     ' TODO(schuyler): Subtitles
 

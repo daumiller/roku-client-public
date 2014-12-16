@@ -127,6 +127,12 @@ sub settingsInitGlobals()
     m.globals["displayType"] = device.GetDisplayType()
     m.globals["IsHD"] = (device.GetDisplayType() = "HDTV")
 
+    ' New-style quality settings indexed by old-style quality. The last value is
+    ' a synthetic one meant to mean "highest", which should try to remux most things.
+    m.globals["transcodeVideoQualities"]   = ["10",      "20",     "30",     "30",     "40",     "60",     "60",      "75",      "100",     "60",       "75",       "90",        "100",       "100"]
+    m.globals["transcodeVideoResolutions"] = ["220x180", "220x128","284x160","420x240","576x320","720x480","1024x768","1280x720","1280x720","1920x1080","1920x1080","1920x1080", "1920x1080", "1920x1080"]
+    m.globals["transcodeVideoBitrates"]    = ["64",      "96",     "208",    "320",    "720",    "1500",   "2000",    "3000",    "4000",    "8000",     "10000",    "12000",     "20000",     "200000"]
+
     ' animation support - handle slower Rokus
     m.globals["animationSupport"] = true
     m.globals["animationFull"] = (device.GetModelDisplayName() = "Roku 3")
