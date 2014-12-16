@@ -126,6 +126,7 @@ sub settingsShow()
             btn.zOrder = 100
             btn.SetPadding(0, 0, 0, m.padding*2)
             btn.OnFocus = settingsOnFocus
+            btn.OnBlur = settingsOnBlur
             btn.listBox = listBox
             btn.screen = m.screen
             btn.options = pref.options
@@ -155,6 +156,7 @@ end sub
 function settingsCreateButton(text as string, command as dynamic) as object
     btn = createButton(text, FontRegistry().font16, command)
     btn.fixed = true
+    btn.focusInside = true
     btn.halign = m.JUSTIFY_LEFT
 
     ' special properties for the settings buttons
@@ -167,7 +169,7 @@ function settingsCreateButton(text as string, command as dynamic) as object
     return btn
 end function
 
-function settingsGetPrefs()
+function settingsGetPrefs() as object
     ' TODO(rob): mark defaults or user selected prefs (state)
     prefs = CreateObject("roAssociativeArray")
     prefs.keys = CreateObject("roList")
@@ -228,7 +230,19 @@ function settingsGetPrefs()
     return prefs
 end function
 
-function settingsOnFocus()
+sub settingsOnFocus()
+    if tostr(m.listBox.curCommand) = m.command then
+        ' TODO(rob): we can probably rip the focus sibling out when we keep
+        ' state, as I'd expect we'll always focus to the selected pref
+        m.SetFocusSibling("right", m.screen.lastFocusedItem)
+        return
+    end if
+    m.listBox.curCommand = m.command
+
+    ' highlight the focused item
+    m.SetColor(Colors().TextClr, Colors().BtnBkgClr)
+    m.draw(true)
+
     'TODO(rob): better way to reinit the list box
     m.listBox.DestroyComponents()
     m.listBox.lastFocusableItem = invalid
@@ -247,14 +261,21 @@ function settingsOnFocus()
 
     CompositorScreen().DrawComponent(m.listBox)
     m.screen.screen.DrawAll()
-end function
+end sub
+
+sub settingsOnBlur(toFocus as object)
+    if toFocus.options <> invalid then
+        m.SetColor(Colors().TextClr)
+        m.draw(true)
+    end if
+end sub
 
 ' From the context of the underlying screen. Process everything as
 ' we would, but intercept the back button and close the overlay.
-function settingsOnKeyRelease(keyCode as integer)
+sub settingsOnKeyRelease(keyCode as integer)
     if keyCode = m.kp_BK then
         m.overlayScreen.Close()
     else
         m.SuperOnKeyRelease(keyCode)
     end if
-end function
+end sub
