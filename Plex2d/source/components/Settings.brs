@@ -63,9 +63,10 @@ sub settingsInit()
 
     ' TODO(rob) how do we handle dynamic width/height along with center placment?
     m.width = 660
-    m.height = 610
+    m.height = 560
     m.x = int(1280/2 - m.width/2)
     m.y = int(720/2 - m.height/2)
+    m.scrollHeight = m.y + m.height
 
     m.padding = 10
 end sub
@@ -92,36 +93,42 @@ sub settingsShow()
     Application().CloseLoadingModal()
 
     ' TODO(rob): 1px border on settingsBox and between menu/list box
-    settingsBox = createVBox(false, false, false, 0)
-    settingsBox.SetFrame(m.x, m.y, m.width, m.height)
 
     title = createLabel("Settings", FontRegistry().font18)
     title.halign = title.JUSTIFY_CENTER
     title.valign = title.ALIGN_MIDDLE
-    title.SetDimensions(m.width, 70)
     title.zOrder = 100
     title.SetColor(Colors().TextClr, Colors().BtnBkgClr)
-    settingsBox.AddComponent(title)
+    title.SetFrame(m.x, m.y, m.width, 70)
+    m.components.push(title)
 
-    prefsBox = createHBox(true, true, true, 0)
-    prefsBox.SetFrame(0, 0, m.width, m.height - title.height)
+    settingsBox = createHBox(true, true, true, 0)
+    settingsBox.SetFrame(m.x, m.y + title.height, m.width, m.height)
     menuBox = createVBox(false, false, false, 0)
     listBox = createVBox(false, false, false, 0)
-    prefsBox.AddComponent(menuBox)
-    prefsBox.AddComponent(listBox)
-    settingsBox.AddComponent(prefsBox)
+    settingsBox.AddComponent(menuBox)
+    settingsBox.AddComponent(listBox)
+
+    listBox.SetScrollable(m.scrollHeight)
+    menuBox.SetScrollable(m.scrollHeight)
 
     prefs = settingsGetPrefs()
     for each key in prefs.keys
         title = createLabel(key, FontRegistry().font18)
+        title.fixed = false
         title.SetColor(Colors().TextClr, Colors().BtnBkgClr and &hffffff90)
         title.SetDimensions(m.width, 60)
         title.SetPadding(0, 0, 0, m.padding)
         title.valign = title.ALIGN_MIDDLE
         title.zOrder = 100
         menuBox.AddComponent(title)
+        first = true
         for each pref in prefs[key]
             btn = m.createButton(pref.title, pref.command)
+            if first = true then
+                btn.scrollOffset = title.height
+                first = false
+            end if
             btn.SetDimensions(m.width, 60)
             btn.zOrder = 100
             btn.SetPadding(0, 0, 0, m.padding*2)
@@ -133,7 +140,6 @@ sub settingsShow()
             menuBox.AddComponent(btn)
         end for
     end for
-
     m.components.push(settingsBox)
 
     dimmer = createBlock(Colors().ScrMedOverlayClr)
@@ -150,13 +156,18 @@ sub settingsShow()
         CompositorScreen().DrawComponent(comp)
     end for
 
+    ' hide any menu options outside of the safe scrolling area
+    for each comp in menuBox.components
+        comp.SetVisibility(invalid, invalid, menuBox.y, menuBox.scrollHeight)
+    end for
+
     m.screen.OnItemFocused(m.screen.focusedItem)
 end sub
 
 function settingsCreateButton(text as string, command as dynamic) as object
     btn = createButton(text, FontRegistry().font16, command)
-    btn.fixed = true
     btn.focusInside = true
+    btn.fixed = false
     btn.halign = m.JUSTIFY_LEFT
 
     ' special properties for the settings buttons
@@ -227,6 +238,41 @@ function settingsGetPrefs() as object
     ]
     video.Push({command: "subtitle_size", title: "Subtitle Size", options: options})
 
+    ' ** ADVANCED PREFS ** '
+    advanced = CreateObject("roList")
+    prefs.keys.push("Advanced")
+    prefs.advanced = advanced
+
+    ' locate/remote video qualities
+    options1 = [
+        {title: "20 Mbps",  key: "20"},
+        {title: "12 Mbps",  key: "12"},
+        {title: "10 Mbps",  key: "10"},
+        {title: "8 Mbps",   key: "8"},
+        {title: "4 Mbps",   key: "4"},
+        {title: "3 Mbps",   key: "3"},
+        {title: "2 Mbps",   key: "2"},
+        {title: "1.5 Mbps", key: "1.5"},
+        {title: "720 Kbps", key: "720"},
+        {title: "320 Kbps", key: "320"},
+
+    ]
+
+    options2 = [
+        {title: "Tiny",   key: "tiny"},
+        {title: "Small",  key: "small"},
+        {title: "Normal", key: "normal"},
+        {title: "Large",  key: "large"},
+        {title: "Huge",   key: "huge"},
+    ]
+
+    advanced.Push({command: "testing1", title: "testing 1", options: options1, type: "radio"})
+    advanced.Push({command: "testing2", title: "testing 2", options: options2, type: "radio"})
+    advanced.Push({command: "testing3", title: "testing 3", options: options1, type: "radio"})
+    advanced.Push({command: "testing4", title: "testing 4", options: options2, type: "radio"})
+    advanced.Push({command: "testing5", title: "testing 5", options: options1, type: "radio"})
+    advanced.Push({command: "testing6", title: "testing 6", options: options2, type: "radio"})
+
     return prefs
 end function
 
@@ -256,10 +302,14 @@ sub settingsOnFocus()
         btn.SetFocusSibling("left", m)
         m.listBox.AddComponent(btn)
     end for
-
+    CompositorScreen().DrawComponent(m.listBox)
     m.SetFocusSibling("right", m.listBox.components[0])
 
-    CompositorScreen().DrawComponent(m.listBox)
+    ' hide any options outside of the safe scrolling area
+    for each comp in m.listBox.components
+        comp.SetVisibility(invalid, invalid, m.listBox.y, m.listBox.scrollHeight)
+    end for
+
     m.screen.screen.DrawAll()
 end sub
 

@@ -661,7 +661,7 @@ end function
 sub compCalculateShift(toFocus as object)
     if toFocus.fixed = true then return
 
-    ' allow the component to override the method
+    ' allow the component to override the method. e.g. VBox vertical scrolling
     if toFocus.parent <> invalid and type(toFocus.parent.CalculateShift) = "roFunction" then
         toFocus.parent.CalculateShift(toFocus)
         return
