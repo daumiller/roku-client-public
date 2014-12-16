@@ -67,9 +67,7 @@ sub dropdownShow(screen as object)
 
     ' TODO(rob): remove hard coded variables (position, dimensions, etc)
     vbox = createVBox(true, true, true, 0)
-    ' override the default shifting methods
-    vbox.ShiftComponents = dropdownShiftComponents
-    vbox.CalculateShift = dropdownCalculateShift
+    vbox.SetScrollable(m.maxHeight)
 
     dropDownWidth = m.width
     dropDownHeight = 0
@@ -115,7 +113,7 @@ sub dropdownShow(screen as object)
 
     ' set the visibility based on the constraints
     for each comp in vbox.components
-        comp.SetVisibility(invalid, invalid, vbox.y, m.maxHeight)
+        comp.SetVisibility(invalid, invalid, vbox.y, vbox.scrollHeight)
     end for
 
     CompositorScreen().DrawFocus(screen.focusedItem, true)
@@ -136,44 +134,6 @@ sub dropdownDestroy()
     end for
     ApplyFunc(ComponentClass().Destroy, m)
     EnableBackButton()
-end sub
-
-sub dropdownCalculateShift(toFocus as object)
-    ' this isn't really needed, but we'll include it for standards
-    if toFocus.fixed = true then return
-
-    shift = {
-        x: 0
-        y: 0
-        safeUp: m.y
-        safeDown: toFocus.dropDown.maxHeight
-        shiftAmount: toFocus.height + m.spacing
-    }
-
-    focusRect = computeRect(toFocus)
-    if focusRect.down > shift.safeDown
-        shift.y = shift.shiftAmount * -1
-    else if focusRect.up < shift.safeUp then
-        shift.y = shift.shiftAmount
-    end if
-
-    if shift.y <> 0 then
-        m.shiftComponents(shift)
-    end if
-end sub
-
-sub dropdownShiftComponents(shift)
-    Debug("shift drop down by: " + tostr(shift.x) + "," + tostr(shift.y))
-
-    ' This is pretty simplistic compared to the default screen shifting. We
-    ' already have a list of components, and we are forgoing animation. All
-    ' we have to do is shift the position and set the sprites visbility.
-    ' TODO(rob): verify: do we ned animation? It seems smooth enough.
-    for each component in m.components
-        component.ShiftPosition(shift.x, shift.y, true)
-        ' set the visibility based on the constraints
-        component.SetVisibility(invalid, invalid, shift.safeUp, shift.safeDown)
-    end for
 end sub
 
 sub dropdownSetDropDownPosition(direction as string)
