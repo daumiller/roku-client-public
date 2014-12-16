@@ -111,7 +111,20 @@ function voBuildTranscode(obj as object, partIndex as integer, directStream as b
 
     builder.AddParam("partIndex", tostr(partIndex))
 
-    ' TODO(schuyler): Surround sound and profile augmentation
+    ' Augment the server's profile for things that depend on the Roku's configuration.
+
+    ' TODO(schuyler): Do we still need this to be tweakable? Can we move it to the profile?
+    extras = "add-limitation(scope=videoCodec&scopeName=h264&type=upperBound&name=video.level&value=41&isRequired=true)"
+
+    ' TODO(schuyler): Surround sound support. (And maybe DTS in MKV!)
+    surroundSoundAC3 = false
+    if surroundSoundAC3 then
+        extras = extras + "+add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=hls&audioCodec=ac3)"
+    end if
+
+    if Len(extras) > 0 then
+        builder.AddParam("X-Plex-Client-Profile-Extra", extras)
+    end if
 
     AddPlexParameters(builder)
 
