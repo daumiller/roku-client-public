@@ -5,6 +5,7 @@ function HttpRequestClass() as object
         obj.StartAsync = httpStartAsync
         obj.GetToStringWithTimeout = httpGetToStringWithTimeout
         obj.GetIdentity = httpGetIdentity
+        obj.GetUrl = httpGetUrl
         obj.Cancel = httpCancel
         obj.AddParam = httpAddParam
         obj.AddHeader = httpAddHeader
@@ -102,6 +103,10 @@ end function
 
 function httpGetIdentity() as string
     return m.request.GetIdentity().toStr()
+end function
+
+function httpGetUrl() as string
+    return m.request.GetUrl()
 end function
 
 sub httpCancel()

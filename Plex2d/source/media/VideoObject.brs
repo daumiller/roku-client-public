@@ -28,45 +28,23 @@ function CreateVideoObject(item as object, seekValue=0 as integer) as object
 end function
 
 function voBuild(transcode=invalid as dynamic) as object
-    isdirectplayable = firstOf(transcode, m.choice.isdirectplayable)
-    if isdirectplayable then
-        m.BuildDirectPlay()
-    else
-        m.BuildTranscode()
-    end if
+    ' TODO(schuyler): Only temporarily forcing transcodes to prove that it works
+    directPlay = false
+    ' isdirectplayable = firstOf(transcode, m.choice.isdirectplayable)
 
-    return m.videoItem
-end function
+    ' A lot of our content metadata is independent of the direct play decision.
+    ' Add that first.
 
-sub voBuildTranscode()
-    Debug("cannot build transcoded video: not implemented")
-end sub
-
-sub voBuildDirectPlay()
-    ' TODO(rob): select curPart from seekValue. e.g. original: obj.curPart = metadata.SelectPartForOffset(seekValue)
-    part = m.media.parts[0]
-
-    server = m.item.GetServer()
-
-    ' TODO(rob): this is all sort of a mess. Transcoded material may also
-    ' use some of the same info... definitely a temporary mess.
     obj = CreateObject("roAssociativeArray")
     obj.PlayStart = int(m.seekValue/1000)
-    obj.Server = server
-
+    obj.Server = m.item.GetServer()
     obj.Title = m.item.GetLongerTitle()
     obj.ReleaseDate = m.item.Get("originallyAvailableAt")
 
-    videoRes = m.media.Get("videoResolution")
-    obj.HDBranded = val(videoRes) >= 720
-    obj.fullHD = iif(videoRes = "1080", true, false)
-
-    obj.StreamUrls = [server.BuildUrl(part.GetAbsolutePath("key"))]
-    obj.StreamFormat = m.media.Get("container", "mp4")
-    obj.StreamQualities = iif(appSettings().GetGlobal("DisplayType") = "HDTV", ["HD"], ["SD"])
-    obj.StreamBitrates = [m.media.Get("bitrate")]
-    if obj.StreamFormat = "hls" then obj.SwitchingStrategy = "full-adaptation"
-    obj.IsTranscoded = false
+    videoRes = m.media.GetInt("videoResolution")
+    obj.HDBranded = videoRes >= 720
+    obj.fullHD = videoRes >= 1080
+    obj.StreamQualities = iif(videoRes >= 480 and AppSettings().GetGlobal("DisplayType") = "HDTV", ["HD"], ["SD"])
 
     frameRate = m.media.Get("frameRate", "24p")
     if frameRate = "24p" then
@@ -75,24 +53,94 @@ sub voBuildDirectPlay()
         obj.FrameRate = 30
     end if
 
+    ' TODO(schuyler): Subtitle support
+
+    ' TODO(schuyler): Actual multipart support
+    partIndex = 0
+    part = m.media.parts[partIndex]
+
     if part.IsIndexed() then
         obj.SDBifUrl = part.GetIndexUrl("sd")
         obj.HDBifUrl = part.GetIndexUrl("hd")
     end if
 
+    if directPlay then
+        m.BuildDirectPlay(obj, partIndex)
+    else
+        m.BuildTranscode(obj, partIndex)
+    end if
+
+    m.videoItem = obj
+
+    Info("Constructed video item for playback: " + tostr(obj, 1))
+
+    return m.videoItem
+end function
+
+sub voBuildTranscode(obj as object, partIndex as integer)
+    ' TODO(schuyler): Kepler builds this URL in plexnet. And we build the
+    ' image transcoding URL in plexnet. Should this move there?
+
+    part = m.media.parts[partIndex]
+    settings = AppSettings()
+
+    ' TODO(schuyler): What if this is invalid?
+    transcodeServer = m.item.GetTranscodeServer(true)
+
+    obj.StreamFormat = "hls"
+    obj.StreamBitrates = [0]
+    obj.SwitchingStrategy = "no-adaptation"
+    obj.IsTranscoded = true
+
+    builder = createHttpRequest(transcodeServer.BuildUrl("/video/:/transcode/universal/start.m3u8", true))
+
+    builder.AddParam("protocol", "hls")
+    builder.AddParam("path", m.item.GetAbsolutePath("key"))
+    builder.AddParam("session", settings.GetGlobal("clientIdentifier"))
+    builder.AddParam("waitForSegments", "1")
+    builder.AddParam("offset", tostr(int(m.seekValue/1000)))
+    builder.AddParam("directPlay", "0")
+
+    ' TODO(schuyler): Based on settings
+    builder.AddParam("directStream", "1")
+
+    ' TODO(schuyler): Quality settings
+    builder.AddParam("videoQuality", "100")
+    builder.AddParam("videoResolution", "1280x720")
+    builder.AddParam("maxVideoBitrate", "4000")
+
+    ' TODO(schuyler): Subtitles
+
+    builder.AddParam("partIndex", tostr(partIndex))
+
+    ' TODO(schuyler): Surround sound and profile augmentation
+
+    ' TODO(schuyler): Can these be added from a helper?
+    versionArr = settings.GetGlobal("rokuVersionArr")
+    builder.AddParam("X-Plex-Platform", "Roku")
+    builder.AddParam("X-Plex-Platform-Version", tostr(versionArr[0]) + "." + tostr(versionArr[1]))
+    builder.AddParam("X-Plex-Version", settings.GetGlobal("appVersionStr"))
+    builder.AddParam("X-Plex-Product", "Plex for Roku")
+    builder.AddParam("X-Plex-Device", settings.GetGlobal("rokuModel"))
+
+    obj.StreamUrls = [builder.GetUrl()]
+end sub
+
+sub voBuildDirectPlay(obj as object, partIndex as integer)
+    part = m.media.parts[partIndex]
+    server = m.item.GetServer()
+
+    obj.StreamUrls = [server.BuildUrl(part.GetAbsolutePath("key"))]
+    obj.StreamFormat = m.media.Get("container", "mp4")
+    obj.StreamBitrates = [m.media.Get("bitrate")]
+    if obj.StreamFormat = "hls" then obj.SwitchingStrategy = "full-adaptation"
+    obj.IsTranscoded = false
+
+    if obj.StreamFormat = "mov" or obj.StreamFormat = "m4v" then
+        obj.StreamFormat = "mp4"
+    end if
+
     if m.audioStream <> invalid then
         obj.AudioLanguageSelected = m.audioStream.Get("languageCode")
     end if
-
-    ' TODO(rob): subtitles
-    'if part <> invalid AND part.subtitles <> invalid AND part.subtitles.Codec = "srt" AND part.subtitles.key <> invalid then
-    '    obj.SubtitleUrl = FullUrl(m.serverUrl, "", part.subtitles.key) + "?encoding=utf-8"
-    '    ' this forces showing the subtitle regardless of the Roku setting
-    '    obj.SubtitleConfig = { ShowSubtitle: 1 }
-    'end if
-
-    Debug("Setting stream quality: " + tostr(obj.StreamQualities[0]))
-    Debug("Will try to direct play " + tostr(obj.StreamUrls[0]))
-
-    m.videoItem = obj
 end sub
