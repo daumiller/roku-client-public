@@ -77,8 +77,7 @@ sub vpInit()
     ' TODO(rob): multi-parts offset (curPartOffset)
     m.curPartOffset = 0
 
-    ' TODO(schuyler): Only temporarily forcing transcodes to prove that it works
-    videoItem = CreateVideoObject(m.item, m.seekValue).Build(false)
+    videoItem = CreateVideoObject(m.item, m.seekValue).Build()
 
     ' TODO(rob): better UX error handling
     if videoItem = invalid then
