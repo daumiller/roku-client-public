@@ -34,7 +34,8 @@ function voBuild(directPlay=invalid as dynamic, directStream=true as boolean) as
     obj = CreateObject("roAssociativeArray")
     obj.PlayStart = int(m.seekValue/1000)
     obj.Title = m.item.GetLongerTitle()
-    obj.ReleaseDate = m.item.Get("originallyAvailableAt")
+    obj.ReleaseDate = m.item.Get("originallyAvailableAt", "")
+    obj.OrigReleaseDate = obj.ReleaseDate
     obj.duration = m.media.GetInt("duration")
 
     videoRes = m.media.GetInt("videoResolution")
@@ -88,6 +89,7 @@ function voBuildTranscode(obj as object, partIndex as integer, directStream as b
     obj.SwitchingStrategy = "no-adaptation"
     obj.IsTranscoded = true
     obj.transcodeServer = transcodeServer
+    obj.ReleaseDate = obj.ReleaseDate + "   Transcoded"
 
     builder = createHttpRequest(transcodeServer.BuildUrl("/video/:/transcode/universal/start.m3u8", true))
 
@@ -132,6 +134,7 @@ function voBuildDirectPlay(obj as object, partIndex as integer) as dynamic
     obj.StreamBitrates = [m.media.Get("bitrate")]
     if obj.StreamFormat = "hls" then obj.SwitchingStrategy = "full-adaptation"
     obj.IsTranscoded = false
+    obj.ReleaseDate = obj.ReleaseDate + "   Direct Play (" + obj.StreamFormat + ")"
 
     if obj.StreamFormat = "mov" or obj.StreamFormat = "m4v" then
         obj.StreamFormat = "mp4"

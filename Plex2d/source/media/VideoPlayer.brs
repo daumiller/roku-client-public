@@ -30,6 +30,9 @@ function VideoPlayer() as object
         obj.OnPingTimer = vpOnPingTimer
         obj.SendTranscoderCommand = vpSendTranscoderCommand
 
+        obj.RequestTranscodeSessionInfo = vpRequestTranscodeSessionInfo
+        obj.OnTranscodeInfoResponse = vpOnTranscodeInfoResponse
+
         m.VideoPlayer = obj
     end if
 
@@ -226,7 +229,7 @@ function vpHandleMessage(msg) as boolean
             Debug("vsHandleMessage::isStreamStarted: position -> " + tostr(m.lastPosition))
             Debug("Message data -> " + tostr(msg.GetInfo()))
 
-            ' m.StartTranscodeSessionRequest()
+            m.RequestTranscodeSessionInfo()
 
             ' TODO(rob): handle underrun warning
             'if msg.GetInfo().IsUnderrun = true then
@@ -324,6 +327,7 @@ end sub
 
 sub vpOnPingTimer(timer as object)
     m.SendTranscoderCommand("ping")
+    m.RequestTranscodeSessionInfo()
 end sub
 
 sub vpSendTranscoderCommand(command as string)
@@ -332,5 +336,44 @@ sub vpSendTranscoderCommand(command as string)
         request = createPlexRequest(m.videoItem.transcodeServer, path)
         context = request.CreateRequestContext(command)
         Application().StartRequest(request, context)
+    end if
+end sub
+
+sub vpRequestTranscodeSessionInfo()
+    if m.videoItem <> invalid and m.videoItem.transcodeServer <> invalid then
+        path = "/transcode/sessions/" + AppSettings().GetGlobal("clientIdentifier")
+        request = createPlexRequest(m.videoItem.transcodeServer, path)
+        context = request.CreateRequestContext("session", CreateCallable("OnTranscodeInfoResponse", m))
+        Application().StartRequest(request, context)
+    end if
+end sub
+
+sub vpOnTranscodeInfoResponse(request as object, response as object, context as object)
+    if m.videoItem <> invalid and m.screen <> invalid and response.ParseResponse() then
+        session = response.items.Peek()
+        if session <> invalid then
+            ' Dump the interesting info into the logs
+            Debug("--- Transcode Session Info ---")
+            Debug("Throttled: " + session.Get("throttled", ""))
+            Debug("Progress: " + session.Get("progress", ""))
+            Debug("Speed: " + session.Get("speed", ""))
+            Debug("Video Decision: " + session.Get("videoDecision"))
+            Debug("Audio Decision: " + session.Get("audioDecision"))
+
+            ' Update the most interesting bits in the overlay
+            if session.GetInt("progress") >= 100 then
+                curState = " (done)"
+            else if session.Get("throttled") = "1" then
+                curState = " (> 1x)"
+            else
+                curState = " (" + session.Get("speed", "?") + "x)"
+            end if
+
+            video = iif(session.Get("videoDecision") = "transcode", "convert", "copy")
+            audio = iif(session.Get("audioDecision") = "transcode", "convert", "copy")
+
+            m.videoItem.ReleaseDate = m.VideoItem.OrigReleaseDate + "   video: " + video + " audio: " + audio + curState
+            m.Screen.SetContent(m.videoItem)
+        end if
     end if
 end sub
