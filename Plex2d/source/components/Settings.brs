@@ -12,6 +12,7 @@ function SettingsClass() as object
         obj.OnKeyRelease = settingsOnKeyRelease
         obj.CreateMenuButton = settingsCreateMenuButton
         obj.CreatePrefButton = settingsCreatePrefButton
+        obj.GetPrefs = settingsGetPrefs
 
         m.SettingsClass = obj
     end if
@@ -24,11 +25,8 @@ function createSettings(screen as object) as object
     obj.Append(SettingsClass())
 
     obj.screen = screen
-
-    ' remember the current focus and invalidate it
-    obj.fromFocusedItem = screen.focusedItem
-    screen.lastFocusedItem = invalid
-    screen.FocusedItem = invalid
+    obj.title = "Settings"
+    obj.screenPref = false
 
     obj.Init()
 
@@ -36,6 +34,11 @@ function createSettings(screen as object) as object
 end function
 
 sub settingsInit()
+    ' remember the current focus and invalidate it
+    m.fromFocusedItem = m.screen.focusedItem
+    m.screen.lastFocusedItem = invalid
+    m.screen.FocusedItem = invalid
+
     ' hacky? intercept the back button to handle the overlay closure
     m.screen.SuperOnKeyRelease = m.screen.OnKeyRelease
     m.screen.OnKeyRelease = m.OnKeyRelease
@@ -77,7 +80,7 @@ sub settingsShow()
 
     ' TODO(rob): 1px border on settingsBox and between menu/list box
 
-    title = createLabel("Settings", FontRegistry().font18)
+    title = createLabel(m.title, FontRegistry().font18)
     title.halign = title.JUSTIFY_CENTER
     title.valign = title.ALIGN_MIDDLE
     title.zOrder = 100
@@ -95,7 +98,7 @@ sub settingsShow()
     listBox.SetScrollable(m.scrollHeight)
     menuBox.SetScrollable(m.scrollHeight)
 
-    prefs = settingsGetPrefs()
+    prefs = m.GetPrefs()
     for each key in prefs.keys
         title = createLabel(key, FontRegistry().font18)
         title.fixed = false
@@ -168,8 +171,8 @@ sub settingsButtonOnSelected()
     m.screen.OnKeyPress(m.screen.kp_RT, false)
 end sub
 
-function settingsCreatePrefButton(text as string, command as dynamic, value as string, prefType) as object
-    btn = createButtonPref(text, FontRegistry().font16, command, value, prefType)
+function settingsCreatePrefButton(text as string, command as dynamic, value as string, prefType as string) as object
+    btn = createButtonPref(text, FontRegistry().font16, command, value, prefType, m.screenPref)
     btn.focusInside = true
     btn.fixed = false
     btn.halign = m.JUSTIFY_LEFT

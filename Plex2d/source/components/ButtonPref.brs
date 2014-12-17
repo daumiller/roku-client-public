@@ -14,7 +14,7 @@ function ButtonPrefClass() as object
     return m.ButtonPrefClass
 end function
 
-function createButtonPref(text as string, font as object, command as dynamic, value as string, prefType as string) as object
+function createButtonPref(text as string, font as object, command as dynamic, value as string, prefType as string, screenPref=false as boolean) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(ButtonPrefClass())
 
@@ -22,8 +22,8 @@ function createButtonPref(text as string, font as object, command as dynamic, va
 
     obj.command = command
     obj.value = value
-
     obj.prefType = prefType
+    obj.screenPref = screenPref
     obj.isSelected = false
 
     return obj
@@ -115,5 +115,9 @@ sub buttonprefOnSelected()
     ' redraw the screen
     CompositorScreen().DrawAll()
 
-    Debug("TODO: write setting to AppSettings: " + prefKey + "=" + prefValue + " (type: " + m.prefType + ")")
+    if m.screenPref then
+        Debug("TODO: override pref for Screen: " + prefKey + "=" + prefValue + " (type: " + m.prefType + ")")
+    else
+        Debug("TODO: write setting to AppSettings: " + prefKey + "=" + prefValue + " (type: " + m.prefType + ")")
+    end if
 end sub
