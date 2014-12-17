@@ -155,9 +155,6 @@ function settingsCreateMenuButton(pref as object) as object
     btn.focusNonSiblings = false
     btn.options = pref.options
     btn.prefType = pref.prefType
-
-    btn.OnOkButton = "right"
-
     btn.OnSelected = settingsButtonOnSelected
     btn.OnFocus = settingsOnFocus
     btn.OnBlur = settingsOnBlur
