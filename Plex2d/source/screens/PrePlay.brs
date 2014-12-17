@@ -260,10 +260,10 @@ function preplayGetSideInfo() as object
     if tostr(m.item.Get("type")) = "episode" then
         components.push(createLabel(m.item.Get("year", ""), m.customFonts.large))
         components.push(createLabel(m.item.GetDuration(), m.customFonts.large))
-        components.push(createLabel(m.item.Get("rating", ""), FontRegistry().font16))
+        components.push(createStars(m.item.GetInt("rating"), 16))
     else
         components.push(createLabel(m.item.Get("year", ""), m.customFonts.large))
-        components.push(createLabel(m.item.Get("rating", ""), FontRegistry().font16))
+        components.push(createStars(m.item.GetInt("rating"), 16))
         components.push(createLabel(m.item.Get("contentRating", ""), FontRegistry().font16))
     end if
 
