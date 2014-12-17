@@ -94,6 +94,11 @@ function preplayHandleCommand(command as string, item as dynamic) as boolean
             dialog = createDialog("command failed: " + command, screen.screenError, m)
             dialog.Show()
         end if
+    else if command = "settings" then
+        settings = createSettings(m)
+        settings.GetPrefs = preplayGetPrefs
+        settings.screenPref = true
+        settings.Show()
     else if not ApplyFunc(ComponentsScreen().HandleCommand, m, [command, item])
         handled = false
     end if
@@ -343,6 +348,14 @@ function preplayGetButtons() as object
     end for
     components.push(btn)
 
+    ' settings
+    btn = createButton(Glyphs().CONFIG, m.customFonts.glyphs, "settings")
+    btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
+    btn.width = 100
+    btn.height = 50
+    if m.focusedItem = invalid then m.focusedItem = btn
+    components.push(btn)
+
     return components
 end function
 
@@ -357,3 +370,49 @@ sub preplayDialogHandleButton(button as object)
         m.Close()
     end if
 end sub
+
+function preplayGetPrefs() as object
+    ' TODO(rob): set the default prefs
+    prefs = CreateObject("roAssociativeArray")
+    prefs.keys = CreateObject("roList")
+
+    playback = CreateObject("roList")
+    prefs.keys.push("Playback")
+    prefs.playback = playback
+
+    quality_options = [
+        {title: "20 Mbps",  value: "20"},
+        {title: "12 Mbps",  value: "12"},
+        {title: "10 Mbps",  value: "10"},
+        {title: "8 Mbps",   value: "8"},
+        {title: "4 Mbps",   value: "4"},
+        {title: "3 Mbps",   value: "3"},
+        {title: "2 Mbps",   value: "2"},
+        {title: "1.5 Mbps", value: "1.5"},
+        {title: "720 Kbps", value: "720"},
+        {title: "320 Kbps", value: "320"},
+
+    ]
+
+    transcode_options = [
+        {title: "Direct Play",  value: "direct_play"},
+        {title: "Direct Stream",  value: "direct_stream"},
+        {title: "Transcode",  value: "transcode"},
+    ]
+
+    enadis_options = [
+        {title: "Enabled",  value: "enabled"},
+        {title: "Disabled",  value: "disabled"},
+    ]
+
+    todo_options = [{title: "TODO", value: "TODO"}]
+
+    playback.Push({command: "transcoding", title: "Transcoding", options: transcode_options, prefType: "enum"})
+    playback.Push({command: "quality", title: "Streaming Quality", options: quality_options, prefType: "enum"})
+    playback.Push({command: "audio_stream", title: "Audio Stream", options: todo_options, prefType: "enum"})
+    playback.Push({command: "subtitle_stream", title: "Subtitle Stream", options: todo_options, prefType: "enum"})
+    playback.Push({command: "media", title: "Media", options: todo_options, prefType: "enum"})
+    playback.Push({command: "continuous", title: "Continuous Play", options: enadis_options, prefType: "enum"})
+
+    return prefs
+end function
