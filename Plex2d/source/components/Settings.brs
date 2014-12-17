@@ -54,6 +54,14 @@ sub settingsInit()
     m.y = int(720/2 - m.height/2)
     m.scrollHeight = m.y + m.height
 
+    m.colors = {
+        category: Colors().BtnBkgClr and &hffffff90,
+        border: Colors().BtnBkgClr and &hffffff90,
+        highlight: Colors().BtnBkgClr,
+        background: &h000000ff,
+        title: Colors().BtnBkgClr,
+    }
+
     m.padding = 10
 end sub
 
@@ -78,18 +86,17 @@ end function
 sub settingsShow()
     Application().CloseLoadingModal()
 
-    ' TODO(rob): 1px border on settingsBox and between menu/list box
-
     title = createLabel(m.title, FontRegistry().font18)
     title.halign = title.JUSTIFY_CENTER
     title.valign = title.ALIGN_MIDDLE
     title.zOrder = 100
-    title.SetColor(Colors().TextClr, Colors().BtnBkgClr)
+    title.SetColor(Colors().TextClr, m.colors.title)
     title.SetFrame(m.x, m.y, m.width, 70)
     m.components.push(title)
 
-    settingsBox = createHBox(true, true, true, 0)
-    settingsBox.SetFrame(m.x, m.y + title.height, m.width, m.height)
+    border = { px: 1, color: m.colors.border }
+    settingsBox = createHBox(true, true, true, border.px)
+    settingsBox.SetFrame(m.x + border.px, m.y + title.height, m.width - border.px*2, m.height - title.height)
     menuBox = createVBox(false, false, false, 0)
     listBox = createVBox(false, false, false, 0)
     settingsBox.AddComponent(menuBox)
@@ -102,7 +109,7 @@ sub settingsShow()
     for each key in prefs.keys
         title = createLabel(key, FontRegistry().font18)
         title.fixed = false
-        title.SetColor(Colors().TextClr, Colors().BtnBkgClr and &hffffff90)
+        title.SetColor(Colors().TextClr, m.colors.category)
         title.SetDimensions(m.width, 60)
         title.SetPadding(0, 0, 0, m.padding)
         title.valign = title.ALIGN_MIDDLE
@@ -123,15 +130,40 @@ sub settingsShow()
     end for
     m.components.push(settingsBox)
 
+    ' dim the underlying screen
     dimmer = createBlock(Colors().ScrMedOverlayClr)
     dimmer.SetFrame(0, 0, 1280, 720)
     dimmer.zOrder = 98
     m.components.push(dimmer)
 
-    bkg = createBlock(&h000000ff)
+    ' settings background
+    bkg = createBlock(m.colors.background)
     bkg.SetFrame(m.x, m.y, m.width, m.height)
     bkg.zOrder = 99
     m.components.push(bkg)
+
+    ' settings box border
+    rect = computeRect(settingsBox)
+
+    borderLeft = createBlock(border.color)
+    borderLeft.SetFrame(rect.left - border.px, rect.up, border.px, rect.height)
+    borderLeft.zOrder = 99
+    m.components.push(borderLeft)
+
+    borderRight = createBlock(border.color)
+    borderRight.SetFrame(rect.right, rect.up, border.px, rect.height)
+    borderRight.zOrder = 99
+    m.components.push(borderRight)
+
+    borderMid = createBlock(border.color)
+    borderMid.setFrame(int(rect.left + rect.width/2 - border.px/2), rect.up, border.px, rect.height)
+    borderMid.zOrder = 99
+    m.components.push(borderMid)
+
+    borderBottom = createBlock(border.color)
+    borderBottom.SetFrame(rect.left, rect.down - border.px, rect.width, border.px)
+    borderBottom.zOrder = 99
+    m.components.push(borderBottom)
 
     for each comp in m.components
         CompositorScreen().DrawComponent(comp)
@@ -293,7 +325,7 @@ sub settingsOnFocus()
     m.listBox.curCommand = m.command
 
     ' highlight the focused item
-    m.SetColor(Colors().TextClr, Colors().BtnBkgClr)
+    m.SetColor(Colors().TextClr, m.overlay.colors.highlight)
     m.draw(true)
 
     'TODO(rob): better way to reinit the list box
