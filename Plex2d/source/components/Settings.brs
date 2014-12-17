@@ -1,5 +1,3 @@
-' TODO(rob): converted DialogClass -- cleanup needed... just a POC for now
-
 function SettingsClass() as object
     if m.SettingsClass = invalid then
         obj = CreateObject("roAssociativeArray")
@@ -8,13 +6,12 @@ function SettingsClass() as object
         obj.ClassName = "SettingsClass"
 
         ' Methods
-        obj.HandleButton = settingsHandleButton
-        obj.OnKeyRelease = settingsOnKeyRelease
         obj.Show = settingsShow
         obj.Close = settingsClose
         obj.Init = settingsInit
-        obj.CreateButton = settingsCreateButton
-        obj.SetFrame = compSetFrame
+        obj.OnKeyRelease = settingsOnKeyRelease
+        obj.CreateMenuButton = settingsCreateMenuButton
+        obj.CreatePrefButton = settingsCreatePrefButton
 
         m.SettingsClass = obj
     end if
@@ -37,20 +34,6 @@ function createSettings(screen as object) as object
 
     return obj
 end function
-
-sub settingsHandleButton(button as object)
-    Debug("Settings button selected: command=" + tostr(button.command) + ", key=" + tostr(button.key))
-
-    if button.command = "close" then
-        m.Close()
-    else
-        Debug("command not defined: " + tostr(button.command))
-    end if
-end sub
-
-sub settingsButtonOnSelected()
-    m.overlay.HandleButton(m)
-end sub
 
 sub settingsInit()
     ' hacky? intercept the back button to handle the overlay closure
@@ -124,19 +107,14 @@ sub settingsShow()
         menuBox.AddComponent(title)
         first = true
         for each pref in prefs[key]
-            btn = m.createButton(pref.title, pref.command)
+            btn = m.createMenuButton(pref)
             if first = true then
                 btn.scrollOffset = title.height
                 first = false
             end if
             btn.SetDimensions(m.width, 60)
-            btn.zOrder = 100
             btn.SetPadding(0, 0, 0, m.padding*2)
-            btn.OnFocus = settingsOnFocus
-            btn.OnBlur = settingsOnBlur
             btn.listBox = listBox
-            btn.screen = m.screen
-            btn.options = pref.options
             menuBox.AddComponent(btn)
         end for
     end for
@@ -164,16 +142,45 @@ sub settingsShow()
     m.screen.OnItemFocused(m.screen.focusedItem)
 end sub
 
-function settingsCreateButton(text as string, command as dynamic) as object
-    btn = createButton(text, FontRegistry().font16, command)
+function settingsCreateMenuButton(pref as object) as object
+    btn = createButton(pref.title, FontRegistry().font16, pref.command)
     btn.focusInside = true
     btn.fixed = false
     btn.halign = m.JUSTIFY_LEFT
+    btn.zOrder = 100
+
+    ' special properties for the menu buttons
+    btn.overlay = m
+    btn.screen = m.screen
+    btn.focusNonSiblings = false
+    btn.options = pref.options
+    btn.prefType = pref.prefType
+
+    btn.OnOkButton = "right"
+
+    btn.OnSelected = settingsButtonOnSelected
+    btn.OnFocus = settingsOnFocus
+    btn.OnBlur = settingsOnBlur
+
+    if m.screen.focusedItem = invalid then m.screen.focusedItem = btn
+
+    return btn
+end function
+
+sub settingsButtonOnSelected()
+    m.screen.OnKeyPress(m.screen.kp_RT, false)
+end sub
+
+function settingsCreatePrefButton(text as string, command as dynamic, value as string, prefType) as object
+    btn = createButtonPref(text, FontRegistry().font16, command, value, prefType)
+    btn.focusInside = true
+    btn.fixed = false
+    btn.halign = m.JUSTIFY_LEFT
+    btn.zOrder = 100
 
     ' special properties for the settings buttons
     btn.overlay = m
     btn.focusNonSiblings = false
-    btn.OnSelected = settingsButtonOnSelected
 
     if m.screen.focusedItem = invalid then m.screen.focusedItem = btn
 
@@ -192,19 +199,19 @@ function settingsGetPrefs() as object
 
     ' surround sound options
     options = [
-        {title: "Dolby Digitial (AC3)", key: "ac3"},
-        {title: "DTS (DCA)", key: "ac3"},
+        {title: "Dolby Digitial (AC3)", value: "ac3"},
+        {title: "DTS (DCA)", value: "dca"},
     ]
-    audio.Push({command: "surround_list", title: "Receiver Capabilities", options: options, type: "checkbox"})
+    audio.Push({command: "surround_sound", title: "Receiver Capabilities", options: options, prefType: "bool"})
 
     ' volume boost
     options = [
-        {title: "None",  key: "none"},
-        {title: "Small", key: "small"},
-        {title: "Large", key: "large"},
-        {title: "Huge",  key: "huge"},
+        {title: "None",  value: "none"},
+        {title: "Small", value: "small"},
+        {title: "Large", value: "large"},
+        {title: "Huge",  value: "huge"},
     ]
-    audio.Push({command: "volume_boost", title: "Volume Boost", options: options, type: "radio"})
+    audio.Push({command: "volume_boost", title: "Volume Boost", options: options, prefType: "enum"})
 
     ' ** VIDEO PREFS ** '
     video = CreateObject("roList")
@@ -213,30 +220,30 @@ function settingsGetPrefs() as object
 
     ' locate/remote video qualities
     options = [
-        {title: "20 Mbps",  key: "20"},
-        {title: "12 Mbps",  key: "12"},
-        {title: "10 Mbps",  key: "10"},
-        {title: "8 Mbps",   key: "8"},
-        {title: "4 Mbps",   key: "4"},
-        {title: "3 Mbps",   key: "3"},
-        {title: "2 Mbps",   key: "2"},
-        {title: "1.5 Mbps", key: "1.5"},
-        {title: "720 Kbps", key: "720"},
-        {title: "320 Kbps", key: "320"},
+        {title: "20 Mbps",  value: "20"},
+        {title: "12 Mbps",  value: "12"},
+        {title: "10 Mbps",  value: "10"},
+        {title: "8 Mbps",   value: "8"},
+        {title: "4 Mbps",   value: "4"},
+        {title: "3 Mbps",   value: "3"},
+        {title: "2 Mbps",   value: "2"},
+        {title: "1.5 Mbps", value: "1.5"},
+        {title: "720 Kbps", value: "720"},
+        {title: "320 Kbps", value: "320"},
 
     ]
-    video.Push({command: "local_quality", title: "Local Streaming Quality", options: options, type: "radio"})
-    video.Push({command: "remote_quality", title: "Remote Streaming Quality", options: options, type: "radio"})
+    video.Push({command: "local_quality", title: "Local Streaming Quality", options: options, prefType: "enum"})
+    video.Push({command: "remote_quality", title: "Remote Streaming Quality", options: options, prefType: "enum"})
 
     ' subtitle size
     options = [
-        {title: "Tiny",   key: "tiny"},
-        {title: "Small",  key: "small"},
-        {title: "Normal", key: "normal"},
-        {title: "Large",  key: "large"},
-        {title: "Huge",   key: "huge"},
+        {title: "Tiny",   value: "tiny"},
+        {title: "Small",  value: "small"},
+        {title: "Normal", value: "normal"},
+        {title: "Large",  value: "large"},
+        {title: "Huge",   value: "huge"},
     ]
-    video.Push({command: "subtitle_size", title: "Subtitle Size", options: options})
+    video.Push({command: "subtitle_size", title: "Subtitle Size", options: options, prefType: "enum"})
 
     ' ** ADVANCED PREFS ** '
     advanced = CreateObject("roList")
@@ -245,33 +252,33 @@ function settingsGetPrefs() as object
 
     ' locate/remote video qualities
     options1 = [
-        {title: "20 Mbps",  key: "20"},
-        {title: "12 Mbps",  key: "12"},
-        {title: "10 Mbps",  key: "10"},
-        {title: "8 Mbps",   key: "8"},
-        {title: "4 Mbps",   key: "4"},
-        {title: "3 Mbps",   key: "3"},
-        {title: "2 Mbps",   key: "2"},
-        {title: "1.5 Mbps", key: "1.5"},
-        {title: "720 Kbps", key: "720"},
-        {title: "320 Kbps", key: "320"},
+        {title: "20 Mbps",  value: "20"},
+        {title: "12 Mbps",  value: "12"},
+        {title: "10 Mbps",  value: "10"},
+        {title: "8 Mbps",   value: "8"},
+        {title: "4 Mbps",   value: "4"},
+        {title: "3 Mbps",   value: "3"},
+        {title: "2 Mbps",   value: "2"},
+        {title: "1.5 Mbps", value: "1.5"},
+        {title: "720 Kbps", value: "720"},
+        {title: "320 Kbps", value: "320"},
 
     ]
 
     options2 = [
-        {title: "Tiny",   key: "tiny"},
-        {title: "Small",  key: "small"},
-        {title: "Normal", key: "normal"},
-        {title: "Large",  key: "large"},
-        {title: "Huge",   key: "huge"},
+        {title: "Tiny",   value: "tiny"},
+        {title: "Small",  value: "small"},
+        {title: "Normal", value: "normal"},
+        {title: "Large",  value: "large"},
+        {title: "Huge",   value: "huge"},
     ]
 
-    advanced.Push({command: "testing1", title: "testing 1", options: options1, type: "radio"})
-    advanced.Push({command: "testing2", title: "testing 2", options: options2, type: "radio"})
-    advanced.Push({command: "testing3", title: "testing 3", options: options1, type: "radio"})
-    advanced.Push({command: "testing4", title: "testing 4", options: options2, type: "radio"})
-    advanced.Push({command: "testing5", title: "testing 5", options: options1, type: "radio"})
-    advanced.Push({command: "testing6", title: "testing 6", options: options2, type: "radio"})
+    advanced.Push({command: "testing1", title: "testing 1", options: options1, prefType: "enum"})
+    advanced.Push({command: "testing2", title: "testing 2", options: options2, prefType: "enum"})
+    advanced.Push({command: "testing3", title: "testing 3", options: options1, prefType: "enum"})
+    advanced.Push({command: "testing4", title: "testing 4", options: options2, prefType: "enum"})
+    advanced.Push({command: "testing5", title: "testing 5", options: options1, prefType: "enum"})
+    advanced.Push({command: "testing6", title: "testing 6", options: options2, prefType: "enum"})
 
     return prefs
 end function
@@ -294,10 +301,9 @@ sub settingsOnFocus()
     m.listBox.lastFocusableItem = invalid
 
     for each option in m.options
-        btn = m.screen.overlayScreen.createButton(option.title, tostr(m.command))
-        btn.key = option.key
+        btn = m.overlay.createPrefButton(option.title, m.command, option.value, m.prefType)
+        btn.isSelected = (option.value = m.options[0].value)
         btn.SetDimensions(m.width, m.height)
-        btn.zOrder = 100
         btn.SetPadding(0, 0, 0, m.padding.left)
         btn.SetFocusSibling("left", m)
         m.listBox.AddComponent(btn)
