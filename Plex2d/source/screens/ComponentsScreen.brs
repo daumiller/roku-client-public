@@ -302,23 +302,18 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
             toFocus = m.focusedItem.GetFocusSibling(KeyCodeToString(keyCode))
 
             ' Check if we allow manual focus (dialogs/dropdown/etc)
-            if toFocus = invalid
-                ' ONLY focus siblings are allowed
-                if m.focusedItem.FocusNonSiblings = false then return
-
-                ' DropDowns: focus should stay contained to focus siblings, except UP
+            if toFocus = invalid and m.focusedItem.FocusNonSiblings = false then
+                ' DropDowns: we need to close (hide) the drop down in a specified direction
                 if m.focusedItem.dropDown <> invalid then
                     if instr(1, m.focusedItem.dropDown.closeDirection, direction) = 0 then return
-
-                    m.focusedItem.dropDown.hide()
-                    toFocus = m.focusedItem.dropDown
-                    m.focusedItem = invalid
+                    m.focusedItem.dropDown.Hide()
                 end if
+
+                return
             end if
 
             ' If we're doing the opposite of our last direction, go back to
             ' where we came from.
-            '
             if toFocus = invalid and m.lastFocusedItem <> invalid and direction = OppositeDirection(m.lastDirection) then
                 toFocus = m.lastFocusedItem
             end if
@@ -414,7 +409,7 @@ function compHandleCommand(command as string, item as dynamic) as boolean
     if command = "go_home" then
         Application().GoHome()
     else if command = "toggle_control" then
-        item.Toggle(m)
+        item.Toggle()
     else if command = "show_item" and item.plexObject <> invalid then
         ' We want to show a screen for a PlexObject of some sort. Look at the
         ' type and try to choose the best screen type.

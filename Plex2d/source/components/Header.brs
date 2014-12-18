@@ -71,7 +71,7 @@ sub headerPerformLayout()
     buttons = createObject("roList")
     if tostr(m.screen.screenName) = "Home Screen" then
         ' Server List Drop Down
-        button = createDropDown(m.screen.server.name, m.buttons.font, int(720 * .80))
+        button = createDropDown(m.screen.server.name, m.buttons.font, int(720 * .80), m.screen)
         button.width = m.buttons.width
         button.pvalign = button.ALIGN_MIDDLE
         ' TODO(?): PlexNet server list and sorted?
@@ -89,7 +89,7 @@ sub headerPerformLayout()
         else
             connect = {text: "Sign In", command: "sign_in"}
         end if
-        button = createDropDown(firstOf(MyPlexAccount().title, "Options"), m.buttons.font, int(720 * .80))
+        button = createDropDown(firstOf(MyPlexAccount().title, "Options"), m.buttons.font, int(720 * .80), m.screen)
         button.width = m.buttons.width
         button.pvalign = button[m.buttons.valign]
         button.options.push({text: "Settings", command: "settings", font: m.buttons.font, height: 66, width: 128 })

@@ -10,6 +10,8 @@ function DropDownClass() as object
         obj.Toggle = dropdownToggle
         obj.Destroy = dropdownDestroy
         obj.SetDropDownPosition = dropdownSetDropDownPosition
+        obj.OnKeyRelease = dropdownOnKeyRelease
+        obj.GetComponents = dropdownGetComponents
 
         m.DropDownClass = obj
     end if
@@ -17,10 +19,11 @@ function DropDownClass() as object
     return m.DropDownClass
 end function
 
-function createDropDown(text as string, font as object, maxHeight as integer) as object
+function createDropDown(text as string, font as object, maxHeight as integer, screen as object) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(DropDownClass())
 
+    obj.screen = screen
     obj.Init(text, font, maxHeight)
 
     return obj
@@ -46,84 +49,88 @@ sub dropdownInit(text as string, font as object, maxHeight as integer)
     m.SetDropDownPosition("down")
 end sub
 
-function dropdownHide(drawAllNow=true as boolean) as boolean
+sub dropdownHide()
     m.expanded = false
-    if m.components.count() = 0 then return false
-    EnableBackButton()
-
     m.DestroyComponents()
 
-    if drawAllNow then CompositorScreen().drawAll()
-
-    return true
-end function
-
-sub dropdownShow(screen as object)
-    m.hide(false)
-    DisableBackButton()
-    m.expanded = true
-
-    screen.focusedItem = invalid
-
-    ' TODO(rob): remove hard coded variables (position, dimensions, etc)
-    vbox = createVBox(true, true, true, 0)
-    vbox.SetScrollable(m.maxHeight)
-
-    dropDownWidth = m.width
-    dropDownHeight = 0
-
-    for each option in m.options
-        btn = createButton(option.text, option.font, option.command)
-        if option.padding <> invalid then
-            btn.setPadding(option.padding.top, option.padding.right, option.padding.bottom, option.left)
-        else
-            btn.setPadding(5)
-        end if
-        if option.halign <> invalid then btn.halign = m[option.halign]
-        if option.width <> invalid then btn.width = option.width
-        if option.height <> invalid then btn.height = option.height
-        ' TODO(rob): allow colors to be modified
-        btn.setColor(Colors().TextClr, Colors().BtnBkgClr)
-        btn.zOrder = 500
-        btn.dropDown = m
-        btn.fixed = (option.fixed = true)
-        ' TODO(rob): option to set the plexObject
-        btn.SetMetadata(option.metadata)
-        if screen.focusedItem = invalid then screen.focusedItem = btn
-        vbox.AddComponent(btn)
-
-        ' calculate the required height and width for the homogeneous buttons
-        if btn.getPreferredWidth() > dropDownWidth then
-            dropDownWidth = btn.getPreferredWidth()
-        end if
-        dropDownHeight = dropDownHeight + btn.getPreferredHeight() + vbox.spacing
-    end for
-    m.components.push(vbox)
-
-    ' set the position of the drop down (supported: bottom [default]) and right)
-    if m.dropDownPosition = "right" then
-        vbox.SetFrame(m.x + m.width + m.parent.spacing, m.y, dropDownWidth, dropDownHeight)
-    else
-        vbox.SetFrame(m.x, m.y + m.height + m.parent.spacing, dropDownWidth, dropDownHeight)
+    ' reset screen OnKeyRelease to original (keep super referenced)
+    if m.screen.DropDownOnKeyRelease <> invalid then
+        m.screen.OnKeyRelease = m.screen.DropDownOnKeyRelease
     end if
+
+    ' reset the focus to this object
+    m.screen.focusedItem = m
+    m.screen.lastFocusedItem = invalid
+    CompositorScreen().DrawFocus(m, true)
+end sub
+
+sub dropdownShow()
+    m.expanded = true
+    m.DestroyComponents()
+    m.screen.focusedItem = invalid
+
+    ' override the OnKeyRelease to handle the back button. Use a unique name to hold
+    ' the original reference as other overlay types may use their own super
+    m.screen.DropDownOnKeyRelease = m.screen.OnKeyRelease
+    m.screen.OnKeyRelease = m.OnKeyRelease
+
+    m.GetComponents()
 
     for each comp in m.components
         CompositorScreen().DrawComponent(comp)
     end for
 
-    ' set the visibility based on the constraints
-    for each comp in vbox.components
-        comp.SetVisibility(invalid, invalid, vbox.y, vbox.scrollHeight)
-    end for
-
-    CompositorScreen().DrawFocus(screen.focusedItem, true)
+    CompositorScreen().DrawFocus(m.screen.focusedItem, true)
 end sub
 
-sub dropdownToggle(screen)
+sub dropdownGetComponents()
+    vbox = createVBox(true, true, true, 0)
+    vbox.SetScrollable(m.maxHeight)
+
+    ddProp = { width: m.width, height: 0, x: m.x, y: m.y }
+    for each option in m.options
+        btn = createButton(option.text, option.font, option.command)
+        btn.focusNonSiblings = false
+        if option.padding <> invalid then
+            btn.setPadding(option.padding.top, option.padding.right, option.padding.bottom, option.padding.left)
+        else
+            btn.setPadding(5)
+        end if
+        if option.halign <> invalid then btn.halign = m[option.halign]
+        if option.width  <> invalid then btn.width  = option.width
+        if option.height <> invalid then btn.height = option.height
+        ' TODO(rob): allow colors to be modified
+        btn.setColor(Colors().TextClr, Colors().BtnBkgClr)
+        btn.zOrder = 50
+        btn.dropDown = m
+        btn.fixed = (option.fixed = true)
+        ' TODO(rob): option to set the plexObject
+        btn.SetMetadata(option.metadata)
+        if m.screen.focusedItem = invalid then m.screen.focusedItem = btn
+        vbox.AddComponent(btn)
+
+        ' calculate the required height and width for the homogeneous buttons
+        if btn.getPreferredWidth() > ddProp.width then
+            ddProp.width = btn.getPreferredWidth()
+        end if
+        ddProp.height = ddProp.height + btn.getPreferredHeight() + vbox.spacing
+    end for
+    m.components.push(vbox)
+
+    ' set the position of the drop down (supported: bottom [default], and right)
+    if m.dropDownPosition = "right" then
+        ddProp.x = m.x + m.width + m.parent.spacing
+    else
+        ddProp.y = m.y + m.height + m.parent.spacing
+    end if
+    vbox.SetFrame(ddProp.x, ddProp.y, ddProp.width, ddProp.height)
+end sub
+
+sub dropdownToggle()
     if m.expanded then
         m.Hide()
     else
-        m.Show(screen)
+        m.Show()
     end if
 end sub
 
@@ -133,7 +140,6 @@ sub dropdownDestroy()
         option.font = invalid
     end for
     ApplyFunc(ComponentClass().Destroy, m)
-    EnableBackButton()
 end sub
 
 sub dropdownSetDropDownPosition(direction as string)
@@ -149,4 +155,12 @@ sub dropdownSetDropDownPosition(direction as string)
     end if
 
     m.closeDirection = joinArray(allowed, " ")
+end sub
+
+sub dropdownOnKeyRelease(keyCode as integer)
+    if keyCode = m.kp_BK then
+        m.focusedItem.dropDown.Hide()
+    else
+        m.DropDownOnKeyRelease(keyCode)
+    end if
 end sub

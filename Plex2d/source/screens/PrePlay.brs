@@ -329,7 +329,7 @@ function preplayGetButtons() as object
     end for
 
     ' more/pivot button (drop-drown)
-    btn = createDropDown(Glyphs().MORE, m.customFonts.glyphs, int(720 * .80))
+    btn = createDropDown(Glyphs().MORE, m.customFonts.glyphs, int(720 * .80), m)
     btn.SetDropDownPosition("right")
     btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
     btn.width = 100
