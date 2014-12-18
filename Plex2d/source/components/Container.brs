@@ -53,6 +53,13 @@ function contDraw() as object
         if component.IsOnScreen(0, 0, ComponentsScreen().ll_load) then
             childRegions = component.Draw()
             for each region in childRegions
+                ' containers of containers! we'll need to check the vertical scrolling
+                ' contraints here to override the zOrder for the sprite creation.
+                if component.scrollHeight <> invalid and (region.y < component.y or region.y + region.height > component.scrollHeight) then
+                    region.zOrderInit = -1
+                else if m.scrollHeight <> invalid and (region.y < m.y or region.y + region.height > m.scrollHeight) then
+                    region.zOrderInit = -1
+                end if
                 regions.Push(region)
             next
         else if component.PerformLayout <> invalid then

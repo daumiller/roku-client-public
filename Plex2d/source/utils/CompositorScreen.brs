@@ -53,7 +53,10 @@ sub compositorDrawComponent(component as object, screen=invalid as dynamic)
 
     ' Then convert those regions to sprites on our screen
     for each comp in drawableComponents
-        if comp.IsOnScreen() then
+        if comp.zOrderInit <> invalid then
+            zOrder = comp.zOrderInit
+            comp.zOrderInit = invalid
+        else if comp.IsOnScreen() then
             zOrder = firstOf(comp.zOrder, 1)
         else
             zOrder = -1
