@@ -70,6 +70,7 @@ sub eventsOff(eventName as dynamic, callback as dynamic)
 
             if toRemove <> -1 then
                 callbacks.Delete(toRemove)
+                callbacks.ResetIndex()
             end if
         end if
     end if
