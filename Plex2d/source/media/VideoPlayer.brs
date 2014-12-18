@@ -93,9 +93,12 @@ sub vpInit()
     screen.EnableCookies()
 
     ' Add appropriate X-Plex header if it's a reqeust to the server
-    if videoItem.server <> invalid and videoItem.server.IsRequestToServer(videoItem.StreamUrls[0]) then
-        AddPlexHeaders(screen, videoItem.server.GetToken())
-    end if
+    ' Always add X-Plex headers, but not a token. It's possible that the
+    ' transcode server and original media server (with subtitles, BIFs, etc.)
+    ' will be different. Anything that needs a token will have it added to the
+    ' URL.
+    '
+    AddPlexHeaders(screen)
 
     screen.SetContent(videoItem)
 

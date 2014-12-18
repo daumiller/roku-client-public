@@ -133,8 +133,6 @@ function voBuildTranscode(obj as object, partIndex as integer, directStream as b
         builder.AddParam("X-Plex-Client-Profile-Extra", extras)
     end if
 
-    AddPlexParameters(builder)
-
     obj.StreamUrls = [builder.GetUrl()]
 
     return obj
