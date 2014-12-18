@@ -75,6 +75,7 @@ sub dialogInit(title as string, text as dynamic)
 
     m.enableBackButton = false
     m.buttonsSingleLine = false
+    m.enableOverlay = false
 end sub
 
 function dialogClose() as boolean
@@ -95,6 +96,13 @@ end function
 sub dialogShow()
     Application().CloseLoadingModal()
     if m.enableBackButton = false then DisableBackButton()
+
+    if m.enableOverlay = false then
+        dimmer = createBlock(Colors().ScrMedOverlayClr)
+        dimmer.SetFrame(0, 0, 1280, 720)
+        m.components.push(dimmer)
+    end if
+
     dialogBox = createVBox(false, false, false, m.spacing)
     dialogBox.SetFrame(m.x, m.y, m.width, m.height)
 
