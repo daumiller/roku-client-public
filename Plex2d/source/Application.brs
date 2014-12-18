@@ -329,9 +329,11 @@ function appStartRequest(request as object, context as object, body=invalid as d
     return started
 end function
 
-function appStartRequestIgnoringResponse(url as string, body=invalid as dynamic, contentType=invalid as dynamic) as boolean
+function appStartRequestIgnoringResponse(url as string, body=invalid as dynamic, contentType=invalid as dynamic, addHeaders=false as boolean) as boolean
     request = createHttpRequest(url)
     context = request.CreateRequestContext("ignored")
+
+    if addHeaders then AddPlexHeaders(request)
 
     return m.StartRequest(request, context, body, contentType)
 end function

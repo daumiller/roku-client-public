@@ -166,7 +166,7 @@ sub nowPlayingSendTimelineToSubscriber(subscriber as object, xml=invalid as dyna
 
     url = subscriber.connectionUrl + "/:/timeline"
 
-    Application().StartRequestIgnoringResponse(url, xml.GenXml(false))
+    Application().StartRequestIgnoringResponse(url, xml.GenXml(false), invalid, true)
 end sub
 
 sub nowPlayingSendTimelineToServer(item as object, state as string, time as integer)
@@ -338,28 +338,23 @@ sub timelineDataToXmlAttributes(elem as object)
         addAttributeIfValid(elem, "duration", m.item.Get("duration"))
         addAttributeIfValid(elem, "ratingKey", m.item.Get("ratingKey"))
         addAttributeIfValid(elem, "key", m.item.Get("key"))
+        addAttributeIfValid(elem, "containerKey", m.item.container.address)
 
-        if m.item.sourceUrl <> invalid then
-            ' Make sure the container key is relative. It's probably not yet.
-            if left(m.item.sourceUrl, 1) = "/" then
-                elem.AddAttribute("containerKey", m.item.sourceUrl)
-            else
-                elem.AddAttribute("containerKey", Mid(m.item.sourceUrl, Instr(9, m.item.sourceUrl, "/")))
-            end if
-        end if
-
-        server = m.item.server
+        server = m.item.GetServer()
         if server <> invalid then
-            elem.AddAttribute("machineIdentifier", server.machineID)
-            parts = server.serverUrl.tokenize(":")
-            elem.AddAttribute("protocol", parts.RemoveHead())
-            elem.AddAttribute("address", Mid(parts.RemoveHead(), 3))
-            if parts.GetHead() <> invalid then
-                elem.AddAttribute("port", parts.RemoveHead())
-            else if elem@protocol = "https" then
-                elem.AddAttribute("port", "443")
-            else
-                elem.AddAttribute("port", "80")
+            elem.AddAttribute("machineIdentifier", server.uuid)
+
+            if server.activeConnection <> invalid then
+                parts = server.activeConnection.address.tokenize(":")
+                elem.AddAttribute("protocol", parts.RemoveHead())
+                elem.AddAttribute("address", Mid(parts.RemoveHead(), 3))
+                if parts.GetHead() <> invalid then
+                    elem.AddAttribute("port", parts.RemoveHead())
+                else if elem@protocol = "https" then
+                    elem.AddAttribute("port", "443")
+                else
+                    elem.AddAttribute("port", "80")
+                end if
             end if
         end if
     end if
