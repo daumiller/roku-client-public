@@ -73,14 +73,8 @@ sub headerPerformLayout()
         ' Server List Drop Down
         button = createDropDown(m.screen.server.name, m.buttons.font, int(720 * .80), m.screen)
         button.width = m.buttons.width
-        button.pvalign = button.ALIGN_MIDDLE
-        ' TODO(?): PlexNet server list and sorted?
-        servers = PlexServerManager().getServers()
-        for each server in servers
-            if server.isReachable() = true then
-                button.options.push({text: server.name, command: "selected_server", font: m.buttons.font, height: 66, width: 128, metadata: server })
-            end if
-        end for
+        button.pvalign = button[m.buttons.valign]
+        button.GetOptions = headerGetServerOptions
         buttons.push(button)
 
         ' Options Drop Down: Settings, Sign Out/In
@@ -118,3 +112,15 @@ sub headerPerformLayout()
 
     m.buttons.font = invalid
 end sub
+
+' TODO(rob): sorted list, selected checkmark, info: offline|remote|update required?
+function headerGetServerOptions() as object
+    m.options.clear()
+    PlexServerManager().UpdateReachability(true)
+    for each server in PlexServerManager().GetServers()
+        if server.isReachable() = true then
+            m.options.push({text: server.name, command: "selected_server", font: FontRegistry().font16, height: 66, width: 128, metadata: server })
+        end if
+    end for
+    return m.options
+end function

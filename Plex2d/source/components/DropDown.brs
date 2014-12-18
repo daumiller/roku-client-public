@@ -12,6 +12,7 @@ function DropDownClass() as object
         obj.SetDropDownPosition = dropdownSetDropDownPosition
         obj.OnKeyRelease = dropdownOnKeyRelease
         obj.GetComponents = dropdownGetComponents
+        obj.GetOptions = dropdownGetOptions
 
         m.DropDownClass = obj
     end if
@@ -88,7 +89,7 @@ sub dropdownGetComponents()
     vbox.SetScrollable(m.maxHeight)
 
     ddProp = { width: m.width, height: 0, x: m.x, y: m.y }
-    for each option in m.options
+    for each option in m.GetOptions()
         btn = createButton(option.text, option.font, option.command)
         btn.focusNonSiblings = false
         if option.padding <> invalid then
@@ -164,3 +165,7 @@ sub dropdownOnKeyRelease(keyCode as integer)
         m.DropDownOnKeyRelease(keyCode)
     end if
 end sub
+
+function dropdownGetOptions() as object
+    return m.options
+end function
