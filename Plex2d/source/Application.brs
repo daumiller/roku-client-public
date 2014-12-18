@@ -160,6 +160,7 @@ sub appRun()
     WebServer()
     GDMAdvertiser()
     GDMDiscovery().Discover()
+    InitRemoteControlHandlers()
     m.ClearInitializer("application")
 
     timeout = 0
