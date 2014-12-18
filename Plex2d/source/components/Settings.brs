@@ -1,15 +1,13 @@
 function SettingsClass() as object
     if m.SettingsClass = invalid then
         obj = CreateObject("roAssociativeArray")
-        obj.Append(ComponentClass())
+        obj.Append(OverlayClass())
 
         obj.ClassName = "SettingsClass"
 
         ' Methods
-        obj.Show = settingsShow
-        obj.Close = settingsClose
         obj.Init = settingsInit
-        obj.OnKeyRelease = settingsOnKeyRelease
+        obj.GetComponents = settingsGetComponents
         obj.CreateMenuButton = settingsCreateMenuButton
         obj.CreatePrefButton = settingsCreatePrefButton
         obj.GetPrefs = settingsGetPrefs
@@ -34,20 +32,8 @@ function createSettings(screen as object) as object
 end function
 
 sub settingsInit()
-    ' remember the current focus and invalidate it
-    m.fromFocusedItem = m.screen.focusedItem
-    m.screen.lastFocusedItem = invalid
-    m.screen.FocusedItem = invalid
+    ApplyFunc(OverlayClass().Init, m)
 
-    ' hacky? intercept the back button to handle the overlay closure
-    m.screen.SuperOnKeyRelease = m.screen.OnKeyRelease
-    m.screen.OnKeyRelease = m.OnKeyRelease
-    m.screen.overlayScreen = m
-
-    m.components = m.screen.GetManualComponents(m.ClassName)
-    m.buttons = CreateObject("roList")
-
-    ' TODO(rob) how do we handle dynamic width/height along with center placment?
     m.width = 660
     m.height = 560
     m.x = int(1280/2 - m.width/2)
@@ -65,27 +51,7 @@ sub settingsInit()
     m.padding = 10
 end sub
 
-function settingsClose() as boolean
-    ' remove the onKeyRelease intercept
-    m.screen.OnKeyRelease = m.screen.SuperOnKeyRelease
-    m.screen.SuperOnKeyRelease = invalid
-    m.screen.overlayScreen = invalid
-
-    m.DestroyComponents()
-
-    ' refocus on the item we initially came from
-    m.screen.lastFocusedItem = invalid
-    if m.fromFocusedItem <> invalid then
-        m.screen.FocusedItem = m.fromFocusedItem
-        m.screen.screen.DrawFocus(m.screen.focusedItem, true)
-    else
-        m.screen.screen.HideFocus(true, true)
-    end if
-end function
-
-sub settingsShow()
-    Application().CloseLoadingModal()
-
+sub settingsGetComponents()
     title = createLabel(m.title, FontRegistry().font18)
     title.halign = title.JUSTIFY_CENTER
     title.valign = title.ALIGN_MIDDLE
@@ -130,12 +96,6 @@ sub settingsShow()
     end for
     m.components.push(settingsBox)
 
-    ' dim the underlying screen
-    dimmer = createBlock(Colors().ScrMedOverlayClr)
-    dimmer.SetFrame(0, 0, 1280, 720)
-    dimmer.zOrder = 98
-    m.components.push(dimmer)
-
     ' settings background
     bkg = createBlock(m.colors.background)
     bkg.SetFrame(m.x, m.y, m.width, m.height)
@@ -164,17 +124,6 @@ sub settingsShow()
     borderBottom.SetFrame(rect.left, rect.down - border.px, rect.width, border.px)
     borderBottom.zOrder = 99
     m.components.push(borderBottom)
-
-    for each comp in m.components
-        CompositorScreen().DrawComponent(comp)
-    end for
-
-    ' hide any menu options outside of the safe scrolling area
-    for each comp in menuBox.components
-        comp.SetVisibility(invalid, invalid, menuBox.y, menuBox.scrollHeight)
-    end for
-
-    m.screen.OnItemFocused(m.screen.focusedItem)
 end sub
 
 function settingsCreateMenuButton(pref as object) as object
@@ -190,7 +139,7 @@ function settingsCreateMenuButton(pref as object) as object
     btn.focusNonSiblings = false
     btn.options = pref.options
     btn.prefType = pref.prefType
-    btn.OnSelected = settingsButtonOnSelected
+    btn.OnSelected = settingsOnSelected
     btn.OnFocus = settingsOnFocus
     btn.OnBlur = settingsOnBlur
 
@@ -198,10 +147,6 @@ function settingsCreateMenuButton(pref as object) as object
 
     return btn
 end function
-
-sub settingsButtonOnSelected()
-    m.screen.OnKeyPress(m.screen.kp_RT, false)
-end sub
 
 function settingsCreatePrefButton(text as string, command as dynamic, value as string, prefType as string) as object
     btn = createButtonPref(text, FontRegistry().font16, command, value, prefType, m.screenPref)
@@ -315,6 +260,10 @@ function settingsGetPrefs() as object
     return prefs
 end function
 
+sub settingsOnSelected()
+    m.screen.OnKeyPress(m.screen.kp_RT, false)
+end sub
+
 sub settingsOnFocus()
     if tostr(m.listBox.curCommand) = m.command then
         ' TODO(rob): we can probably rip the focus sibling out when we keep
@@ -340,13 +289,9 @@ sub settingsOnFocus()
         btn.SetFocusSibling("left", m)
         m.listBox.AddComponent(btn)
     end for
+
     CompositorScreen().DrawComponent(m.listBox)
     m.SetFocusSibling("right", m.listBox.components[0])
-
-    ' hide any options outside of the safe scrolling area
-    for each comp in m.listBox.components
-        comp.SetVisibility(invalid, invalid, m.listBox.y, m.listBox.scrollHeight)
-    end for
 
     m.screen.screen.DrawAll()
 end sub
@@ -355,15 +300,5 @@ sub settingsOnBlur(toFocus as object)
     if toFocus.options <> invalid then
         m.SetColor(Colors().TextClr)
         m.draw(true)
-    end if
-end sub
-
-' From the context of the underlying screen. Process everything as
-' we would, but intercept the back button and close the overlay.
-sub settingsOnKeyRelease(keyCode as integer)
-    if keyCode = m.kp_BK then
-        m.overlayScreen.Close()
-    else
-        m.SuperOnKeyRelease(keyCode)
     end if
 end sub

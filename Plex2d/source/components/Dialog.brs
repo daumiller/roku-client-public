@@ -1,20 +1,15 @@
-' Dialog Screen is Special - it builds on top of an existing ComponentsScreen
 function DialogClass() as object
     if m.DialogClass = invalid then
         obj = CreateObject("roAssociativeArray")
-        obj.Append(ComponentClass())
-
+        obj.Append(OverlayClass())
         obj.ClassName = "DialogClass"
 
-        obj.HandleButton = dialogHandleButton
-
         ' Methods
-        obj.SetFrame = compSetFrame
-        obj.Show = dialogShow
-        obj.Close = dialogClose
         obj.Init = dialogInit
+        obj.GetComponents = dialogGetComponents
         obj.AddButton = dialogAddButton
         obj.CreateButton = dialogCreateButton
+        obj.HandleButton = dialogHandleButton
 
         m.DialogClass = obj
     end if
@@ -28,35 +23,16 @@ function createDialog(title as string, text as dynamic, screen as object) as obj
 
     obj.screen = screen
 
-    ' remeber the current focus and invalid it
-    obj.fromFocusedItem = screen.focusedItem
-    screen.lastFocusedItem = invalid
-    screen.FocusedItem = invalid
-
     obj.Init(title, text)
 
     return obj
 end function
 
-sub dialogHandleButton(button as object)
-    Debug("dialog button selected with command: " + tostr(button.command))
+sub dialogInit(title as string, text=invalid as dynamic)
+    ApplyFunc(OverlayClass().Init, m)
 
-    if button.command = "close" then
-        m.Close()
-    else
-        Debug("command not defined: (closing dialog now) " + tostr(button.command))
-        m.Close()
-    end if
-end sub
-
-sub dialogButtonOnSelected()
-    m.dialog.HandleButton(m)
-end sub
-
-sub dialogInit(title as string, text as dynamic)
-    ' TODO(rob) should this be unique? I am assuming dialogs should NOT stack
     m.components = m.screen.GetManualComponents(m.ClassName)
-    m.buttons = []
+    m.buttons = CreateObject("roList")
     m.title = title
     if text <> invalid then m.text = text
 
@@ -65,44 +41,18 @@ sub dialogInit(title as string, text as dynamic)
     m.height = 225
     m.x = int(1280/2 - m.width/2)
     m.y = int(720/2 - m.height/2)
-
     m.spacing = 25
+
     m.customFonts = {
         buttonFont: FontRegistry().font16
         titleFont:  FontRegistry().font18b
         textFont:  FontRegistry().font18
     }
 
-    m.enableBackButton = false
     m.buttonsSingleLine = false
-    m.enableOverlay = false
 end sub
 
-function dialogClose() as boolean
-    if m.enableBackButton = false then EnableBackButton()
-    m.DestroyComponents()
-    m.customFonts.clear()
-
-    ' draw the previous focused item we came from before the dialog
-    m.screen.lastFocusedItem = invalid
-    if m.fromFocusedItem <> invalid then
-        m.screen.FocusedItem = m.fromFocusedItem
-        m.screen.screen.DrawFocus(m.screen.focusedItem, true)
-    else
-        m.screen.screen.HideFocus(true, true)
-    end if
-end function
-
-sub dialogShow()
-    Application().CloseLoadingModal()
-    if m.enableBackButton = false then DisableBackButton()
-
-    if m.enableOverlay = false then
-        dimmer = createBlock(Colors().ScrMedOverlayClr)
-        dimmer.SetFrame(0, 0, 1280, 720)
-        m.components.push(dimmer)
-    end if
-
+sub dialogGetComponents()
     dialogBox = createVBox(false, false, false, m.spacing)
     dialogBox.SetFrame(m.x, m.y, m.width, m.height)
 
@@ -115,7 +65,7 @@ sub dialogShow()
         dialogBox.AddComponent(label)
     end if
 
-    ' TODO(rob) how do we allow the labels height to be "auto" based
+    ' TODO(rob): how do we allow the labels height to be "auto" based
     ' on the amount of text, maybe including a "maxHeight"
     if m.text <> invalid then
         label = createLabel(m.text, m.customFonts.textFont)
@@ -126,11 +76,8 @@ sub dialogShow()
         dialogBox.AddComponent(label)
     end if
 
-    ' Add buttons - or - add OK button if none exist
     if m.buttons.count() = 0 then
-        btn = m.createButton("OK", "close")
-        btn.zOrder = 200
-        dialogBox.AddComponent(btn)
+        dialogBox.AddComponent(m.createButton("OK", "close"))
     else
         if m.buttonsSingleLine then
             btnCont = createHBox(false, false, false, 10)
@@ -139,42 +86,26 @@ sub dialogShow()
         end if
         btnCont.phalign = btnCont.JUSTIFY_CENTER
         for each button in m.buttons
-            btn = m.createButton(button.text, button.command)
-            btn.zOrder = 200
-            btnCont.AddComponent(btn)
+            btnCont.AddComponent(m.createButton(button.text, button.command))
         end for
         dialogBox.AddComponent(btnCont)
     end if
-
     m.components.push(dialogBox)
 
-    ' TODO(rob) determine width/height of dialogBox, center the box,
-    ' and add the background layer. We can forgo the zOrder by
-    ' if we unshift instead of push the bkg.
     bkg = createBlock(Colors().ScrVeryDrkOverlayClr)
     bkg.SetFrame(m.x, m.y, m.width, m.height)
     bkg.zOrder = 199
     m.components.push(bkg)
-
-    for each comp in m.components
-        CompositorScreen().DrawComponent(comp)
-    end for
-
-    m.screen.screen.DrawFocus(m.screen.focusedItem, true)
 end sub
 
-sub dialogAddButton(text as string, command as dynamic) as object
-    m.buttons.push({text: text, command: command})
-end sub
-
-function dialogCreateButton(text as string, command as dynamic) as object
+function dialogCreateButton(text as string, command=invalid as dynamic) as object
     btn = createButton(text, m.customFonts.buttonFont, command)
-    btn.SetColor(&hffffffff, &h1f1f1fff)
+    btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
     btn.width = 72
     btn.height = 44
     btn.fixed = true
+    btn.zOrder = 200
 
-    ' special properties for the dialog buttons
     btn.focusNonSiblings = false
     btn.dialog = m
     btn.OnSelected = dialogButtonOnSelected
@@ -183,3 +114,16 @@ function dialogCreateButton(text as string, command as dynamic) as object
 
     return btn
 end function
+
+sub dialogAddButton(text as string, command=invalid as dynamic) as object
+    m.buttons.push({text: text, command: command})
+end sub
+
+sub dialogButtonOnSelected()
+    m.dialog.HandleButton(m)
+end sub
+
+sub dialogHandleButton(button as object)
+    Debug("command not defined: " + tostr(button.command) + " - closing dialog")
+    m.Close()
+end sub
