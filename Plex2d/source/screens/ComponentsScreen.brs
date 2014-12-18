@@ -165,6 +165,11 @@ sub compShow()
         m.screen.DrawFocus(m.focusedItem)
     end if
 
+    ' Always make sure we have a focus point regardless of having a focusItem. We
+    ' may display a dialog on screens without initially having a focusable item.
+    if m.focusX = invalid then m.focusX = 0
+    if m.focusY = invalid then m.focusY = 0
+
     m.screen.DrawAll()
 
     ' process any animated components
