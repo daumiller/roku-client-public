@@ -249,6 +249,12 @@ function compHandleMessage(msg as object) as boolean
         handled = true
         keyCode = msg.GetInt()
 
+        ' TODO(schuyler): Lock remote events? (moved todo in case we want to lock other buttons? -rob)
+        if (keyCode = m.kp_BK or keyCode - 100 = m.kp_BK) and Locks().IsLocked("BackButton") then
+            Debug(KeyCodeToString(keyCode) + " is disabled")
+            return handled
+        end if
+
         ' We can always cancel our timer for held keys. Either this is
         ' a release event for that key and it's the perfect time to
         ' cancel the timer, or it's a press event for some other key.
@@ -358,16 +364,10 @@ sub compOnKeyRelease(keyCode as integer)
 
     if keyCode = m.kp_OK then
         if m.focusedItem <> invalid and m.focusedItem.selectable = true then
-            ' TODO(schuyler): Lock remote events?
             m.OnItemSelected(m.focusedItem)
         end if
     else if keyCode = m.kp_BK then
-        ' TODO(schuyler): Lock remote events?
-        if Locks().IsLocked("BackButton") then
-            Debug(KeyCodeToString(keyCode) + " is disabled")
-        else
-            Application().popScreen(m)
-        end if
+        Application().popScreen(m)
     else if keyCode = m.kp_RW then
         m.OnRewindButton()
     else if keyCode = m.kp_INFO then
