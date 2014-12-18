@@ -63,8 +63,8 @@ sub loadingFindServer()
     server = PlexServerManager().GetSelectedServer()
 
     if server = invalid then
-        m.waitTimer = createTimer("ping")
-        m.waitTimer.SetDuration(5000)
+        m.waitTimer = createTimer("waitTimer")
+        m.waitTimer.SetDuration(15000)
         Application().AddTimer(m.waitTimer, createCallable("OnWaitTimer", m))
 
         m.callback = CreateCallable("OnServerSelected", m, Rnd(256))
