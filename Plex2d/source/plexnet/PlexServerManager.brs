@@ -115,7 +115,7 @@ sub psmUpdateFromConnectionType(servers as object, source as integer)
     end if
 
     m.DeviceRefreshComplete(source)
-    m.UpdateReachability(false)
+    m.UpdateReachability(true)
     m.SaveState()
 end sub
 

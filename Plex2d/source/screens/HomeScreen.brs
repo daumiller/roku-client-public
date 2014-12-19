@@ -28,7 +28,6 @@ function createHomeScreen(server as object) as object
 
     obj.server = server
 
-    ' TODO(rob): should we keep the loading screen in the stack?
     Application().clearScreens()
 
     return obj
@@ -79,6 +78,11 @@ function homeHandleCommand(command as string, item as dynamic) as boolean
         ' TODO(rob): we should not recieve this command until the channel
         ' is available to IAP users.
         Application().PushScreen(createPinScreen(false))
+    else if command = "switch_user" then
+        if not MyPlexAccount().SwitchHomeUser(item.metadata.id) then
+            dialog = createDialog("Unable to switch users", "Please check your connection and try again.", m)
+            dialog.Show()
+        end if
     else if command = "selected_server" then
         PlexServerManager().SetSelectedServer(item.metadata, true)
         Application().PushScreen(createHomeScreen(item.metadata))

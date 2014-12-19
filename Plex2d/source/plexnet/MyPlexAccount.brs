@@ -1,4 +1,4 @@
-function MyPlexAccount()
+function MyPlexAccount() as object
     if m.MyPlexAccount = invalid then
         obj = CreateObject("roAssociativeArray")
 
@@ -16,8 +16,7 @@ function MyPlexAccount()
         obj.isEntitled = false
         obj.isRestricted = false
         obj.hasQueue = false
-        ' TODO(rob): pinAuth
-        ' obj.pinAuthenticated = false
+        obj.pinAuthenticated = false
 
         obj.homeUsers = createObject("roList")
 
@@ -31,8 +30,7 @@ function MyPlexAccount()
         obj.SignOut = mpaSignOut
         obj.ValidateToken = mpaValidateToken
         obj.UpdateHomeUsers = mpaUpdateHomeUsers
-        ' TODO(rob): Switch users
-        ' obj.SwitchHomeUser = mpaSwitchHomeUser
+        obj.SwitchHomeUser = mpaSwitchHomeUser
 
         obj.OnAccountResponse = mpaOnAccountResponse
 
@@ -238,3 +236,30 @@ sub mpaUpdateHomeUsers()
 
     Info("home users: " + tostr(m.homeUsers.count()))
 end sub
+
+function mpaSwitchHomeUser(userId as string, pin="" as dynamic) as boolean
+    if userId = m.id then return true
+
+    ' TODO(rob): offline support
+    if m.IsOffline then
+        if createDigest(pin + m.AuthToken, "sha256") = firstOf(RegRead("Pin", "user_cache"), "") then
+            Debug("Offline PIN accepted")
+            m.PinAuthenticated = true
+            return true
+        end if
+    else
+        ' build path and post to myplex to swith the user
+        path = "/api/home/users/" + userid + "/switch"
+        req = createMyPlexRequest(path)
+        xml = CreateObject("roXMLElement")
+        xml.Parse(req.PostToStringWithTimeout("pin=" + pin, 10))
+
+        if xml@authenticationToken <> invalid then
+            m.ValidateToken(xml@authenticationToken)
+            if pin <> "" then m.PinAuthenticated = true
+            return true
+        end if
+    end if
+
+    return false
+end function

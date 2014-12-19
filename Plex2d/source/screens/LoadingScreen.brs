@@ -49,6 +49,11 @@ sub loadingOnServerSelected(server=invalid as dynamic)
         m.callback = invalid
     end if
 
+    if m.waitTimer <> invalid then
+        m.waitTimer.active = false
+        m.waitTimer = invalid
+    end if
+
     ' TODO(rob): logic will need to be modified when we allow IAP
     if MyPlexAccount().isSignedIn = false or MyPlexAccount().isEntitled = false then
         Application().PushScreen(createPinScreen())
@@ -63,6 +68,8 @@ sub loadingFindServer()
     server = PlexServerManager().GetSelectedServer()
 
     if server = invalid then
+        PlexServerManager().UpdateReachability(false)
+
         m.waitTimer = createTimer("waitTimer")
         m.waitTimer.SetDuration(15000)
         Application().AddTimer(m.waitTimer, createCallable("OnWaitTimer", m))
@@ -84,8 +91,10 @@ sub loadingOnWaitTimer(timer as object)
 end sub
 
 sub loadingShowFailureDialog()
-    m.waitTimer.active = false
-    m.waitTimer = invalid
+    if m.waitTimer <> invalid then
+        m.waitTimer.active = false
+        m.waitTimer = invalid
+    end if
     dialog = createDialog("Unable to find a server", "Please try again", m)
     dialog.AddButton("Retry", "find_servers")
     if MyPlexAccount().isSignedIn then
