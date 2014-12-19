@@ -78,16 +78,10 @@ sub headerPerformLayout()
         buttons.push(button)
 
         ' Options Drop Down: Settings, Sign Out/In
-        if MyPlexAccount().IsSignedIn then
-            connect = {text: "Sign Out", command: "sign_out"}
-        else
-            connect = {text: "Sign In", command: "sign_in"}
-        end if
         button = createDropDown(firstOf(MyPlexAccount().title, "Options"), m.buttons.font, int(720 * .80), m.screen)
         button.width = m.buttons.width
         button.pvalign = button[m.buttons.valign]
-        button.options.push({text: "Settings", command: "settings", font: m.buttons.font, height: 66, width: 128 })
-        button.options.push({text: connect.text, command: connect.command, font: m.buttons.font, height: 66, width: 128 })
+        button.GetOptions = headerGetOptions
         buttons.push(button)
     else
         button = createButton("Go Home", m.buttons.font, "go_home")
@@ -122,5 +116,32 @@ function headerGetServerOptions() as object
             m.options.push({text: server.name, command: "selected_server", font: FontRegistry().font16, height: 66, width: 128, metadata: server })
         end if
     end for
+
+    return m.options
+end function
+
+function headerGetOptions() as object
+    m.options.clear()
+    font = FontRegistry().font16
+
+    mpa = MyPlexAccount()
+    if mpa.IsSignedIn then
+        connect = {text: "Sign Out", command: "sign_out"}
+        mpa.UpdateHomeUsers()
+        for each user in mpa.homeUsers
+            ' TODO(rob): custom button: crown, selected checkmark, pin, avatar
+            m.options.push({text: user.title, command: "switch_user", metadata: user, font: font, height: 66, width: 128 })
+        end for
+    else
+        connect = {text: "Sign In", command: "sign_in"}
+    end if
+
+    sep = createBlock(&h333333ff)
+    sep.height = 2
+    sep.width = 128
+    m.options.push({component: sep})
+    m.options.push({text: "Settings", command: "settings", font: font, height: 66, width: 128 })
+    m.options.push({text: connect.text, command: connect.command, font: font, height: 66, width: 128 })
+
     return m.options
 end function
