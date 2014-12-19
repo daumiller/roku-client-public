@@ -4,6 +4,7 @@ function HttpRequestClass() as object
 
         obj.StartAsync = httpStartAsync
         obj.GetToStringWithTimeout = httpGetToStringWithTimeout
+        obj.PostToStringWithTimeout = httpPostToStringWithTimeout
         obj.GetIdentity = httpGetIdentity
         obj.GetUrl = httpGetUrl
         obj.Cancel = httpCancel
@@ -93,6 +94,36 @@ function httpGetToStringWithTimeout(seconds as integer) as string
             m.request.AsyncCancel()
         else
             Error("AsyncGetToString unknown event: " + type(msg))
+        end if
+    else
+        Error("Failed to start request to " + url)
+    end if
+
+    return response
+end function
+
+
+function httpPostToStringWithTimeout(body="" as string, seconds=10 as integer) as string
+    timeout = 1000 * seconds
+
+    response = ""
+    m.request.EnableFreshConnection(true)
+
+    ' This is a blocking request, so make sure it uses a unique message port
+    port = CreateObject("roMessagePort")
+    m.request.SetPort(port)
+
+    if m.request.AsyncPostFromString(body) then
+        msg = wait(timeout, port)
+        if type(msg) = "roUrlEvent" then
+            m.responseCode = msg.GetResponseCode()
+            m.failureReason = msg.GetFailureReason()
+            response = msg.GetString()
+        else if msg = invalid then
+            Warn("Request to " + m.url + " timed out after " + tostr(seconds) + " seconds")
+            m.request.AsyncCancel()
+        else
+            Error("AsyncPostFromString unknown event: " + type(msg))
         end if
     else
         Error("Failed to start request to " + url)
