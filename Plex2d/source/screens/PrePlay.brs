@@ -13,6 +13,7 @@ function PreplayScreen() as object
         obj.OnResponse = preplayOnResponse
         obj.HandleCommand = preplayHandleCommand
         obj.GetComponents = preplayGetComponents
+        obj.OnPlayButton = preplayOnPlayButton
 
         obj.GetButtons = preplayGetButtons
         obj.GetImages = preplayGetImages
@@ -81,6 +82,10 @@ sub preplayOnResponse(request as object, response as object, context as object)
     end if
 
     m.Show()
+end sub
+
+sub preplayOnPlayButton(focusedItem=invalid as dynamic)
+    m.CreatePlayerForItem(m.item)
 end sub
 
 function preplayHandleCommand(command as string, item as dynamic) as boolean

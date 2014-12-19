@@ -56,6 +56,10 @@ function ComponentsScreen() as object
         obj.OnKeyHeld = compOnKeyHeld
         obj.OnKeyRelease = compOnKeyRelease
         obj.OnInfoButton = compOnInfoButton
+        obj.OnPlayButton = compOnPlayButton
+
+        ' Playback methods
+        obj.CreatePlayerForItem = compCreatePlayerForItem
 
         obj.AfterItemFocused = function(item as dynamic) : Debug("AfterItemFocused::no-op") : end function
 
@@ -372,7 +376,13 @@ sub compOnKeyRelease(keyCode as integer)
         m.OnRewindButton()
     else if keyCode = m.kp_INFO then
         m.OnInfoButton()
+    else if keyCode = m.kp_PLAY then
+        m.OnPlayButton(m.focusedItem)
     end if
+end sub
+
+sub compOnPlayButton(item as object)
+    m.CreatePlayerForItem(item.plexObject)
 end sub
 
 sub compOnItemFocused(item as object, prevItem=invalid as object)
@@ -1003,3 +1013,57 @@ function compCalculateFirstOrLast(components as object, shift as object) as inte
 
     return shift.x
 end function
+
+sub compCreatePlayerForItem(plexObject=invalid as dynamic)
+    if type(plexObject) <> "roAssociativeArray" or type(plexObject.isLibraryItem) <> "roFunction" then return
+
+    if plexobject.isLibraryItem() then
+        ' Resume Dialog (blocking): can this be gerneric as is?
+        if plexObject.GetInt("viewOffset") > 0 then
+            dialog = createDialog("Resume Playback?", invalid, m)
+            dialog.AddButton("Yes", "yes")
+            dialog.AddButton("No", "no")
+            dialog.Show(true)
+            if dialog.result = invalid then return
+            resume = (dialog.result = "yes")
+        else
+            resume = false
+        end if
+
+        m.OnMetadataResponse = compOnMetadataResponse
+        request = createPlexRequest(plexObject.GetServer(), plexObject.GetItemPath())
+        context = request.CreateRequestContext("metadata", CreateCallable("OnMetadataResponse", m))
+        context.key = plexObject.Get("key")
+        context.resume = resume
+        Application().StartRequest(request, context)
+    end if
+end sub
+
+sub compOnMetadataResponse(request as object, response as object, context as object)
+    response.ParseResponse()
+    children = response.items
+    item = invalid
+
+    for i = 0 to children.Count() - 1
+        if context.key = children[i].Get("key") then
+            item = children[i]
+            exit for
+        end if
+    end for
+
+    if item = invalid and children.Count() = 1 then item = children[0]
+
+    if item <> invalid then
+        if item.IsVideoItem() then
+            screen = VideoPlayer().CreateVideoScreen(item, (context.resume = true))
+            if screen.screenError = invalid then
+                Application().PushScreen(screen)
+            else
+                dialog = createDialog("Playback request failed", screen.screenError, m)
+                dialog.Show()
+            end if
+        else
+            Debug("Cannot play: not sure what to do with " + item.ToString())
+        end if
+    end if
+end sub

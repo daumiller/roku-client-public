@@ -18,6 +18,9 @@ function BaseScreen()
         obj.OnInfoButton = function() : Debug("OnInfoButton:no-op") : end function
         obj.OnRewindButton = function() : Debug("OnRewindButton:no-op") : end function
 
+        ' no-op methods
+        obj.OnPlayButton = function() : Debug("OnPlayButton:no-op") : end function
+
         obj.reset()
         m.BaseScreen = obj
     end if
