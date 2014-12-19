@@ -8,6 +8,7 @@ function PreplayScreen() as object
 
         ' Methods
         obj.Show = preplayShow
+        obj.Refresh = preplayRefresh
         obj.Init = preplayInit
         obj.OnResponse = preplayOnResponse
         obj.HandleCommand = preplayHandleCommand
@@ -94,6 +95,12 @@ function preplayHandleCommand(command as string, item as dynamic) as boolean
             dialog = createDialog("command failed: " + command, screen.screenError, m)
             dialog.Show()
         end if
+    else if command = "scrobble" then
+        m.item.Scrobble()
+        m.Refresh()
+    else if command = "unscrobble" then
+        m.item.Unscrobble()
+        m.Refresh()
     else if command = "settings" then
         settings = createSettings(m)
         settings.GetPrefs = preplayGetPrefs
@@ -416,3 +423,9 @@ function preplayGetPrefs() as object
 
     return prefs
 end function
+
+sub preplayRefresh()
+    ' TODO(rob): find a better way to refresh.. mainly to kill the image flashing
+    m.requestContext = invalid
+    m.Show()
+end sub
