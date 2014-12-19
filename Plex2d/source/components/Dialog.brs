@@ -124,6 +124,9 @@ sub dialogButtonOnSelected()
 end sub
 
 sub dialogHandleButton(button as object)
-    Debug("command not defined: " + tostr(button.command) + " - closing dialog")
+    m.result = button.command
+    if m.blocking = false then
+        Debug("command not defined: " + tostr(button.command) + " - closing dialog")
+    end if
     m.Close()
 end sub

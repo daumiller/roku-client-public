@@ -19,6 +19,7 @@ sub overlayInit()
     ApplyFunc(ComponentClass().Init, m)
     m.enableBackButton = true
     m.enableOverlay = false
+    m.blocking = false
 
     ' remember the current focus and invalidate it
     m.fromFocusedItem = m.screen.focusedItem
@@ -45,8 +46,9 @@ sub overlayOnKeyRelease(keyCode as integer)
     end if
 end sub
 
-function overlayClose() as boolean
+sub overlayClose()
     if m.enableBackButton = false then EnableBackButton()
+    m.blocking = false
 
     ' reset screen OnKeyRelease to original
     m.screen.OnKeyRelease = m.screen.OverlayOnKeyRelease
@@ -65,9 +67,9 @@ function overlayClose() as boolean
     end if
 
     m.screen.overlayScreen = invalid
-end function
+end sub
 
-sub overlayShow()
+sub overlayShow(blocking=false as boolean)
     Application().CloseLoadingModal()
     if m.enableBackButton = false then DisableBackButton()
 
@@ -86,4 +88,12 @@ sub overlayShow()
     end for
 
     m.screen.OnItemFocused(m.screen.focusedItem)
+
+    m.blocking = blocking
+    if m.blocking = true then
+        timeout = 0
+        while m.blocking = true
+            timeout = Application().ProcessOneMessage(timeout)
+        end while
+    end if
 end sub
