@@ -56,6 +56,8 @@ function PlexObjectClass() as object
         obj.GetPosterTranscodeURL = pnoGetPosterTranscodeURL
         obj.GetImageTranscodeURL = pnoGetImageTranscodeURL
         obj.GetTranscodeServer = pnoGetTranscodeServer
+        obj.Scrobble = pnoScrobble
+        obj.Unscrobble = pnoUnscrobble
 
         obj.ToString = pnoToString
 
@@ -354,6 +356,18 @@ function pnoGetTranscodeServer(localServerRequired as boolean) as dynamic
 
     return server
 end function
+
+sub pnoScrobble()
+    if m.GetServer() <> invalid and m.Get("ratingKey") <> invalid and m.container.Get("identifier") <> invalid then
+       m.GetServer().Scrobble(m.Get("ratingKey"), m.container.Get("identifier"))
+    end if
+end sub
+
+sub pnoUnscrobble()
+    if m.GetServer() <> invalid and m.Get("ratingKey") <> invalid and m.container.Get("identifier") <> invalid then
+       m.GetServer().Unscrobble(m.Get("ratingKey"), m.container.Get("identifier"))
+    end if
+end sub
 
 function pnoGetAbsolutePath(attr) as dynamic
     path = m.Get(attr)

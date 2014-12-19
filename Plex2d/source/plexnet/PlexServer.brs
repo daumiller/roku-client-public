@@ -27,6 +27,8 @@ function PlexServerClass() as object
         obj.GetToken = pnsGetToken
         obj.GetLocalServerPort = pnsGetLocalServerPort
         obj.GetImageTranscodeURL = pnsGetImageTranscodeURL
+        obj.Scrobble = pnsScrobble
+        obj.Unscrobble = pnsUnscrobble
         obj.CollectDataFromRoot = pnsCollectDataFromRoot
         obj.UpdateReachability = pnsUpdateReachability
         obj.OnReachabilityResult = pnsOnReachabilityResult
@@ -109,6 +111,18 @@ function pnsGetImageTranscodeURL(path as string, width as integer, height as int
 
     return m.BuildUrl("/photo/:/transcode?url=" + UrlEscape(imageUrl) + params, true)
 end function
+
+sub pnsScrobble(ratingKey as string, identifier as string)
+    request = createPlexRequest(m, "/:/scrobble?key=" + ratingKey + "&identifier=" + identifier)
+    context = request.CreateRequestContext("ignored")
+    Application().StartRequest(request, context)
+end sub
+
+sub pnsUnscrobble(ratingKey as string, identifier as string)
+    request = createPlexRequest(m, "/:/unscrobble?key=" + ratingKey + "&identifier=" + identifier)
+    context = request.CreateRequestContext("ignored")
+    Application().StartRequest(request, context)
+end sub
 
 function pnsIsReachable() as boolean
     return (m.activeConnection <> invalid and m.activeConnection.state = PlexConnectionClass().STATE_REACHABLE)
