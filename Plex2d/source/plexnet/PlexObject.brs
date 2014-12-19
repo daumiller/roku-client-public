@@ -358,14 +358,24 @@ function pnoGetTranscodeServer(localServerRequired as boolean) as dynamic
 end function
 
 sub pnoScrobble()
-    if m.GetServer() <> invalid and m.Get("ratingKey") <> invalid and m.container.Get("identifier") <> invalid then
-       m.GetServer().Scrobble(m.Get("ratingKey"), m.container.Get("identifier"))
+    server = m.GetServer()
+    ratingKey = m.Get("ratingKey")
+    identifier = m.GetIdentifier()
+    if server <> invalid and ratingKey <> invalid and identifier <> invalid then
+        request = createPlexRequest(server, "/:/scrobble?key=" + ratingKey + "&identifier=" + identifier)
+        context = request.CreateRequestContext("ignored")
+        Application().StartRequest(request, context)
     end if
 end sub
 
 sub pnoUnscrobble()
-    if m.GetServer() <> invalid and m.Get("ratingKey") <> invalid and m.container.Get("identifier") <> invalid then
-       m.GetServer().Unscrobble(m.Get("ratingKey"), m.container.Get("identifier"))
+    server = m.GetServer():
+    ratingKey = m.Get("ratingKey")
+    identifier = m.GetIdentifier()
+    if server <> invalid and ratingKey <> invalid and identifier <> invalid then
+        request = createPlexRequest(server, "/:/unscrobble?key=" + ratingKey + "&identifier=" + identifier)
+        context = request.CreateRequestContext("ignored")
+        Application().StartRequest(request, context)
     end if
 end sub
 
