@@ -85,36 +85,47 @@ sub dropdownShow()
 end sub
 
 sub dropdownGetComponents()
-    vbox = createVBox(true, true, true, 0)
+    vbox = createVBox(false, false, false, 0)
     vbox.SetScrollable(m.maxHeight)
 
     ddProp = { width: m.width, height: 0, x: m.x, y: m.y }
     for each option in m.GetOptions()
-        btn = createButton(option.text, option.font, option.command)
-        btn.focusNonSiblings = false
-        if option.padding <> invalid then
-            btn.setPadding(option.padding.top, option.padding.right, option.padding.bottom, option.padding.left)
+        if option.component <> invalid then
+            comp = option.component
         else
-            btn.setPadding(5)
+            comp = createButton(option.text, option.font, option.command)
+            comp.focusInside = true
+            comp.focusNonSiblings = false
+            if option.padding <> invalid then
+                comp.setPadding(option.padding.top, option.padding.right, option.padding.bottom, option.padding.left)
+            else
+                comp.setPadding(5)
+            end if
+            if option.halign <> invalid then comp.halign = m[option.halign]
+            if option.width  <> invalid then comp.width  = option.width
+            if option.height <> invalid then comp.height = option.height
+            ' TODO(rob): allow colors to be modified
+            comp.setColor(Colors().TextClr, Colors().BtnBkgClr)
+            comp.zOrder = 50
+            comp.dropDown = m
+            comp.fixed = (option.fixed = true)
+            ' TODO(rob): option to set the plexObject
+            comp.SetMetadata(option.metadata)
+            if m.screen.focusedItem = invalid then m.screen.focusedItem = comp
         end if
-        if option.halign <> invalid then btn.halign = m[option.halign]
-        if option.width  <> invalid then btn.width  = option.width
-        if option.height <> invalid then btn.height = option.height
-        ' TODO(rob): allow colors to be modified
-        btn.setColor(Colors().TextClr, Colors().BtnBkgClr)
-        btn.zOrder = 50
-        btn.dropDown = m
-        btn.fixed = (option.fixed = true)
-        ' TODO(rob): option to set the plexObject
-        btn.SetMetadata(option.metadata)
-        if m.screen.focusedItem = invalid then m.screen.focusedItem = btn
-        vbox.AddComponent(btn)
 
+        vbox.AddComponent(comp)
         ' calculate the required height and width for the homogeneous buttons
-        if btn.getPreferredWidth() > ddProp.width then
-            ddProp.width = btn.getPreferredWidth()
+        if comp.getPreferredWidth() > ddProp.width then
+            ddProp.width = comp.getPreferredWidth()
         end if
-        ddProp.height = ddProp.height + btn.getPreferredHeight() + vbox.spacing
+        ddProp.height = ddProp.height + comp.getPreferredHeight() + vbox.spacing
+    end for
+
+    ' we cannot set the VBox homogeneous due to arbitary heights, but
+    ' we do need the widths to all be consistent.
+    for each component in vbox.components
+        component.width = ddProp.width
     end for
     m.components.push(vbox)
 
@@ -138,7 +149,11 @@ end sub
 sub dropdownDestroy()
     ' destroy any font references
     for each option in m.options
-        option.font = invalid
+        if option.component <> invalid then
+            option.component.Destroy()
+        else
+            option.font = invalid
+        end if
     end for
     ApplyFunc(ComponentClass().Destroy, m)
 end sub
