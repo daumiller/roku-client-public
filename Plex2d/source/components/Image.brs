@@ -179,11 +179,11 @@ sub imageSetBitmap(bmp as object, makeCopy=false as boolean)
         m.bitmap = m.region.GetBitmap()
     end if
 
-    ' Let whoever cares know that we should be redrawn.
-    m.Trigger("redraw", [m])
-
     ' Let whoever cares layout the component again.
     m.Trigger("performParentLayout", [m])
+
+    ' Let whoever cares know that we should be redrawn.
+    m.Trigger("redraw", [m])
 end sub
 
 sub imageSetPlaceholder(source as string)
