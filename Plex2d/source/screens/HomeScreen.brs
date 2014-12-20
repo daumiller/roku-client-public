@@ -79,7 +79,17 @@ function homeHandleCommand(command as string, item as dynamic) as boolean
         ' is available to IAP users.
         Application().PushScreen(createPinScreen(false))
     else if command = "switch_user" then
-        if not MyPlexAccount().SwitchHomeUser(item.metadata.id) then
+        user = item.metadata
+        if user.id = MyPlexAccount().id then return handled
+
+        if user.protected = "1" then
+            ' pinPrompt handles switching and error feedback
+            pinPrompt = createPinPrompt(m)
+            pinPrompt.userSwitch = user
+            pinPrompt.Show(true)
+        else if not MyPlexAccount().SwitchHomeUser(user.id) then
+            ' provide feedback on failure to switch to non protected users
+            ' TODO(rob): need verbiage for failure
             dialog = createDialog("Unable to switch users", "Please check your connection and try again.", m)
             dialog.Show()
         end if
