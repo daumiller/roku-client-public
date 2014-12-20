@@ -14,6 +14,7 @@ function Colors() as object
         obj.CardBkgClr = &h272727ff
         obj.BtnBkgClr = &h272727ff
         obj.TextClr = &hffffffff
+        obj.TextDimClr = &hffffff60
 
         m.Colors = obj
     end if
