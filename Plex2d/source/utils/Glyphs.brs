@@ -13,6 +13,9 @@ function Glyphs() as object
         obj.STAR_FULL   = "i"
         obj.STAR_HALF   = "j"
         obj.STAR_EMPTY  = "k"
+        obj.CHECK_BIG   = "l"
+        obj.X_BIG       = "m"
+        obj.DEL_LABEL   = "n"
         obj.CONFIG      = "x"
         obj.HOME        = "y"
         obj.SEARCH      = "z"
@@ -21,6 +24,7 @@ function Glyphs() as object
         obj.SCROBBLE    = obj.CIR_CHECK
         obj.UNSCROBBLE  = obj.CIR_MINUS
         obj.MORE        = obj.ELLIPSIS
+        obj.BACKSPACE   = obj.DEL_LABEL
 
         m.Glyphs = obj
     end if
