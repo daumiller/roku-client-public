@@ -329,9 +329,16 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
             end if
 
             if toFocus = invalid then
+                ' support to manually focus on an overlay screen. Force GetFocusManual
+                ' to only use the components on the overlay as focus candidates
+                if m.overlayScreen <> invalid then
+                    components = m.overlayScreen.components
+                else
+                    components = invalid
+                end if
+
                 ' All else failed, search manually.
-                ' Debug("I'm lonely... I don't have any siblings [locate a relative]")
-                toFocus = m.GetFocusManual(KeyCodeToString(keyCode))
+                toFocus = m.GetFocusManual(KeyCodeToString(keyCode), components)
             else
                 ' We didn't have to search focus candidates, but we still need
                 ' to update our focus point.
@@ -489,7 +496,7 @@ function compCalculateFocusPoint(component as object, direction as string) as ob
     return point
 end function
 
-function compGetFocusManual(direction as string) as dynamic
+function compGetFocusManual(direction as string, focusableComponenents=invalid as dynamic) as dynamic
     ' These should never happen...
     if m.focusedItem = invalid or m.focusX = invalid or m.focusY = invalid then return invalid
 
@@ -499,10 +506,15 @@ function compGetFocusManual(direction as string) as dynamic
 
     candidates = CreateObject("roList")
 
-    ' Quick bypass to only check the onScreen components. This is already done on
-    ' first load and when shifting. We can fall back to checking all components
-    ' if we end up with no candidates
-    if m.onScreenComponents <> invalid then
+    ' focusableComponenents: use to override the screens components and
+    ' onScreenComponents. Useful for overlays needing their own focus logic.
+    ' m.onScreenComponents: quick bypass to only check the onScreen components.
+    ' This is already done on first load and when shifting.
+    if focusableComponenents <> invalid then
+        for each component in focusableComponenents
+            component.GetFocusableItems(candidates)
+        next
+    else if m.onScreenComponents <> invalid then
         for each component in m.onScreenComponents
             if component.focusable then candidates.push(component)
         next
@@ -511,8 +523,8 @@ function compGetFocusManual(direction as string) as dynamic
         next
     end if
 
-    ' fall back to the slower list
-    if candidates.count() = 0 then
+    ' fall back if we do not have any valid candidates (slower check)
+    if candidates.count() = 0 and focusableComponenents = invalid then
         ' Ask each component to add to our list of candidates.
         for each component in m.components
             component.GetFocusableItems(candidates)
@@ -521,7 +533,6 @@ function compGetFocusManual(direction as string) as dynamic
 
     ' Move our current focus point to the edge of the current component in
     ' the direction we're moving.
-    '
     focusedRect = computeRect(m.focusedItem)
     if direction = "left" or direction = "right" then
         m.focusX = focusedRect[direction]
