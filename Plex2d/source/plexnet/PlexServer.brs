@@ -223,6 +223,11 @@ function pnsMarkUpdateFinished(source as integer) as boolean
     for each conn in m.connections
         if not conn.refreshed then
             conn.sources = (conn.sources and (not source))
+
+            ' If we lost our plex.tv connection, don't remember the token.
+            if source = conn.SOURCE_MYPLEX then
+                conn.token = invalid
+            end if
         end if
 
         if conn.sources > 0 then
