@@ -343,12 +343,11 @@ end sub
 
 sub psmOnAccountChange(account)
     if account.isSignedIn then
-        ' TODO(schuyler): We need to do more here. This means that the user has
-        ' changed. We should probably clear all existing MYPLEX connections,
-        ' and then refresh resources. We need to choose a new selected server,
-        ' just like startup, so we should reuse StartSelectedServerSearch in
-        ' some fashion.
+        ' A request to refresh resources has already been kicked off. We need
+        ' to clear out any MYPLEX connections for the previous user and then
+        ' start our selected server search.
 
+        m.UpdateFromConnectionType([], PlexConnectionClass().SOURCE_MYPLEX)
         m.StartSelectedServerSearch(true)
     else
         ' Clear servers/connections from plex.tv
