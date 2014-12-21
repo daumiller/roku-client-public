@@ -15,6 +15,7 @@ function AppSettings()
         obj.GetGlobal = settingsGetGlobal
         obj.GetIntGlobal = settingsGetIntGlobal
         obj.InitGlobals = settingsInitGlobals
+        obj.GetCapabilities = settingsGetCapabilities
 
         obj.reset()
         m.AppSettings = obj
@@ -140,3 +141,30 @@ sub settingsInitGlobals()
     ' TODO(schuyler): Preference? Rely on GetFriendlyName from firmware 6.1? Make HTTP dial call?
     m.globals["friendlyName"] = m.globals["rokuModel"]
 end sub
+
+function settingsGetCapabilities(recompute=false as boolean) as string
+    if not recompute and m.globals["capabilities"] <> invalid then
+        return m.globals["capabilities"]
+    end if
+
+    ' As long as we're only using the universal transcoder, we don't need to
+    ' fully specify our capabilities. We just need to make sure our audio
+    ' preferences are specified, and we might as well say we like h264.
+
+    caps = "videoDecoders=h264{profile:high&resolution:1080&level=41};audioDecoders=aac{channels:2}"
+
+    ' TODO(schuyler): Surround sound prefs
+    surroundSoundAC3 = false
+    surroundSoundDCA = false
+
+    if surroundSoundAC3 then
+        caps = caps + ",ac3{channels:8}"
+    end if
+
+    if surroundSoundDCA then
+        caps = caps + ",dca{channels:8}"
+    end if
+
+    m.globals["capabilities"] = caps
+    return caps
+end function
