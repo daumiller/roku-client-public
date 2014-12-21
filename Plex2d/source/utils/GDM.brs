@@ -230,7 +230,7 @@ sub gdmDiscoveryDiscover()
         Debug("Successfully sent GDM discovery message, waiting for servers")
         m.servers = CreateObject("roList")
         m.timer = createTimer("gdm")
-        m.timer.SetDuration(10000)
+        m.timer.SetDuration(5000)
         m.socket = udp
         Application().AddSocketCallback(udp, createCallable("OnSocketEvent", m))
         Application().AddTimer(m.timer, createCallable("OnTimer", m))

@@ -71,7 +71,7 @@ sub loadingFindServer()
         PlexServerManager().UpdateReachability(false)
 
         m.waitTimer = createTimer("waitTimer")
-        m.waitTimer.SetDuration(15000)
+        m.waitTimer.SetDuration(17000)
         Application().AddTimer(m.waitTimer, createCallable("OnWaitTimer", m))
 
         m.callback = CreateCallable("OnServerSelected", m, Rnd(256))
