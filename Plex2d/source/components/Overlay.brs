@@ -26,7 +26,11 @@ sub overlayInit()
     m.screen.lastFocusedItem = invalid
     m.screen.FocusedItem = invalid
 
-    m.screen.OverlayOnKeyRelease = m.screen.OnKeyRelease
+    m.OrigScreenFunctions = {
+        OnKeyRelease: m.screen.OnKeyRelease,
+        OrigOnKeyRelease: m.screen.OrigOnKeyRelease
+    }
+    m.screen.OrigOnKeyRelease = firstOf(m.screen.OrigOnKeyRelease, m.screen.OnKeyRelease)
     m.screen.OnKeyRelease = m.OnKeyRelease
     m.screen.overlayScreen = m
 
@@ -42,7 +46,7 @@ sub overlayOnKeyRelease(keyCode as integer)
         Debug("back button pressed: closing overlay")
         m.overlayScreen.Close()
     else
-        m.OverlayOnKeyRelease(keyCode)
+        m.OrigOnKeyRelease(keyCode)
     end if
 end sub
 
@@ -51,8 +55,7 @@ sub overlayClose()
     m.blocking = false
 
     ' reset screen OnKeyRelease to original
-    m.screen.OnKeyRelease = m.screen.OverlayOnKeyRelease
-    m.screen.OverlayOnKeyRelease = invalid
+    m.screen.Append(m.OrigScreenFunctions)
 
     m.DestroyComponents()
     m.customFonts.clear()
