@@ -110,7 +110,7 @@ end sub
 ' TODO(rob): sorted list, selected checkmark, info: offline|remote|update required?
 function headerGetServerOptions() as object
     m.options.clear()
-    PlexServerManager().UpdateReachability(true)
+    MyPlexManager().RefreshResources()
     for each server in PlexServerManager().GetServers()
         if server.isReachable() = true then
             m.options.push({text: server.name, command: "selected_server", font: FontRegistry().font16, height: 66, width: 128, metadata: server })
