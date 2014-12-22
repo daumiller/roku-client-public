@@ -82,7 +82,7 @@ function homeHandleCommand(command as string, item as dynamic) as boolean
         user = item.metadata
         if user.id = MyPlexAccount().id then return handled
 
-        if user.protected = "1" then
+        if MyPlexAccount().isAdmin = false and user.protected = "1" then
             ' pinPrompt handles switching and error feedback
             pinPrompt = createPinPrompt(m)
             pinPrompt.userSwitch = user
