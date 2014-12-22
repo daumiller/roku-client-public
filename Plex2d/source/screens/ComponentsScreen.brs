@@ -149,7 +149,7 @@ sub compShow()
     ' try to refocus if applicable
     if m.reFocusItemId <> invalid then
         for each component in m.shiftableComponents
-            if component.id = m.reFocusItemId
+            if component.id = m.reFocusItemId and component.focusable = true then
                 m.focusedItem = component
                 exit for
             end if
