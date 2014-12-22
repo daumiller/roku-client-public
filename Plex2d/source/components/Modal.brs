@@ -51,7 +51,7 @@ sub modalShow()
     modal.SetColor(m.textClr, m.bkgClr)
     modal.halign = modal.JUSTIFY_CENTER
     modal.valign = modal.ALIGN_MIDDLE
-    modal.zOrder = 100
+    modal.zOrder = 999
     m.components.push(modal)
 
     ' set the modal in the center of the screen.
