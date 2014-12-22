@@ -178,10 +178,7 @@ function gsHandleCommand(command as string, item as dynamic) as boolean
     if command = "jump_button" then
         for each component in m.shiftableComponents
             if component.jumpIndex = item.metadata.index then
-                m.lastFocusedItem = invalid
-                m.focusedItem = component
-                m.CalculateShift(m.focusedItem)
-                m.OnItemFocused(m.focusedItem, item)
+                m.FocusItemManually(component)
                 exit for
             end if
         next

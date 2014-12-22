@@ -50,6 +50,7 @@ function ComponentsScreen() as object
         ' Message handling
         obj.HandleMessage = compHandleMessage
         obj.HandleCommand = compHandleCommand
+        obj.FocusItemManually = compFocusItemManually
         obj.OnItemFocused = compOnItemFocused
         obj.OnItemSelected = compOnItemSelected
         obj.OnKeyPress = compOnKeyPress
@@ -159,13 +160,6 @@ sub compShow()
     if m.focusedItem <> invalid then
         m.CalculateShift(m.focusedItem)
         m.OnItemFocused(m.focusedItem)
-
-        ' Make sure that we set an initial focus point.
-        if m.focusX = invalid or m.focusY = invalid then
-            m.focusX = m.focusedItem.x
-            m.focusY = m.focusedItem.y
-        end if
-
         m.screen.DrawFocus(m.focusedItem)
     end if
 
@@ -392,7 +386,28 @@ sub compOnPlayButton(item as object)
     m.CreatePlayerForItem(item.plexObject)
 end sub
 
+sub compFocusItemManually(item as object)
+    ' reset focus point on manual focus
+    m.focusX = item.x
+    m.focusY = item.y
+
+    ' clear lastFocusedItem (pass to OnItemFocused for blur)
+    lastFocus = m.focusedItem
+    m.lastFocusedItem = invalid
+
+    ' set focused item, shift and draw
+    m.focusedItem = item
+    m.CalculateShift(item)
+    m.OnItemFocused(item, lastFocus)
+end sub
+
 sub compOnItemFocused(item as object, prevItem=invalid as object)
+    ' Make sure that we set an initial focus point.
+    if m.focusX = invalid or m.focusY = invalid then
+        m.focusX = item.x
+        m.focusY = item.y
+    end if
+
     ' let the components know about the blur/focus state
     if prevItem <> invalid then prevItem.OnBlur(item)
     item.OnFocus()

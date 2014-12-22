@@ -90,7 +90,7 @@ sub overlayShow(blocking=false as boolean)
         CompositorScreen().DrawComponent(comp)
     end for
 
-    m.screen.OnItemFocused(m.screen.focusedItem)
+    m.screen.FocusItemManually(m.screen.focusedItem)
 
     m.blocking = blocking
     if m.blocking = true then

@@ -265,9 +265,7 @@ sub pinpromptAddDigit(value as string)
 
     ' focus to submit button or redraw new digit
     if m.pinCode.Count() = 4 then
-        lastFocus = m.screen.focusedItem
-        m.screen.focusedItem = m.compSubmit
-        m.screen.OnItemFocused(m.screen.focusedItem, lastFocus)
+        m.screen.FocusItemManually(m.compSubmit)
     else
         m.screen.screen.DrawAll()
     end if

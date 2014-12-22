@@ -172,6 +172,6 @@ sub compositorDrawDebugRect(x, y, width, height, color, drawNow=false)
     bmp = CreateObject("roBitmap", {width: width, height: height, alphaEnable: false})
     bmp.Clear(color)
     region = CreateObject("roRegion", bmp, 0, 0, width, height)
-    m.debugSprites.Push(m.compositor.NewSprite(x - int(width/2), y - int(height / 2), region))
+    m.debugSprites.Push(m.compositor.NewSprite(x - int(width/2), y - int(height / 2), region, 999))
     if drawNow then m.DrawAll()
 end sub
