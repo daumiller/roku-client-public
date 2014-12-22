@@ -86,6 +86,15 @@ sub jumpboxPerformLayout()
         m.AddComponent(button)
         jumpWidth = jumpWidth + button.width + m.spacing
     end for
+
+    ' wrap the jumpBox
+    if m.components.count() > 1 then
+        first = m.components[0]
+        last = m.components.peek()
+        first.SetFocusSibling("left", last)
+        last.SetFocusSibling("right", first)
+    end if
+
     xOffset = int(1280/2 - jumpWidth/2)
     m.SetFrame(xOffset, m.yOffset, jumpWidth, 50)
 
