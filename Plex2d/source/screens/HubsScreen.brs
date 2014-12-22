@@ -150,7 +150,7 @@ function hubsCreateHub(container) as dynamic
         end if
 
         ' Continue Watching Hub is special. Use the shows title instead of the episode string
-        title = item.GetOverlayTitle(hub.hubIdentifier = "home.continue")
+        title = item.GetOverlayTitle(hub.hubIdentifier = "home.continue", hub.orientation = ComponentClass().ORIENTATION_LANDSCAPE)
 
         card = createCard(item, title, item.GetViewOffsetPercentage(), item.GetUnwatchedCount(), item.IsUnwatched())
         ' TODO(schuyler): Do we need this? I don't think so.

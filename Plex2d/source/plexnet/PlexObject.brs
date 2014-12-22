@@ -178,12 +178,12 @@ function pnoGetLongerTitle() as string
     end if
 end function
 
-function pnoGetOverlayTitle(preferParent=false as boolean) as dynamic
+function pnoGetOverlayTitle(preferParent=false as boolean, forced=false as boolean) as dynamic
     if preferParent and m.type = "episode" then
         return m.GetFirst(["grandparentTitle", "parentTitle"])
-    else if m.type = "movie" or m.type = "show" then
+    else if not forced and (m.type = "movie" or m.type = "show") then
         ' Movies and shows should have identifying posters, so they get no
-        ' overlay title.
+        ' overlay title. (unless forced, e.g. landscape artwork)
         return invalid
     else
         return m.GetSingleLineTitle()
