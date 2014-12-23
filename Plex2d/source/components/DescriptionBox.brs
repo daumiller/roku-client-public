@@ -42,13 +42,14 @@ end function
 function dboxShow(item as object) as boolean
     pendingDraw = m.Hide()
     if item.plexObject = invalid or item.plexObject.Get("ratingKey") = invalid then return pendingDraw
-    contentType = tostr(item.plexObject.Get("type"))
+    contentType = item.plexObject.Get("type", "")
+    viewGroup = item.plexObject.container.Get("viewGroup", "")
 
     ' *** Component Description *** '
     compDesc = createVBox(false, false, false, m.spacing)
     compDesc.SetFrame(m.x, m.y, m.width, m.height)
 
-    if contentType = "episode" and m.IsGrid = true then
+    if m.IsGrid = true and contentType = "episode" and viewGroup = "episode" then
         title = item.plexObject.GetSingleLineTitle()
     else
         title = item.plexObject.GetLongerTitle()
