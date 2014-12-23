@@ -106,9 +106,10 @@ sub hubPerformLayout()
         ' the orientation.
 
         if m.layout = m.LAYOUT_HERO_3 and (m.ORIENTATION = m.ORIENTATION_LANDSCAPE or m.ORIENTATION = m.ORIENTATION_SQUARE) then
-            childHeight = int(availableHeight/3)
+            availableHeight = int(availableHeight/3) * 3
+            childHeight = availableHeight/3
             heroHeight = availableHeight - childHeight - m.spacing
-            heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight, component) + m.spacing*2
+            heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight, component) + m.spacing
             availableHeight = childHeight
         else
             heroHeight = availableHeight
