@@ -30,8 +30,10 @@ function PlexObjectClass() as object
         obj.IsPhotoOrDirectoryItem = pnoIsPhotoOrDirectoryItem
         obj.IsDirectory = pnoIsDirectory
         obj.IsLibrarySection = pnoIsLibrarySection
+        obj.IsPersonalLibrarySection = pnoIsPersonalLibrarySection
         obj.IsLibraryItem = pnoIsLibraryItem
         obj.IsITunes = pnoIsITunes
+        obj.IsHomeVideo = pnoIsHomeVideo
         obj.IsContainer = pnoIsContainer
 
         ' TODO(schuyler): There are a hundred more helper methods on here, but
@@ -137,8 +139,16 @@ function pnoIsLibraryItem() as boolean
     return (instr(1, m.Get("key", ""), "/library/metadata") > 0)
 end function
 
+function pnoIsPersonalLibrarySection() as boolean
+    return (m.IsLibrarySection() and m.Get("agent", "") = "com.plexapp.agents.none")
+end function
+
 function pnoIsITunes() as boolean
     return (m.Get("identifier", "") = "com.plexapp.plugins.itunes")
+end function
+
+function pnoIsHomeVideo() as boolean
+    return (instr(1, m.Get("guid", ""), "com.plexapp.agents.none://") > 0)
 end function
 
 function pnoIsContainer() as boolean
