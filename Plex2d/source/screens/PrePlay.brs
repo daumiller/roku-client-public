@@ -360,13 +360,14 @@ function preplayGetButtons() as object
     end for
     components.push(btn)
 
+    ' TODO(schuyler): Add this back as soon as the preplay settings have been updated
     ' settings
-    btn = createButton(Glyphs().CONFIG, m.customFonts.glyphs, "settings")
-    btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
-    btn.width = 100
-    btn.height = 50
-    if m.focusedItem = invalid then m.focusedItem = btn
-    components.push(btn)
+    ' btn = createButton(Glyphs().CONFIG, m.customFonts.glyphs, "settings")
+    ' btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
+    ' btn.width = 100
+    ' btn.height = 50
+    ' if m.focusedItem = invalid then m.focusedItem = btn
+    ' components.push(btn)
 
     return components
 end function
