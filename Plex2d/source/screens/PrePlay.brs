@@ -111,6 +111,8 @@ function preplayHandleCommand(command as string, item as dynamic) as boolean
         settings.GetPrefs = preplayGetPrefs
         settings.screenPref = true
         settings.Show()
+    else if command = "show_grid" then
+        Application().PushScreen(createGridScreen(item.plexObject))
     else if not ApplyFunc(ComponentsScreen().HandleCommand, m, [command, item])
         handled = false
     end if
@@ -352,24 +354,26 @@ function preplayGetButtons() as object
     end for
 
     ' more/pivot button (drop-drown)
-    btn = createDropDown(Glyphs().MORE, m.customFonts.glyphs, int(720 * .80), m)
-    btn.SetDropDownPosition("right")
-    btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
-    btn.width = 100
-    btn.height = 47
-    if m.focusedItem = invalid then m.focusedItem = btn
-    for count = 1 to 5
-        btn.options.push({
-            halign: "JUSTIFY_LEFT",
-            height: btn.height
-            padding: { right: 5, left: 5, top: 0, bottom: 0 }
-            text: "more... info... here " + string(count, ".")
-            command: "more_TODO",
-            font: FontRegistry().font16,
-            metadata: {},
-            })
-    end for
-    components.push(btn)
+    if m.item.relatedItems.count() > 0 then
+        btn = createDropDown(Glyphs().MORE, m.customFonts.glyphs, int(720 * .80), m)
+        btn.SetDropDownPosition("right")
+        btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
+        btn.width = 100
+        btn.height = 47
+        if m.focusedItem = invalid then m.focusedItem = btn
+        for each item in m.item.relatedItems
+            btn.options.push({
+                halign: "JUSTIFY_LEFT",
+                height: btn.height
+                padding: { right: 5, left: 5, top: 0, bottom: 0 }
+                text: item.GetSingleLineTitle(),
+                plexObject: item,
+                command: "show_grid",
+                font: FontRegistry().font16,
+                })
+        end for
+        components.push(btn)
+    end if
 
     ' TODO(schuyler): Add this back as soon as the preplay settings have been updated
     ' settings
