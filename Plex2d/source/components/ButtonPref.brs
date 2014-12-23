@@ -122,6 +122,5 @@ sub buttonprefOnSelected()
     else
         Debug("Set preference:" + prefKey + "=" + prefValue + " (type: " + m.prefType + ")")
         AppSettings().SetPreference(prefKey, prefValue)
-        Application().Trigger("change:" + prefKey, [prefValue])
     end if
 end sub

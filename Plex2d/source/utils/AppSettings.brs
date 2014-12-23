@@ -64,6 +64,7 @@ end function
 sub settingsSetPreference(name as string, value as dynamic)
     section = m.GetSectionKey(name)
     m.SetRegistry(name, value, section)
+    Application().Trigger("change:" + name, [value])
 end sub
 
 sub settingsClearPreference(name as string)
