@@ -33,6 +33,11 @@ end function
 sub dropdownInit(text as string, font as object, maxHeight as integer)
     ApplyFunc(LabelClass().Init, m, [text, font])
 
+    m.OrigScreenFunctions = {
+        OnKeyRelease: m.screen.OnKeyRelease,
+        OrigOnKeyRelease: m.screen.OrigOnKeyRelease
+    }
+
     m.focusable = true
     m.selectable = true
     m.halign = m.JUSTIFY_CENTER
@@ -54,10 +59,8 @@ sub dropdownHide()
     m.expanded = false
     m.DestroyComponents()
 
-    ' reset screen OnKeyRelease to original (keep super referenced)
-    if m.screen.DropDownOnKeyRelease <> invalid then
-        m.screen.OnKeyRelease = m.screen.DropDownOnKeyRelease
-    end if
+    ' reset screen OnKeyRelease to original
+    m.screen.Append(m.OrigScreenFunctions)
 
     ' reset the focus to this object
     m.screen.focusedItem = m
@@ -66,14 +69,13 @@ sub dropdownHide()
 end sub
 
 sub dropdownShow()
+    ' override the OnKeyRelease to handle the back button.
+    m.screen.OrigOnKeyRelease = firstOf(m.screen.OrigOnKeyRelease, m.screen.OnKeyRelease)
+    m.screen.OnKeyRelease = m.OnKeyRelease
+
     m.expanded = true
     m.DestroyComponents()
     m.screen.focusedItem = invalid
-
-    ' override the OnKeyRelease to handle the back button. Use a unique name to hold
-    ' the original reference as other overlay types may use their own super
-    m.screen.DropDownOnKeyRelease = m.screen.OnKeyRelease
-    m.screen.OnKeyRelease = m.OnKeyRelease
 
     m.GetComponents()
 
@@ -147,6 +149,9 @@ sub dropdownToggle()
 end sub
 
 sub dropdownDestroy()
+    ' reset screen OnKeyRelease to original
+    m.screen.Append(m.OrigScreenFunctions)
+
     ' destroy any font references
     for each option in m.options
         if option.component <> invalid then
@@ -177,7 +182,7 @@ sub dropdownOnKeyRelease(keyCode as integer)
     if keyCode = m.kp_BK then
         m.focusedItem.dropDown.Hide()
     else
-        m.DropDownOnKeyRelease(keyCode)
+        m.OrigOnKeyRelease(keyCode)
     end if
 end sub
 
