@@ -48,7 +48,7 @@ function settingsGetPreference(name as string) as dynamic
         return obj.managedValue
     end if
 
-    section = m.GetSectionKey(obj.section)
+    section = m.GetSectionKey(name)
     return m.GetRegistry(name, obj.default, section)
 end function
 
