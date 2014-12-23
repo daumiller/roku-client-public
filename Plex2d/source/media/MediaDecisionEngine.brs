@@ -291,8 +291,8 @@ function mdeCanDirectPlay(media as object, part as object, videoStream as object
 end function
 
 function mdeCanUseSoftSubs(stream as object) as boolean
-    ' TODO(schuyler): Do we need to reevaluate preferences?
-    ' if RegRead("softsubtitles", "preferences", "1") = "0" then return false
+    ' Not if the user prefers them burned in
+    if AppSettings().GetBoolPreference("hardsubtitles") then return false
 
     ' We only support soft subtitles for sidecar SRT.
     if stream.Get("codec") <> "srt" or stream.Get("key") = invalid then return false
