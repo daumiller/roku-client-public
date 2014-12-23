@@ -201,7 +201,7 @@ end function
 
 function mdeCanDirectPlay(media as object, part as object, videoStream as object, audioStream as object) as boolean
     settings = AppSettings()
-    maxResolution = settings.GetMaxResolution(item.GetServer().IsLocalConnection())
+    maxResolution = settings.GetMaxResolution(media.GetServer().IsLocalConnection())
     height = media.GetInt("height")
     if height > maxResolution then
         Info("MDE: Video height is greater than max allowed: " + tostr(height) + " > " + tostr(maxResolution))

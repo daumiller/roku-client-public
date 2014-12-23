@@ -54,7 +54,7 @@ end function
 
 function settingsGetIntPreference(name as string) as integer
     section = m.GetSectionKey(name)
-    return m.GetIntRegistry(name, m.prefs[name].default, section)
+    return m.GetIntRegistry(name, m.prefs[name].default.toInt(), section)
 end function
 
 function settingsGetBoolPreference(name as string) as boolean
@@ -451,7 +451,7 @@ function settingsSupportsSurroundSound(refresh=false as boolean) as boolean
 end function
 
 ' TODO(schuyler): Is this based on the server's quality? Local quality? Something else?
-function settingsGetMaxResolution(local as boolean) as boolean
+function settingsGetMaxResolution(local as boolean) as integer
     if local then
         qualityIndex = m.GetIntPreference("local_quality")
     else
