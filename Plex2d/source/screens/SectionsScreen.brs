@@ -25,7 +25,13 @@ function createSectionsScreen(item as object) as object
 
     obj.item = item
     obj.server = item.GetServer()
-    obj.contentType = iif(item.IsPersonalLibrarySection(), "clip", item.Get("type"))
+
+    ' override home movie section type as clip
+    if item.IsPersonalLibrarySection() and item.Get("type", "") = "movie" then
+        obj.contentType = "clip"
+    else
+        obj.contentType = item.Get("type")
+    end if
 
     return obj
 end function
