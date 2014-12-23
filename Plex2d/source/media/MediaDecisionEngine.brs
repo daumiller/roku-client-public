@@ -131,7 +131,6 @@ function mdeEvaluateMedia(item as object, media as object) as object
     if part = invalid then return choice
 
     ' TODO(schuyler): Assume that synced servers always have direct playable media
-    ' TODO(schuyler): Handle changing surround sound support because of Roku 3 headphones and reevaluate media
 
     ' Although PMS has already told us which streams are selected, we can't
     ' necessarily tell the video player which streams we want. So we need to
@@ -216,9 +215,15 @@ function mdeCanDirectPlay(media as object, part as object, videoStream as object
         Fatal("No video stream")
     end if
 
-    ' TODO(schuyler): Determine surround sound support
-    surroundSoundDCA = true
-    surroundSoundAC3 = true
+    ' Check current surround sound support
+    settings = AppSettings()
+    if settings.SupportsSurroundSound() then
+        surroundSoundAC3 = settings.GetBoolPreference("surround_sound_ac3")
+        surroundSoundDCA = settings.GetBoolPreference("surround_sound_dca")
+    else
+        surroundSoundAC3 = false
+        surroundSoundDCA = false
+    end if
 
     container = media.Get("container")
     videoCodec = videoStream.Get("codec")

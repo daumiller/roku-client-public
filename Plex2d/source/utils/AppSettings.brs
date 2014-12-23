@@ -28,6 +28,7 @@ function AppSettings()
         obj.GetCapabilities = settingsGetCapabilities
 
         obj.GetGlobalSettings = settingsGetGlobalSettings
+        obj.SupportsSurroundSound = settingsSupportsSurroundSound
 
         obj.reset()
         m.AppSettings = obj
@@ -340,9 +341,13 @@ function settingsGetCapabilities(recompute=false as boolean) as string
 
     caps = "videoDecoders=h264{profile:high&resolution:1080&level=41};audioDecoders=aac{channels:2}"
 
-    ' TODO(schuyler): Surround sound prefs
-    surroundSoundAC3 = false
-    surroundSoundDCA = false
+    if m.SupportsSurroundSound(true) then
+        surroundSoundAC3 = m.GetBoolPreference("surround_sound_ac3")
+        surroundSoundDCA = m.GetBoolPreference("surround_sound_dca")
+    else
+        surroundSoundAC3 = false
+        surroundSoundDCA = false
+    end if
 
     if surroundSoundAC3 then
         caps = caps + ",ac3{channels:8}"
@@ -366,13 +371,14 @@ function settingsGetGlobalSettings() as object
     ' Video preferences, liberally defined for now
     video = CreateObject("roList")
 
-    ' Surround sound
-    ' TODO(schuyler): Only if device is configured for it
-    options = [
-        m.prefs["surround_sound_ac3"],
-        m.prefs["surround_sound_dca"],
-    ]
-    video.Push({key: "surround_sound", title: "Receiver Capabilities", options: options, prefType: "bool"})
+    ' Surround sound, but only if the device is configured for it
+    if m.SupportsSurroundSound(true) then
+        options = [
+            m.prefs["surround_sound_ac3"],
+            m.prefs["surround_sound_dca"],
+        ]
+        video.Push({key: "surround_sound", title: "Receiver Capabilities", options: options, prefType: "bool"})
+    end if
 
     ' Soft subtitles
     options = [
@@ -416,4 +422,29 @@ function settingsGetGlobalSettings() as object
     })
 
     return groups
+end function
+
+function settingsSupportsSurroundSound(refresh=false as boolean) as boolean
+    ' Because of the headphones in the remote, we may need to recheck. And
+    ' we can't really reliably tell if this is a Roku with headphones support.
+    ' It's not that expensive to ask for the device info, so we just recheck if
+    ' it's been more than a few seconds.
+
+    if m.surroundSoundTimer = invalid then
+        refresh = true
+        m.surroundSoundTimer = createTimer("surround")
+    else if m.surroundSoundTimer.GetElapsedSeconds() > 10 then
+        refresh = true
+    end if
+
+    if refresh then
+        device = CreateObject("roDeviceInfo")
+        result = (device.GetAudioOutputChannel() <> "Stereo")
+        m.globals["surroundSound"] = result
+        m.surroundSoundTimer.Mark()
+    else
+        result = m.globals["surroundSound"]
+    end if
+
+    return result
 end function

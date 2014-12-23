@@ -123,9 +123,8 @@ function voBuildTranscode(obj as object, partIndex as integer, directStream as b
     ' TODO(schuyler): Do we still need this to be tweakable? Can we move it to the profile?
     extras = "add-limitation(scope=videoCodec&scopeName=h264&type=upperBound&name=video.level&value=41&isRequired=true)"
 
-    ' TODO(schuyler): Surround sound support. (And maybe DTS in MKV!)
-    surroundSoundAC3 = false
-    if surroundSoundAC3 then
+    settings = AppSettings()
+    if settings.SupportsSurroundSound() and settings.GetBoolPreference("surround_sound_ac3") then
         extras = extras + "+add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=hls&audioCodec=ac3)"
     end if
 
