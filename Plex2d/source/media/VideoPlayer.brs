@@ -77,7 +77,14 @@ sub vpInit()
     ' TODO(rob): multi-parts offset (curPartOffset)
     m.curPartOffset = 0
 
-    videoItem = CreateVideoObject(m.item, m.seekValue).Build()
+    settings = AppSettings()
+    allowDirectPlay = settings.GetBoolPreference("playback_direct")
+    allowDirectStream = settings.GetBoolPreference("playback_remux")
+    allowTranscode = settings.GetBoolPreference("playback_transcode")
+
+    directPlay = iif(allowDirectPlay, iif(allowDirectStream or allowTranscode, invalid, true), false)
+
+    videoItem = CreateVideoObject(m.item, m.seekValue).Build(directPlay, allowDirectStream)
 
     ' TODO(rob): better UX error handling
     if videoItem = invalid then
