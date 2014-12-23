@@ -25,6 +25,7 @@ function HubClass() as object
         ' Custom layouts start at int:20
         obj.LAYOUT_LANDSCAPE_1 = 20
         obj.LAYOUT_LANDSCAPE_5 = 21
+        obj.LAYOUT_LANDSCAPE_6 = 22
 
         ' Methods
         obj.PerformLayout = hubPerformLayout
@@ -169,6 +170,31 @@ sub hubPerformLayout()
         xOffset = xOffset + itemWidth + m.spacing
         rows = 3
         cols = 1
+    else if m.layout = m.LAYOUT_LANDSCAPE_6 then
+        rows = 3
+        cols = 1
+
+        itemHeight = int((availableHeight - (m.spacing * (rows - 1))) / rows)
+        itemWidth = m.GetWidthForOrientation(m.orientation, itemHeight, m.components.peek())
+        heroHeight = availableHeight - itemHeight - m.spacing
+        heroWidth = itemWidth * 2 + m.spacing
+
+        Debug("Hero item will be " + tostr(heroWidth) + "x" + tostr(heroHeight))
+        Debug("Each grid item will be " + tostr(itemWidth) + "x" + tostr(itemHeight))
+
+        component = m.components.Next()
+        component.fixed = false
+        component.SetFrame(xOffset, yOffset, heroWidth, heroHeight)
+        component.SetOrientation(m.orientation)
+
+        itemYOffset = yOffset + heroHeight + m.spacing
+        for count = 0 to 1
+            component = m.components.Next()
+            component.fixed = false
+            component.SetFrame(xOffset, itemYOffset, itemWidth, itemHeight)
+            component.SetOrientation(m.orientation)
+            xOffset = xOffset + itemWidth + m.spacing
+        end for
     else if m.layout = m.LAYOUT_GRID_4 then
         rows = 2
         cols = 2
@@ -313,9 +339,12 @@ sub hubCalculateStyle(container as object)
     m.container = container
     m.hubIdentifier = container.Get("hubIdentifier")
     m.hubType = firstOf(container.Get("type"), "")
+    size = container.GetInt("size")
 
     ' Force the orientation on a few known types [default poster]
-    if m.hubType = "playlist" or m.hubType = "album" or m.hubType = "artist" then
+    if m.hubIdentifier = "home.continue" and size > 1 then
+        m.orientation = m.ORIENTATION_LANDSCAPE
+    else if m.hubType = "playlist" or m.hubType = "album" or m.hubType = "artist" then
         m.orientation = m.ORIENTATION_SQUARE
     else if m.hubType = "clip" then
         m.orientation = m.ORIENTATION_LANDSCAPE
@@ -323,13 +352,17 @@ sub hubCalculateStyle(container as object)
         m.orientation = m.ORIENTATION_LANDSCAPE
     end if
 
-    size = container.GetInt("size")
-    if size > 5 then size = 5
-    m.maxChildren = size
-
-    if m.hubIdentifier = "home.continue" and size > 1 then
-        m.orientation = m.ORIENTATION_LANDSCAPE
+    ' We only expect 5 items per hub, except for landscape, which supports 6. The
+    ' hubs used to have a max size of 5, and that has change recently, so it's
+    ' still best to override the max size here.
+    if size > 5 then
+        if m.orientation = m.ORIENTATION_LANDSCAPE then
+            size = 6
+        else
+            size = 5
+        end if
     end if
+    m.maxChildren = size
 
     if size = 1 then
         if m.orientation = m.ORIENTATION_LANDSCAPE then
@@ -360,5 +393,7 @@ sub hubCalculateStyle(container as object)
         else
             m.layout = m.LAYOUT_HERO_5
         end if
+    else if size = 6 and m.orientation = m.ORIENTATION_LANDSCAPE then
+        m.layout = m.LAYOUT_LANDSCAPE_6
     end if
 end sub
