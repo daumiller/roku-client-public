@@ -24,6 +24,7 @@ function HubClass() as object
 
         ' Custom layouts start at int:20
         obj.LAYOUT_LANDSCAPE_1 = 20
+        obj.LAYOUT_LANDSCAPE_5 = 21
 
         ' Methods
         obj.PerformLayout = hubPerformLayout
@@ -152,7 +153,22 @@ sub hubPerformLayout()
             rows = 2
             cols = 2
         end if
+    else if m.layout = m.LAYOUT_LANDSCAPE_5 then
+        itemHeight = availableHeight/2 - m.spacing/2
+        itemWidth = m.GetWidthForOrientation(m.orientation, itemHeight, m.components.peek())
+        itemYOffset = yOffset
 
+        Debug("Each grid item will be " + tostr(itemWidth) + "x" + tostr(itemHeight))
+        for count = 0 to 1
+            component = m.components.Next()
+            component.fixed = false
+            component.SetFrame(xOffset, itemYOffset, itemWidth, itemHeight)
+            component.SetOrientation(m.orientation)
+            itemYOffset = itemYOffset + itemHeight + m.spacing
+        end for
+        xOffset = xOffset + itemWidth + m.spacing
+        rows = 3
+        cols = 1
     else if m.layout = m.LAYOUT_GRID_4 then
         rows = 2
         cols = 2
@@ -336,11 +352,13 @@ sub hubCalculateStyle(container as object)
         ' m.LAYOUT_GRID_4 handles all types
         m.layout = m.LAYOUT_GRID_4
     else if size = 5 then
-        m.layout = m.LAYOUT_HERO_5
-        ' landscape is too large for a hero+children
-        if m.orientation = m.ORIENTATION_LANDSCAPE or m.orientation = m.ORIENTATION_SQUARE then
+        if m.orientation = m.ORIENTATION_LANDSCAPE then
+            m.layout = m.LAYOUT_LANDSCAPE_5
+        else if m.orientation = m.ORIENTATION_SQUARE then
             m.maxChildren = 4
             m.layout = m.LAYOUT_GRID_4
+        else
+            m.layout = m.LAYOUT_HERO_5
         end if
     end if
 end sub
