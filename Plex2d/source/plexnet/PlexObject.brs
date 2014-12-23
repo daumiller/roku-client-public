@@ -408,17 +408,22 @@ function pnoGetItemPath() as string
     key = m.GetAbsolutePath("key")
 
     if m.IsContainer() then
-        suffixPos = key.Instr("/children")
-        if suffixPos > 0 then
-            key = key.Left(suffixPos) + key.Mid(suffixPos + 9)
-        end if
+        ' Some containers have /children on its key while others (such as playlists) use /items
+        suffixStrip = ["/children", "/items"]
+        for each suffix in suffixStrip
+            suffixPos = key.Instr(suffix)
+            if suffixPos > 0 then
+                key = key.Left(suffixPos) + key.Mid(suffixPos + suffix.Len())
+            end if
+        end for
     else if m.IsLibraryItem() then
         ' If we're going to request this item specifically, then we might as
         ' well get all the info.
         key = key + iif(instr(1, key, "?") = 0, "?", "&") + "checkFiles=1"
 
-        if m.type = "movie" then
-            key = key + "&includeExtras=1"
+        if m.type = "movie" or m.type = "episode" then
+            if m.type = "movie" then key = key + "&includeExtras=1"
+            key = key + "&includeRelated=1&includeRelatedCount=0"
         end if
     end if
 
