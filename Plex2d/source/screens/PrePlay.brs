@@ -250,8 +250,13 @@ function preplayGetMainInfo() as object
         components.push(createLabel(text, normalFont))
 
         components.push(createSpacer(0, normalFont.getOneLineHeight()))
-        components.push(createLabel("DIRECTOR" + spacer + m.item.GetLimitedTagValues("Director", 5), normalFont))
-        components.push(createLabel("CAST" + spacer + m.item.GetLimitedTagValues("Role", 5), normalFont))
+        if m.item.IsHomeVideo() then
+            components.push(createSpacer(0, normalFont.getOneLineHeight()))
+            components.push(createSpacer(0, normalFont.getOneLineHeight()))
+        else
+            components.push(createLabel("DIRECTOR" + spacer + m.item.GetLimitedTagValues("Director", 5), normalFont))
+            components.push(createLabel("CAST" + spacer + m.item.GetLimitedTagValues("Role", 5), normalFont))
+        end if
     end if
 
     ' Audio and Subtitles
@@ -296,9 +301,12 @@ function preplayGetImages() as object
 
     posterSize = invalid
     mediaSize = invalid
+    ' TODO(rob): we probably need another layout Home Videos
     if m.item.Get("type", "") = "episode" then
         posterSize = { width: 210, height: 315 }
         mediaSize =  { width: 210, height: 118 }
+    else if m.item.IsHomeVideo() then
+        posterSize =  { width: 210, height: 118 }
     else
         posterSize = { width: 295, height: 434 }
     end if
@@ -320,7 +328,6 @@ function preplayGetButtons() as object
     components = createObject("roList")
 
     buttons = createObject("roList")
-    ' TODO(rob) I need to find a better font editor to map the fonts.
     if m.item.InProgress() then
         buttons.push({text: Glyphs().RESUME, command: "resume"})
     end if
