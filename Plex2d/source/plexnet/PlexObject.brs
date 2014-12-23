@@ -167,7 +167,10 @@ function pnoGetLongerTitle() as string
     parentTitle = invalid
     childTitle = invalid
 
-    if m.type = "episode" then
+    if m.type = "clip" and m.Get("extraType") <> invalid then
+        parentTitle = m.Get("extraTitle")
+        childTitle = m.GetSingleLineTitle()
+    else if m.type = "episode" then
         parentTitle = firstOf(m.Get("grandparentTitle"), m.container.Get("grandparentTitle"))
         childTitle = m.GetSingleLineTitle()
     else if m.type = "season" then

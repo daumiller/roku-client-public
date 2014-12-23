@@ -127,6 +127,16 @@ function createPlexItem(container as object, xml as object) as object
         end if
     end if
 
+    if obj.Get("extraType") <> invalid then
+        extraTypes = CreateObject("roAssociativeArray")
+        extraTypes["1"] = "Trailer"
+        extraTypes["2"] = "Deleted Scene"
+        extraTypes["3"] = "Interview"
+        extraTypes["5"] = "Behind the Scenes"
+        extraTypes["6"] = "Scene"
+        obj.Set("extraTitle", firstOf(extraTypes[obj.Get("extraType")], ""))
+    end if
+
     ' Copy some attributes from the container to the item
     obj.TryCopy(container, "grandparentContentRating")
     obj.TryCopy(container, "grandparentTitle")
