@@ -197,7 +197,7 @@ sub gsGetComponents()
     m.components.Push(createHeader(m))
 
     ' *** Grid Header *** '
-    if tostr(m.item.type) = "season" then
+    if m.item.Get("type", "") = "season" then
         title = m.item.GetLongerTitle()
     else
         title = m.item.GetSingleLineTitle()
@@ -548,13 +548,12 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
         gridItem = gridChunk.components[index]
         if item <> invalid and gridItem <> invalid then
             ' reinit the card - set metadata and plexObject and focusability
-            contentType = tostr(item.Get("type"))
-            if contentType = "movie" or contentType = "show" then
-                title = invalid
-            else if contentType = "episode" and item.Has("index") then
+            contentType = item.Get("type", "")
+            viewGroup = item.container.Get("viewGroup", "")
+            if contentType = "episode" and viewGroup = contentType and item.Get("index") <> invalid then
                 title = "Episode " + item.Get("index")
             else
-                title = item.GetSingleLineTitle()
+                title = item.GetOverlayTitle()
             end if
             gridItem.ReInit(item, title, item.GetViewOffsetPercentage(), item.GetUnwatchedCount(), item.IsUnwatched())
             gridItem.setMetadata(item.attrs)
