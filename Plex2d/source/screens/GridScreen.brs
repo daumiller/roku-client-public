@@ -107,8 +107,10 @@ sub gsShow()
 
         ' create requests for the jump items (only if we are using the ALL endpoint)
         if m.jumpContainer.request = invalid and instr(1, gridEndpoint, "/all") > 0 then
-            ' TODO(rob): handle filters when we use them above
-            request = createPlexRequest(m.server, m.item.container.getAbsolutePath("firstCharacter"))
+            ' support filtered endpoints (replace /all with /firstCharacter)
+            regex = CreateObject("roRegex", "/all", "")
+            jumpUrl = regex.Replace(gridEndpoint, "/firstCharacter")
+            request = createPlexRequest(m.server, jumpUrl)
             context = request.CreateRequestContext("jump", createCallable("OnJumpResponse", m))
             Application().StartRequest(request, context)
             m.jumpContainer = context
