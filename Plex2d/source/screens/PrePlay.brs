@@ -91,9 +91,10 @@ end sub
 function preplayHandleCommand(command as string, item as dynamic) as boolean
     handled = true
 
-    if command = "play" or command = "resume" then
+    if command = "play" or command = "resume" or command = "play_extra" then
         handled = true
-        screen = VideoPlayer().CreateVideoScreen(m.item, (command = "resume"))
+        videoItem = iif(command = "play_extra", item.plexObject, m.item)
+        screen = VideoPlayer().CreateVideoScreen(videoItem, (command = "resume"))
         if screen.screenError = invalid then
             Application().PushScreen(screen)
         else
@@ -375,7 +376,28 @@ function preplayGetButtons() as object
         components.push(btn)
     end if
 
-    ' TODO(schuyler): Add this back as soon as the preplay settings have been updated
+    ' extras
+    if m.item.extraItems.count() > 0 then
+        btn = createDropDown(Glyphs().EXTRAS, m.customFonts.glyphs, int(720 * .80), m)
+        btn.SetDropDownPosition("right")
+        btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
+        btn.width = 100
+        btn.height = 47
+        if m.focusedItem = invalid then m.focusedItem = btn
+        for each item in m.item.extraItems
+            btn.options.push({
+                halign: "JUSTIFY_LEFT",
+                height: btn.height
+                padding: { right: 5, left: 5, top: 0, bottom: 0 }
+                text: item.GetLongerTitle(),
+                plexObject: item,
+                command: "play_extra",
+                font: FontRegistry().font16,
+                })
+        end for
+        components.push(btn)
+    end if
+
     ' settings
     ' btn = createButton(Glyphs().CONFIG, m.customFonts.glyphs, "settings")
     ' btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)

@@ -20,11 +20,15 @@ function Glyphs() as object
         obj.HOME        = "y"
         obj.SEARCH      = "z"
 
+        ' numbered mappings
+        obj["1"]        = "1"
+
         ' Constants Aliases
         obj.SCROBBLE    = obj.CIR_CHECK
         obj.UNSCROBBLE  = obj.CIR_MINUS
         obj.MORE        = obj.ELLIPSIS
         obj.BACKSPACE   = obj.DEL_LABEL
+        obj.EXTRAS      = obj["1"]
 
         m.Glyphs = obj
     end if
