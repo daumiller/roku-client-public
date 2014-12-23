@@ -17,6 +17,8 @@ function AppSettings()
         obj.InitGlobals = settingsInitGlobals
         obj.GetCapabilities = settingsGetCapabilities
 
+        obj.GetSectionKey = settingsGetSectionKey
+
         obj.reset()
         m.AppSettings = obj
 
@@ -27,6 +29,7 @@ function AppSettings()
 end function
 
 function settingsGetPreference(name, defaultValue=invalid, section="preferences")
+    section = m.GetSectionKey(section)
     cacheKey = name + section
     if m.prefsCache.DoesExist(cacheKey) then return m.prefsCache[cacheKey]
 
@@ -42,7 +45,7 @@ function settingsGetPreference(name, defaultValue=invalid, section="preferences"
 end function
 
 function settingsGetIntPreference(name, defaultValue=0, section="preferences")
-    value = m.GetPreference(name)
+    value = m.GetPreference(name, invalid, section)
     if value <> invalid then
         return value.toInt()
     else
@@ -51,6 +54,7 @@ function settingsGetIntPreference(name, defaultValue=0, section="preferences")
 end function
 
 sub settingsSetPreference(name, value, section="preferences")
+    section = m.GetSectionKey(section)
     if value = invalid then
         m.ClearPreference(name, section)
         return
@@ -63,6 +67,7 @@ sub settingsSetPreference(name, value, section="preferences")
 end sub
 
 sub settingsClearPreference(name, section="preferences")
+    section = m.GetSectionKey(section)
     sec = CreateObject("roRegistrySection", section)
     sec.Delete(name)
     m.prefsCache.Delete(name + section)
@@ -167,4 +172,12 @@ function settingsGetCapabilities(recompute=false as boolean) as string
 
     m.globals["capabilities"] = caps
     return caps
+end function
+
+function settingsGetSectionKey(key as string) as string
+    if key = "user" then
+        return "preferences_" + tostr(MyPlexAccount().id)
+    else
+        return key
+    end if
 end function
