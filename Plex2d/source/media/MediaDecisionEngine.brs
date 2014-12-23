@@ -36,8 +36,7 @@ function mdeChooseMedia(item as object) as object
     candidates = CreateObject("roList")
     indirect = false
 
-    ' TODO(schuyler): Max resolution, based on current preferences presumably
-    maxResolution = 1080
+    maxResolution = AppSettings().GetMaxResolution(item.GetServer().IsLocalConnection())
 
     for each media in item.mediaItems
         ' TODO(schuyler): Allow media items to be marked as selected/forced
@@ -115,8 +114,7 @@ function mdeEvaluateMedia(item as object, media as object) as object
         choice.score = choice.score + 5000
     end if
 
-    ' TODO(schuyler): Max resolution, based on current preferences presumably
-    maxResolution = 1080
+    maxResolution = AppSettings().GetMaxResolution(item.GetServer().IsLocalConnection())
     height = media.GetInt("height")
     if height <= maxResolution then
         choice.score = choice.score + height
@@ -202,8 +200,8 @@ function mdeEvaluateMedia(item as object, media as object) as object
 end function
 
 function mdeCanDirectPlay(media as object, part as object, videoStream as object, audioStream as object) as boolean
-    ' TODO(schuyler): Max resolution, based on current preferences presumably
-    maxResolution = 1080
+    settings = AppSettings()
+    maxResolution = settings.GetMaxResolution(item.GetServer().IsLocalConnection())
     height = media.GetInt("height")
     if height > maxResolution then
         Info("MDE: Video height is greater than max allowed: " + tostr(height) + " > " + tostr(maxResolution))
@@ -216,7 +214,6 @@ function mdeCanDirectPlay(media as object, part as object, videoStream as object
     end if
 
     ' Check current surround sound support
-    settings = AppSettings()
     if settings.SupportsSurroundSound() then
         surroundSoundAC3 = settings.GetBoolPreference("surround_sound_ac3")
         surroundSoundDCA = settings.GetBoolPreference("surround_sound_dca")

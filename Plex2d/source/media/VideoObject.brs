@@ -106,8 +106,11 @@ function voBuildTranscode(obj as object, partIndex as integer, directStream as b
     builder.AddParam("directPlay", "0")
     builder.AddParam("directStream", iif(directStream, "1", "0"))
 
-    ' TODO(schuyler): Get quality from prefs, local vs. remote, etc.
-    qualityIndex = 8
+    if transcodeServer.IsLocalConnection() then
+        qualityIndex = settings.GetIntPreference("local_quality")
+    else
+        qualityIndex = settings.GetIntPreference("remote_quality")
+    end if
     builder.AddParam("videoQuality", settings.GetGlobal("transcodeVideoQualities")[qualityIndex])
     builder.AddParam("videoResolution", settings.GetGlobal("transcodeVideoResolutions")[qualityIndex])
     builder.AddParam("maxVideoBitrate", settings.GetGlobal("transcodeVideoBitrates")[qualityIndex])

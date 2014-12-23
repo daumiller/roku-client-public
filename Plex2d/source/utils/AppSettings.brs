@@ -29,6 +29,7 @@ function AppSettings()
 
         obj.GetGlobalSettings = settingsGetGlobalSettings
         obj.SupportsSurroundSound = settingsSupportsSurroundSound
+        obj.GetMaxResolution = settingsGetMaxResolution
 
         obj.reset()
         m.AppSettings = obj
@@ -120,7 +121,7 @@ sub settingsInitPrefs()
     m.prefs["local_quality"] = {
         key: "local_quality",
         title: "Local Streaming Quality",
-        default: "7",
+        default: "8",
         section: "preferences",
         prefType: "enum",
         options: options
@@ -447,4 +448,23 @@ function settingsSupportsSurroundSound(refresh=false as boolean) as boolean
     end if
 
     return result
+end function
+
+' TODO(schuyler): Is this based on the server's quality? Local quality? Something else?
+function settingsGetMaxResolution(local as boolean) as boolean
+    if local then
+        qualityIndex = m.GetIntPreference("local_quality")
+    else
+        qualityIndex = m.GetIntPreference("remote_quality")
+    end if
+
+    if qualityIndex >= 9 then
+        return 1080
+    else if qualityIndex >= 6 then
+        return 720
+    else if qualityIndex >= 5 then
+        return 480
+    else
+        return 0
+    end if
 end function
