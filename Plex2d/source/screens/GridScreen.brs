@@ -65,7 +65,7 @@ function createGridScreen(item as object, rows=2 as integer, orientation=invalid
     obj.Init()
 
     obj.item = item
-    obj.server = item.container.server
+    obj.server = item.GetServer()
 
     ' TODO(rob): we need a better way to determine orientation, or we might just need to
     ' always set it when calling the grid screen
@@ -73,10 +73,10 @@ function createGridScreen(item as object, rows=2 as integer, orientation=invalid
     if orientation <> invalid then
         obj.orientation = orientation
     else if containerType = invalid then
+        obj.orientation=ComponentClass().ORIENTATION_LANDSCAPE
+    else if containerType = "movie" or containerType = "show" or containerType = "episode" then
         obj.orientation=ComponentClass().ORIENTATION_PORTRAIT
-    else if containerType = "movie" or containerType = "show" or containerType = "episode" or containerType = "mixed" then
-        obj.orientation=ComponentClass().ORIENTATION_PORTRAIT
-    else if containerType = "photo" or containerType = "artist" or containerType = "album" or containerType = "clip" then
+    else if containerType = "photo" or containerType = "artist" or containerType = "album" then
         obj.orientation=ComponentClass().ORIENTATION_SQUARE
     else
         obj.orientation = ComponentClass().ORIENTATION_LANDSCAPE
