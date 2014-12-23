@@ -301,17 +301,21 @@ function preplayGetImages() as object
 
     posterSize = invalid
     mediaSize = invalid
+    posterAttr = invalid
     ' TODO(rob): we probably need another layout Home Videos
     if m.item.Get("type", "") = "episode" then
         posterSize = { width: 210, height: 315 }
         mediaSize =  { width: 210, height: 118 }
     else if m.item.IsHomeVideo() then
-        posterSize =  { width: 210, height: 118 }
+        posterSize = { width: 210, height: 118 }
+        mediaSize =  { width: 210, height: 118 }
+        posterAttr = "art"
     else
         posterSize = { width: 295, height: 434 }
     end if
 
     posterThumb = createImage(m.item, posterSize.width, posterSize.height)
+    posterThumb.thumbAttr = posterAttr
     components.push(posterThumb)
 
     if mediaSize <> invalid then
