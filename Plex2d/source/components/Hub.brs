@@ -22,6 +22,9 @@ function HubClass() as object
         obj.LAYOUT_GRID_3 = 13
         obj.LAYOUT_GRID_4 = 14
 
+        ' Custom layouts start at int:20
+        obj.LAYOUT_LANDSCAPE_1 = 20
+
         ' Methods
         obj.PerformLayout = hubPerformLayout
         obj.MaxChildrenForLayout = hubMaxChildrenForLayout
@@ -91,7 +94,7 @@ sub hubPerformLayout()
     title.SetFrame(xOffset, yOffset-m.spacing-title.font.GetOneLineHeight(), 0, title.font.GetOneLineHeight())
     title.fixed = false
 
-    if m.layout = m.LAYOUT_HERO_2 or m.layout = m.LAYOUT_HERO_3 or m.layout = m.LAYOUT_HERO_5 then
+    if m.layout = m.LAYOUT_HERO_2 or m.layout = m.LAYOUT_HERO_3 or m.layout = m.LAYOUT_HERO_5 or m.layout = m.LAYOUT_LANDSCAPE_1 then
         component = m.components.Next()
         component.fixed = false
 
@@ -111,6 +114,11 @@ sub hubPerformLayout()
             heroHeight = availableHeight - childHeight - m.spacing
             heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight, component) + m.spacing
             availableHeight = childHeight
+        else if m.layout = m.LAYOUT_LANDSCAPE_1 then
+            heroHeight = availableHeight - availableHeight/3 - m.spacing
+            heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight, component) + m.spacing
+            rows = 0
+            cols = 0
         else
             heroHeight = availableHeight
             heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight, component)
@@ -308,7 +316,11 @@ sub hubCalculateStyle(container as object)
     end if
 
     if size = 1 then
-        m.layout = m.LAYOUT_GRID_1
+        if m.orientation = m.ORIENTATION_LANDSCAPE then
+            m.layout = m.LAYOUT_LANDSCAPE_1
+        else
+            m.layout = m.LAYOUT_GRID_1
+        end if
     else if size = 2 then
         if m.orientation = m.ORIENTATION_LANDSCAPE or m.orientation = m.ORIENTATION_SQUARE then
             m.layout = m.LAYOUT_GRID_2
