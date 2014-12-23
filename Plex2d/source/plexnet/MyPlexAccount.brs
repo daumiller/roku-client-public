@@ -56,7 +56,7 @@ sub mpaSaveState()
         isAdmin: m.isAdmin
     }
 
-    AppSettings().SetPreference("MyPlexAccount", FormatJson(obj), "myplex")
+    AppSettings().SetRegistry("MyPlexAccount", FormatJson(obj), "myplex")
 end sub
 
 sub mpaLoadState()
@@ -66,7 +66,7 @@ sub mpaLoadState()
     Application().AddInitializer("myplex")
     settings = AppSettings()
 
-    json = settings.GetPreference("MyPlexAccount", invalid, "myplex")
+    json = settings.GetRegistry("MyPlexAccount", invalid, "myplex")
 
     if json <> invalid then
         obj = ParseJson(json)
@@ -85,8 +85,8 @@ sub mpaLoadState()
         end if
     else
         ' TODO(rob): this is only for the transition from the official right?
-        m.authToken = settings.GetPreference("AuthToken", invalid, "myplex")
-        m.isPlexPass = (settings.GetPreference("IsPlexPass", "0", "misc") = "1")
+        m.authToken = settings.GetRegistry("AuthToken", invalid, "myplex")
+        m.isPlexPass = (settings.GetRegistry("IsPlexPass", "0") = "1")
     end if
 
     if m.authToken <> invalid then

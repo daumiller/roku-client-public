@@ -9,10 +9,7 @@
 function ValidateRemoteControlRequest(reply as object) as boolean
     settings = AppSettings()
 
-    ' TODO(schuyler): Figure out settings
-    remoteEnabled = (settings.GetPreference("remotecontrol", "1") = "1")
-
-    if not remoteEnabled then
+    if not settings.GetBoolPreference("remotecontrol") then
         SendErrorResponse(reply, 404, "Remote control is disabled for this device")
         return false
     else if reply.request.fields["X-Plex-Target-Client-Identifier"] <> invalid and reply.request.fields["X-Plex-Target-Client-Identifier"] <> settings.GetGlobal("clientIdentifier") then

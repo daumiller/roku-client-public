@@ -30,18 +30,22 @@ function Logger()
         obj.reset()
         m.Logger = obj
 
-        ' TODO(schuyler): Remove these
-        obj.SetLevel(AppSettings().GetIntPreference("log_level", obj.LEVEL_DEBUG))
+        ' TODO(schuyler): Always enable papertrail?
+        obj.SetLevel(AppSettings().GetIntPreference("log_level"))
         obj.EnablePapertrail(5)
 
         ' Register with the web server
         WebServer().AddHandler("/logs", ProcessLogsRequest)
+
+        ' Listen for log level preference changes
+        Application().On("change:log_level", createCallable("SetLevel", obj))
     end if
 
     return m.Logger
 end function
 
-sub loggerSetLevel(level)
+sub loggerSetLevel(level as dynamic)
+    if not isint(level) then level = level.toint()
     if level = m.level then return
 
     if m.level = m.LEVEL_OFF or level = m.LEVEL_OFF then

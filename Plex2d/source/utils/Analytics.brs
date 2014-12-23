@@ -22,10 +22,10 @@ function Analytics()
         encoder = CreateObject("roUrlTransfer")
         settings = AppSettings()
 
-        uuid = settings.GetPreference("UUID", invalid, "analytics")
+        uuid = settings.GetRegistry("UUID", invalid, "analytics")
         if uuid = invalid then
             uuid = CreateUUID()
-            settings.SetPreference("UUID", uuid, "analytics")
+            settings.SetRegistry("UUID", uuid, "analytics")
         end if
 
         dimensionsObj = settings.GetGlobal("DisplaySize")
@@ -61,8 +61,8 @@ sub analyticsTrackEvent(category, action, label, value, customVars={})
     if category = "Playback" then m.numPlaybackEvents = m.numPlaybackEvents + 1
 
     settings = AppSettings()
-    settings.SetPreference("session_duration", tostr(m.sessionTimer.GetElapsedSeconds()), "analytics")
-    settings.SetPreference("session_playback_events", tostr(m.numPlaybackEvents), "analytics")
+    settings.SetRegistry("session_duration", tostr(m.sessionTimer.GetElapsedSeconds()), "analytics")
+    settings.SetRegistry("session_playback_events", tostr(m.numPlaybackEvents), "analytics")
 
     customVars["t"] = "event"
     customVars["ec"] = category
@@ -92,7 +92,7 @@ end sub
 
 sub analyticsSendTrackingRequest(vars)
     ' Only if we're enabled
-    if AppSettings().GetPreference("analytics", "1") <> "1" then return
+    if not AppSettings().GetBoolPreference("analytics") then return
 
     request = createHttpRequest("http://www.google-analytics.com/collect")
     context = request.CreateRequestContext("analytics")
@@ -110,9 +110,9 @@ end sub
 sub analyticsOnStartup()
     settings = AppSettings()
 
-    lastSessionDuration = settings.GetIntPreference("session_duration", 0, "analytics")
+    lastSessionDuration = settings.GetIntRegistry("session_duration", 0, "analytics")
     if lastSessionDuration > 0 then
-        lastSessionPlaybackEvents = settings.GetPreference("session_playback_events", "0", "analytics")
+        lastSessionPlaybackEvents = settings.GetRegistry("session_playback_events", "0", "analytics")
         m.TrackEvent("App", "Shutdown", "", lastSessionDuration, {cm1: lastSessionPlaybackEvents})
     end if
     m.TrackEvent("App", "Start", "", 1, {sc: "start"})
@@ -122,6 +122,6 @@ sub analyticsCleanup()
     ' Just note the session duration. We wrote the number of playback events the
     ' last time we got one, and we won't send the actual event until the next
     ' startup.
-    AppSettings().SetPreference("session_duration", tostr(m.sessionTimer.GetElapsedSeconds()), "analytics")
+    AppSettings().SetRegistry("session_duration", tostr(m.sessionTimer.GetElapsedSeconds()), "analytics")
     m.sessionTimer = invalid
 end sub

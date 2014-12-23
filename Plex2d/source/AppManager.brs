@@ -8,7 +8,7 @@ function AppManager()
         ' The unlocked state of the app, one of: Plex Pass, Exempt, Purchased, or Limited
         ' Media playback is only allowed if the state is not Limited.
         settings = AppSettings()
-        obj.isPurchased = (settings.GetPreference("purchased", "0", "misc") = "1")
+        obj.isPurchased = (settings.GetRegistry("purchased", "0") = "1")
         obj.isAvailableForPurchase = false
         obj.isExempt = false
 
@@ -105,7 +105,7 @@ sub managerHandleChannelStoreEvent(msg)
                 m.isAvailableForPurchase = true
                 if m.pendingRequestPurchased then
                     m.isPurchased = true
-                    AppSettings().SetPreference("purchased", "1", "misc")
+                    AppSettings().SetRegistry("purchased", "1")
                 end if
             end if
         next
@@ -150,7 +150,7 @@ sub managerStartPurchase()
 
     if store.DoOrder() then
         Info("Product purchased!")
-        AppSettings().SetPreference("purchased", "1", "misc")
+        AppSettings().SetRegistry("purchased", "1")
         m.isPurchased = true
         m.ResetState()
     else

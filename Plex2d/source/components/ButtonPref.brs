@@ -91,11 +91,11 @@ function buttonprefDraw(redraw=false as boolean) as object
 end function
 
 sub buttonprefOnSelected()
+    prefKey = m.command
+
     if m.prefType = "bool" then
-        prefKey = m.command + "_" + m.value
-        prefValue = tostr(not(m.isSelected))
+        prefValue = iif(m.isSelected, "0", "1")
     else if m.prefType = "enum" then
-        prefKey = m.command
         prefValue = m.value
 
         m.selected = false
@@ -120,6 +120,8 @@ sub buttonprefOnSelected()
     if m.screenPref then
         Debug("TODO: override pref for Screen: " + prefKey + "=" + prefValue + " (type: " + m.prefType + ")")
     else
-        Debug("TODO: write setting to AppSettings: " + prefKey + "=" + prefValue + " (type: " + m.prefType + ")")
+        Debug("Set preference:" + prefKey + "=" + prefValue + " (type: " + m.prefType + ")")
+        AppSettings().SetPreference(prefKey, prefValue)
+        Application().Trigger("change:" + prefKey, [prefValue])
     end if
 end sub

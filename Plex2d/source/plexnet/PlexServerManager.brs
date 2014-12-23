@@ -254,7 +254,7 @@ function psmCompareServers(first as dynamic, second as dynamic) as integer
 end function
 
 sub psmLoadState()
-    json = AppSettings().GetPreference("PlexServerManager", invalid, "misc")
+    json = AppSettings().GetRegistry("PlexServerManager")
     if json = invalid then return
 
     obj = ParseJson(json)
@@ -316,7 +316,7 @@ sub psmSaveState()
         obj.lastServerId = invalid
     end if
 
-    AppSettings().SetPreference("PlexServerManager", FormatJson(obj), "misc")
+    AppSettings().SetRegistry("PlexServerManager", FormatJson(obj))
 end sub
 
 function psmIsValidForTranscoding(server as dynamic) as boolean

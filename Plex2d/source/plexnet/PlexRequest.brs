@@ -42,7 +42,7 @@ sub AddPlexHeaders(transferObj, token=invalid)
     transferObj.AddHeader("X-Plex-Platform-Version", settings.GetGlobal("rokuVersionStr", "unknown"))
     transferObj.AddHeader("X-Plex-Product", "Plex for Roku")
     transferObj.AddHeader("X-Plex-Device", settings.GetGlobal("rokuModel"))
-    transferObj.AddHeader("X-Plex-Device-Name", settings.GetPreference("player_name", settings.GetGlobal("rokuModel")))
+    transferObj.AddHeader("X-Plex-Device-Name", settings.GetGlobal("friendlyName"))
     transferObj.AddHeader("X-Plex-Client-Capabilities", settings.GetCapabilities())
 
     AddAccountHeaders(transferObj, token)

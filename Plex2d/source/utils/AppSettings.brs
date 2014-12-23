@@ -3,49 +3,233 @@ function AppSettings()
         obj = CreateObject("roAssociativeArray")
 
         ' Properties
-        obj.prefsCache = {}
+        obj.regCache = {}
         obj.globals = {}
+        obj.prefs = {}
 
         ' Methods
         obj.GetPreference = settingsGetPreference
         obj.GetIntPreference = settingsGetIntPreference
+        obj.GetBoolPreference = settingsGetBoolPreference
         obj.SetPreference = settingsSetPreference
         obj.ClearPreference = settingsClearPreference
+        obj.InitPrefs = settingsInitPrefs
+        obj.GetSectionKey = settingsGetSectionKey
+
+        obj.GetRegistry = settingsGetRegistry
+        obj.GetIntRegistry = settingsGetIntRegistry
+        obj.SetRegistry = settingsSetRegistry
+        obj.ClearRegistry = settingsClearRegistry
+
         obj.ProcessLaunchArgs = settingsProcessLaunchArgs
         obj.GetGlobal = settingsGetGlobal
         obj.GetIntGlobal = settingsGetIntGlobal
         obj.InitGlobals = settingsInitGlobals
         obj.GetCapabilities = settingsGetCapabilities
 
-        obj.GetSectionKey = settingsGetSectionKey
+        obj.GetGlobalSettings = settingsGetGlobalSettings
 
         obj.reset()
         m.AppSettings = obj
 
         obj.InitGlobals()
+        obj.InitPrefs()
     end if
 
     return m.AppSettings
 end function
 
-function settingsGetPreference(name, defaultValue=invalid, section="preferences")
-    section = m.GetSectionKey(section)
+function settingsGetPreference(name as string) as dynamic
+    obj = m.prefs[name]
+
+    if obj.DoesExist("managedValue") and MyPlexAccount().isRestricted then
+        return obj.managedValue
+    end if
+
+    section = m.GetSectionKey(obj.section)
+    return m.GetRegistry(name, obj.default, section)
+end function
+
+function settingsGetIntPreference(name as string) as integer
+    section = m.GetSectionKey(name)
+    return m.GetIntRegistry(name, m.prefs[name].default, section)
+end function
+
+function settingsGetBoolPreference(name as string) as boolean
+    return (m.GetPreference(name) = "1")
+end function
+
+sub settingsSetPreference(name as string, value as dynamic)
+    section = m.GetSectionKey(name)
+    m.SetRegistry(name, value, section)
+end sub
+
+sub settingsClearPreference(name as string)
+    section = m.GetSectionKey(name)
+    m.ClearRegistry(name, section)
+end sub
+
+sub settingsInitPrefs()
+    ' All of our prefs are defined here, including information like default
+    ' values, whether or not the pref is per-user, and whether managed users
+    ' are allowed to change the value. This central definition allows callers
+    ' to do things like just call GetPreference(name) without having to specify
+    ' a default value or worry about scoping.
+
+    ' Surround sound. A boolean pref for each codec.
+    m.prefs["surround_sound_ac3"] = {
+        key: "surround_sound_ac3",
+        title: "Dolby Digital (AC3)",
+        default: "1",
+        section: "preferences",
+        prefType: "bool"
+    }
+
+    m.prefs["surround_sound_dca"] = {
+        key: "surround_sound_dca",
+        title: "DTS (DCA)",
+        default: "1",
+        section: "preferences",
+        prefType: "bool"
+    }
+
+    ' Subtitles.
+    m.prefs["hardsubtitles"] = {
+        key: "hardsubtitles",
+        title: "Burn in (transcode)",
+        default: "0",
+        section: "user",
+        prefType: "bool"
+    }
+
+    ' TODO(schuyler): How many different quality settings do we want? Local vs. remote? Per-server?
+    ' Quality
+    options = [
+        {title: "20 Mbps", value: "12"},
+        {title: "12 Mbps", value: "11"},
+        {title: "10 Mbps", value: "10"},
+        {title: "8 Mbps", value: "9"},
+        {title: "4 Mbps", value: "8"},
+        {title: "3 Mbps", value: "7"},
+        {title: "2 Mbps", value: "6"},
+        {title: "1.5 Mbps", value: "5"},
+        {title: "720 Kbps", value: "4"},
+        {title: "320 Kbps", value: "3"},
+    ]
+    m.prefs["local_quality"] = {
+        key: "local_quality",
+        title: "Local Streaming Quality",
+        default: "7",
+        section: "preferences",
+        prefType: "enum",
+        options: options
+    }
+    m.prefs["remote_quality"] = {
+        key: "remote_quality",
+        title: "Remote Streaming Quality",
+        default: "7",
+        section: "preferences",
+        prefType: "enum",
+        options: options
+    }
+
+    ' TODO(schuyler): How do we want to control these options now? An enum? Multiple bools?
+    ' Direct Play
+    m.prefs["playback_direct"] = {
+        key: "playback_direct",
+        title: "Direct Play",
+        default: "1",
+        section: "preferences",
+        prefType: "bool"
+    }
+    m.prefs["playback_remux"] = {
+        key: "playback_remux",
+        title: "Direct Stream",
+        default: "1",
+        section: "preferences",
+        prefType: "bool"
+    }
+    m.prefs["playback_transcode"] = {
+        key: "playback_transcode",
+        title: "Transcode",
+        default: "1",
+        section: "preferences",
+        prefType: "bool"
+    }
+
+    ' Log level
+    options = [
+        {title: "Disabled", value: "10"},
+        {title: "Error", value: "4"},
+        {title: "Warn", value: "3"},
+        {title: "Info", value: "2"},
+        {title: "Debug", value: "1"},
+    ]
+    m.prefs["log_level"] = {
+        key: "log_level",
+        title: "Logging",
+        default: "2",
+        section: "preferences",
+        prefType: "enum",
+        options: options
+    }
+
+    ' Remote Control
+    m.prefs["remotecontrol"] = {
+        key: "remotecontrol",
+        title: "Remote Control",
+        default: "1",
+        section: "preferences",
+        prefType: "bool"
+    }
+
+    ' GDM
+    m.prefs["gdm_discovery"] = {
+        key: "gdm_discovery",
+        title: "Server Discovery (GDM)",
+        default: "1",
+        section: "preferences",
+        prefType: "bool",
+        managedValue: "0"
+    }
+
+    ' Analytics
+    m.prefs["analytics"] = {
+        key: "analytics",
+        title: "Analytics (anonymous)",
+        default: "1",
+        section: "preferences",
+        prefType: "bool"
+    }
+end sub
+
+function settingsGetSectionKey(pref as string) as string
+    obj = m.prefs[pref]
+
+    if obj = invalid or obj.section <> "user" then
+        return "preferences"
+    else
+        return "preferences_u" + tostr(MyPlexAccount().id)
+    end if
+end function
+
+function settingsGetRegistry(name, defaultValue=invalid, section="misc")
     cacheKey = name + section
-    if m.prefsCache.DoesExist(cacheKey) then return m.prefsCache[cacheKey]
+    if m.regCache.DoesExist(cacheKey) then return m.regCache[cacheKey]
 
     value = defaultValue
     sec = CreateObject("roRegistrySection", section)
     if sec.Exists(name) then value = sec.Read(name)
 
     if value <> invalid then
-        m.prefsCache[cacheKey] = value
+        m.regCache[cacheKey] = value
     end if
 
     return value
 end function
 
-function settingsGetIntPreference(name, defaultValue=0, section="preferences")
-    value = m.GetPreference(name, invalid, section)
+function settingsGetIntRegistry(name, defaultValue=0, section="misc")
+    value = m.GetRegistry(name, invalid, section)
     if value <> invalid then
         return value.toInt()
     else
@@ -53,24 +237,22 @@ function settingsGetIntPreference(name, defaultValue=0, section="preferences")
     end if
 end function
 
-sub settingsSetPreference(name, value, section="preferences")
-    section = m.GetSectionKey(section)
+sub settingsSetRegistry(name, value, section="misc")
     if value = invalid then
-        m.ClearPreference(name, section)
+        m.ClearRegistry(name, section)
         return
     end if
 
     sec = CreateObject("roRegistrySection", section)
     sec.Write(name, value)
-    m.prefsCache[name + section] = value
+    m.regCache[name + section] = value
     sec.Flush()
 end sub
 
-sub settingsClearPreference(name, section="preferences")
-    section = m.GetSectionKey(section)
+sub settingsClearRegistry(name, section="misc")
     sec = CreateObject("roRegistrySection", section)
     sec.Delete(name)
-    m.prefsCache.Delete(name + section)
+    m.regCache.Delete(name + section)
     sec.Flush()
 end sub
 
@@ -174,10 +356,64 @@ function settingsGetCapabilities(recompute=false as boolean) as string
     return caps
 end function
 
-function settingsGetSectionKey(key as string) as string
-    if key = "user" then
-        return "preferences_" + tostr(MyPlexAccount().id)
-    else
-        return key
-    end if
+function settingsGetGlobalSettings() as object
+    ' This is used by the settings overlay/component to decide what to
+    ' show in the global settings. We return an array of objects, one for
+    ' each group.
+
+    groups = CreateObject("roList")
+
+    ' Video preferences, liberally defined for now
+    video = CreateObject("roList")
+
+    ' Surround sound
+    ' TODO(schuyler): Only if device is configured for it
+    options = [
+        m.prefs["surround_sound_ac3"],
+        m.prefs["surround_sound_dca"],
+    ]
+    video.Push({key: "surround_sound", title: "Receiver Capabilities", options: options, prefType: "bool"})
+
+    ' Soft subtitles
+    options = [
+        m.prefs["hardsubtitles"],
+    ]
+    video.Push({key: "subtitles", title: "Subtitles", options: options, prefType: "bool"})
+
+    video.Push(m.prefs["local_quality"])
+    video.Push(m.prefs["remote_quality"])
+
+    groups.Push({
+        title: "Video",
+        settings: video
+    })
+
+    ' Advanced preferences, which is just about everything
+    advanced = CreateObject("roList")
+
+    ' Direct Play
+    options = [
+        m.prefs["playback_direct"],
+        m.prefs["playback_remux"],
+        m.prefs["playback_transcode"],
+    ]
+    advanced.Push({key: "playback", title: "Direct Play", options: options, prefType: "bool"})
+
+    ' Log level
+    advanced.Push(m.prefs["log_level"])
+
+    ' TODO(schuyler): Grouping these together is at least half joke.
+    options = [
+        m.prefs["remotecontrol"],
+        m.prefs["analytics"],
+        m.prefs["gdm_discovery"],
+    ]
+    advanced.Push({key: "tweaks", title: "Tweaks", options: options, prefType: "bool"})
+
+    groups.Push({
+        title: "Advanced",
+        settings: advanced
+    })
+
+    return groups
 end function

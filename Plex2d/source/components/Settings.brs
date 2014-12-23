@@ -72,8 +72,8 @@ sub settingsGetComponents()
     menuBox.SetScrollable(m.scrollHeight)
 
     prefs = m.GetPrefs()
-    for each key in prefs.keys
-        title = createLabel(key, FontRegistry().font18)
+    for each group in prefs
+        title = createLabel(group.title, FontRegistry().font18)
         title.fixed = false
         title.SetColor(Colors().TextClr, m.colors.category)
         title.SetDimensions(m.width, 60)
@@ -82,7 +82,7 @@ sub settingsGetComponents()
         title.zOrder = 100
         menuBox.AddComponent(title)
         first = true
-        for each pref in prefs[key]
+        for each pref in group.settings
             btn = m.createMenuButton(pref)
             if first = true then
                 btn.scrollOffset = title.height
@@ -127,7 +127,7 @@ sub settingsGetComponents()
 end sub
 
 function settingsCreateMenuButton(pref as object) as object
-    btn = createButton(pref.title, FontRegistry().font16, pref.command)
+    btn = createButton(pref.title, FontRegistry().font16, pref.key)
     btn.focusInside = true
     btn.fixed = false
     btn.halign = m.JUSTIFY_LEFT
@@ -165,99 +165,7 @@ function settingsCreatePrefButton(text as string, command as dynamic, value as s
 end function
 
 function settingsGetPrefs() as object
-    ' TODO(rob): mark defaults or user selected prefs (state)
-    prefs = CreateObject("roAssociativeArray")
-    prefs.keys = CreateObject("roList")
-
-    ' ** AUDIO PREFS ** '
-    audio = CreateObject("roList")
-    prefs.keys.push("Audio")
-    prefs.audio = audio
-
-    ' surround sound options
-    options = [
-        {title: "Dolby Digitial (AC3)", value: "ac3"},
-        {title: "DTS (DCA)", value: "dca"},
-    ]
-    audio.Push({command: "surround_sound", title: "Receiver Capabilities", options: options, prefType: "bool"})
-
-    ' volume boost
-    options = [
-        {title: "None",  value: "none"},
-        {title: "Small", value: "small"},
-        {title: "Large", value: "large"},
-        {title: "Huge",  value: "huge"},
-    ]
-    audio.Push({command: "volume_boost", title: "Volume Boost", options: options, prefType: "enum"})
-
-    ' ** VIDEO PREFS ** '
-    video = CreateObject("roList")
-    prefs.keys.push("Video")
-    prefs.video = video
-
-    ' locate/remote video qualities
-    options = [
-        {title: "20 Mbps",  value: "20"},
-        {title: "12 Mbps",  value: "12"},
-        {title: "10 Mbps",  value: "10"},
-        {title: "8 Mbps",   value: "8"},
-        {title: "4 Mbps",   value: "4"},
-        {title: "3 Mbps",   value: "3"},
-        {title: "2 Mbps",   value: "2"},
-        {title: "1.5 Mbps", value: "1.5"},
-        {title: "720 Kbps", value: "720"},
-        {title: "320 Kbps", value: "320"},
-
-    ]
-    video.Push({command: "local_quality", title: "Local Streaming Quality", options: options, prefType: "enum"})
-    video.Push({command: "remote_quality", title: "Remote Streaming Quality", options: options, prefType: "enum"})
-
-    ' subtitle size
-    options = [
-        {title: "Tiny",   value: "tiny"},
-        {title: "Small",  value: "small"},
-        {title: "Normal", value: "normal"},
-        {title: "Large",  value: "large"},
-        {title: "Huge",   value: "huge"},
-    ]
-    video.Push({command: "subtitle_size", title: "Subtitle Size", options: options, prefType: "enum"})
-
-    ' ** ADVANCED PREFS ** '
-    advanced = CreateObject("roList")
-    prefs.keys.push("Advanced")
-    prefs.advanced = advanced
-
-    ' locate/remote video qualities
-    options1 = [
-        {title: "20 Mbps",  value: "20"},
-        {title: "12 Mbps",  value: "12"},
-        {title: "10 Mbps",  value: "10"},
-        {title: "8 Mbps",   value: "8"},
-        {title: "4 Mbps",   value: "4"},
-        {title: "3 Mbps",   value: "3"},
-        {title: "2 Mbps",   value: "2"},
-        {title: "1.5 Mbps", value: "1.5"},
-        {title: "720 Kbps", value: "720"},
-        {title: "320 Kbps", value: "320"},
-
-    ]
-
-    options2 = [
-        {title: "Tiny",   value: "tiny"},
-        {title: "Small",  value: "small"},
-        {title: "Normal", value: "normal"},
-        {title: "Large",  value: "large"},
-        {title: "Huge",   value: "huge"},
-    ]
-
-    advanced.Push({command: "testing1", title: "testing 1", options: options1, prefType: "enum"})
-    advanced.Push({command: "testing2", title: "testing 2", options: options2, prefType: "enum"})
-    advanced.Push({command: "testing3", title: "testing 3", options: options1, prefType: "enum"})
-    advanced.Push({command: "testing4", title: "testing 4", options: options2, prefType: "enum"})
-    advanced.Push({command: "testing5", title: "testing 5", options: options1, prefType: "enum"})
-    advanced.Push({command: "testing6", title: "testing 6", options: options2, prefType: "enum"})
-
-    return prefs
+    return AppSettings().GetGlobalSettings()
 end function
 
 sub settingsOnSelected()
@@ -281,9 +189,20 @@ sub settingsOnFocus()
     m.listBox.DestroyComponents()
     m.listBox.lastFocusableItem = invalid
 
+    settings = AppSettings()
+    if m.prefType = "enum" then
+        enumValue = settings.GetPreference(m.command)
+    end if
+
     for each option in m.options
-        btn = m.overlay.createPrefButton(option.title, m.command, option.value, m.prefType)
-        btn.isSelected = (option.value = m.options[0].value)
+        if m.prefType = "bool" then
+            btn = m.overlay.createPrefButton(option.title, option.key, "", "bool")
+            btn.isSelected = settings.GetBoolPreference(option.key)
+        else if m.prefType = "enum" then
+            btn = m.overlay.createPrefButton(option.title, m.command, option.value, "enum")
+            btn.isSelected = (option.value = enumValue)
+        end if
+
         btn.SetDimensions(m.width, m.height)
         btn.SetPadding(0, 0, 0, m.padding.left)
         btn.SetFocusSibling("left", m)

@@ -61,7 +61,7 @@ sub gdmAdvertiserRefresh()
     ' just not that expensive.
     m.responseString = invalid
 
-    enabled = (AppSettings().GetPreference("remotecontrol", "1") = "1")
+    enabled = AppSettings().GetBoolPreference("remotecontrol")
     if enabled AND m.socket = invalid then
         m.CreateSocket()
     else if not enabled AND m.socket <> invalid then
@@ -108,7 +108,7 @@ function gdmAdvertiserGetResponseString() as string
 
         settings = AppSettings()
 
-        appendNameValue(buf, "Name", settings.GetPreference("player_name", settings.GetGlobal("rokuModel")))
+        appendNameValue(buf, "Name", settings.GetGlobal("friendlyName"))
         appendNameValue(buf, "Port", WebServer().port.tostr())
         appendNameValue(buf, "Product", "Plex for Roku")
         appendNameValue(buf, "Content-Type", "plex/media-player")
@@ -153,6 +153,9 @@ function GDMDiscovery() as object
 end function
 
 sub gdmDiscoveryDiscover()
+    ' Only if enabled
+    if not AppSettings().GetBoolPreference("gdm_discovery") then return
+
     message = "M-SEARCH * HTTP/1.1" + WinNL() + WinNL()
 
     ' Broadcasting to 255.255.255.255 only works on some Rokus, but we
