@@ -113,6 +113,7 @@ sub dropdownGetComponents()
             comp.fixed = (option.fixed = true)
             ' TODO(rob): option to set the plexObject
             comp.SetMetadata(option.metadata)
+            comp.plexObject = option.plexObject
             if m.screen.focusedItem = invalid then m.screen.focusedItem = comp
         end if
 
