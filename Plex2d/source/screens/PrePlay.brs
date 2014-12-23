@@ -199,7 +199,7 @@ sub preplayGetComponents()
     for each comp in components
         vbInfo.AddComponent(comp)
     end for
-    vbInfo.SetFrame(xOffset, 125, 1230-xOffset, 239)
+    vbInfo.SetFrame(xOffset, 125, 1130-xOffset, 239)
     m.components.Push(vbInfo)
 
     ' TODO(rob): dynamic width
