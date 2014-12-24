@@ -106,7 +106,7 @@ sub gsShow()
         m.gridContainer = context
 
         ' create requests for the jump items (only if we are using the ALL endpoint)
-        if m.jumpContainer.request = invalid and instr(1, gridEndpoint, "/all") > 0 then
+        if m.jumpContainer.request = invalid and instr(1, gridEndpoint, "/all") > 0 and not instr(1, gridEndpoint, "sort=") > 0 then
             ' support filtered endpoints (replace /all with /firstCharacter)
             regex = CreateObject("roRegex", "/all", "")
             jumpUrl = regex.Replace(gridEndpoint, "/firstCharacter")
