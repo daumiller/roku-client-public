@@ -82,7 +82,16 @@ sub vpInit()
     allowDirectStream = settings.GetBoolPreference("playback_remux")
     allowTranscode = settings.GetBoolPreference("playback_transcode")
 
-    directPlay = iif(allowDirectPlay, iif(allowDirectStream or allowTranscode, invalid, true), false)
+    if m.forceTranscode = true then
+        directPlay = false
+        if allowDirectStream = false and allowTranscode = false then
+            Debug("Forced transcode requested: allowDirectStream and allowTranscode not enabled")
+            m.screenError = "Transcode required: not enabled"
+            return
+        end if
+    else
+        directPlay = iif(allowDirectPlay, iif(allowDirectStream or allowTranscode, invalid, true), false)
+    end if
 
     videoItem = CreateVideoObject(m.item, m.seekValue).Build(directPlay, allowDirectStream)
 
@@ -185,10 +194,19 @@ function vpHandleMessage(msg) as boolean
             NowPlayingManager().location = "navigation"
             m.UpdateNowPlaying()
 
-            ' TODO(rob): multi-parts and fallback transcode
-            Application().PopScreen(m)
+            ' TODO(rob): multi-parts
 
-            m.Cleanup()
+            ' Fallback transcode
+            if m.playbackError and m.IsTranscoded = false and not m.forceTranscode = true then
+                Debug("Direct Play failed: falling back to transcode")
+                m.forceTranscode = true
+                m.Cleanup()
+                m.Init()
+                m.Show()
+            else
+                Application().PopScreen(m)
+                m.Cleanup()
+            end if
         else if msg.isPlaybackPosition() then
             m.lastPosition = m.curPartOffset + msg.GetIndex()
             Debug("vsHandleMessage::isPlaybackPosition: set progress -> " + tostr(1000*m.lastPosition))
