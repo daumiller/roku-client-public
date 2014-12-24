@@ -35,6 +35,9 @@ dev: $(APPNAME)
 rel: APPTITLE = $(APPNAME)
 rel: $(APPNAME)
 
+ninja: APPTITLE = PlexNinja
+ninja: $(APPNAME)
+
 manifest:
 	echo "Creating manifest for $(APPTITLE)"
 	sed s/APPTITLE/$(APPTITLE)/ < manifest.template > manifest
