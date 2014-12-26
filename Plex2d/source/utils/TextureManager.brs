@@ -152,6 +152,10 @@ end sub
 ' Each texture object is sent to this function, which creates the texturerequest and sends it
 ' It also increments the sendcount
 sub tmRequestTexture(component as object, context as object)
+    if context.url = invalid then
+        Warn("Ignoring texture request. URL is invalid.")
+        return
+    end if
     component.pendingTexture = true
 
     if m.timerTextureManger = invalid then m.timerTextureManger = createtimer("textureManagerRequest")
@@ -225,7 +229,7 @@ function tmReceiveTexture(tmsg as object, screenID as integer) as boolean
         ' There SHOULD ALWAYS be one in there if used properly. This shouldn't
         ' happen anymore now that we cancel textures during cleanup (reset)
         if context = invalid then
-            WARN("texture received is invalid: state " + tostr(state))
+            Warn("texture received is invalid: state " + tostr(state))
             return false
         end if
 
