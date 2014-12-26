@@ -68,7 +68,7 @@ sub loadingFindServer()
     server = PlexServerManager().GetSelectedServer()
 
     if server = invalid then
-        PlexServerManager().UpdateReachability(false)
+        MyPlexManager().RefreshResources()
 
         m.waitTimer = createTimer("waitTimer")
         m.waitTimer.SetDuration(17000)
