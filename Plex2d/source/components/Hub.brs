@@ -342,7 +342,7 @@ sub hubCalculateStyle(container as object)
     size = container.GetInt("size")
 
     ' Force the orientation on a few known types [default poster]
-    if m.hubIdentifier = "home.continue" and size > 1 then
+    if m.hubIdentifier = "home.continue" then
         m.orientation = m.ORIENTATION_LANDSCAPE
     else if m.hubType = "playlist" or m.hubType = "album" or m.hubType = "artist" then
         m.orientation = m.ORIENTATION_SQUARE
