@@ -91,16 +91,15 @@ sub headerPerformLayout()
     end if
 
     ' *** Calculate the layout for the buttons *** '
-    if buttons.count() > 0 then
+    if buttons.Count() > 0 then
         hbox = createHBox(false, false, false, m.buttons.spacing)
         for each button in buttons
             hbox.addComponent(button)
         end for
-        numButtons = buttons.count()
+        numButtons = buttons.Count()
 
-        xOffset = (m.right - m.buttons.width*numButtons) - (m.buttons.spacing * numButtons-1) + m.buttons.spacing
-        buttonsWidth = m.buttons.width*numButtons + (m.buttons.spacing * numButtons-1)
-        hbox.setFrame(xOffset, m.buttons.yOffset, buttonsWidth, m.height)
+        buttonsWidth = (m.buttons.width * numButtons) + (m.buttons.spacing * (numButtons - 1))
+        hbox.setFrame(m.right - buttonsWidth, m.buttons.yOffset, buttonsWidth, m.height)
         m.AddComponent(hbox)
     end if
 
