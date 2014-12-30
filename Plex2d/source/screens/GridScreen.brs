@@ -50,7 +50,7 @@ sub gsInit()
         m.chunkLoadLimit = 2
     else
         m.lazyStyle = 0
-        m.chunkSize = 25
+        m.chunkSize = 26
         m.chunkLoadLimit = 5
     end if
 
