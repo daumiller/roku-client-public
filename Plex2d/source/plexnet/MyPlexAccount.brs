@@ -164,10 +164,9 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
         m.SaveState()
         MyPlexManager().Publish()
         MyPlexManager().RefreshResources()
-    else if response.GetStatus() = 401 then
+    else if response.GetStatus() >= 400 and response.GetStatus() < 500 then
         ' The user is specifically unauthorized, clear everything
-        Warn("User is unauthorized")
-
+        Warn("Sign Out: User is unauthorized")
         m.SignOut()
     else
         ' Unexpected error, keep using whatever we read from the registry
