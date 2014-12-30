@@ -71,17 +71,17 @@ sub mpaLoadState()
     if json <> invalid then
         obj = ParseJson(json)
         if obj <> invalid then
-            m.id = obj.id
-            m.title = obj.title
-            m.username = obj.username
-            m.email = obj.email
-            m.authToken = obj.authToken
-            m.pin = obj.pin
-            m.isPlexPass = obj.isPlexPass
-            m.isEntitled = obj.isEntitled
-            m.isRestricted = obj.isRestricted
+            if obj.id <> invalid then m.id = obj.id
+            if obj.title <> invalid then m.title = obj.title
+            if obj.username <> invalid then m.username = obj.username
+            if obj.email <> invalid then m.email = obj.email
+            if obj.authToken <> invalid then m.authToken = obj.authToken
+            if obj.pin <> invalid then m.pin = obj.pin
+            if obj.isPlexPass <> invalid then m.isPlexPass = obj.isPlexPass
+            if obj.isEntitled <> invalid then m.isEntitled = obj.isEntitled
+            if obj.isRestricted <> invalid then m.isRestricted = obj.isRestricted
+            if obj.isAdmin <> invalid then m.isAdmin = obj.isAdmin
             m.isProtected = (obj.pin <> invalid)
-            m.isAdmin = obj.isAdmin
         end if
     else
         ' TODO(rob): this is only for the transition from the official right?
