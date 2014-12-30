@@ -243,6 +243,7 @@ end function
 
 sub appOnInitialized()
     ' Wire up a few of our own listeners
+    PlexServerManager()
     m.On("change:user", createCallable("OnAccountChange", m))
 
     m.Trigger("init", [])
