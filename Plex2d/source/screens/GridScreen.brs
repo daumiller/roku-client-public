@@ -46,11 +46,12 @@ sub gsInit()
     ' 1: load inline (Roku 3)
     if appSettings().GetGlobal("animationFull") then
         m.lazyStyle = 1
-        m.chunkSize = 200
+        m.chunkSize = 100
+        m.chunkLoadLimit = 2
     else
         m.lazyStyle = 0
-        m.chunkSize = 30
-        m.chunkLoadLimit = 10
+        m.chunkSize = 25
+        m.chunkLoadLimit = 5
     end if
 
     ' use a smaller chunk for the inital load size. This may need to vary
