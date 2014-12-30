@@ -105,6 +105,7 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
         xml = response.GetBodyXml()
 
         ' The user is signed in
+        m.isOffline = false
         m.id = xml@id
         m.title = xml@title
         m.username = xml@username
@@ -171,7 +172,7 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
     else
         ' Unexpected error, keep using whatever we read from the registry
         Warn("Unexpected response from plex.tv (" + tostr(response.GetStatus()) + "), switching to offline mode")
-        m.IsOffline = true
+        m.isOffline = true
     end if
 
     Application().ClearInitializer("myplex")
@@ -241,7 +242,7 @@ function mpaSwitchHomeUser(userId as string, pin="" as dynamic) as boolean
 
     ' TODO(rob): offline support
     if m.IsOffline then
-        if createDigest(pin + m.AuthToken, "sha256") = firstOf(RegRead("Pin", "user_cache"), "") then
+        if createDigest(pin + m.AuthToken, "sha256") = firstOf(m.pin, "") then
             Debug("Offline PIN accepted")
             m.PinAuthenticated = true
             return true
