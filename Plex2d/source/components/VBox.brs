@@ -29,7 +29,6 @@ function createVBox(homogeneous as boolean, expand as boolean, fill as boolean, 
     obj.expand = expand
     obj.fill = fill
     obj.spacing = spacing
-    obj.scrollable = false
 
     return obj
 end function
@@ -107,6 +106,16 @@ sub vboxCalculateShift(toFocus as object)
     focusRect = computeRect(toFocus)
     if focusRect.down > shift.safeDown
         shift.y = shift.shiftAmount * -1
+        ' on refocus, we may need to shift more than one item,
+        ' until we handle refocusing differently. Locate the
+        ' last item to fit, and shift based on it.
+        if focusRect.down + shift.y > m.scrollHeight then
+            for each i in tofocus.parent.components
+                if i.y+i.height > m.scrollHeight then exit for
+                wanted = i.y+i.height
+            end for
+            shift.y = (focusRect.down - wanted) * -1
+        end if
     else if focusRect.up < shift.safeUp then
         shift.y = shift.shiftAmount
     end if
@@ -138,7 +147,6 @@ sub vboxShiftComponents(shift)
 end sub
 
 sub vboxSetScrollable(scrollHeight as integer)
-    m.scrollable = true
     m.scrollHeight = scrollHeight
     m.ShiftComponents = vboxShiftComponents
     m.CalculateShift = vboxCalculateShift

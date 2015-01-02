@@ -27,10 +27,6 @@ end function
 sub hubsInit()
     ApplyFunc(ComponentsScreen().Init, m)
 
-    ' Standard Properties
-    m.buttonsMaxRows = 6
-    m.buttonsMaxCols = 2
-
     ' Section and Hub containers
     m.hubsContainer = CreateObject("roAssociativeArray")
     m.buttonsContainer = CreateObject("roAssociativeArray")
@@ -74,34 +70,15 @@ sub hubsGetComponents()
 
     if buttons.count() > 0 then
         ' Calculate how many columns we need and allow
-        cols = int(buttons.count()/m.buttonsMaxRows + .9)
-        if cols > m.buttonsMaxCols then cols = m.buttonsMaxCols
+        vbox = createVBox(false, false, false, 10)
+        vbox.SetScrollable(500+125)
+        vbox.SetFrame(100, 125, 300, 500)
 
-        for col = 0 to cols-1
-            vbox = createVBox(false, false, false, 10)
-            vbox.SetFrame(100, 125, 300, 500)
-
-            for row = 0 to m.buttonsMaxRows-1
-                index = m.buttonsMaxRows*col + row
-                if index >= buttons.count() then exit for
-                if buttons[index] <> invalid then
-                    vbox.AddComponent(buttons[index])
-                    if m.focusedItem = invalid then m.focusedItem = buttons[index]
-                end if
-            end for
-            hbox.AddComponent(vbox)
+        for each button in buttons
+            vbox.AddComponent(button)
+            if m.focusedItem = invalid then m.focusedItem = button
         end for
-
-        ' TODO(rob/schuyler): allow the width to be specified and not overridden
-        if buttons.count() > m.buttonsMaxRows*cols then
-            moreButton = createButton("More", FontRegistry().font16, "more")
-            moreButton.SetColor(&hffffffff, &h1f1f1fff)
-            moreButton.width = 72
-            moreButton.height = 44
-            moreButton.fixed = false
-            moreButton.phalign = moreButton.JUSTIFY_RIGHT
-            vbox.AddComponent(moreButton)
-        end if
+        hbox.AddComponent(vbox)
     end if
 
     ' ** HUBS ** '

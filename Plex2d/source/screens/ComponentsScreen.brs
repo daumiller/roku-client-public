@@ -574,7 +574,8 @@ function compGetFocusManual(direction as string, focusableComponenents=invalid a
     }
 
     for each candidate in candidates
-        if not candidate.Equals(m.focusedItem) then
+        ' ignore current focused item, or any item above their parents y position (VBox veritical scroll)
+        if not candidate.Equals(m.focusedItem) and (candidate.parent = invalid or candidate.y >= candidate.parent.y) then
             candPt = m.CalculateFocusPoint(candidate, direction)
 
             ' Calculate the focus point for the candidate.
@@ -695,7 +696,7 @@ sub compCalculateShift(toFocus as object)
     ' allow the component to override the method. e.g. VBox vertical scrolling
     if toFocus.parent <> invalid and type(toFocus.parent.CalculateShift) = "roFunction" then
         toFocus.parent.CalculateShift(toFocus)
-        return
+        ' continue with the standard container shift (horizontal scroll)
     end if
 
     ' TODO(rob) handle vertical shifting. revisit safeLeft/safeRight - we can't

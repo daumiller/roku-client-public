@@ -187,7 +187,7 @@ sub compSetVisibility(left=invalid as dynamic, right=invalid as dynamic, up=inva
     end if
 end sub
 
-sub compShiftPosition(deltaX=0 as integer, deltaY=0 as integer, shiftSprite = true as boolean)
+sub compShiftPosition(deltaX=0 as integer, deltaY=0 as integer, shiftSprite=true as boolean)
     ' ignore shifting fixed components
     if m.fixed = true then return
 
@@ -204,7 +204,11 @@ sub compShiftPosition(deltaX=0 as integer, deltaY=0 as integer, shiftSprite = tr
     end if
 
     if m.sprite <> invalid then
-        if m.IsOnScreen() then
+        ' Ignore setting zOrder for scrollable parents. e.g. VBOX vertical
+        ' scroll. Just move the sprite as the parent handles visibility.
+        if m.parent <> invalid and m.parent.scrollHeight <> invalid then
+            m.sprite.moveTo(m.x, m.y)
+        else if m.IsOnScreen() then
             m.sprite.moveTo(m.x, m.y)
             ' TODO(rob) we should be using the components orig zOrder? (n/a)
             if m.sprite.getZ() < 0 then m.sprite.setZ(1)

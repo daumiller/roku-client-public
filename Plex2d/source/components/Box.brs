@@ -64,7 +64,7 @@ function boxCalculateOffsets(totalSize as integer, initialOffset as integer, siz
                 usedExtraSpace = usedExtraSpace + extraSpace
                 index = index + 1
             next
-        else if totalPreferredSize > availableSize and m.scrollable = false then
+        else if totalPreferredSize > availableSize and m.scrollHeight = invalid then
             ' We need to shrink things to fit.
             cumulativeSize = 0
             index = 1
