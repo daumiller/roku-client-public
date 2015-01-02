@@ -83,15 +83,18 @@ sub settingsGetComponents()
         menuBox.AddComponent(title)
         first = true
         for each pref in group.settings
-            btn = m.createMenuButton(pref)
-            if first = true then
-                btn.scrollOffset = title.height
-                first = false
+            ' hide restricted prefs from managed users
+            if not (pref.isRestricted = true and MyPlexAccount().isManaged) then
+                btn = m.createMenuButton(pref)
+                if first = true then
+                    btn.scrollOffset = title.height
+                    first = false
+                end if
+                btn.SetDimensions(m.width, 60)
+                btn.SetPadding(0, 0, 0, m.padding*2)
+                btn.listBox = listBox
+                menuBox.AddComponent(btn)
             end if
-            btn.SetDimensions(m.width, 60)
-            btn.SetPadding(0, 0, 0, m.padding*2)
-            btn.listBox = listBox
-            menuBox.AddComponent(btn)
         end for
     end for
     m.components.push(settingsBox)
@@ -203,10 +206,13 @@ sub settingsOnFocus()
             btn.isSelected = (option.value = enumValue)
         end if
 
-        btn.SetDimensions(m.width, m.height)
-        btn.SetPadding(0, 0, 0, m.padding.left)
-        btn.SetFocusSibling("left", m)
-        m.listBox.AddComponent(btn)
+        ' hide restricted prefs from managed users
+        if not (option.isRestricted = true and MyPlexAccount().isManaged) then
+            btn.SetDimensions(m.width, m.height)
+            btn.SetPadding(0, 0, 0, m.padding.left)
+            btn.SetFocusSibling("left", m)
+            m.listBox.AddComponent(btn)
+        end if
     end for
 
     CompositorScreen().DrawComponent(m.listBox)

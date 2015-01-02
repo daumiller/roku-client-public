@@ -44,7 +44,7 @@ end function
 function settingsGetPreference(name as string) as dynamic
     obj = m.prefs[name]
 
-    if obj.DoesExist("managedValue") and MyPlexAccount().isRestricted then
+    if obj.DoesExist("managedValue") and MyPlexAccount().isManaged then
         return obj.managedValue
     end if
 
@@ -194,6 +194,7 @@ sub settingsInitPrefs()
         section: "preferences",
         prefType: "bool",
         managedValue: "0"
+        isRestricted: true,
     }
 
     ' Analytics

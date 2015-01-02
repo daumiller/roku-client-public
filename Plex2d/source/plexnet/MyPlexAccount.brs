@@ -14,7 +14,7 @@ function MyPlexAccount() as object
         obj.isOffline = false
         obj.isPlexPass = false
         obj.isEntitled = false
-        obj.isRestricted = false
+        obj.isManaged = false
         obj.hasQueue = false
         obj.pinAuthenticated = false
 
@@ -52,7 +52,7 @@ sub mpaSaveState()
         pin: m.pin,
         isPlexPass: m.isPlexPass,
         isEntitled: m.isEntitled,
-        isRestricted: m.isRestricted
+        isManaged: m.isManaged
         isAdmin: m.isAdmin
     }
 
@@ -79,7 +79,7 @@ sub mpaLoadState()
             if obj.pin <> invalid then m.pin = obj.pin
             if obj.isPlexPass <> invalid then m.isPlexPass = obj.isPlexPass
             if obj.isEntitled <> invalid then m.isEntitled = obj.isEntitled
-            if obj.isRestricted <> invalid then m.isRestricted = obj.isRestricted
+            if obj.isManaged <> invalid then m.isManaged = obj.isManaged
             if obj.isAdmin <> invalid then m.isAdmin = obj.isAdmin
             m.isProtected = (obj.pin <> invalid)
         end if
@@ -113,7 +113,7 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
         m.authToken = xml@authenticationToken
         m.isSignedIn = true
         m.isPlexPass = (xml.subscription <> invalid and xml.subscription@active = "1")
-        m.isRestricted = (xml@restricted = "1")
+        m.isManaged = (xml@restricted = "1")
         m.hasQueue = (xml@queueEmail <> invalid and xml@queueEmail <> "" and xml@queueEmail <> invalid and xml@queueEmail <> "")
 
         ' PIN
@@ -158,7 +158,7 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
         Info("Authenticated as " + tostr(m.Id) + ":" + tostr(m.Title))
         Info("PlexPass: " + tostr(m.isPlexPass))
         Info("Entitlement: " + tostr(m.isEntitled))
-        Info("Restricted: " + tostr(m.isRestricted))
+        Info("Managed: " + tostr(m.isManaged))
         Info("Protected: " + tostr(m.isProtected))
         Info("Admin: " + tostr(m.isAdmin))
 
@@ -198,7 +198,7 @@ sub mpaSignOut()
     m.isSignedIn = false
     m.isPlexPass = false
     m.isEntitled = false
-    m.isRestricted = false
+    m.isManaged = false
 
     Application().Trigger("change:user", [m])
 
