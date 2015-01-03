@@ -19,20 +19,31 @@ function PreplayContextScreen() as object
     return m.PreplayContextScreen
 end function
 
-function createPreplayContextScreen(item as object) as object
+function createPreplayContextScreen(item as object, path=invalid as dynamic) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(PreplayContextScreen())
 
-    obj.Init()
+    obj.item = item
+    obj.path = path
 
-    obj.plexObject = item
-    obj.server = item.GetServer()
+    obj.Init()
 
     return obj
 end function
 
 sub ppcInit()
     ApplyFunc(PreplayScreen().Init, m)
+
+    ' path override
+    if m.path <> invalid then
+        m.childrenPath = m.path + "/children"
+    else
+        m.path = m.item.GetItemPath()
+        m.childrenPath = m.item.GetAbsolutePath("key")
+    end if
+
+    m.childrenPath = m.childrenPath + "?excludeAllLeaves=1"
+    m.server = m.item.GetServer()
 
     m.requestContext = invalid
     m.childRequestContext = invalid
@@ -43,15 +54,14 @@ sub ppcShow()
     if not application().isactivescreen(m) then return
 
     if m.requestContext = invalid then
-        request = createPlexRequest(m.server, m.plexObject.GetItemPath())
+        request = createPlexRequest(m.server, m.path)
         context = request.CreateRequestContext("preplay_item", createCallable("OnResponse", m))
         Application().StartRequest(request, context)
         m.requestContext = context
     end if
 
     if m.childRequestContext = invalid then
-        path = m.plexObject.GetAbsolutePath("key") + "?excludeAllLeaves=1"
-        request = createPlexRequest(m.server, path)
+        request = createPlexRequest(m.server, m.childrenPath)
         context = request.CreateRequestContext("preplay_item", createCallable("OnChildResponse", m))
         Application().StartRequest(request, context)
         m.childRequestContext = context
