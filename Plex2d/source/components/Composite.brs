@@ -14,6 +14,8 @@ function CompositeClass() as object
         obj.GetFocusableItems = compGetFocusableItems
         obj.GetShiftableItems = compGetShiftableItems
 
+        obj.multiBitmap = false
+
         m.CompositeClass = obj
     end if
 
@@ -50,10 +52,13 @@ function compositeDraw() as object
     for each comp in drawables
         compositor.NewSprite(comp.x, comp.y, comp.region)
         comp.On("redraw", createCallable("OnComponentRedraw", m, "comp" + tostr(m.id) + "_redraw"))
-        ' performance vs memory: keep all regions, except for a URL source
-        if comp.source <> invalid and left(comp.source, 4) = "http" then comp.region = invalid
-        ' do not keep any bitmaps ( we already have the region )
-        if comp.bitmap <> invalid then comp.bitmap = invalid
+        ' performance vs memory: keep all regions, except for a URL source. Optional key `multiBitmap`
+        ' is needed if we are compositing multiple downloaded textures, otherwise we keep redrawing.
+        if m.multiBitmaps = false then
+            if comp.source <> invalid and left(comp.source, 4) = "http" then comp.region = invalid
+            ' do not keep any bitmaps ( we already have the region )
+            if comp.bitmap <> invalid then comp.bitmap = invalid
+        end if
     next
 
     compositor.DrawAll()
