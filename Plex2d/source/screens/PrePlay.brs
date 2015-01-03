@@ -114,6 +114,10 @@ function preplayHandleCommand(command as string, item as dynamic) as boolean
         settings.Show()
     else if command = "show_grid" then
         Application().PushScreen(createGridScreen(item.plexObject))
+    else if command = "go_to_show" then
+        Application().PushScreen(createPreplayContextScreen(m.plexObject, m.plexObject.Get("grandparentKey")))
+    else if command = "go_to_season" then
+        Application().PushScreen(createGridScreen(m.plexObject, m.plexObject.Get("parentKey") + "/children", 2, ComponentClass().ORIENTATION_LANDSCAPE))
     else if not ApplyFunc(ComponentsScreen().HandleCommand, m, [command, item])
         handled = false
     end if
@@ -354,29 +358,14 @@ function preplayGetButtons() as object
         components.push(btn)
     end for
 
-    ' more/pivot button (drop-drown)
-    if m.item.relatedItems.count() > 0 then
-        btn = createDropDown(Glyphs().MORE, m.customFonts.glyphs, int(720 * .80), m)
-        btn.SetDropDownPosition("right")
-        btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
-        btn.width = 100
-        btn.height = 47
-        if m.focusedItem = invalid then m.focusedItem = btn
-        for each item in m.item.relatedItems
-            btn.options.push({
-                halign: "JUSTIFY_LEFT",
-                height: btn.height
-                padding: { right: 5, left: 5, top: 0, bottom: 0 }
-                text: item.GetSingleLineTitle(),
-                plexObject: item,
-                command: "show_grid",
-                font: FontRegistry().font16,
-                })
-        end for
-        components.push(btn)
-    end if
+    optionPrefs = {
+        halign: "JUSTIFY_LEFT",
+        height: btn.height
+        padding: { right: 10, left: 10, top: 0, bottom: 0 }
+        font: FontRegistry().font16,
+    }
 
-    ' extras
+    ' extras drop down
     if m.item.extraItems.count() > 0 then
         btn = createDropDown(Glyphs().EXTRAS, m.customFonts.glyphs, int(720 * .80), m)
         btn.SetDropDownPosition("right")
@@ -385,16 +374,50 @@ function preplayGetButtons() as object
         btn.height = 47
         if m.focusedItem = invalid then m.focusedItem = btn
         for each item in m.item.extraItems
-            btn.options.push({
-                halign: "JUSTIFY_LEFT",
-                height: btn.height
-                padding: { right: 5, left: 5, top: 0, bottom: 0 }
+            option = {
                 text: item.GetLongerTitle(),
-                plexObject: item,
                 command: "play_extra",
-                font: FontRegistry().font16,
-                })
+                plexObject: item,
+            }
+            option.Append(optionPrefs)
+            btn.options.push(option)
         end for
+        components.push(btn)
+    end if
+
+    ' more/pivots drop down
+    if m.item.relatedItems.count() > 0 or m.item.Get("type", "") = "episode" then
+        btn = createDropDown(Glyphs().MORE, m.customFonts.glyphs, int(720 * .80), m)
+        btn.SetDropDownPosition("right")
+        btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
+        btn.width = 100
+        btn.height = 47
+        if m.focusedItem = invalid then m.focusedItem = btn
+
+        ' manual pivots for an episode
+        if m.item.Get("type", "") = "episode" then
+            episodePivots = [
+                {command: "go_to_show", text: "Go to show"},
+                {command: "go_to_season", text: "Go to season " + m.item.Get("parentIndex", "")},
+            ]
+            for each pivot in episodePivots
+                option = {}
+                option.Append(pivot)
+                option.Append(optionPrefs)
+                btn.options.push(option)
+            end for
+        end if
+
+        for each item in m.item.relatedItems
+            option = {
+                text: item.GetSingleLineTitle(),
+                command: "show_grid",
+                plexObject: item,
+            }
+            option.Append(optionPrefs)
+            btn.options.push(option)
+        end for
+
         components.push(btn)
     end if
 
