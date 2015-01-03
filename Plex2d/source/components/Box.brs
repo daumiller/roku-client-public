@@ -13,6 +13,10 @@ function BoxClass() as object
         obj.AddComponent = boxAddComponent
         obj.CalculateOffsets = boxCalculateOffsets
 
+        ' Shift Methods Overrides
+        obj.ShiftPosition = boxShiftPosition
+        obj.SetVisibility = boxSetVisibility
+
         m.BoxClass = obj
     end if
 
@@ -132,3 +136,15 @@ function boxGetYOffsetAlignment(yOffset as integer, contHeight as integer, compH
 
     return yOffset
 end function
+
+sub boxShiftPosition(deltaX=0 as integer, deltaY=0 as integer, shiftSprite=true as boolean)
+    for each component in m.components
+        component.ShiftPosition(deltaX, deltaY, shiftSprite)
+    next
+end sub
+
+sub boxSetVisibility(left=invalid as dynamic, right=invalid as dynamic, up=invalid as dynamic, down=invalid as dynamic)
+    for each component in m.components
+        component.SetVisibility(left, right, up, down)
+    end for
+end sub

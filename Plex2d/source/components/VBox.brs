@@ -135,7 +135,7 @@ sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic)
 end sub
 
 sub vboxShiftComponents(shift)
-    Debug("shift drop down by: " + tostr(shift.x) + "," + tostr(shift.y))
+    Debug("shift vbox by: " + tostr(shift.x) + "," + tostr(shift.y))
 
     ' This is pretty simplistic compared to the default screen shifting. We
     ' already have a list of components, and we are forgoing animation. All
