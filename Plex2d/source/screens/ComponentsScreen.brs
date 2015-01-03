@@ -588,8 +588,17 @@ function compGetFocusManual(direction as string, focusableComponenents=invalid a
     }
 
     for each candidate in candidates
+        ' exclude parent check if the candidate is a child of the same shiftableParent or Parent, or is parentless.
+        if candidate.shiftableParent <> invalid and candidate.shiftableParent.equals(m.focusedItem.shiftableParent) then
+            excludeParentCheck = true
+        else if candidate.parent = invalid or candidate.parent <> invalid and candidate.parent.Equals(m.focusedItem.parent) then
+            excludeParentCheck = true
+        else
+            excludeParentCheck = false
+        end if
+
         ' ignore current focused item, or any item above their parents y position (VBox veritical scroll)
-        if not candidate.Equals(m.focusedItem) and (candidate.parent = invalid or candidate.y >= candidate.parent.y) then
+        if not candidate.Equals(m.focusedItem) and (excludeParentCheck = true or candidate.y >= candidate.parent.y) then
             candPt = m.CalculateFocusPoint(candidate, direction)
 
             ' Calculate the focus point for the candidate.
@@ -708,9 +717,12 @@ sub compCalculateShift(toFocus as object, refocus=invalid as dynamic)
     if toFocus.fixed = true then return
 
     ' allow the component to override the method. e.g. VBox vertical scrolling
-    if toFocus.parent <> invalid and type(toFocus.parent.CalculateShift) = "roFunction" then
-        toFocus.parent.CalculateShift(toFocus, refocus)
-        ' continue with the standard container shift (horizontal scroll)
+    ' * shiftableParent for containers in containers (e.g. users screen: vbox -> hbox -> component)
+    ' * continue with the standard container shift (horizontal scroll), after override
+    if toFocus.shiftableParent <> invalid and type(toFocus.shiftableParent.CalculateShift) = "roFunction" then
+        toFocus.shiftableParent.CalculateShift(toFocus)
+    else if toFocus.parent <> invalid and type(toFocus.parent.CalculateShift) = "roFunction" then
+        toFocus.parent.CalculateShift(toFocus)
     end if
 
     ' TODO(rob) handle vertical shifting. revisit safeLeft/safeRight - we can't
