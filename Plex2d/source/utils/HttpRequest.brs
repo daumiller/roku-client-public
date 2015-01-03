@@ -178,3 +178,15 @@ sub httpOnResponse(event as object, context as object)
         context.completionCallback.Call([m, response, context])
     end if
 end sub
+
+function ResolveRedirect(url as string) as string
+    http = CreateObject("roUrlTransfer")
+    http.SetUrl(url)
+    headers = http.Head().GetResponseHeaders()
+
+    if headers.location <> invalid and headers.location <> url then
+        return headers.location
+    end if
+
+    return url
+end function

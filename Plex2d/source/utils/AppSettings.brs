@@ -205,6 +205,16 @@ sub settingsInitPrefs()
         section: "preferences",
         prefType: "bool"
     }
+
+    ' Automatically sign in
+    m.prefs["auto_signin"] = {
+        key: "auto_signin",
+        title: "Automatically sign in",
+        default: "0",
+        section: "preferences",
+        prefType: "bool",
+        isRestricted: true,
+    }
 end sub
 
 function settingsGetSectionKey(pref as string) as string
@@ -416,6 +426,7 @@ function settingsGetGlobalSettings() as object
         m.prefs["remotecontrol"],
         m.prefs["analytics"],
         m.prefs["gdm_discovery"],
+        m.prefs["auto_signin"],
     ]
     advanced.Push({key: "tweaks", title: "Tweaks", options: options, prefType: "bool"})
 

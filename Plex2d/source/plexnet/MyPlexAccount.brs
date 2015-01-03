@@ -16,7 +16,7 @@ function MyPlexAccount() as object
         obj.isEntitled = false
         obj.isManaged = false
         obj.hasQueue = false
-        obj.pinAuthenticated = false
+        obj.userSwitched = false
 
         obj.homeUsers = createObject("roList")
 
@@ -178,7 +178,8 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
     Application().ClearInitializer("myplex")
     AppManager().ResetState()
 
-    if oldId <> m.id then
+    if oldId <> m.id or m.pendingUserSwitch = true then
+        m.pendingUserSwitch = invalid
         Application().Trigger("change:user", [m])
     end if
 end sub
@@ -230,6 +231,11 @@ sub mpaUpdateHomeUsers()
     if firstOf(xml@size, "0").toInt() and xml.user <> invalid then
         m.homeUsers.clear()
         for each user in xml.user
+            ' Roku doesn't handle 302... so we'll have to resolve the redirect manually.
+            ' TODO(rob): we should cache this and only update on change or when stale.
+            if user@thumb <> invalid and instr(1, user@thumb, "http://www.gravatar.com") > 0 then
+                user.AddAttribute("thumb", ResolveRedirect(user@thumb))
+            end if
             m.homeUsers.push(user.GetAttributes())
         end for
     end if
@@ -238,13 +244,13 @@ sub mpaUpdateHomeUsers()
 end sub
 
 function mpaSwitchHomeUser(userId as string, pin="" as dynamic) as boolean
-    if userId = m.id then return true
+    if userId = m.id and m.userSwitched = true then return true
 
     ' TODO(rob): offline support
     if m.IsOffline then
         if createDigest(pin + m.AuthToken, "sha256") = firstOf(m.pin, "") then
             Debug("Offline PIN accepted")
-            m.PinAuthenticated = true
+            m.userSwitched = true
             return true
         end if
     else
@@ -256,7 +262,8 @@ function mpaSwitchHomeUser(userId as string, pin="" as dynamic) as boolean
 
         if xml@authenticationToken <> invalid then
             m.ValidateToken(xml@authenticationToken)
-            if pin <> "" then m.PinAuthenticated = true
+            m.userSwitched = true
+            m.pendingUserSwitch = true
             return true
         end if
     end if

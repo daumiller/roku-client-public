@@ -270,8 +270,11 @@ sub appShowInitialScreen()
     m.ClearScreens()
     if MyPlexAccount().isSignedIn = false or MyPlexAccount().isEntitled = false then
         m.pushScreen(createPinScreen())
-    else
+    else if MyPlexAccount().userSwitched = true or AppSettings().GetBoolPreference("auto_signin") then
+        MyPlexAccount().userSwitched = true
         m.pushScreen(createLoadingScreen())
+    else
+        m.pushScreen(createUsersScreen())
     end if
 end sub
 

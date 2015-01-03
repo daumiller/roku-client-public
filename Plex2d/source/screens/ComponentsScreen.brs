@@ -479,6 +479,21 @@ function compHandleCommand(command as string, item as dynamic) as boolean
             dialog = createDialog("Item type not handled yet", "type: " + itemType, m)
             dialog.Show()
         end if
+    else if command = "switch_user" then
+        user = item.metadata
+        if user.id = MyPlexAccount().id and MyPlexAccount().userSwitched = true then return handled
+
+        if user.protected = "1" and (MyPlexAccount().userSwitched = false or MyPlexAccount().isAdmin = false) then
+            ' pinPrompt handles switching and error feedback
+            pinPrompt = createPinPrompt(m)
+            pinPrompt.userSwitch = user
+            pinPrompt.Show(true)
+        else if not MyPlexAccount().SwitchHomeUser(user.id) then
+            ' provide feedback on failure to switch to non protected users
+            ' TODO(rob): need verbiage for failure
+            dialog = createDialog("Unable to switch users", "Please check your connection and try again.", m)
+            dialog.Show()
+        end if
     else
         handled = false
     end if

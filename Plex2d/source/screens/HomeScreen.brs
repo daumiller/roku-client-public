@@ -78,21 +78,6 @@ function homeHandleCommand(command as string, item as dynamic) as boolean
         ' TODO(rob): we should not recieve this command until the channel
         ' is available to IAP users.
         Application().PushScreen(createPinScreen(false))
-    else if command = "switch_user" then
-        user = item.metadata
-        if user.id = MyPlexAccount().id then return handled
-
-        if MyPlexAccount().isAdmin = false and user.protected = "1" then
-            ' pinPrompt handles switching and error feedback
-            pinPrompt = createPinPrompt(m)
-            pinPrompt.userSwitch = user
-            pinPrompt.Show(true)
-        else if not MyPlexAccount().SwitchHomeUser(user.id) then
-            ' provide feedback on failure to switch to non protected users
-            ' TODO(rob): need verbiage for failure
-            dialog = createDialog("Unable to switch users", "Please check your connection and try again.", m)
-            dialog.Show()
-        end if
     else if command = "selected_server" then
         PlexServerManager().SetSelectedServer(item.metadata, true)
         Application().PushScreen(createHomeScreen(item.metadata))
