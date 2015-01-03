@@ -105,6 +105,7 @@ function createImage(source as dynamic, width=0 as integer, height=0 as integer,
     obj.width = width
     obj.height = height
     obj.scaleSize = true
+    obj.scaleToLayout = false
     obj.useLargerSource = false
 
     obj.bitmap = invalid
@@ -172,9 +173,10 @@ sub imageSetBitmap(bmp as object, makeCopy=false as boolean)
         perfTimer().Log("imageSetBitmap:: init new region")
     end if
 
-    ' TODO(rob) we shouldn't need to scale here as the TextureManager handles
-    ' scaling now. I'll verify this once we start loading real images.
-    if m.scaleSize then
+    if m.scaleToLayout then
+        m.ScaleRegion(m.width, m.height)
+        m.bitmap = m.region.GetBitmap()
+    else if m.scaleSize then
         m.ScaleRegion(firstOf(m.preferredWidth, m.width), firstOf(m.preferredHeight, m.height))
         m.bitmap = m.region.GetBitmap()
     end if
