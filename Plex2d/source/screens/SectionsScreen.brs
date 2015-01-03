@@ -45,7 +45,7 @@ sub sectionsShow()
 
     ' section requests
     if m.buttonsContainer.request = invalid then
-        request = createPlexRequest(m.server, m.item.container.getAbsolutePath(m.item.Get("key")))
+        request = createPlexRequest(m.server, m.item.GetAbsolutePath("key"))
         context = request.CreateRequestContext("sections", createCallable("OnResponse", m))
         Application().StartRequest(request, context)
         m.buttonsContainer = context
