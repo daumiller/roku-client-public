@@ -34,6 +34,12 @@ end function
 sub gsInit()
     ApplyFunc(ComponentsScreen().Init, m)
 
+    ' use default path if not overridden
+    if m.path = invalid then
+        m.path = m.item.GetAbsolutePath("key")
+    end if
+    m.server = m.item.GetServer()
+
     m.gridContainer = CreateObject("roAssociativeArray")
     m.jumpContainer = CreateObject("roAssociativeArray")
     m.placeholders = CreateObject("roList")
@@ -59,14 +65,14 @@ sub gsInit()
     m.chunkSizeInitial = 16
 end sub
 
-function createGridScreen(item as object, rows=2 as integer, orientation=invalid as dynamic) as object
+function createGridScreen(item as object, path=invalid as dynamic, rows=2 as integer, orientation=invalid as dynamic) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(GridScreen())
 
-    obj.Init()
-
     obj.item = item
-    obj.server = item.GetServer()
+    obj.path = path
+
+    obj.Init()
 
     ' TODO(rob): we need a better way to determine orientation, or we might just need to
     ' always set it when calling the grid screen
@@ -97,8 +103,7 @@ sub gsShow()
 
     ' create requests for the size of the endpoint
     if m.gridContainer.request = invalid then
-        gridEndpoint = m.item.container.getAbsolutePath(m.item.Get("key"))
-        request = createPlexRequest(m.server, gridEndpoint)
+        request = createPlexRequest(m.server, m.path)
         request.AddHeader("X-Plex-Container-Start", "0")
         request.AddHeader("X-Plex-Container-Size", "0")
 
@@ -107,10 +112,10 @@ sub gsShow()
         m.gridContainer = context
 
         ' create requests for the jump items (only if we are using the ALL endpoint)
-        if m.jumpContainer.request = invalid and instr(1, gridEndpoint, "/all") > 0 and not instr(1, gridEndpoint, "sort=") > 0 then
+        if m.jumpContainer.request = invalid and instr(1, m.path, "/all") > 0 and not instr(1, m.path, "sort=") > 0 then
             ' support filtered endpoints (replace /all with /firstCharacter)
             regex = CreateObject("roRegex", "/all", "")
-            jumpUrl = regex.Replace(gridEndpoint, "/firstCharacter")
+            jumpUrl = regex.Replace(m.path, "/firstCharacter")
             request = createPlexRequest(m.server, jumpUrl)
             context = request.CreateRequestContext("jump", createCallable("OnJumpResponse", m))
             Application().StartRequest(request, context)
@@ -149,6 +154,9 @@ end function
 function gsOnGridResponse(request as object, response as object, context as object) as object
     response.ParseResponse()
     context.response = response
+
+    m.viewGroup = response.container.Get("viewGroup", "")
+    m.container = response.container
 
     m.totalSize = response.container.getint("totalSize")
     if m.totalSize < m.chunkSizeInitial then m.chunkSizeInitial = m.totalSize
@@ -201,8 +209,8 @@ sub gsGetComponents()
     m.components.Push(createHeader(m))
 
     ' *** Grid Header *** '
-    if m.item.Get("type", "") = "season" then
-        title = m.item.GetLongerTitle()
+    if m.viewGroup = "episode" then
+        title = m.container.Get("title1", "") + " - " + m.container.Get("title2", "")
     else
         title = m.item.GetSingleLineTitle()
     end if
