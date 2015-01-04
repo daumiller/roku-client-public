@@ -95,6 +95,11 @@ sub pnoInit(container as object, xml as object)
                 end if
 
                 m.tags[elem.GetName()].Push(createPlexTag(elem))
+            else if elem.GetName() = "OnDeck" then
+                if m.onDeck = invalid then m.onDeck = CreateObject("roList")
+                for each node in elem.GetChildElements()
+                    m.onDeck.push(createPlexObjectFromElement(container, node))
+                end for
             end if
         next
     end if

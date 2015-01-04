@@ -1057,16 +1057,23 @@ sub compCreatePlayerForItem(plexObject=invalid as dynamic)
             resume = false
         end if
 
-        m.OnMetadataResponse = compOnMetadataResponse
-        request = createPlexRequest(plexObject.GetServer(), plexObject.GetItemPath())
-        context = request.CreateRequestContext("metadata", CreateCallable("OnMetadataResponse", m))
+        m.OnCreatePlayerResponse = compOnCreatePlayerResponse
+
+        ' include the onDeck infor for directories
+        path = plexObject.GetItemPath()
+        if plexobject.isDirectory() then
+            path = path + iif(instr(1, path, "?") = 0, "?", "&") + "includeOnDeck=1"
+        end if
+
+        request = createPlexRequest(plexObject.GetServer(), path)
+        context = request.CreateRequestContext("metadata", CreateCallable("OnCreatePlayerResponse", m))
         context.key = plexObject.Get("key")
         context.resume = resume
         Application().StartRequest(request, context)
     end if
 end sub
 
-sub compOnMetadataResponse(request as object, response as object, context as object)
+sub compOnCreatePlayerResponse(request as object, response as object, context as object)
     response.ParseResponse()
     children = response.items
     item = invalid
@@ -1079,6 +1086,9 @@ sub compOnMetadataResponse(request as object, response as object, context as obj
     end for
 
     if item = invalid and children.Count() = 1 then item = children[0]
+
+    ' use the onDeck item from a container (show -> next episode)
+    if item.onDeck <> invalid then item = item.onDeck[0]
 
     if item <> invalid then
         if item.IsVideoItem() then
