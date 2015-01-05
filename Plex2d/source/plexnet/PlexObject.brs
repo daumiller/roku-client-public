@@ -35,6 +35,7 @@ function PlexObjectClass() as object
         obj.IsITunes = pnoIsITunes
         obj.IsHomeVideo = pnoIsHomeVideo
         obj.IsContainer = pnoIsContainer
+        obj.IsDateBased = pnoIsDateBased
 
         ' TODO(schuyler): There are a hundred more helper methods on here, but
         ' perhaps we can start adding them only when we're using them.
@@ -161,7 +162,14 @@ function pnoIsContainer() as boolean
 end function
 
 function pnoGetSingleLineTitle() as string
-    if m.type = "episode" and m.Has("parentIndex") and m.Has("index") then
+    if m.IsDateBased() then
+        if m.type = "season" then
+            return m.Get("index")
+        else if m.Has("originallyAvailableAt") then
+            r = CreateObject("roRegex", "-", "")
+            return r.ReplaceAll(m.Get("originallyAvailableAt"), "/")
+        end if
+    else if m.type = "episode" and m.Has("parentIndex") and m.Has("index") then
         return "S" + m.Get("parentIndex") + " • E" + m.Get("index")
     end if
 
@@ -436,4 +444,15 @@ function pnoGetItemPath() as string
     end if
 
     return key
+end function
+
+function pnoIsDateBased() as boolean
+    ' If the "season" index is greater than 1000, assume it's a year (web-client logic)
+    if m.type = "episode" then
+        return m.GetInt("parentIndex") > 1000
+    else if m.type = "season" then
+        return m.GetInt("index") > 1000
+    end if
+
+    return false
 end function

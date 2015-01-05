@@ -134,7 +134,7 @@ sub ppcGetComponents()
             orientation = ComponentClass().ORIENTATION_LANDSCAPE
         end if
 
-        card = createCard(item, item.GetSingleLineTitle(), invalid, item.GetUnwatchedCount())
+        card = createCard(item, item.GetOverlayTitle(), invalid, item.GetUnwatchedCount())
         card.SetOrientation(orientation)
         card.width = card.GetWidthForOrientation(card.orientation, hbGrid.Height, card)
         card.fixed = false

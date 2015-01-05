@@ -236,7 +236,7 @@ function preplayGetMainInfo() as object
         components.push(createLabel(m.item.Get("title", ""), m.customFonts.large))
 
         text = m.item.GetOriginallyAvailableAt()
-        if m.item.Has("index") and m.item.Has("parentIndex") then
+        if m.item.Has("index") and m.item.Has("parentIndex") and not m.item.IsDateBased() then
             text = "Season " + tostr(m.item.Get("parentIndex")) + " Episode " + m.item.Get("index") + " / " + text
         end if
         components.push(createLabel(text, normalFont))
