@@ -726,8 +726,11 @@ sub compCalculateShift(toFocus as object)
             right: invalid
         }
 
-        ' adhere to the parents wanted left position when focused
-        if toFocus.parent.demandLeft <> invalid then
+        ' adhere to the parents wanted left position
+        if toFocus.parent <> invalid and toFocus.parent.first = true then
+            shift.demandLeft = shift.safeLeft
+            shift.forceShift = true
+        else if toFocus.parent.demandLeft <> invalid then
             shift.demandLeft = toFocus.parent.demandLeft
         end if
 
@@ -737,6 +740,11 @@ sub compCalculateShift(toFocus as object)
             if cont.left = invalid or focusRect.left < cont.left then cont.left = focusRect.left
             if cont.right = invalid or focusRect.right > cont.right then cont.right = focusRect.right
         next
+
+        ' ignore shifting if the entire container is on the screen, unless we force it.
+        if not shift.forceShift = true and shift.demandLeft <> invalid and cont.left > shift.safeLeft and cont.right < shift.safeRight then
+            shift.demandLeft = invalid
+        end if
 
         ' calculate the shift
 
@@ -831,7 +839,8 @@ sub compShiftComponents(shift)
     ' verify we are not shifting the components to far (first or last component). This
     ' will modify shift.x based on the first or last component viewable on screen. It
     ' should be quick to iterate partShift (on screen components after shifting).
-    shift.x = m.CalculateFirstOrLast(partShift, shift)
+    skipIgnore = (m.focusedItem.parent <> invalid and m.focusedItem.parent.ignoreFirstLast = true)
+    shift.x = m.CalculateFirstOrLast(partShift, shift, skipIgnore)
 
     ' return if we calculated zero shift
     if shift.x = 0 and shift.y = 0 then return
@@ -1018,12 +1027,14 @@ sub compOnInfoButton()
     print item.command
 end sub
 
-function compCalculateFirstOrLast(components as object, shift as object) as integer
+function compCalculateFirstOrLast(components as object, shift as object, skipIgnore=false as boolean) as integer
     minMax = {}
     for each comp in components
-        focusRect = computeRect(comp)
-        if minMax.right = invalid or focusRect.right > minMax.right then minMax.right = focusRect.right
-        if minMax.left = invalid or focusRect.left < minMax.left then minMax.left = focusRect.left
+        if skipIgnore = true or comp.parent = invalid or not comp.parent.ignoreFirstLast = true then
+            focusRect = computeRect(comp)
+            if minMax.right = invalid or focusRect.right > minMax.right then minMax.right = focusRect.right
+            if minMax.left = invalid or focusRect.left < minMax.left then minMax.left = focusRect.left
+        end if
     end for
 
     ' ALL Components fit on screen, ignore shifting.

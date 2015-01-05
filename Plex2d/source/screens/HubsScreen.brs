@@ -73,6 +73,8 @@ sub hubsGetComponents()
         vbox = createVBox(false, false, false, 10)
         vbox.SetScrollable(500+125)
         vbox.SetFrame(100, 125, 300, 500)
+        ' TODO(rob): hide components when shifted outside viewport
+        vbox.ignoreFirstLast = true
 
         for each button in buttons
             vbox.AddComponent(button)
@@ -86,13 +88,8 @@ sub hubsGetComponents()
     ' always focus the first HUB to the left of the screen
     if hubs.count() > 0 then
         for index = 0 to hubs.count()-1
-            if index = 0 then
-                ' move first HUB to the left of screen
-                hubs[index].demandLeft = 50
-            else
-                ' move all other hubs to another offset
-                hubs[index].demandLeft = 300
-            end if
+            if index = 0 then hubs[index].first = true
+            hubs[index].demandLeft = 300
             hbox.AddComponent(hubs[index])
         end for
     end if
