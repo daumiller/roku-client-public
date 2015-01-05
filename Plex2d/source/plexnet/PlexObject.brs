@@ -104,6 +104,10 @@ sub pnoInit(container as object, xml as object)
             end if
         next
     end if
+
+    ' Copy some attributes from the container to the object
+    m.TryCopy(container, "thumb")
+    m.TryCopy(container, "art")
 end sub
 
 sub pnoInitSynthetic(container as object, name as string)
