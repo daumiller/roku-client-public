@@ -49,30 +49,43 @@ function dboxShow(item as object) as boolean
     compDesc = createVBox(false, false, false, m.spacing)
     compDesc.SetFrame(m.x, m.y, m.width, m.height)
 
-    if m.IsGrid = true and contentType = "episode" and viewGroup = "episode" then
-        title = item.plexObject.GetSingleLineTitle()
+    if contentType = "episode" or contentType = "season" and contentType <> viewGroup then
+        if contentType <> viewGroup
+            title = item.plexObject.GetFirst(["grandparentTitle", "parentTitle"])
+        else
+            title = item.plexObject.Get("title", "")
+        end if
     else
         title = item.plexObject.GetLongerTitle()
     end if
+
     label = createLabel(title, m.line1.font)
     label.halign = label.JUSTIFY_LEFT
     label.valign = label.ALIGN_MIDDLE
     label.SetColor(m.line1.color)
     compDesc.AddComponent(label)
 
-    line2 = []
+    line2 = createObject("roList")
     if contentType = "movie" then
         line2.push(item.plexObject.Get("year"))
-    else if contentType = "show"
-        line2.push(item.plexObject.GetUnwatchedCountString())
-    else if item.plexObject.has("originallyAvailableAt") then
-        line2.push(item.plexObject.GetOriginallyAvailableAt())
-    else
-        line2.push(item.plexObject.GetAddedAt())
+    else if contentType = "season" or (contentType = "episode" and viewGroup <> contentType) then
+        line2.push(item.plexObject.Get("title"))
     end if
-    line2.push(item.plexObject.GetDuration())
-    if contentType = "episode" and NOT (m.IsGrid = true) then
-        line2.unshift(item.plexObject.Get("title"))
+
+    if contentType = "season" or contentType = "show" then
+        line2.push(item.plexObject.GetUnwatchedCountString())
+    end if
+
+    if contentType <> "movie" and contentType <> "season" and contentType <> "show" then
+        if item.plexObject.Has("originallyAvailableAt") then
+            line2.push(item.plexObject.GetOriginallyAvailableAt())
+        else if item.plexObject.Has("AddedAt")
+            line2.push(item.plexObject.GetAddedAt())
+        end if
+    end if
+
+    if item.plexObject.Has("duration") then
+        line2.push(item.plexObject.GetDuration())
     end if
 
     label = createLabel(joinArray(line2, " / "), m.line2.font)

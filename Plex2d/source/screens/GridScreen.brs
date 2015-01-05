@@ -212,7 +212,7 @@ sub gsGetComponents()
 
     ' *** Grid Header *** '
     if m.viewGroup = "episode" then
-        title = m.container.Get("title1", "") + " - " + m.container.Get("title2", "")
+        title = m.container.Get("title1", "") + " / " + m.container.Get("title2", "")
     else
         title = m.item.GetSingleLineTitle()
     end if
@@ -248,7 +248,6 @@ sub gsGetComponents()
 
     ' set the placement of the description box (manualComponent)
     m.DescriptionBox = createDescriptionBox(m)
-    m.DescriptionBox.IsGrid = true
     m.DescriptionBox.setFrame(50, 630, 1280-50, 100)
 end sub
 
