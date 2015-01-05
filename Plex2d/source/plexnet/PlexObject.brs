@@ -162,7 +162,7 @@ end function
 
 function pnoGetSingleLineTitle() as string
     if m.type = "episode" and m.Has("parentIndex") and m.Has("index") then
-        return "S" + right("0" + m.Get("parentIndex"), 2) + " E" + right("0" + m.Get("index"), 2)
+        return "S" + m.Get("parentIndex") + " • E" + m.Get("index")
     end if
 
     return m.Get("title", "")
