@@ -33,7 +33,7 @@ function createCard(imageSource as dynamic, text=invalid as dynamic, watchedPerc
     return obj
 end function
 
-function createCardPlaceholder() as object
+function createCardPlaceholder(contentType=dynamic as dynamic) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(CardClass())
 
@@ -41,11 +41,27 @@ function createCardPlaceholder() as object
 
     obj.Init()
 
+    ' Set overlayHeight for non intrusiveOverlays, to resize the image. At this
+    ' stage, we need to know the contentType to know if an overlay is excluded.
+    ' TODO(rob): if we every have mixed content, we'll either need to force the
+    ' overlay or hide them for ALL cards.
+    if obj.intrusiveOverlay = false and (contentType <> "movie" and contentType <> "show") then
+        obj.overlayHeight = FontRegistry().font16.GetOneLineHeight() + obj.overlayPadding.top + obj.overlayPadding.bottom
+    end if
+
     return obj
 end function
 
 sub cardInit(imageSource=invalid as dynamic, text=invalid as dynamic, watchedPercentage=invalid as dynamic, unwatchedCount=invalid as dynamic, unwatched=false as boolean)
     ApplyFunc(CompositeClass().Init, m)
+
+    m.overlayPadding =  {
+        top: 5,
+        right: 5,
+        bottom: 5,
+        left: 10,
+    }
+
     m.InitComponents(imageSource, text, watchedPercentage, unwatchedCount, unwatched)
 end sub
 
@@ -96,7 +112,7 @@ sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, 
 
     if text <> invalid then
         m.overlay = createLabel(text, FontRegistry().font16)
-        m.overlay.SetPadding(5, 5, 5, 10)
+        m.overlay.SetPadding(m.overlayPadding.top, m.overlayPadding.right, m.overlayPadding.bottom, m.overlayPadding.left)
         m.overlay.SetColor(&hffffffff, Colors().ScrDrkOverlayClr)
         m.AddComponent(m.overlay)
     end if
@@ -109,7 +125,7 @@ sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, 
     if unwatchedCount <> invalid and unwatchedCount > 0 then
         label = iif(unwatchedCount < 10, " " + tostr(unwatchedCount) + " ", tostr(unwatchedCount))
         m.unwatchedCount = createLabel(label, FontRegistry().font16)
-        m.unwatchedCount.SetPadding(5, 5, 5, 5)
+        m.unwatchedCount.SetPadding(m.overlayPadding.top)
         m.unwatchedCount.SetColor(&hffffffff, (Colors().PlexAltClr and &hFFFFFFc0))
         m.AddComponent(m.unwatchedCount)
     else if unwatched then

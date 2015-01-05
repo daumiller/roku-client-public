@@ -154,9 +154,11 @@ end function
 function gsOnGridResponse(request as object, response as object, context as object) as object
     response.ParseResponse()
     context.response = response
-
-    m.viewGroup = response.container.Get("viewGroup", "")
     m.container = response.container
+
+    ' obtain the contentType and viewGroup for UI decisions (overlay, orientation)
+    m.contentType = firstOf(m.container.Get("type"), m.item.type)
+    m.viewGroup = m.container.Get("viewGroup", "")
 
     m.totalSize = response.container.getint("totalSize")
     if m.totalSize < m.chunkSizeInitial then m.chunkSizeInitial = m.totalSize
@@ -261,7 +263,7 @@ function gsCreateGridChunk(placeholder as object) as dynamic
     grid.loadStatus = 0
 
     for index = 0 to placeholder.size-1
-        card = createCardPlaceholder()
+        card = createCardPlaceholder(m.contentType)
         card.SetFocusable(invalid)
         if m.focusedItem = invalid then m.focusedItem = card
         card.jumpIndex = placeholder.start + index
