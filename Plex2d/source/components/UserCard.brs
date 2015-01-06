@@ -43,13 +43,13 @@ sub usercardInitComponents()
     m.AddComponent(m.bkg)
 
     ' dim background image
-    m.bkgDimmer = createBlock(Colors().ScrDrkOverlayClr)
+    m.bkgDimmer = createBlock(Colors().OverlayDark)
     m.AddComponent(m.bkgDimmer)
 
     ' user title
     m.title = createLabel(firstOf(m.user.title, ""), FontRegistry().font16)
     m.title.SetPadding(5, 0, 5, 0)
-    m.title.SetColor(Colors().TextClr, &h00000070)
+    m.title.SetColor(Colors().Text, &h00000070)
     m.title.halign = m.title.JUSTIFY_CENTER
     m.AddComponent(m.title)
 
@@ -60,12 +60,11 @@ sub usercardInitComponents()
     m.thumb = createImage(thumb, 125, 125)
     m.AddComponent(m.thumb)
 
-
     ' check mark
     if m.user.isSelected = true then
-        m.checkMark = createLabel(Glyphs().CHECK, FontRegistry().GetIconFont(32))
-        m.checkMark.SetPadding(0, 0, 0, 10)
-        m.checkMark.SetColor(Colors().TextClr)
+        m.checkMark = createLabel(Glyphs().CHECK, FontRegistry().GetIconFont(16))
+        m.checkMark.SetPadding(5, 10, 0, 10)
+        m.checkMark.SetColor(Colors().Text)
         m.AddComponent(m.checkMark)
     end if
 
@@ -74,7 +73,7 @@ sub usercardInitComponents()
     if m.user.protected = "1" then
         m.pin = createLabel("PIN", FontRegistry().font14)
         m.pin.SetPadding(0, 10, 5, 10)
-        m.pin.SetColor(Colors().PlexClr)
+        m.pin.SetColor(Colors().Green)
         m.AddComponent(m.pin)
     end if
 
@@ -82,7 +81,7 @@ sub usercardInitComponents()
     if m.user.admin = "1" then
         m.crown = createLabel("crown", FontRegistry().font14)
         m.crown.SetPadding(0, 10, 5, 10)
-        m.crown.SetColor(Colors().PlexClr)
+        m.crown.SetColor(Colors().OrangeLight)
         m.AddComponent(m.crown)
     end if
 end sub

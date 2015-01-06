@@ -44,15 +44,15 @@ sub pinpromptInit()
     m.y = int(720/2 - m.height/2)
 
     m.colors = {
-        background: &h000000ff,
-        border: Colors().BtnBkgClr
-        title: Colors().TextClr,
-        titleError: Colors().PlexClr,
-        titleBg: Colors().BtnBkgClr,
-        text: Colors().TextDimClr,
-        textFocus: Colors().TextClr,
-        button: Colors().BtnBkgClr,
-        buttonFocus: Colors().BtnBkgClr
+        background: Colors().Black,
+        border: Colors().Button
+        title: Colors().Text,
+        titleError: Colors().Orange,
+        titleBg: Colors().Button,
+        text: Colors().TextDim,
+        textFocus: Colors().Text,
+        button: Colors().Button,
+        buttonFocus: Colors().Button
     }
 
     m.customFonts = {

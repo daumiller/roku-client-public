@@ -27,7 +27,7 @@ function createJumpBox(jumpItems as object, font as object, yOffset as integer, 
     obj.font = font
 
     obj.fgColor = &h333333ff
-    obj.fgColorActive = &hffffffff
+    obj.fgColorActive = Colors().Text
     obj.fgColorFocus = &h000000ff
     obj.bgColorFocus = &h333333ff
 

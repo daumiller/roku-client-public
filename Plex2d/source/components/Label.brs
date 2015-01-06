@@ -34,7 +34,7 @@ end function
 sub labelInit(text as string, font as object)
     ApplyFunc(ComponentClass().Init, m)
 
-    m.SetColor(Colors().TextClr)
+    m.SetColor(Colors().Text)
 
     m.text = text
     m.font = font

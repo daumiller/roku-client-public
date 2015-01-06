@@ -36,7 +36,7 @@ function createCardPlaceholder(contentType=dynamic as dynamic) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(CardClass())
 
-    obj.bgcolor = Colors().CardBkgClr
+    obj.bgcolor = Colors().Card
 
     obj.Init()
 
@@ -104,12 +104,12 @@ sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, 
     if text <> invalid then
         m.overlay = createLabel(text, FontRegistry().font16)
         m.overlay.SetPadding(m.overlayPadding.top, m.overlayPadding.right, m.overlayPadding.bottom, m.overlayPadding.left)
-        m.overlay.SetColor(&hffffffff, Colors().ScrDrkOverlayClr)
+        m.overlay.SetColor(Colors().Text, Colors().OverlayDark)
         m.AddComponent(m.overlay)
     end if
 
     if watchedPercentage <> invalid and watchedPercentage > 0 then
-        m.progress = createProgressBar(watchedPercentage, Colors().ScrVeryDrkOverlayClr , Colors().PlexAltClr)
+        m.progress = createProgressBar(watchedPercentage, Colors().OverlayVeryDark , Colors().Orange)
         m.AddComponent(m.progress)
     end if
 
@@ -117,10 +117,10 @@ sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, 
         label = iif(unwatchedCount < 10, " " + tostr(unwatchedCount) + " ", tostr(unwatchedCount))
         m.unwatchedCount = createLabel(label, FontRegistry().font16)
         m.unwatchedCount.SetPadding(m.overlayPadding.top)
-        m.unwatchedCount.SetColor(&hffffffff, (Colors().PlexAltClr and &hFFFFFFc0))
+        m.unwatchedCount.SetColor(Colors().Text, (Colors().Orange and &hffffffc0))
         m.AddComponent(m.unwatchedCount)
     else if unwatched then
-        m.unwatched = createIndicator(Colors().PlexAltClr, FontRegistry().font16.GetOneLineHeight(), 10)
+        m.unwatched = createIndicator(Colors().Orange, FontRegistry().font16.GetOneLineHeight(), 10)
         m.AddComponent(m.unwatched)
     end if
 

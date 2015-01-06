@@ -316,7 +316,7 @@ sub hubShowMoreButton(moreCommand as dynamic)
         end if
     else if moreCommand <> invalid then
         m.moreButton = createButton("More", FontRegistry().font16, moreCommand)
-        m.moreButton.SetColor(&hffffffff, &h1f1f1fff)
+        m.moreButton.SetColor(Colors().Text, Colors().Button)
         m.moreButton.width = 72
         m.moreButton.height = 44
         m.moreButton.fixed = false

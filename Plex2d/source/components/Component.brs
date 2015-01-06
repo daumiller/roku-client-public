@@ -21,8 +21,8 @@ function ComponentClass() as object
         obj.preferredHeight = invalid
 
         obj.alphaEnable = false
-        obj.bgColor = Colors().ScrBkgClr
-        obj.fgColor = Colors().TextClr
+        obj.bgColor = Colors().Background
+        obj.fgColor = Colors().Text
 
         obj.focusable = false
         obj.selectable = false

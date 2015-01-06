@@ -115,7 +115,7 @@ sub dialogGetComponents()
 
     m.components.push(dialogBox)
 
-    bkg = createBlock(Colors().ScrVeryDrkOverlayClr)
+    bkg = createBlock(Colors().OverlayVeryDark)
     bkg.SetFrame(m.x, m.y, m.width, m.height)
     bkg.zOrder = m.zOrder.background
     m.components.push(bkg)
@@ -123,7 +123,7 @@ end sub
 
 function dialogCreateButton(text as string, command=invalid as dynamic) as object
     btn = createButton(text, m.customFonts.buttonFont, command)
-    btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
+    btn.SetColor(Colors().Text, Colors().Button)
     btn.width = m.buttonPrefs.width
     btn.height = m.buttonPrefs.height
     btn.fixed = m.buttonPrefs.fixed

@@ -156,7 +156,7 @@ function hubsCreateButton(container as object) as object
     button.width = 200
     button.height = 66
     button.fixed = false
-    button.setColor(Colors().TextClr, Colors().BtnBkgClr)
+    button.setColor(Colors().Text, Colors().Button)
     return button
 end function
 

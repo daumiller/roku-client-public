@@ -5,8 +5,8 @@ function DescriptionBoxClass() as object
 
         ' Default settings
         obj.spacing = 0
-        obj.title = { font: FontRegistry().font18b, color: Colors().TextClr}
-        obj.subtitle = { font: FontRegistry().font18, color: &hc0c0c0c0 }
+        obj.title = { font: FontRegistry().font18b, color: Colors().Text}
+        obj.subtitle = { font: FontRegistry().font18, color: Colors().TextDim}
 
         ' Methods
         obj.Show = dboxShow

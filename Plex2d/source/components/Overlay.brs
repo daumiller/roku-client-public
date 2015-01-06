@@ -80,7 +80,7 @@ sub overlayShow(blocking=false as boolean)
 
     ' dim the underlying screen
     if m.enableOverlay = false then
-        dimmer = createBlock(Colors().ScrMedOverlayClr)
+        dimmer = createBlock(Colors().OverlayMed)
         dimmer.SetFrame(0, 0, 1280, 720)
         dimmer.zOrder = 98
         m.components.unshift(dimmer)

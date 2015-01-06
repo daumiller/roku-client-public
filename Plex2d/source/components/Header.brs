@@ -4,7 +4,6 @@ function HeaderClass() as object
         obj.Append(ContainerClass())
 
         ' Constants
-        obj.bkgClr = &h000000e0
         obj.width = 1280
         obj.height = 72
         obj.left = 50
@@ -55,7 +54,7 @@ sub headerPerformLayout()
     m.needsLayout = false
 
     ' *** Background *** '
-    background = createBlock(m.bkgClr)
+    background = createBlock(Colors().OverlayVeryDark)
     background.SetFrame(0, 0, m.width, m.height)
     m.AddComponent(background)
 

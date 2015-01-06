@@ -136,12 +136,12 @@ sub preplayGetComponents()
         background.SetOrientation(background.ORIENTATION_LANDSCAPE)
         m.components.Push(background)
 
-        background = createBlock(Colors().ScrDrkOverlayClr)
+        background = createBlock(Colors().OverlayDark)
         background.setFrame(0, 72, 1280, 720)
         m.components.Push(background)
     end if
 
-    background = createBlock(Colors().ScrMedOverlayClr)
+    background = createBlock(Colors().OverlayMed)
     background.setFrame(descBlock.x, descBlock.y, descBlock.width, descBlock.height)
     m.components.Push(background)
 
@@ -192,7 +192,7 @@ sub preplayGetComponents()
 
     ' *** Progress Bar *** '
     if m.item.GetViewOffsetPercentage() > 0 then
-        progress = createProgressBar(m.item.GetViewOffsetPercentage(), &h00000000, Colors().PlexAltClr)
+        progress = createProgressBar(m.item.GetViewOffsetPercentage(), &h00000000, Colors().Orange)
         progress.setFrame(xOffset - spacing, descBlock.y, descBlock.width - xOffset + spacing, 6)
         progress.IsAnimated = true
         m.components.Push(progress)
@@ -349,7 +349,7 @@ function preplayGetButtons() as object
 
     for each button in buttons
         btn = createButton(button.text, m.customFonts.glyphs, button.command)
-        btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
+        btn.SetColor(Colors().Text, Colors().Button)
         btn.width = 100
         btn.height = 50
         if m.focusedItem = invalid then m.focusedItem = btn
@@ -367,7 +367,7 @@ function preplayGetButtons() as object
     if m.item.extraItems.count() > 0 then
         btn = createDropDown(Glyphs().EXTRAS, m.customFonts.glyphs, int(720 * .80), m)
         btn.SetDropDownPosition("right")
-        btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
+        btn.SetColor(Colors().Text, Colors().Button)
         btn.width = 100
         btn.height = 47
         if m.focusedItem = invalid then m.focusedItem = btn
@@ -387,7 +387,7 @@ function preplayGetButtons() as object
     if m.item.relatedItems.count() > 0 or m.item.Get("type", "") = "episode" then
         btn = createDropDown(Glyphs().MORE, m.customFonts.glyphs, int(720 * .80), m)
         btn.SetDropDownPosition("right")
-        btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
+        btn.SetColor(Colors().Text, Colors().Button)
         btn.width = 100
         btn.height = 47
         if m.focusedItem = invalid then m.focusedItem = btn
@@ -421,7 +421,7 @@ function preplayGetButtons() as object
 
     ' settings
     ' btn = createButton(Glyphs().CONFIG, m.customFonts.glyphs, "settings")
-    ' btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
+    ' btn.SetColor(Colors().Text, Colors().Button)
     ' btn.width = 100
     ' btn.height = 50
     ' if m.focusedItem = invalid then m.focusedItem = btn

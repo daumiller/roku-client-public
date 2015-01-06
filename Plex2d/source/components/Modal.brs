@@ -38,8 +38,6 @@ end function
 sub modalInit(title as string)
     m.title = "Loading..."
     m.padding = 25
-    m.textClr = Colors().TextClr
-    m.bkgClr = Colors().ScrDrkOverlayClr
     m.font = FontRegistry().GetTextFont(18, false)
 
     m.components = createObject("roList")
@@ -48,7 +46,7 @@ end sub
 sub modalShow()
     modal = createLabel(m.title, m.font)
     modal.SetPadding(m.padding)
-    modal.SetColor(m.textClr, m.bkgClr)
+    modal.SetColor(Colors().Text, Colors().OverlayDark)
     modal.halign = modal.JUSTIFY_CENTER
     modal.valign = modal.ALIGN_MIDDLE
     modal.zOrder = 999

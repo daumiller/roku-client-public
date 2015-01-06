@@ -3,18 +3,23 @@ function Colors() as object
         obj = CreateObject("roAssociativeArray")
 
         ' Constants
-        obj.ScrVeryDrkOverlayClr = &h000000e0
-        obj.ScrDrkOverlayClr = &h000000b0
-        obj.ScrMedOverlayClr = &h00000080
-        obj.ScrLhtOverlayClr = &h00000060
-        obj.ScrBkgClr = &h111111FF
-        obj.ScrBtnClr = &h1F1F1FFF
-        obj.PlexClr = &hff8a00ff
-        obj.PlexAltClr = &hcc7b19ff
-        obj.CardBkgClr = &h272727ff
-        obj.BtnBkgClr = &h272727ff
-        obj.TextClr = &hffffffff
-        obj.TextDimClr = &hffffff60
+        obj.Background = &h111111ff
+
+        obj.OverlayVeryDark = &h000000e0
+        obj.OverlayDark = &h000000b0
+        obj.OverlayMed = &h00000080
+        obj.OverlayLht = &h00000060
+
+        obj.Card = &h1f1f1fff
+        obj.Button = &h1f1f1fff
+        obj.Text = &hffffffff
+        obj.TextDim = &hffffff60
+
+        obj.Black = &h000000ff
+        obj.Red = &hc23529ff
+        obj.Green = &h5cb85cff
+        obj.Orange = &hcc7b19ff
+        obj.OrangeLight = &hf9be03ff
 
         m.Colors = obj
     end if

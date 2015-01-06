@@ -73,7 +73,7 @@ function buttonprefDraw(redraw=false as boolean) as object
             x: m.width - xOffset - glyphPref.width - glyphPref.padding/2,
             w: glyphPref.width + glyphPref.padding,
             h: glyphPref.width + glyphPref.padding,
-            color: Colors().BtnBkgClr and &hffffff90
+            color: Colors().Button and &hffffff90
         }
 
         m.region.DrawRect(checkBox.x, checkBox.y, checkBox.w, checkBox.h, checkBox.color)

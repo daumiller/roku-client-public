@@ -312,7 +312,7 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
         if m.focusedItem <> invalid then
             perfTimer().mark()
             m.screen.ClearDebugSprites()
-            m.screen.DrawDebugRect(m.focusX, m.focusY, 15, 15, &hffffffff, true)
+            m.screen.DrawDebugRect(m.focusX, m.focusY, 15, 15, Colors().Text, true)
 
             direction = KeyCodeToString(keyCode)
 
@@ -585,7 +585,7 @@ function compGetFocusManual(direction as string, focusableComponenents=invalid a
     end if
 
     ' draw where we moved the focus point
-    m.screen.DrawDebugRect(m.focusX, m.focusY, 15, 15, Colors().PlexClr, true)
+    m.screen.DrawDebugRect(m.focusX, m.focusY, 15, 15, Colors().Orange, true)
 
     ' Debug("Focus point is " + tostr(m.focusX) + ", " + tostr(m.focusY))
 

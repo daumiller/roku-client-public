@@ -24,7 +24,7 @@ function CompositorScreen() as object
 
         ' Set up the compositor to draw to the screen
         obj.compositor = CreateObject("roCompositor")
-        obj.compositor.SetDrawTo(obj.screen, Colors().ScrBkgClr)
+        obj.compositor.SetDrawTo(obj.screen, Colors().Background)
 
         ' TODO(schuyler): Initialize displayable width/height/offsets
 
@@ -37,7 +37,7 @@ end function
 ' we really shouldn't have to every call this if we destroy sprites correctly
 sub compositorReset()
     m.compositor = CreateObject("roCompositor")
-    m.compositor.SetDrawTo(m.screen, Colors().ScrBkgClr)
+    m.compositor.SetDrawTo(m.screen, Colors().Background)
 
     m.HideFocus(true)
 end sub
@@ -127,7 +127,7 @@ sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
         }
     end if
     focus.append({
-        color: &hff8a00ff,
+        color: Colors().OrangeLight,
         z: 995,
     })
 

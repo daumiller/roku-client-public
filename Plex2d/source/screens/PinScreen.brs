@@ -163,26 +163,26 @@ sub pinGetComponents()
     titleBox.AddComponent(welcomeLabel)
     if m.hasEntitlementError then
         previewLabel = createLabel("- Plex Pass Preview", m.customFonts.welcome)
-        previewLabel.SetColor(&h999999ff)
+        previewLabel.SetColor(Colors().TextDim)
         titleBox.AddComponent(previewLabel)
     end if
     vb.AddComponent(titleBox)
 
     if m.hasEntitlementError then
         infoLabel = createLabel("Plex Pass Required", m.customFonts.info)
-        infoLabel.SetColor(&hc23529ff)
+        infoLabel.SetColor(Colors().Red)
     else if m.hasError then
         if m.pinCode <> invalid then
             infoLabel = createLabel("The PIN has expired. Please 'Refresh' to try again.", m.customFonts.info)
         else
             infoLabel = createLabel("A PIN could not be created. Please 'Refresh' to try again.", m.customFonts.info)
         end if
-        infoLabel.SetColor(&hc23529ff)
-        pinColor = Colors().ScrBkgClr
+        infoLabel.SetColor(Colors().Red)
+        pinColor = Colors().Background
     else
         infoLabel = createLabel("From your browser, go to http://plex.tv/pin and enter this PIN:", m.customFonts.info)
-        infoLabel.SetColor(Colors().PlexClr)
-        pinColor = &hffffffff
+        infoLabel.SetColor(Colors().Orange)
+        pinColor = Colors().Text
     end if
     vb.AddComponent(infoLabel)
 
@@ -198,7 +198,7 @@ sub pinGetComponents()
         vb.AddComponent(msgLabel)
         vb.AddSpacer(10)
         urlLabel = createLabel("http://plex.tv/plexpass", FontRegistry().font16)
-        urlLabel.SetColor(Colors().PlexClr)
+        urlLabel.SetColor(Colors().Orange)
         vb.AddComponent(urlLabel)
     else
         pinDigits = createHBox(true, true, false, 20)
@@ -208,7 +208,7 @@ sub pinGetComponents()
             else
                 pinDigit = createLabel(" ", m.customFonts.pin)
             end if
-            pinDigit.SetColor(pinColor, &h1f1f1fff)
+            pinDigit.SetColor(pinColor, Colors().Button)
             pinDigit.halign = pinDigit.JUSTIFY_CENTER
             pinDigit.valign = pinDigit.ALIGN_MIDDLE
             pinDigit.width = 113
@@ -225,7 +225,7 @@ sub pinGetComponents()
 
     if m.hasError or m.hasEntitlementError then
         refreshButton = createButton(iif(m.hasEntitlementError, "Retry", "Refresh"), FontRegistry().font16, "refresh")
-        refreshButton.SetColor(&hffffffff, &h1f1f1fff)
+        refreshButton.SetColor(Colors().Text, Colors().Button)
         refreshButton.width = 72
         refreshButton.height = 44
         m.focusedItem = refreshButton

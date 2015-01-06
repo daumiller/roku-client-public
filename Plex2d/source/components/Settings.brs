@@ -41,11 +41,11 @@ sub settingsInit()
     m.scrollHeight = m.y + m.height
 
     m.colors = {
-        category: Colors().BtnBkgClr and &hffffff90,
-        border: Colors().BtnBkgClr and &hffffff90,
-        highlight: Colors().BtnBkgClr,
-        background: &h000000ff,
-        title: Colors().BtnBkgClr,
+        category: Colors().Button and &hffffff90,
+        border: Colors().Button and &hffffff90,
+        highlight: Colors().Button,
+        background: Colors().Black,
+        title: Colors().Button,
     }
 
     m.padding = 10
@@ -56,7 +56,7 @@ sub settingsGetComponents()
     title.halign = title.JUSTIFY_CENTER
     title.valign = title.ALIGN_MIDDLE
     title.zOrder = 100
-    title.SetColor(Colors().TextClr, m.colors.title)
+    title.SetColor(Colors().Text, m.colors.title)
     title.SetFrame(m.x, m.y, m.width, 70)
     m.components.push(title)
 
@@ -75,7 +75,7 @@ sub settingsGetComponents()
     for each group in prefs
         title = createLabel(group.title, FontRegistry().font18)
         title.fixed = false
-        title.SetColor(Colors().TextClr, m.colors.category)
+        title.SetColor(Colors().Text, m.colors.category)
         title.SetDimensions(m.width, 60)
         title.SetPadding(0, 0, 0, m.padding)
         title.valign = title.ALIGN_MIDDLE
@@ -185,7 +185,7 @@ sub settingsOnFocus()
     m.listBox.curCommand = m.command
 
     ' highlight the focused item
-    m.SetColor(Colors().TextClr, m.overlay.colors.highlight)
+    m.SetColor(Colors().Text, m.overlay.colors.highlight)
     m.draw(true)
 
     'TODO(rob): better way to reinit the list box
@@ -223,7 +223,7 @@ end sub
 
 sub settingsOnBlur(toFocus as object)
     if toFocus.options <> invalid then
-        m.SetColor(Colors().TextClr)
+        m.SetColor(Colors().Text)
         m.draw(true)
     end if
 end sub

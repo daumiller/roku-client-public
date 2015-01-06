@@ -89,12 +89,12 @@ sub ppcGetComponents()
         background.SetOrientation(background.ORIENTATION_LANDSCAPE)
         m.components.Push(background)
 
-        background = createBlock(Colors().ScrDrkOverlayClr)
+        background = createBlock(Colors().OverlayDark)
         background.setFrame(0, 72, 1280, 720)
         m.components.Push(background)
     end if
 
-    background = createBlock(Colors().ScrMedOverlayClr)
+    background = createBlock(Colors().OverlayMed)
     background.setFrame(0, 265, 1280, 720)
     m.components.Push(background)
 

@@ -37,7 +37,7 @@ sub usersGetComponents()
     m.DestroyComponents()
 
     ' Dim Chevron
-    dimmer = createBlock(Colors().ScrDrkOverlayClr)
+    dimmer = createBlock(Colors().OverlayDark)
     dimmer.SetFrame(0, 0, 1280, 720)
     m.components.Push(dimmer)
 
