@@ -298,7 +298,7 @@ sub gsAfterItemFocused(item as object)
 end sub
 
 ' ************ shifting ****************'
-sub gsCalculateShift(toFocus as object)
+sub gsCalculateShift(toFocus as object, refocus=invalid as dynamic)
     if toFocus.fixed = true then return
 
     ' load the grid chunk if the focused items chunk isn't loaded yet
@@ -306,8 +306,7 @@ sub gsCalculateShift(toFocus as object)
         m.LoadGridChunk([tofocus.parent])
     end if
 
-    ' TODO(rob) handle vertical shifting. revisit safeLeft/safeRight - we can't
-    ' just assume these arbitary numbers are right.
+    ' TODO(rob): safeRight/safeLeft should be global/appsettings
     if m.shift = invalid then
         m.shift = {
             safeRight: 1230
@@ -318,9 +317,12 @@ sub gsCalculateShift(toFocus as object)
     shift = { x: 0, y:0 }
     shift.Append(m.shift)
 
-    ' shift the component so the "middle" if off screen
     focusRect = computeRect(toFocus)
-    if focusRect.right > shift.safeRight then
+    ' reuse the last position on refocus
+    if refocus <> invalid and focusRect.left <> refocus.left then
+        shift.x = refocus.left - focusRect.left
+    ' shift the component to the "middle" if off screen
+    else if focusRect.right > shift.safeRight then
         shift.x = (focusRect.left - shift.demandX) * -1
     else if focusRect.left < shift.safeLeft then
         shift.x = shift.demandX - focusRect.left

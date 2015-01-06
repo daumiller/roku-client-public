@@ -147,20 +147,20 @@ sub compShow()
     end if
 
     ' try to refocus if applicable
-    if m.reFocusItemId <> invalid then
+    if m.refocus <> invalid then
         for each component in m.shiftableComponents
-            if component.id = m.reFocusItemId and component.focusable = true then
+            if component.id = m.refocus.id and component.focusable = true then
                 m.focusedItem = component
                 exit for
             end if
         end for
-        m.reFocusItemId = invalid
     end if
 
     if m.focusedItem <> invalid then
-        m.CalculateShift(m.focusedItem)
+        m.CalculateShift(m.focusedItem, m.refocus)
         m.OnItemFocused(m.focusedItem)
         m.screen.DrawFocus(m.focusedItem)
+        m.refocus = invalid
     end if
 
     ' Always make sure we have a focus point regardless of having a focusItem. We
@@ -690,12 +690,12 @@ function compGetFocusManual(direction as string, focusableComponenents=invalid a
     return best.item
 end function
 
-sub compCalculateShift(toFocus as object)
+sub compCalculateShift(toFocus as object, refocus=invalid as dynamic)
     if toFocus.fixed = true then return
 
     ' allow the component to override the method. e.g. VBox vertical scrolling
     if toFocus.parent <> invalid and type(toFocus.parent.CalculateShift) = "roFunction" then
-        toFocus.parent.CalculateShift(toFocus)
+        toFocus.parent.CalculateShift(toFocus, refocus)
         ' continue with the standard container shift (horizontal scroll)
     end if
 
@@ -708,9 +708,12 @@ sub compCalculateShift(toFocus as object)
         safeLeft: 50
     }
 
+    focusRect = computeRect(toFocus)
+    ' reuse the last position on refocus
+    if refocus <> invalid and focusRect.left <> refocus.left then
+        shift.x = refocus.left - focusRect.left
     ' verify the component is on the screen if no parent exists
-    if toFocus.parent = invalid or toFocus.parent.ignoreParentShift = true then
-        focusRect = computeRect(toFocus)
+    else if toFocus.parent = invalid or toFocus.parent.ignoreParentShift = true then
         if focusRect.right > shift.safeRight
             shift.x = shift.safeRight - focusRect.right
         else if focusRect.left < shift.safeLeft then

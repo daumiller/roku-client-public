@@ -92,7 +92,7 @@ function vboxGetPreferredHeight() as integer
     return totalHeight
 end function
 
-sub vboxCalculateShift(toFocus as object)
+sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic)
     if toFocus.fixed = true then return
 
     shift = {
@@ -104,11 +104,12 @@ sub vboxCalculateShift(toFocus as object)
     }
 
     focusRect = computeRect(toFocus)
-    if focusRect.down > shift.safeDown
+    ' reuse the last position on refocus
+    if refocus <> invalid and focusRect.up <> refocus.up then
+        shift.y = refocus.up - focusRect.up
+    ' failsafe refocus: locate the last item to fit, and shift based on it.
+    else if focusRect.down > shift.safeDown
         shift.y = shift.shiftAmount * -1
-        ' on refocus, we may need to shift more than one item,
-        ' until we handle refocusing differently. Locate the
-        ' last item to fit, and shift based on it.
         if focusRect.down + shift.y > m.scrollHeight then
             for each i in tofocus.parent.components
                 if i.y+i.height > m.scrollHeight then exit for
