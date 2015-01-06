@@ -136,7 +136,7 @@ sub ppcGetComponents()
 
         card = createCard(item, item.GetOverlayTitle(), invalid, item.GetUnwatchedCount())
         card.SetOrientation(orientation)
-        card.width = card.GetWidthForOrientation(card.orientation, hbGrid.Height, card)
+        card.width = card.GetWidthForOrientation(card.orientation, hbGrid.Height)
         card.fixed = false
         card.plexObject = item
         card.SetFocusable("show_item")

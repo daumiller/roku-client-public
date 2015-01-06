@@ -376,22 +376,13 @@ sub compSetOrientation(orientation as integer)
     m.orientation = orientation
 end sub
 
-function compGetWidthForOrientation(orientation as integer, height as integer, component=invalid as dynamic) as integer
-    delta = 0
-    if component <> invalid and component.intrusiveOverlay = false then
-        if component.overlay <> invalid then
-            delta = component.overlay.GetPreferredHeight()
-        else if component.overlayHeight <> invalid then
-            delta = component.overlayHeight
-        end if
-    end if
-
+function compGetWidthForOrientation(orientation as integer, height as integer) as integer
     if orientation = m.ORIENTATION_SQUARE then
-        return height - delta
+        return height
     else if orientation = m.ORIENTATION_LANDSCAPE then
-        return int((height - delta) * 1.777)
+        return int(height * 1.777)
     else if orientation = m.ORIENTATION_PORTRAIT then
-        return int((height - delta) * 0.679)
+        return int(height * 0.679)
     else
         Fatal("Unknown hub orientation: " + tostr(orientation))
     end if

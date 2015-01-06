@@ -114,16 +114,16 @@ sub hubPerformLayout()
             availableHeight = int(availableHeight/3) * 3
             childHeight = availableHeight/3
             heroHeight = availableHeight - childHeight - m.spacing
-            heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight, component) + m.spacing
+            heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight) + m.spacing
             availableHeight = childHeight
         else if m.layout = m.LAYOUT_LANDSCAPE_1 then
             heroHeight = availableHeight - availableHeight/3 - m.spacing
-            heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight, component) + m.spacing
+            heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight) + m.spacing
             rows = 0
             cols = 0
         else
             heroHeight = availableHeight
-            heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight, component)
+            heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight)
             ' Set the focus for the more button, but not the reverse behavior.
             if m.moreButton <> invalid then
                 component.SetFocusSibling("down", m.moreButton)
@@ -156,7 +156,7 @@ sub hubPerformLayout()
         end if
     else if m.layout = m.LAYOUT_LANDSCAPE_5 then
         itemHeight = availableHeight/2 - m.spacing/2
-        itemWidth = m.GetWidthForOrientation(m.orientation, itemHeight, m.components.peek())
+        itemWidth = m.GetWidthForOrientation(m.orientation, itemHeight)
         itemYOffset = yOffset
 
         Debug("Each grid item will be " + tostr(itemWidth) + "x" + tostr(itemHeight))
@@ -175,7 +175,7 @@ sub hubPerformLayout()
         cols = 1
 
         itemHeight = int((availableHeight - (m.spacing * (rows - 1))) / rows)
-        itemWidth = m.GetWidthForOrientation(m.orientation, itemHeight, m.components.peek())
+        itemWidth = m.GetWidthForOrientation(m.orientation, itemHeight)
         heroHeight = availableHeight - itemHeight - m.spacing
         heroWidth = itemWidth * 2 + m.spacing
 
@@ -222,7 +222,7 @@ sub hubPerformLayout()
         ' out.
 
         itemHeight = int((availableHeight - (m.spacing * (rows - 1))) / rows)
-        itemWidth = m.GetWidthForOrientation(m.orientation, itemHeight, m.components.peek())
+        itemWidth = m.GetWidthForOrientation(m.orientation, itemHeight)
 
         Debug("Each grid item will be " + tostr(itemWidth) + "x" + tostr(itemHeight))
 

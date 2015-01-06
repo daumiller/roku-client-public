@@ -65,7 +65,7 @@ sub gridPerformLayout()
     ' out.
 
     itemHeight = int((availableHeight - (m.spacing * (rows - 1))) / rows)
-    itemWidth = m.GetWidthForOrientation(m.orientation, itemHeight, m.components.peek())
+    itemWidth = m.GetWidthForOrientation(m.orientation, itemHeight)
 
     Debug("Each grid item will be " + tostr(itemWidth) + "x" + tostr(itemHeight))
 

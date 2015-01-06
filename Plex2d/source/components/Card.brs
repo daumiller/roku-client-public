@@ -5,7 +5,6 @@ function CardClass() as object
         obj.ClassName = "Card"
 
         obj.alphaEnable = true
-        obj.intrusiveOverlay = false
 
         ' Methods
         obj.Init = cardInit
@@ -40,14 +39,6 @@ function createCardPlaceholder(contentType=dynamic as dynamic) as object
     obj.bgcolor = Colors().CardBkgClr
 
     obj.Init()
-
-    ' Set overlayHeight for non intrusiveOverlays, to resize the image. At this
-    ' stage, we need to know the contentType to know if an overlay is excluded.
-    ' TODO(rob): if we every have mixed content, we'll either need to force the
-    ' overlay or hide them for ALL cards.
-    if obj.intrusiveOverlay = false and (contentType <> "movie" and contentType <> "show") then
-        obj.overlayHeight = FontRegistry().font16.GetOneLineHeight() + obj.overlayPadding.top + obj.overlayPadding.bottom
-    end if
 
     return obj
 end function
