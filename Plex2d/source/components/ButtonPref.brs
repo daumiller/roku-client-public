@@ -58,19 +58,21 @@ function buttonprefDraw(redraw=false as boolean) as object
 
     ' CheckBox and CheckMark
     if m.prefType = "bool" or m.isSelected then
-        ' TODO(rob): how will we handle this with HD to SD?
-        glyph = FontRegistry().GetIconFont(32)
-        glyphHeight = glyph.GetOneLineHeight()
-        glyphWidth = glyph.GetOneLineWidth(Glyphs().CHECK, m.width)
+        glyph = FontRegistry().GetIconFont(20)
+        glyphPref = {
+            padding: int(glyph.GetOneLineHeight() / 4)
+            height: glyph.GetOneLineHeight(),
+            width: glyph.GetOneLineWidth(Glyphs().CHECK, m.width)
+        }
     end if
 
     ' include the checkbox for a boolean preference, an enumerated pref will only have one selected.
     if m.prefType = "bool" then
         checkBox = {
-            y: m.GetYOffsetAlignment(glyphWidth),
-            x: m.width - xOffset - glyphWidth,
-            w: glyphWidth,
-            h: glyphWidth,
+            y: m.GetYOffsetAlignment(glyphPref.width) - glyphPref.padding/2,
+            x: m.width - xOffset - glyphPref.width - glyphPref.padding/2,
+            w: glyphPref.width + glyphPref.padding,
+            h: glyphPref.width + glyphPref.padding,
             color: Colors().BtnBkgClr and &hffffff90
         }
 
@@ -79,8 +81,8 @@ function buttonprefDraw(redraw=false as boolean) as object
 
     if m.isSelected then
         checkMark = {
-            y: m.GetYOffsetAlignment(glyphHeight)
-            x: m.width - xOffset - glyphWidth
+            y: m.GetYOffsetAlignment(glyphPref.height)
+            x: m.width - xOffset - glyphPref.width
             color: m.fgColor
         }
 
