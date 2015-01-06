@@ -5,7 +5,7 @@ function FontRegistry() as object
         obj.registry = CreateObject("roFontRegistry")
         obj.registry.Register("pkg:/fonts/opensans-regular-webfont.ttf")
         obj.registry.Register("pkg:/fonts/opensans-bold-webfont.ttf")
-        obj.registry.Register("pkg:/fonts/glyphicons-roku.otf")
+        obj.registry.Register("pkg:/fonts/glyphicons-roku.ttf")
 
         obj.GetTextFont = frGetTextFont
         obj.GetIconFont = frGetIconFont
