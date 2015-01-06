@@ -42,7 +42,7 @@ function createPreplayScreen(item as object) as object
 
     obj.Init()
 
-    obj.plexObject = item
+    obj.requestItem = item
     obj.server = item.GetServer()
 
     return obj
@@ -52,7 +52,7 @@ sub preplayShow()
     if not Application().IsActiveScreen(m) then return
 
     if m.requestContext = invalid then
-        request = createPlexRequest(m.server, m.plexObject.GetItemPath())
+        request = createPlexRequest(m.server, m.requestItem.GetItemPath())
         context = request.CreateRequestContext("preplay_item", createCallable("OnResponse", m))
         Application().StartRequest(request, context)
         m.requestContext = context
@@ -115,9 +115,9 @@ function preplayHandleCommand(command as string, item as dynamic) as boolean
     else if command = "show_grid" then
         Application().PushScreen(createGridScreen(item.plexObject))
     else if command = "go_to_show" then
-        Application().PushScreen(createPreplayContextScreen(m.plexObject, m.plexObject.Get("grandparentKey")))
+        Application().PushScreen(createPreplayContextScreen(m.item, m.item.Get("grandparentKey")))
     else if command = "go_to_season" then
-        Application().PushScreen(createGridScreen(m.plexObject, m.plexObject.Get("parentKey") + "/children", 2, ComponentClass().ORIENTATION_LANDSCAPE))
+        Application().PushScreen(createGridScreen(m.item, m.item.Get("parentKey") + "/children", 2, ComponentClass().ORIENTATION_LANDSCAPE))
     else if not ApplyFunc(ComponentsScreen().HandleCommand, m, [command, item])
         handled = false
     end if
