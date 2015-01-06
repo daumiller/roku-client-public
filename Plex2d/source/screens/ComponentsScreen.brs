@@ -735,9 +735,9 @@ sub compCalculateShift(toFocus as object, refocus=invalid as dynamic)
     ' * shiftableParent for containers in containers (e.g. users screen: vbox -> hbox -> component)
     ' * continue with the standard container shift (horizontal scroll), after override
     if toFocus.shiftableParent <> invalid and type(toFocus.shiftableParent.CalculateShift) = "roFunction" then
-        toFocus.shiftableParent.CalculateShift(toFocus)
+        toFocus.shiftableParent.CalculateShift(toFocus, refocus)
     else if toFocus.parent <> invalid and type(toFocus.parent.CalculateShift) = "roFunction" then
-        toFocus.parent.CalculateShift(toFocus)
+        toFocus.parent.CalculateShift(toFocus, refocus)
     end if
 
     ' TODO(rob) handle vertical shifting. revisit safeLeft/safeRight - we can't
