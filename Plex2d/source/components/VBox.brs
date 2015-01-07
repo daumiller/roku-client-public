@@ -98,8 +98,9 @@ sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic)
     shift = {
         x: 0
         y: 0
-        safeUp: m.y
-        safeDown: m.scrollHeight
+        hideUp: m.y
+        hideDown: m.scrollHeight
+        triggerDown: m.scrollTriggerDown
         shiftAmount: toFocus.height + m.spacing + firstOf(toFocus.scrollOffset, 0)
     }
 
@@ -108,25 +109,25 @@ sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic)
     if refocus <> invalid and focusRect.up <> refocus.up then
         shift.y = refocus.up - focusRect.up
     ' failsafe refocus: locate the last item to fit, and shift based on it.
-    else if focusRect.down > shift.safeDown
+    else if focusRect.down > shift.triggerDown
         shift.y = shift.shiftAmount * -1
-        if focusRect.down + shift.y > m.scrollHeight then
+        if focusRect.down + shift.y > shift.triggerDown then
             for each i in tofocus.parent.components
-                if i.y+i.height > m.scrollHeight then exit for
+                if i.y+i.height > shift.triggerDown then exit for
                 wanted = i.y+i.height
             end for
             shift.y = (focusRect.down - wanted) * -1
         end if
-    else if focusRect.up < shift.safeUp then
+    else if focusRect.up < shift.hideUp then
         shift.y = shift.shiftAmount
     end if
 
     ' Verify we have shifted enough. We may have other non-focuseable components
     ' between the scrollable list
-    if focusRect.down + shift.y > shift.safeDown
-        shift.y = shift.safeDown - focusRect.down
-    else if focusRect.up + shift.y < shift.safeUp then
-        shift.y = shift.safeUp - focusRect.up
+    if focusRect.down + shift.y > shift.hideDown
+        shift.y = shift.hideDown - focusRect.down
+    else if focusRect.up + shift.y < shift.hideUp then
+        shift.y = shift.hideUp - focusRect.up
     end if
 
     if shift.y <> 0 then
@@ -143,12 +144,13 @@ sub vboxShiftComponents(shift)
     for each component in m.components
         component.ShiftPosition(shift.x, shift.y, true)
         ' set the visibility based on the constraints
-        component.SetVisibility(invalid, invalid, shift.safeUp, shift.safeDown)
+        component.SetVisibility(invalid, invalid, shift.hideUp, shift.hideDown)
     end for
 end sub
 
-sub vboxSetScrollable(scrollHeight as integer)
+sub vboxSetScrollable(scrollHeight as integer, scrollTriggerDown=invalid as dynamic)
     m.scrollHeight = scrollHeight
+    m.scrollTriggerDown = firstOf(scrollTriggerDown, scrollHeight)
     m.ShiftComponents = vboxShiftComponents
     m.CalculateShift = vboxCalculateShift
 end sub
