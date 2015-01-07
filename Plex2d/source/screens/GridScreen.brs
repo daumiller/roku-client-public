@@ -450,70 +450,7 @@ sub gsShiftComponents(shift as object)
     TextureManager().CancelAll()
     m.LazyLoadExec(partShift)
 
-    ' Calculate the FPS shift amount. 15 fps seems to be a workable arbitrary number.
-    ' Verify the px shifting are > than the fps, otherwise it's sluggish (non Roku3)
-    fps = 15
-    if shift.x <> 0 and abs(shift.x / fps) < fps then
-        fps = int(abs(shift.x / fps))
-    else if shift.y <> 0 and abs(shift.y / fps) < fps then
-        fps = int(abs(shift.y / fps))
-    end if
-    if fps = 0 then fps = 1
-
-    ' TODO(rob) just a quick hack for slower roku's
-    if appSettings().GetGlobal("animationFull") = false then fps = int(fps / 1.5)
-    if fps = 0 then fps = 1
-
-    if shift.x < 0 then
-        xd = int((shift.x / fps) + .9)
-    else if shift.x > 0 then
-        xd = int(shift.x / fps)
-    else
-        xd = 0
-    end if
-
-    if shift.y < 0 then
-        yd = int((shift.y / fps) + .9)
-    else if shift.y > 0 then
-        yd = int(shift.y / fps)
-    else
-        yd = 0
-    end if
-
-    ' total px shifted to verfy we shifted the exact amount (when shifting partially)
-    xd_shifted = 0
-    yd_shifted = 0
-
-    ' TODO(rob) only animate shifts if on screen (or will be after shift)
-    for x=1 To fps
-        xd_shifted = xd_shifted + xd
-        yd_shifted = yd_shifted + yd
-
-        ' we need to make sure we shifted the shift_xd amount,
-        ' since can't move pixel by pixel
-        if x = fps then
-            if xd_shifted <> shift.x then
-                if xd < 0 then
-                    xd = xd + (shift.x - xd_shifted)
-                else
-                    xd = xd + (shift.x - xd_shifted)
-                end if
-            end if
-            if yd_shifted <> shift.y then
-                if yd < 0 then
-                    yd = yd + (shift.y - yd_shifted)
-                else
-                    yd = yd + (shift.y - yd_shifted)
-                end if
-            end if
-        end if
-
-        for each comp in partShift
-            comp.ShiftPosition(xd, yd)
-        end for
-        ' draw each shift after all components are shifted
-        m.screen.drawAll()
-    end for
+    AnimateShift(shift, partShift, m.screen)
     perfTimer().Log("Shifted ON screen items, expect *high* ms  (partShift)")
 
     ' draw the focus directly after shifting all on screen components
