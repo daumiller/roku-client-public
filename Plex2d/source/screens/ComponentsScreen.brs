@@ -1096,12 +1096,12 @@ sub compOnCreatePlayerResponse(request as object, response as object, context as
         ' Resume Dialog (blocking): can this be gerneric as is? we may need to
         ' ignore resume for other content types.
         if item.GetInt("viewOffset") > 0 then
-            dialog = createDialog("Resume Playback?", invalid, m)
-            dialog.AddButton("Yes", "yes")
-            dialog.AddButton("No", "no")
+            dialog = createDialog(item.GetLongerTitle(), invalid, m)
+            dialog.AddButton("Resume from " + item.GetViewOffset(), true)
+            dialog.AddButton("Play from beginning", false)
             dialog.Show(true)
             if dialog.result = invalid then return
-            resume = (dialog.result = "yes")
+            resume = dialog.result
         else
             resume = false
         end if
