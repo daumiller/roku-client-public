@@ -211,7 +211,9 @@ sub gsGetComponents()
     m.components.Push(createHeader(m))
 
     ' *** Grid Header *** '
-    if m.viewGroup = "episode" then
+    if m.item.Get("key", "") = "all" and m.container.Get("librarySectionTitle") <> invalid then
+        title = m.container.Get("librarySectionTitle")
+    else if m.viewGroup = "episode" then
         title = m.container.Get("title1", "") + " / " + m.container.Get("title2", "")
     else
         title = m.item.GetSingleLineTitle()
