@@ -44,6 +44,7 @@ function PlexObjectClass() as object
         obj.GetLongerTitle = pnoGetLongerTitle
         obj.GetOverlayTitle = pnoGetOverlayTitle
         obj.GetDuration = pnoGetDuration
+        obj.GetViewOffset = pnoGetViewOffset
         obj.GetAddedAt = pnoGetAddedAt
         obj.GetOriginallyAvailableAt = pnoGetOriginallyAvailableAt
         obj.GetViewOffsetPercentage = pnoGetViewOffsetPercentage
@@ -228,6 +229,14 @@ function pnoGetDuration() as string
     duration = m.Get("duration")
     if duration <> invalid then
         return GetDurationString(int(duration.toInt()/1000))
+    end if
+    return ""
+end function
+
+function pnoGetViewOffset() as string
+    viewOffset = m.Get("viewOffset")
+    if viewOffset <> invalid then
+        return GetTimeString(int(viewOffset.toInt()/1000))
     end if
     return ""
 end function
