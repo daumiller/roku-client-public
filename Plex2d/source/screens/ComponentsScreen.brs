@@ -1059,21 +1059,9 @@ sub compCreatePlayerForItem(plexObject=invalid as dynamic)
     if type(plexObject) <> "roAssociativeArray" or type(plexObject.isLibraryItem) <> "roFunction" then return
 
     if plexobject.isLibraryItem() then
-        ' Resume Dialog (blocking): can this be gerneric as is?
-        if plexObject.GetInt("viewOffset") > 0 then
-            dialog = createDialog("Resume Playback?", invalid, m)
-            dialog.AddButton("Yes", "yes")
-            dialog.AddButton("No", "no")
-            dialog.Show(true)
-            if dialog.result = invalid then return
-            resume = (dialog.result = "yes")
-        else
-            resume = false
-        end if
-
         m.OnCreatePlayerResponse = compOnCreatePlayerResponse
 
-        ' include the onDeck infor for directories
+        ' include an onDeck request for directories
         path = plexObject.GetItemPath()
         if plexobject.isDirectory() then
             path = path + iif(instr(1, path, "?") = 0, "?", "&") + "includeOnDeck=1"
@@ -1082,7 +1070,6 @@ sub compCreatePlayerForItem(plexObject=invalid as dynamic)
         request = createPlexRequest(plexObject.GetServer(), path)
         context = request.CreateRequestContext("metadata", CreateCallable("OnCreatePlayerResponse", m))
         context.key = plexObject.Get("key")
-        context.resume = resume
         Application().StartRequest(request, context)
     end if
 end sub
@@ -1098,23 +1085,36 @@ sub compOnCreatePlayerResponse(request as object, response as object, context as
             exit for
         end if
     end for
-
     if item = invalid and children.Count() = 1 then item = children[0]
+    if item = invalid then return
 
     ' use the onDeck item from a container (show -> next episode)
-    if item.onDeck <> invalid then item = item.onDeck[0]
+    if item.onDeck <> invalid and item.onDeck[0] <> invalid then item = item.onDeck[0]
 
-    if item <> invalid then
+    if item.isLibraryItem() then
+        ' Resume Dialog (blocking): can this be gerneric as is? we may need to
+        ' ignore resume for other content types.
+        if item.GetInt("viewOffset") > 0 then
+            dialog = createDialog("Resume Playback?", invalid, m)
+            dialog.AddButton("Yes", "yes")
+            dialog.AddButton("No", "no")
+            dialog.Show(true)
+            if dialog.result = invalid then return
+            resume = (dialog.result = "yes")
+        else
+            resume = false
+        end if
+
+        ' handle creating and starting the player
         if item.IsVideoItem() then
-            screen = VideoPlayer().CreateVideoScreen(item, (context.resume = true))
+            screen = VideoPlayer().CreateVideoScreen(item, resume = true)
             if screen.screenError = invalid then
                 Application().PushScreen(screen)
             else
-                dialog = createDialog("Playback request failed", screen.screenError, m)
-                dialog.Show()
+                createDialog("Playback request failed", screen.screenError, m).Show()
             end if
         else
-            Debug("Cannot play: not sure what to do with " + item.ToString())
+            Debug("Cannot create player: not sure what to do with " + item.ToString())
         end if
     end if
 end sub
