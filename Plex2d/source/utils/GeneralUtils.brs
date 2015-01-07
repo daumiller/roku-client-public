@@ -376,7 +376,7 @@ function JoinArray(arr, sep, key1="", key2="") as string
     first = true
 
     for each value in arr
-        if value <> invalid then
+        if value <> invalid and value <> "" then
             if type(value) = "roassociativeArray" then value = firstOf(value[key1], value[key2])
             if first then
                 first = false
