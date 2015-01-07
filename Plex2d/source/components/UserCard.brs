@@ -69,17 +69,21 @@ sub usercardInitComponents()
     end if
 
     ' user PIN protected
-    ' TODO(rob): use PIN image (excluded PIN text for now)
     if m.user.protected = "1" then
-        m.pin = createLabel("PIN", FontRegistry().font14)
+        m.pin = createLabel(Glyphs().LOCK, FontRegistry().GetIconFont(16))
         m.pin.SetPadding(0, 10, 5, 10)
         m.pin.SetColor(Colors().Green)
+        m.AddComponent(m.pin)
+    else
+        m.pin = createLabel(Glyphs().UNLOCK, FontRegistry().GetIconFont(16))
+        m.pin.SetPadding(0, 10, 5, 10)
+        m.pin.SetColor(Colors().TextDim)
         m.AddComponent(m.pin)
     end if
 
     ' user is ADMIN (crown)
     if m.user.admin = "1" then
-        m.crown = createLabel("crown", FontRegistry().font14)
+        m.crown = createLabel(Glyphs().CROWN, FontRegistry().GetIconFont(16))
         m.crown.SetPadding(0, 10, 5, 10)
         m.crown.SetColor(Colors().OrangeLight)
         m.AddComponent(m.crown)
@@ -94,11 +98,11 @@ sub usercardPerformLayout()
     m.bkgDimmer.SetFrame(0, 0, m.width, m.height)
 
     ' user thumb and dimmer
-    border = 3
+    border = int((m.thumb.height * .03) + .5)
     xOffset = int((m.width - m.thumb.width) / 2)
-    yOffset = int((m.height - m.thumb.height) / 2) - m.title.GetPreferredHeight()/2
+    yOffset = int((m.height - m.thumb.height) / 2) - (m.title.GetPreferredHeight() / 2)
     m.thumb.SetFrame(xOffset, yOffset, m.thumb.width, m.thumb.height)
-    m.bkgThumb.SetFrame(xOffset - border, yOffset - border, m.thumb.width + border*2, m.thumb.height + border*2)
+    m.bkgThumb.SetFrame(xOffset - border, yOffset - border, m.thumb.width + (border * 2), m.thumb.height + (border * 2))
 
     ' user title
     m.title.SetFrame(0, m.height - m.title.GetPreferredHeight(), m.width, m.title.GetPreferredHeight())

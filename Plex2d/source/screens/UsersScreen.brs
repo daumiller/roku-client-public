@@ -36,11 +36,6 @@ end function
 sub usersGetComponents()
     m.DestroyComponents()
 
-    ' Dim Chevron
-    dimmer = createBlock(Colors().OverlayDark)
-    dimmer.SetFrame(0, 0, 1280, 720)
-    m.components.Push(dimmer)
-
     ' User list container
     m.buttons = { width: 200, height: 200 + FontRegistry().font16.GetOneLineHeight(), cols: 3, rows: 2, spacing: 10 }
     m.buttons.x = int(1280/2 - (m.buttons.width*m.buttons.cols)/2)
