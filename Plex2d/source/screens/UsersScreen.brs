@@ -71,12 +71,12 @@ sub usersGetComponents()
     end for
     m.components.push(userBox)
 
-    ' Title
-    title = createLabel("PLEX LOGO", FontRegistry().font18b)
-    title.SetFrame(m.buttons.x, m.buttons.y - m.buttons.height/2, userBox.width, m.buttons.height/2)
-    title.halign = title.JUSTIFY_CENTER
-    title.valign = title.ALIGN_MIDDLE
-    m.components.Push(title)
+    ' Plex Logo
+    logo = createImage("pkg:/images/plex-logo-light-200x65.png", 200, 65)
+    xOffset = int(1280/2 - logo.width/2)
+    yOffset = int((m.buttons.y/2) - (logo.height/2) + m.buttons.spacing)
+    logo.SetFrame(xOffset, yOffset, logo.width, logo.height)
+    m.components.Push(logo)
 end sub
 
 sub usersShow()
