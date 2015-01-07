@@ -162,6 +162,11 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
         Info("Protected: " + tostr(m.isProtected))
         Info("Admin: " + tostr(m.isAdmin))
 
+        if m.isUserSwitch = true then
+            m.userSwitched = true
+            m.pendingUserSwitch = true
+        end if
+
         m.SaveState()
         MyPlexManager().Publish()
         MyPlexManager().RefreshResources()
@@ -174,6 +179,8 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
         Warn("Unexpected response from plex.tv (" + tostr(response.GetStatus()) + "), switching to offline mode")
         m.isOffline = true
     end if
+
+    if m.isUserSwitch <> invalid then m.isUserSwitch = invalid
 
     Application().ClearInitializer("myplex")
     AppManager().ResetState()
@@ -206,9 +213,10 @@ sub mpaSignOut()
     m.SaveState()
 end sub
 
-sub mpaValidateToken(token as string)
+sub mpaValidateToken(token as string, isUserSwitch=false as boolean)
     m.authToken = token
     m.isSignedIn = true
+    m.isUserSwitch = isUserSwitch
 
     request = createMyPlexRequest("/users/sign_in.xml")
     context = request.CreateRequestContext("sign_in", createCallable("OnAccountResponse", m))
@@ -261,9 +269,7 @@ function mpaSwitchHomeUser(userId as string, pin="" as dynamic) as boolean
         xml.Parse(req.PostToStringWithTimeout("pin=" + pin, 10))
 
         if xml@authenticationToken <> invalid then
-            m.ValidateToken(xml@authenticationToken)
-            m.userSwitched = true
-            m.pendingUserSwitch = true
+            m.ValidateToken(xml@authenticationToken, true)
             return true
         end if
     end if

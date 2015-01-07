@@ -100,8 +100,8 @@ sub pinOnPollResponse(request as object, response as object, context as object)
             token = xml.auth_token.GetText()
             if len(token) > 0 then
                 m.pollUrl = invalid
-                Debug("TODO: Got a myPlex token" + tostr(token))
-                MyPlexAccount().ValidateToken(token)
+                Debug("Got a myPlex token" + tostr(token))
+                MyPlexAccount().ValidateToken(token, true)
             end if
         end if
     else
