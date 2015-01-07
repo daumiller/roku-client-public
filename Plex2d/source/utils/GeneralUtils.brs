@@ -286,38 +286,70 @@ function OppositeDirection(direction as string) as string
     return m.OppositeDirections[direction]
 end function
 
-Function GetDurationString(seconds as dynamic, emptyHr=0 as integer, emptyMin=0 as integer, emptySec=0 as integer, includeSeconds = false) as string
-   duration = ""
-   datetime = CreateObject("roDateTime")
+function GetDateTimeFromSeconds(seconds as dynamic) as dynamic
+    if type(seconds) = "roString" then
+        sec = seconds.toint()
+    else if type(seconds) = "roInteger" or type(seconds) = "Integer" then
+        sec = seconds
+    else
+        return invalid
+    end if
 
-   if (type(seconds) = "roString") then
-       totalSeconds% = seconds.toint()
-   else if (type(seconds) = "roInteger") or (type(seconds) = "Integer") then
-       totalSeconds% = seconds
-   else
-       return duration
-   end if
+    datetime = CreateObject("roDateTime")
+    datetime.FromSeconds(sec)
 
-   datetime.Fromseconds(totalSeconds%)
+    return datetime
+end function
 
-   hours = datetime.GetHours().toStr()
-   minutes = datetime.GetMinutes().toStr()
-   seconds = datetime.Getseconds().toStr()
+function GetDurationString(seconds as dynamic, emptyHr=false as boolean, emptyMin=false as boolean, emptySec=false as boolean) as string
+    datetime = GetDateTimeFromSeconds(seconds)
+    if datetime = invalid then return ""
 
-   if hours <> "0" or emptyHr = 1 then
-      duration = duration + hours + " hr "
-   end if
+    duration = ""
+    hours = datetime.GetHours().toStr()
+    minutes = datetime.GetMinutes().toStr()
+    seconds = datetime.Getseconds().toStr()
 
-   if minutes <> "0" or emptyMin = 1 then
-      duration = duration + minutes + " min "
-   end if
+    if hours <> "0" or emptyHr = true then
+        duration = duration + hours + " hr "
+    end if
 
-   if (includeseconds = true or duration = "") and (seconds <> "0" or emptySec = 1) then
-      duration = duration + seconds + " sec"
-   end if
+    if minutes <> "0" or emptyMin = true then
+        duration = duration + minutes + " min "
+    end if
 
-   return duration.trim()
-end Function
+    if duration = "" and seconds <> "0" or emptySec = true then
+        duration = duration + seconds + " sec"
+    end if
+
+    return duration.trim()
+end function
+
+' return time string: always include minutes and seconds. Do not inlcude leading zero on first time part
+function GetTimeString(seconds as dynamic, emptyHr=false as boolean, emptyMin=true as boolean, emptySec=true as boolean) as string
+    datetime = GetDateTimeFromSeconds(seconds)
+    if datetime = invalid then return ""
+
+    duration = ""
+    parts = CreateObject("roList")
+    hours = datetime.GetHours().toStr()
+    minutes = datetime.GetMinutes().toStr()
+    seconds = datetime.Getseconds().toStr()
+
+    if hours   <> "0" or emptyHr  = true then parts.push(hours)
+    if minutes <> "0" or emptyMin = true then parts.push(minutes)
+    if seconds <> "0" or emptySec = true then parts.push(seconds)
+
+    for index = 0 to parts.Count() - 1
+        if index = 0 then
+            duration = parts[index]
+        else
+            duration = duration + ":" + right("0" + parts[index], 2)
+        end if
+    end for
+
+    return duration
+end function
 
 function convertDateToString(date as string) as string
     '  format-in: 2014-10-01
