@@ -36,12 +36,25 @@ sub dialogInit(title as string, text=invalid as dynamic)
     m.title = title
     if text <> invalid then m.text = text
 
-    ' TODO(rob) how do we handle dynamic width/height along with center placment?
+    ' TODO(rob) how do we handle dynamic width/height along with center placement?
     m.width = 500
     m.height = 225
     m.x = int(1280/2 - m.width/2)
     m.y = int(720/2 - m.height/2)
     m.spacing = 25
+
+    m.zOrder = {
+        components: 200,
+        background: 199,
+    }
+
+    m.buttonPrefs = {
+        width: 72,
+        height: 44,
+        padding: 10,
+        fixed: false,
+    }
+    m.buttonPrefs.maxWidth = m.width - m.buttonPrefs.padding*2
 
     m.customFonts = {
         buttonFont: FontRegistry().font16
@@ -61,7 +74,7 @@ sub dialogGetComponents()
         label.SetPadding(int(m.spacing/2))
         label.halign = label.JUSTIFY_CENTER
         label.valign = label.ALIGN_MIDDLE
-        label.zOrder = 200
+        label.zOrder = m.zOrder.components
         dialogBox.AddComponent(label)
     end if
 
@@ -72,7 +85,7 @@ sub dialogGetComponents()
         label.SetPadding(int(m.spacing/2))
         label.halign = label.JUSTIFY_CENTER
         label.valign = label.ALIGN_MIDDLE
-        label.zOrder = 200
+        label.zOrder = m.zOrder.components
         dialogBox.AddComponent(label)
     end if
 
@@ -85,27 +98,37 @@ sub dialogGetComponents()
             btnCont = createVBox(false, false, false, 10)
         end if
         btnCont.phalign = btnCont.JUSTIFY_CENTER
+
+        ' resize button width based on longest text option
         for each button in m.buttons
-            btnCont.AddComponent(m.createButton(button.text, button.command))
+            preferWidth = m.customFonts.buttonFont.GetOneLineWidth(button.text, m.width) + m.buttonPrefs.padding*2
+            if preferWidth > m.buttonPrefs.width then m.buttonPrefs.width = preferWidth
+        end for
+        if m.buttonPrefs.width > m.buttonPrefs.maxWidth then m.buttonPrefs.width = m.buttonPrefs.maxWidth
+
+        for each button in m.buttons
+            button = m.createButton(button.text, button.command)
+            btnCont.AddComponent(button)
         end for
         dialogBox.AddComponent(btnCont)
     end if
+
     m.components.push(dialogBox)
 
     bkg = createBlock(Colors().ScrVeryDrkOverlayClr)
     bkg.SetFrame(m.x, m.y, m.width, m.height)
-    bkg.zOrder = 199
+    bkg.zOrder = m.zOrder.background
     m.components.push(bkg)
 end sub
 
 function dialogCreateButton(text as string, command=invalid as dynamic) as object
     btn = createButton(text, m.customFonts.buttonFont, command)
     btn.SetColor(Colors().TextClr, Colors().BtnBkgClr)
-    btn.width = 72
-    btn.height = 44
-    btn.fixed = true
-    btn.zOrder = 200
-
+    btn.width = m.buttonPrefs.width
+    btn.height = m.buttonPrefs.height
+    btn.fixed = m.buttonPrefs.fixed
+    btn.zOrder = m.zOrder.components
+    btn.SetPadding(m.buttonPrefs.padding)
     btn.focusNonSiblings = false
     btn.dialog = m
     btn.OnSelected = dialogButtonOnSelected
