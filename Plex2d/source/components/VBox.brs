@@ -138,19 +138,26 @@ end sub
 sub vboxShiftComponents(shift)
     Debug("shift vbox by: " + tostr(shift.x) + "," + tostr(shift.y))
 
-    ' This is pretty simplistic compared to the default screen shifting. We
-    ' already have a list of components, and we are forgoing animation. All
-    ' we have to do is shift the position and set the sprites visbility.
-    for each component in m.components
-        component.ShiftPosition(shift.x, shift.y, true)
-        ' set the visibility based on the constraints
-        component.SetVisibility(invalid, invalid, shift.hideUp, shift.hideDown)
+    ' Animation still needs some logic/2d code to make it work with any
+    ' scrollable vbox, but this does work for the users selection screen.
+    if m.scrollAnimate = true then
+        AnimateShift(shift, m.components, CompositorScreen())
+    else
+        for each component in m.components
+            component.ShiftPosition(shift.x, shift.y, true)
+        end for
+    end if
+
+    ' set the visibility based on the constraints
+    for each comp in m.components
+        comp.SetVisibility(invalid, invalid, shift.hideUp, shift.hideDown)
     end for
 end sub
 
-sub vboxSetScrollable(scrollHeight as integer, scrollTriggerDown=invalid as dynamic)
+sub vboxSetScrollable(scrollHeight as integer, scrollTriggerDown=invalid as dynamic, scrollAnimate=false as boolean)
     m.scrollHeight = scrollHeight
     m.scrollTriggerDown = firstOf(scrollTriggerDown, scrollHeight)
+    m.scrollAnimate = scrollAnimate
     m.ShiftComponents = vboxShiftComponents
     m.CalculateShift = vboxCalculateShift
 end sub

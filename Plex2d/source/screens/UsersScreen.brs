@@ -52,7 +52,7 @@ sub usersGetComponents()
     userBox = createVBox(false, false, false, m.buttons.spacing)
     userBox.SetFrame(m.buttons.x, m.buttons.y, m.buttons.width * m.buttons.cols, m.buttons.height * m.buttons.rows)
     ' TODO(rob): wrap option for SetScrollable
-    userBox.SetScrollable(scrollHeight, scrollTriggerDown)
+    userBox.SetScrollable(scrollHeight, scrollTriggerDown, true)
 
     ' User Buttons
     for i = 0 to homeUsers.Count() - 1
@@ -71,8 +71,15 @@ sub usersGetComponents()
     end for
     m.components.push(userBox)
 
+    ' Hide the vbox top scrolled item
+    block = createBlock(Colors().Background)
+    block.zOrder = 10
+    block.setFrame(m.buttons.x, 0, userBox.GetPreferredWidth(), m.buttons.y - CompositorScreen().focusPixels)
+    m.components.push(block)
+
     ' Plex Logo
     logo = createImage("pkg:/images/plex-logo-light-200x65.png", 200, 65)
+    logo.zOrder = 11
     xOffset = int(1280/2 - logo.width/2)
     yOffset = int((m.buttons.y/2) - (logo.height/2) + m.buttons.spacing)
     logo.SetFrame(xOffset, yOffset, logo.width, logo.height)

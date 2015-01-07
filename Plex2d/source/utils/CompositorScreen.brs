@@ -27,6 +27,7 @@ function CompositorScreen() as object
         obj.compositor.SetDrawTo(obj.screen, Colors().Background)
 
         ' TODO(schuyler): Initialize displayable width/height/offsets
+        obj.focusPixels = iif(AppSettings().GetGlobal("IsHD") = true, 3, 2)
 
         m.CompositorScreen = obj
     end if
@@ -98,11 +99,7 @@ sub compositorHideFocus(unload=false as boolean, drawAllNow=false as boolean)
 end sub
 
 sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
-    if AppSettings().GetGlobal("IsHD") = true then
-        numPixels = 3
-    else
-        numPixels = 2
-    end if
+    numPixels = m.focusPixels
 
     ' pad the cards focus border for cards (watched status visibility)
     if tostr(component.ClassName) = "Card" then
