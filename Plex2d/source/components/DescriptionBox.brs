@@ -5,8 +5,8 @@ function DescriptionBoxClass() as object
 
         ' Default settings
         obj.spacing = 0
-        obj.line1 = { font: FontRegistry().font18b, color: Colors().TextClr}
-        obj.line2 = { font: FontRegistry().font18, color: &hc0c0c0c0 }
+        obj.title = { font: FontRegistry().font18b, color: Colors().TextClr}
+        obj.subtitle = { font: FontRegistry().font18, color: &hc0c0c0c0 }
 
         ' Methods
         obj.Show = dboxShow
@@ -59,39 +59,39 @@ function dboxShow(item as object) as boolean
         title = item.plexObject.GetLongerTitle()
     end if
 
-    label = createLabel(title, m.line1.font)
+    label = createLabel(title, m.title.font)
     label.halign = label.JUSTIFY_LEFT
     label.valign = label.ALIGN_MIDDLE
-    label.SetColor(m.line1.color)
+    label.SetColor(m.title.color)
     compDesc.AddComponent(label)
 
-    line2 = createObject("roList")
+    subtitle = createObject("roList")
     if contentType = "movie" then
-        line2.push(item.plexObject.Get("year"))
+        subtitle.push(item.plexObject.Get("year"))
     else if contentType = "season" or (contentType = "episode" and viewGroup <> contentType) then
-        line2.push(item.plexObject.Get("title"))
+        subtitle.push(item.plexObject.Get("title"))
     end if
 
     if contentType = "season" or contentType = "show" then
-        line2.push(item.plexObject.GetUnwatchedCountString())
+        subtitle.push(item.plexObject.GetUnwatchedCountString())
     end if
 
     if contentType <> "movie" and contentType <> "season" and contentType <> "show" then
         if item.plexObject.Has("originallyAvailableAt") then
-            line2.push(item.plexObject.GetOriginallyAvailableAt())
+            subtitle.push(item.plexObject.GetOriginallyAvailableAt())
         else if item.plexObject.Has("AddedAt")
-            line2.push(item.plexObject.GetAddedAt())
+            subtitle.push(item.plexObject.GetAddedAt())
         end if
     end if
 
     if item.plexObject.Has("duration") then
-        line2.push(item.plexObject.GetDuration())
+        subtitle.push(item.plexObject.GetDuration())
     end if
 
-    label = createLabel(joinArray(line2, " / "), m.line2.font)
+    label = createLabel(joinArray(subtitle, " / "), m.subtitle.font)
     label.halign = label.JUSTIFY_LEFT
     label.valign = label.ALIGN_MIDDLE
-    label.SetColor(m.line2.color)
+    label.SetColor(m.subtitle.color)
     compDesc.AddComponent(label)
 
     m.components.push(compDesc)
