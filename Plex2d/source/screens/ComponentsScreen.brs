@@ -1058,12 +1058,13 @@ end function
 sub compCreatePlayerForItem(plexObject=invalid as dynamic)
     if type(plexObject) <> "roAssociativeArray" or type(plexObject.isLibraryItem) <> "roFunction" then return
 
-    if plexobject.isLibraryItem() then
+    if plexObject.isLibraryItem() then
         m.OnCreatePlayerResponse = compOnCreatePlayerResponse
 
         ' include an onDeck request for directories
         path = plexObject.GetItemPath()
-        if plexobject.isDirectory() then
+        if plexObject.isDirectory() then
+            path = firstOf(plexObject.Get("grandParentKey"), plexObject.Get("parentKey"), path)
             path = path + iif(instr(1, path, "?") = 0, "?", "&") + "includeOnDeck=1"
         end if
 
