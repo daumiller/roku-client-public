@@ -148,12 +148,20 @@ sub compShow()
 
     ' try to refocus if applicable
     if m.refocus <> invalid then
-        for each component in m.shiftableComponents
-            if component.id = m.refocus.id and component.focusable = true then
-                m.focusedItem = component
-                exit for
-            end if
+        ' Try onScreen components before any shifteable components. Screens like
+        ' the preplay do not have any shiftable components.
+        candidates = CreateObject("roList")
+        candidates.push(m.onscreenComponents)
+        candidates.push(m.shiftableComponents)
+        for each candidate in candidates
+            for each component in candidate
+                if component.id = m.refocus.id and component.focusable = true then
+                    m.focusedItem = component
+                    exit for
+                end if
+            end for
         end for
+        ' invalidate any refocus if we didn't find a match
         if m.focusedItem.id <> m.refocus.id then m.refocus = invalid
     end if
 
@@ -229,6 +237,9 @@ sub compDestroyComponents(clear=true as boolean)
         end if
         Debug("compDestroyComponents:: after: " + tostr(m.components.count()))
     end if
+
+    ' reset the nextComponentId
+    GetGlobalAA().AddReplace("nextComponentId", 1)
 end sub
 
 sub compGetComponents()

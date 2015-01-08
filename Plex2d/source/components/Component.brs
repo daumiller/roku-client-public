@@ -76,7 +76,7 @@ function ComponentClass() as object
 end function
 
 sub componentInit()
-    ' Assign a unique ID to all components
+    ' Assign a unique ID to all components (per screen)
     m.id = GetGlobalAA()["nextComponentId"]
     GetGlobalAA().AddReplace("nextComponentId", m.id + 1)
 

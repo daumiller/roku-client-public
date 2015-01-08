@@ -106,12 +106,11 @@ sub dropdownGetComponents()
             if option.halign <> invalid then comp.halign = m[option.halign]
             if option.width  <> invalid then comp.width  = option.width
             if option.height <> invalid then comp.height = option.height
-            ' TODO(rob): allow colors to be modified
             comp.setColor(Colors().TextClr, Colors().BtnBkgClr)
             comp.zOrder = 50
             comp.dropDown = m
+            comp.focusParent = m
             comp.fixed = (option.fixed = true)
-            ' TODO(rob): option to set the plexObject
             comp.SetMetadata(option.metadata)
             comp.plexObject = option.plexObject
             if m.screen.focusedItem = invalid then m.screen.focusedItem = comp

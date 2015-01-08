@@ -87,6 +87,10 @@ sub appPushScreen(screen)
 
         ' Remember the last focus ID and position to refocus
         if oldScreen.focusedItem <> invalid then
+            ' use the focusParent if it exist (e.g. DropDowns)
+            if oldScreen.focusedItem.focusParent <> invalid then
+                oldScreen.focusedItem = oldScreen.focusedItem.focusParent
+            end if
             oldScreen.refocus = computeRect(oldScreen.focusedItem)
             oldScreen.refocus.id = oldScreen.focusedItem.id
         end if
