@@ -62,7 +62,7 @@ sub managerFetchProducts()
     ' work. So don't even bother, just say that the item isn't available for
     ' purchase on the older firmware.
 
-    if CheckMinimumVersion(AppSettings().GetGlobal("rokuVersionArr", [0]), [5, 1]) then
+    if CheckMinimumVersion([5, 1]) then
         ' TODO(rob): maybe we should ignore adding the initializer if the current
         ' state is not limited? This would improve startup time.. basically:
         ' if not m.IsPlaybackAllowed() then Application().AddInitializer("channelstore")

@@ -159,7 +159,8 @@ function CreateUUID() as string
     return uuid
 end function
 
-function CheckMinimumVersion(versionArr as object, requiredVersion as object) as boolean
+function CheckMinimumVersion(requiredVersion as object) as boolean
+    versionArr = AppSettings().GetGlobal("rokuVersionArr")
     index = 0
     for each num in versionArr
         if index >= requiredVersion.count() then exit for
