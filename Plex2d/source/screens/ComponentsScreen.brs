@@ -938,11 +938,8 @@ end sub
 sub compLazyLoadOnTimer(timer as object)
     if timer.chunks = invalid and (timer.components = invalid or timer.components.count() = 0) then return
 
-    ' TODO(rob) we should set device as an AppSettings global
-    device = CreateObject("roDeviceInfo")
-
     ' mark timer to retry if the last keypress is < timer duration
-    if device.TimeSinceLastKeypress()*1000 >= timer.durationmillis then
+    if AppSettings().GetGlobal("roDeviceInfo").TimeSinceLastKeypress() * 1000 >= timer.durationmillis then
         Debug("compLazyLoadOnTimer:: exec lazy load")
         ' process the grid chunks first
         if timer.chunks <> invalid then

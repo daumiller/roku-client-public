@@ -25,8 +25,7 @@ sub mpPublish()
     request = createMyPlexRequest("/devices/" + AppSettings().GetGlobal("clientIdentifier"))
     context = request.CreateRequestContext("publish")
 
-    device = CreateObject("roDeviceInfo")
-    addrs = device.GetIPAddrs()
+    addrs = AppSettings().GetGlobal("roDeviceInfo").GetIPAddrs()
     first = true
 
     for each iface in addrs

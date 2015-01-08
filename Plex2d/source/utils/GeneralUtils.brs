@@ -233,8 +233,7 @@ function ApplyFunc(func as function, this as object, args=[] as object) as dynam
 end function
 
 function GetFirstIPAddress() as dynamic
-    device = CreateObject("roDeviceInfo")
-    addrs = device.GetIPAddrs()
+    addrs = AppSettings().GetGlobal("roDeviceInfo").GetIPAddrs()
     addrs.Reset()
     if addrs.IsNext() then
         return addrs[addrs.Next()]

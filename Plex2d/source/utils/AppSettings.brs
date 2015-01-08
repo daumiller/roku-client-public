@@ -301,6 +301,7 @@ end function
 
 sub settingsInitGlobals()
     device = CreateObject("roDeviceInfo")
+    m.globals["roDeviceInfo"] = device
 
     version = device.GetVersion()
     major = Mid(version, 3, 1).toInt()
@@ -452,8 +453,7 @@ function settingsSupportsSurroundSound(refresh=false as boolean) as boolean
     end if
 
     if refresh then
-        device = CreateObject("roDeviceInfo")
-        result = (device.GetAudioOutputChannel() <> "Stereo")
+        result = (m.GetGlobal("roDeviceInfo").GetAudioOutputChannel() <> "Stereo")
         m.globals["surroundSound"] = result
         m.surroundSoundTimer.Mark()
     else
