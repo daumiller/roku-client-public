@@ -102,11 +102,9 @@ function preplayHandleCommand(command as string, item as dynamic) as boolean
             dialog.Show()
         end if
     else if command = "scrobble" then
-        m.item.Scrobble()
-        m.Refresh()
+        m.item.Scrobble(createCallable("Refresh", m))
     else if command = "unscrobble" then
-        m.item.Unscrobble()
-        m.Refresh()
+        m.item.Unscrobble(createCallable("Refresh", m))
     else if command = "settings" then
         settings = createSettings(m)
         settings.GetPrefs = preplayGetPrefs
@@ -490,8 +488,15 @@ function preplayGetPrefs() as object
     return prefs
 end function
 
-sub preplayRefresh()
-    ' TODO(rob): find a better way to refresh.. mainly to kill the image flashing
+' TODO(rob): find a better way to refresh.. mainly to kill the image flashing
+sub preplayRefresh(request=invalid as dynamic, response=invalid as dynamic, context=invalid as dynamic)
+    ' clear a few items to fully refresh the screen (without destorying the screen)
     m.requestContext = invalid
+    m.item = invalid
+
+    ' sticky buttons
+    m.refocus = computeRect(m.focusedItem)
+    m.refocus.id = m.focusedItem.id
+
     m.Show()
 end sub

@@ -94,7 +94,7 @@ sub compInit()
     ' reset the nextComponentId
     GetGlobalAA().AddReplace("nextComponentId", 1)
 
-    ' quick references to m.components
+    ' quick references to m.components - clear on methods: show, deactivate
     m.onScreenComponents = CreateObject("roList")
     m.fixedComponents = CreateObject("roList")
     m.shiftableComponents = CreateObject("roList")
@@ -106,10 +106,12 @@ sub compInit()
 end sub
 
 sub compShow()
-    ' TODO(schuyler): Can we avoid always resetting and drawing everything?
-    ' TODO(rob): update -- we no longer need to reset the screen. Components
-    ' are destroyed properly now (have been for a while)
-    ' m.screen.Reset()
+    ' clear any components references (refreshing a screen)
+    m.onscreenComponents.clear()
+    m.shiftableComponents.clear()
+    m.fixedComponents.clear()
+    m.animatedComponents.clear()
+
     m.screen.HideFocus(true)
 
     Application().CheckLoadingModal()
