@@ -110,13 +110,16 @@ sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic)
         shift.y = refocus.up - focusRect.up
     ' failsafe refocus: locate the last item to fit, and shift based on it.
     else if focusRect.down > shift.triggerDown
-        shift.y = shift.shiftAmount * -1
+        candidates = firstOf(tofocus.shiftableParent, tofocus.parent)
         if focusRect.down + shift.y > shift.triggerDown then
-            for each i in tofocus.parent.components
-                if i.y+i.height > shift.triggerDown then exit for
-                wanted = i.y+i.height
+            wanted = 0
+            for each i in candidates.components
+                if i.y + i.height > shift.triggerDown then exit for
+                wanted = i.y + i.height
             end for
             shift.y = (focusRect.down - wanted) * -1
+        else
+            shift.y = shift.shiftAmount * -1
         end if
     else if focusRect.up < shift.hideUp then
         shift.y = shift.shiftAmount
