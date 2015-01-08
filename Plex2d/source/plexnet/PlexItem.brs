@@ -141,6 +141,7 @@ function createPlexItem(container as object, xml as object) as object
     obj.TryCopy(container, "grandparentContentRating")
     obj.TryCopy(container, "grandparentTitle")
     obj.TryCopy(container, "parentTitle")
+    obj.TryCopy(container, "parentIndex")
 
     if container.Has("theme")
         obj.Set("parentTheme", container.Get("theme"))
