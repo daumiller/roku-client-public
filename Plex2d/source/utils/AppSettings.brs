@@ -300,6 +300,7 @@ function settingsGetIntGlobal(name, defaultValue=0)
 end function
 
 sub settingsInitGlobals()
+    app = CreateObject("roAppManager")
     device = CreateObject("roDeviceInfo")
     m.globals["roDeviceInfo"] = device
 
@@ -342,6 +343,19 @@ sub settingsInitGlobals()
 
     ' TODO(schuyler): Preference? Rely on GetFriendlyName from firmware 6.1? Make HTTP dial call?
     m.globals["friendlyName"] = m.globals["rokuModel"]
+
+    ' Idle timeout (PIN lock). Utilize screensaver timeout, or 5 minutes if we know
+    ' the screensaver is disabled (fw 5.6+), or fallback to 30 minutes.
+    ' TODO(rob): we can remove version/fallback check when 6.1 firmware is released.
+    if CheckMinimumVersion([5, 6]) then
+        if app.GetScreensaverTimeout() = 0 then
+            m.globals["idleLockTimeout"] = 5 * 60
+        else
+            m.globals["idleLockTimeout"] = app.GetScreensaverTimeout() * 60
+        end if
+    else
+        m.globals["idleLockTimeout"] = 30 * 60
+    end if
 end sub
 
 function settingsGetCapabilities(recompute=false as boolean) as string

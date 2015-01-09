@@ -10,13 +10,13 @@ function MyPlexAccount() as object
         obj.authToken = invalid
 
         ' Booleans
+        obj.isAuthenticated = AppSettings().GetBoolPreference("auto_signin")
         obj.isSignedIn = false
         obj.isOffline = false
         obj.isPlexPass = false
         obj.isEntitled = false
         obj.isManaged = false
         obj.hasQueue = false
-        obj.userSwitched = false
 
         obj.homeUsers = createObject("roList")
 
@@ -143,8 +143,6 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
         m.UpdateHomeUsers()
 
         ' set admin attribute for the user
-        ' TODO(rob): The only real use for this in the official channel is to display
-        ' the logged in user is the admin (Plex2d hopefully gets a crown)
         m.isAdmin = false
         if m.homeUsers.count() > 0 then
             for each user in m.homeUsers
@@ -155,17 +153,20 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
             end for
         end if
 
+        ' consider a single, unproteced user authenticated
+        if m.isAuthenticated = false and m.isProtected = false and m.homeUsers.Count() <= 1 then
+            m.isAuthenticated = true
+        end if
+
         Info("Authenticated as " + tostr(m.Id) + ":" + tostr(m.Title))
+        Info("SignedIn: " + tostr(m.isSignedIn))
+        Info("Offline: " + tostr(m.isOffline))
+        Info("Authenticated: " + tostr(m.isAuthenticated))
         Info("PlexPass: " + tostr(m.isPlexPass))
         Info("Entitlement: " + tostr(m.isEntitled))
         Info("Managed: " + tostr(m.isManaged))
         Info("Protected: " + tostr(m.isProtected))
         Info("Admin: " + tostr(m.isAdmin))
-
-        if m.isUserSwitch = true then
-            m.userSwitched = true
-            m.pendingUserSwitch = true
-        end if
 
         m.SaveState()
         MyPlexManager().Publish()
@@ -180,13 +181,11 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
         m.isOffline = true
     end if
 
-    if m.isUserSwitch <> invalid then m.isUserSwitch = invalid
-
     Application().ClearInitializer("myplex")
     AppManager().ResetState()
 
-    if oldId <> m.id or m.pendingUserSwitch = true then
-        m.pendingUserSwitch = invalid
+    if oldId <> m.id or m.switchUser = true then
+        m.switchUser = invalid
         Application().Trigger("change:user", [m])
     end if
 end sub
@@ -213,10 +212,10 @@ sub mpaSignOut()
     m.SaveState()
 end sub
 
-sub mpaValidateToken(token as string, isUserSwitch=false as boolean)
+sub mpaValidateToken(token as string, switchUser=false as boolean)
     m.authToken = token
     m.isSignedIn = true
-    m.isUserSwitch = isUserSwitch
+    m.switchUser = switchUser
 
     request = createMyPlexRequest("/users/sign_in.xml")
     context = request.CreateRequestContext("sign_in", createCallable("OnAccountResponse", m))
@@ -252,13 +251,14 @@ sub mpaUpdateHomeUsers()
 end sub
 
 function mpaSwitchHomeUser(userId as string, pin="" as dynamic) as boolean
-    if userId = m.id and m.userSwitched = true then return true
+    if userId = m.id and m.isAuthenticated = true then return true
 
     ' TODO(rob): offline support
     if m.IsOffline then
         if createDigest(pin + m.AuthToken, "sha256") = firstOf(m.pin, "") then
             Debug("Offline PIN accepted")
-            m.userSwitched = true
+            m.isAuthenticated = true
+            ' TODO(rob): we probably need to trigger change:user for this to work
             return true
         end if
     else
@@ -269,7 +269,11 @@ function mpaSwitchHomeUser(userId as string, pin="" as dynamic) as boolean
         xml.Parse(req.PostToStringWithTimeout("pin=" + pin, 10))
 
         if xml@authenticationToken <> invalid then
-            m.ValidateToken(xml@authenticationToken, true)
+            m.isAuthenticated = true
+            ' validate the token (trigger change:user) on user change or channel startup
+            if userId <> m.id or not GetGlobalAA()["screenIsLocked"] = true then
+                m.ValidateToken(xml@authenticationToken, true)
+            end if
             return true
         end if
     end if

@@ -122,4 +122,3 @@ sub usercardPerformLayout()
         m.crown.SetFrame(m.width - m.crown.GetPreferredWidth(), m.height - m.crown.GetPreferredHeight() - m.title.GetPreferredHeight(), m.width, m.crown.GetPreferredHeight())
     end if
 end sub
-

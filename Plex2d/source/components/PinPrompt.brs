@@ -19,14 +19,14 @@ function PinPromptClass() as object
     return m.PinPromptClass
 end function
 
-function createPinPrompt(screen as object) as object
+function createPinPrompt(screen as object, homeUser=invalid as dynamic) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(PinPromptClass())
 
     obj.screen = screen
     obj.title = "Enter Pin"
     obj.showBorder = true
-    obj.userSwitch = invalid
+    obj.homeUser = homeUser
 
     obj.Init()
 
@@ -213,12 +213,17 @@ sub pinpromptHandleButton(button as object)
         m.AddDigit(button.value)
     else if button.command = "submit" then
         m.result = joinArray(m.pinCode, "")
-        ' verify user switch is succesful if requested, or function as a
-        ' standard pin prompt and close. The later may need some updates
+        ' verify user switch is successful if requested, or function as a
+        ' standard pin prompt and close. The latter may need some updates
         ' if we ever have any use. e.g. pin length
-        if m.userSwitch <> invalid then
-            if m.pinCode.count() = 4 and MyPlexAccount().SwitchHomeUser(m.userSwitch.id, m.result) then
+        if m.homeUser <> invalid then
+            if m.pinCode.count() = 4 and MyPlexAccount().SwitchHomeUser(m.homeUser.id, m.result) then
                 m.Close()
+                ' Close the screen if the current user unlocked it (return to previous screen)
+                if GetGlobalAA()["screenIsLocked"] = true and m.homeUser.id = MyPlexAccount().id and Application().screens.Count() > 1 then
+                    Debug("lock screen unlocked by current user")
+                    Application().popScreen(m.screen)
+                end if
             else
                 m.hasError = true
 

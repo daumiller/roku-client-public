@@ -4,6 +4,7 @@ function HomeScreen() as object
         obj.Append(HubsScreen())
 
         obj.Show = homeShow
+        obj.Deactivate = homeDeactivate
         obj.AfterItemFocused = homeAfterItemFocused
         obj.HandleCommand = homeHandleCommand
         obj.OnKeyRelease = homeOnKeyRelease
@@ -32,6 +33,15 @@ function createHomeScreen(server as object) as object
 
     return obj
 end function
+
+sub homeDeactivate()
+    if m.exitDialog <> invalid then
+        m.exitDialog.Close()
+        m.exitDialog = invalid
+    end if
+
+    ApplyFunc(ComponentsScreen().Deactivate, m)
+end sub
 
 sub homeShow()
     if NOT Application().IsActiveScreen(m) then return

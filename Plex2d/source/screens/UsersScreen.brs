@@ -8,6 +8,10 @@ function UsersScreen() as object
         obj.Show = usersShow
         obj.GetComponents = usersGetComponents
         obj.CreateCard = usersCreateCard
+        obj.OnKeyPress = usersOnKeyPress
+        obj.OnKeyRelease = usersOnKeyRelease
+        obj.Deactivate = usersDeactivate
+        obj.LockScreen = usersLockScreen
 
         m.UsersScreen = obj
     end if
@@ -21,10 +25,7 @@ function createUsersScreen(clearScreens=false as boolean) as object
 
     obj.Init()
 
-    ' TODO(rob): fix logic. for now, we'll consider userSwitched false
-    ' if we create this screen. There may be times we need the option
-    ' to back out (if we use this for switching after login)
-    MyPlexAccount().userSwitched = false
+    obj.isLockScreen = (GetGlobalAA()["screenIsLocked"] = true)
 
     if clearScreens = true then
         Application().ClearScreens()
@@ -32,6 +33,15 @@ function createUsersScreen(clearScreens=false as boolean) as object
 
     return obj
 end function
+
+sub usersLockScreen(drawNow=false as boolean)
+    m.isLockScreen = true
+    m.lockLabel.SetColor(Colors().Orange)
+    if drawNow then
+        m.lockLabel.Draw(true)
+        m.lockLabel.Redraw()
+    end if
+end sub
 
 sub usersGetComponents()
     m.DestroyComponents()
@@ -84,6 +94,21 @@ sub usersGetComponents()
     yOffset = int((m.buttons.y/2) - (logo.height/2) + m.buttons.spacing)
     logo.SetFrame(xOffset, yOffset, logo.width, logo.height)
     m.components.Push(logo)
+
+    ' Lock screen status
+    height = m.buttons.y - (yOffset + logo.height)
+    lockLabel = createLabel("Lock Screen", FontRegistry().font18b)
+    lockLabel.zOrder = 12
+    lockLabel.halign = lockLabel.JUSTIFY_CENTER
+    lockLabel.valign = lockLabel.ALIGN_MIDDLE
+    lockLabel.SetColor(&h00000000)
+    lockLabel.SetFrame(xOffset, yOffset + logo.height, logo.width, height)
+    m.components.Push(lockLabel)
+
+    ' Lock the screen if applicable. Support to convert an existing
+    ' UsersScreen into a lock screen.
+    m.lockLabel = lockLabel
+    if m.isLockScreen then m.LockScreen(false)
 end sub
 
 sub usersShow()
@@ -105,3 +130,25 @@ function usersCreateCard(user as object) as object
 
     return button
 end function
+
+sub usersDeactivate(screen = invalid as dynamic)
+    if m.isLockScreen then
+        GetGlobalAA().Delete("screenIsLocked")
+    end if
+    ApplyFunc(ComponentsScreen().Deactivate, m)
+end sub
+
+' Override (disable) any back button press/release if the screen is
+' locked. We still need the back button to function in other screens.
+' e.g. pin prompt overlay, video player (fling content when locked).
+sub usersOnKeyRelease(keyCode as integer)
+    if not m.isLockScreen or keyCode <> m.kp_BK
+        ApplyFunc(ComponentsScreen().OnKeyRelease, m, [keyCode])
+    end if
+end sub
+
+sub usersOnKeyPress(keyCode as integer, repeat as boolean)
+    if not m.isLockScreen or keyCode <> m.kp_BK
+        ApplyFunc(ComponentsScreen().OnKeyPress, m, [keyCode, repeat])
+    end if
+end sub

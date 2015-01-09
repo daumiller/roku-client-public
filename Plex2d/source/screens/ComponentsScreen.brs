@@ -479,14 +479,18 @@ function compHandleCommand(command as string, item as dynamic) as boolean
             dialog = createDialog("Item type not handled yet", "type: " + itemType, m)
             dialog.Show()
         end if
+    else if command = "show_users" then
+        Application().PushScreen(createUsersScreen(false))
     else if command = "switch_user" then
         user = item.metadata
-        if user.id = MyPlexAccount().id and MyPlexAccount().userSwitched = true then return handled
 
-        if user.protected = "1" and (MyPlexAccount().userSwitched = false or MyPlexAccount().isAdmin = false) then
+        ' allow the existing authenticated user to switch (refresh)
+        if MyPlexAccount().isAuthenticated = true and user.id = MyPlexAccount().id then
+            Application().Trigger("change:user", [MyPlexAccount()])
+        ' PIN prompt protected user, unless switching from an admin user
+        else if user.protected = "1" and (MyPlexAccount().isAuthenticated = false or MyPlexAccount().isAdmin = false) then
             ' pinPrompt handles switching and error feedback
-            pinPrompt = createPinPrompt(m)
-            pinPrompt.userSwitch = user
+            pinPrompt = createPinPrompt(m, user)
             pinPrompt.Show(true)
         else if not MyPlexAccount().SwitchHomeUser(user.id) then
             ' provide feedback on failure to switch to non protected users

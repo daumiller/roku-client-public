@@ -29,6 +29,7 @@ function Application()
         obj.PopScreen = appPopScreen
         obj.IsActiveScreen = appIsActiveScreen
         obj.GoHome = appGoHome
+        obj.CreateLockScreen = appCreateLockScreen
 
         obj.AddTimer = appAddTimer
 
@@ -84,6 +85,11 @@ end sub
 sub appPushScreen(screen)
     if m.screens.Count() > 0 then
         oldScreen = m.screens.Peek()
+
+        ' close any overlay screen (resets focusedItem)
+        if oldScreen.overlayScreen <> invalid then
+            oldScreen.overlayScreen.Close()
+        end if
 
         ' Remember the last focus ID and position to refocus
         if oldScreen.focusedItem <> invalid then
@@ -185,6 +191,10 @@ sub appRun()
 end sub
 
 function appProcessOneMessage(timeout)
+    if AppSettings().GetGlobal("roDeviceInfo").TimeSinceLastKeyPress() > AppSettings().GetGlobal("idleLockTimeout") then
+         m.CreateLockScreen()
+    end if
+
     WebServer().PreWait()
 
     msg = wait(timeout, m.port)
@@ -268,10 +278,9 @@ end sub
 
 sub appShowInitialScreen()
     m.ClearScreens()
-    if MyPlexAccount().isSignedIn = false or MyPlexAccount().isEntitled = false then
+    if MyPlexAccount().isEntitled = false then
         m.pushScreen(createPinScreen())
-    else if MyPlexAccount().userSwitched = true or AppSettings().GetBoolPreference("auto_signin") then
-        MyPlexAccount().userSwitched = true
+    else if MyPlexAccount().isAuthenticated = true then
         m.pushScreen(createLoadingScreen())
     else
         m.pushScreen(createUsersScreen())
@@ -524,4 +533,28 @@ end sub
 
 sub appGoHome()
     m.ClearScreens(1, true)
+end sub
+
+sub appCreateLockScreen()
+    ' do not lock unprotected users or if automatic sign in is enabled
+    if AppSettings().GetBoolPreference("auto_signin") = true or MyPlexAccount().isProtected = false then return
+
+    ' do not lock if already locked or user is not authenticated (startup)
+    if GetGlobalAA()["screenIsLocked"] = true or MyPlexAccount().isAuthenticated = false then return
+
+    lastKeyPress = tostr(AppSettings().GetGlobal("roDeviceInfo").TimeSinceLastKeyPress())
+    idleTimeout = tostr(AppSettings().GetGlobal("idleLockTimeout"))
+    Debug("Creating Lock Screen: last key press=" + lastKeyPress + ", idle timeout=" + idleTimeout)
+
+    ' add global lock and deauthenticate
+    GetGlobalAA().AddReplace("screenIsLocked", true)
+    MyPlexAccount().isAuthenticated = false
+
+    ' lock an exising users selection screen, or create one.
+    screen = m.screens.Peek()
+    if screen <> invalid and screen.isLockScreen <> invalid then
+        screen.LockScreen(true)
+    else
+        m.pushScreen(createUsersScreen(false))
+    end if
 end sub
