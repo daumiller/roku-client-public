@@ -45,6 +45,7 @@ function createHeader(screen as object) as object
 
     obj.Init()
 
+    obj.zOrder = 200
     obj.screen = screen
 
     return obj
@@ -56,6 +57,7 @@ sub headerPerformLayout()
     ' *** Background *** '
     background = createBlock(Colors().OverlayVeryDark)
     background.SetFrame(0, 0, m.width, m.height)
+    background.zOrder = m.zOrder
     m.AddComponent(background)
 
     ' *** Logo *** '
@@ -63,6 +65,7 @@ sub headerPerformLayout()
     hbox.SetFrame(m.left, m.logo.yOffset, m.logo.width, m.height)
     logo = createImage(m.logo.image, m.logo.width, m.logo.height)
     logo.pvalign = logo[m.logo.valign]
+    logo.zOrder = m.zOrder
     hbox.AddComponent(logo)
     m.AddComponent(hbox)
 
@@ -74,6 +77,7 @@ sub headerPerformLayout()
         button.width = m.buttons.width
         button.pvalign = button[m.buttons.valign]
         button.GetOptions = headerGetServerOptions
+        button.zOrder = m.zOrder
         buttons.push(button)
 
         ' Options Drop Down: Settings, Sign Out/In
@@ -81,11 +85,13 @@ sub headerPerformLayout()
         button.width = m.buttons.width
         button.pvalign = button[m.buttons.valign]
         button.GetOptions = headerGetOptions
+        button.zOrder = m.zOrder
         buttons.push(button)
     else
         button = createButton("Go Home", m.buttons.font, "go_home")
         button.width = m.buttons.width
         button.pvalign = button[m.buttons.valign]
+        button.zOrder = m.zOrder
         buttons.push(button)
     end if
 
@@ -136,10 +142,6 @@ function headerGetOptions() as object
         connect = {text: "Sign In", command: "sign_in"}
     end if
 
-    sep = createBlock(&h333333ff)
-    sep.height = 2
-    sep.width = 128
-    m.options.push({component: sep})
     m.options.push({text: "Settings", command: "settings", font: font, height: 66, width: 128 })
     m.options.push({text: connect.text, command: connect.command, font: font, height: 66, width: 128 })
 

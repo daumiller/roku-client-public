@@ -41,6 +41,7 @@ function ComponentsScreen() as object
         ' Manual focus methods
         obj.GetFocusManual = compGetFocusManual
         obj.CalculateFocusPoint = compCalculateFocusPoint
+        obj.ToggleScrollbar = compToggleScrollbar
 
         ' Shifting methods
         obj.CalculateShift = compCalculateShift
@@ -1053,6 +1054,27 @@ sub compOnCreatePlayerResponse(request as object, response as object, context as
     end if
 end sub
 
+sub compToggleScrollBar(hide=false as boolean)
+    if m.focusedItem <> invalid then
+        focus = firstOf(m.focusedItem.shiftableParent, m.focusedItem.parent)
+    else
+        focus = invalid
+    end if
+
+    if m.lastFocusedItem <> invalid then
+        lastFocus = firstOf(m.lastFocusedItem.shiftableParent, m.lastFocusedItem.parent)
+    else
+        lastFocus = invalid
+    end if
+
+    ' hide/show the scroll bar
+    if focus <> invalid and lastFocus <> invalid and focus.scrollbar = invalid and lastFocus.scrollbar <> invalid then
+        lastFocus.scrollbar.Hide()
+    else if hide = false and focus.scrollbar <> invalid then
+        focus.scrollbar.Show()
+    end if
+end sub
+
 sub compOnFocus(toFocus as object, lastFocus=invalid as dynamic)
     ' set focus and last focused item
     m.focusedItem = toFocus
@@ -1079,6 +1101,8 @@ sub compOnFocusIn(toFocus=invalid as dynamic, lastFocus=invalid as dynamic)
 
     ' let the component know it's focus state
     toFocus.OnFocus()
+
+    m.ToggleScrollBar()
 end sub
 
 sub compOnFocusOut(lastFocus=invalid as dynamic, toFocus=invalid as dynamic)
@@ -1091,4 +1115,6 @@ sub compOnFocusOut(lastFocus=invalid as dynamic, toFocus=invalid as dynamic)
     if m.DescriptionBox <> invalid then
         m.DescriptionBox.Show(toFocus)
     end if
+
+    m.ToggleScrollBar(true)
 end sub

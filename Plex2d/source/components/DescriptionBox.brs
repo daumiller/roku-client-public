@@ -22,6 +22,7 @@ end function
 function createDescriptionBox(screen as object)
     obj = CreateObject("roAssociativeArray")
     obj.Append(DescriptionBoxClass())
+    obj.zOrder = 500
 
     ' Initialize the manual components on the screen
     obj.components = screen.GetManualComponents("DescriptionBox")
@@ -63,6 +64,7 @@ function dboxShow(item as object) as boolean
     label.halign = label.JUSTIFY_LEFT
     label.valign = label.ALIGN_MIDDLE
     label.SetColor(m.title.color)
+    label.zOrder = m.zOrder
     compDesc.AddComponent(label)
 
     subtitle = createObject("roList")
@@ -92,6 +94,7 @@ function dboxShow(item as object) as boolean
     label.halign = label.JUSTIFY_LEFT
     label.valign = label.ALIGN_MIDDLE
     label.SetColor(m.subtitle.color)
+    label.zOrder = m.zOrder
     compDesc.AddComponent(label)
 
     m.components.push(compDesc)

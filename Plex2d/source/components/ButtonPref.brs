@@ -103,7 +103,7 @@ sub buttonprefOnSelected()
         m.selected = false
         ' uncheck any selected component and redraw
         for each comp in m.parent.components
-            if comp.isSelected then
+            if comp.isSelected = true then
                 comp.isSelected = false
                 comp.Draw(true)
             end if

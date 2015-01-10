@@ -72,7 +72,72 @@ sub vboxPerformLayout()
 
         xOffset = m.GetXOffsetAlignment(m.x, m.width, width, firstOf(component.phalign, component.halign))
         component.SetFrame(xOffset, offset, width, height)
+
+        ' retain information about the scrollable container to add scrollbar and/or change opacity on scroll
+        if m.scrollTriggerDown <> invalid then
+            if m.scrollInfo = invalid then m.scrollInfo = { zOrder: 2, contentHeight: m.scrollTriggerDown }
+
+            if component.focusInside = true then
+                m.scrollInfo.focusInside = true
+            end if
+
+            ' calculate the exact content heigh that fits within m.scrollTriggerDown
+            m.scrollInfo.containerHeight = offset + height
+            if m.scrollInfo.containerHeight <= m.scrollTriggerDown then
+                m.scrollInfo.contentHeight = m.scrollInfo.containerHeight
+            end if
+
+            ' determine the zOrder required for any additional components
+            if component.zOrder <> invalid and component.zOrder > m.scrollInfo.zOrder then
+                m.scrollInfo.zOrder = component.zOrder+1
+            end if
+        end if
     end while
+
+    ' scrollbar and opacity helpers for scrollable containers
+    if m.scrollInfo <> invalid then
+
+        ' add a semi-transparent block above and below the contentHeight. This
+        ' will allow the components outside of the scroll area stay visible,
+        ' by chaning their opacity.
+        if m.scrollVisible = true then
+            opacityTop = createBlock(Colors().Background and &hffffffe0)
+            opacityTop.setFrame(xOffset, 0, m.width, offsets[0])
+            opacityTop.zOrder = m.scrollInfo.zOrder
+            opacityTop.fixed = false
+            opacityTop.fixedVertical = true
+
+            opacityBot = createBlock(Colors().Background and &hffffffe0)
+            opacityBot.zOrder = m.scrollInfo.zOrder
+            opacityBot.fixed = false
+            opacityBot.fixedVertical = true
+            opacityBot.setFrame(xOffset, m.scrollInfo.contentHeight, m.width, 720-m.scrollInfo.contentHeight)
+
+            m.components.push(opacityTop)
+            m.components.push(opacityBot)
+        end if
+
+        ' add a scrollbar
+        if m.scrollbarPos <> invalid and m.scrollInfo.containerHeight > m.scrollInfo.contentHeight then
+            yOffset = offsets[0]
+            scrollbar = createScrollBar(yOffset, m.scrollInfo.contentHeight, m.scrollInfo.containerHeight, m.scrollInfo.zOrder)
+            if scrollbar <> invalid
+                width = int(CompositorScreen().focusPixels * 1.5)
+                spacing = iif(m.scrollInfo.focusInside = true, CompositorScreen().focusPixels, CompositorScreen().focusPixels*2)
+                if m.scrollbarPos = "right" then
+                    xOffset = xOffset + m.width + spacing
+                else
+                    xOffset = xOffset - width - spacing
+                end if
+                scrollbar.setFrame(xOffset, yOffset, width, scrollbar.height)
+
+                m.components.push(scrollBar)
+                m.scrollbar = scrollbar
+            end if
+        end if
+
+        m.scrollInfo = invalid
+    end if
 end sub
 
 function vboxGetPreferredWidth() as integer
@@ -136,6 +201,9 @@ sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic)
     if shift.y <> 0 then
         m.shiftComponents(shift)
     end if
+
+    ' shift the scrollbar if applicable
+    if m.scrollBar <> invalid then m.scrollBar.Move(toFocus, shift.y)
 end sub
 
 sub vboxShiftComponents(shift)
@@ -151,16 +219,25 @@ sub vboxShiftComponents(shift)
         end for
     end if
 
+    if m.scrollVisible = true then
+        shift.hideUp = invalid
+        shift.hideDown = invalid
+    end if
+
     ' set the visibility based on the constraints
     for each comp in m.components
         comp.SetVisibility(invalid, invalid, shift.hideUp, shift.hideDown)
     end for
 end sub
 
-sub vboxSetScrollable(scrollHeight as integer, scrollTriggerDown=invalid as dynamic, scrollAnimate=false as boolean)
+sub vboxSetScrollable(scrollHeight as integer, scrollTriggerDown=invalid as dynamic, scrollAnimate=false as boolean, scrollVisible=false as boolean, scrollbarPos="right" as dynamic)
     m.scrollHeight = scrollHeight
     m.scrollTriggerDown = firstOf(scrollTriggerDown, scrollHeight)
     m.scrollAnimate = scrollAnimate
+    m.scrollVisible = scrollVisible
+    m.scrollbarPos = scrollbarPos
+
+    ' methods
     m.ShiftComponents = vboxShiftComponents
     m.CalculateShift = vboxCalculateShift
 end sub
