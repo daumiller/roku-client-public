@@ -37,3 +37,9 @@ sub AnimateShift(shift as object, components as object, screen as object)
         screen.DrawAll()
     end for
 end sub
+
+function AnimateTest() as integer
+    ti = createObject("roTimeSpan")
+    for i = 1 to 1e5: end for
+    return ti.TotalMilliseconds()
+end function

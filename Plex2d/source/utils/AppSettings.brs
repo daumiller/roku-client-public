@@ -339,7 +339,8 @@ sub settingsInitGlobals()
 
     ' animation support - handle slower Rokus
     m.globals["animationSupport"] = true
-    m.globals["animationFull"] = (device.GetModelDisplayName() = "Roku 3")
+    m.globals["animationTest"] = AnimateTest()
+    m.globals["animationFull"] = (m.globals["animationTest"] < 20)
 
     ' TODO(schuyler): Preference? Rely on GetFriendlyName from firmware 6.1? Make HTTP dial call?
     m.globals["friendlyName"] = m.globals["rokuModel"]

@@ -5,9 +5,11 @@ sub main(args)
 
     settings.ProcessLaunchArgs(args)
 
-    Debug("App version: " + settings.GetGlobal("appName") + " " + settings.GetGlobal("appVersionStr"))
-    Debug("Roku version: " + settings.GetGlobal("rokuVersionStr"))
-    Debug("Roku model: " + settings.GetGlobal("rokuModel"))
+    Info("App version: " + settings.GetGlobal("appName") + " " + settings.GetGlobal("appVersionStr"))
+    Info("Roku version: " + settings.GetGlobal("rokuVersionStr"))
+    Info("Roku model: " + settings.GetGlobal("rokuModel"))
+    Info("Animation test: " + tostr(settings.GetGlobal("animationTest")))
+    Info("Animation full:" + tostr(settings.GetGlobal("animationFull")))
 
     app.Run()
 end sub
