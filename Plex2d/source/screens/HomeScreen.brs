@@ -5,7 +5,6 @@ function HomeScreen() as object
 
         obj.Show = homeShow
         obj.Deactivate = homeDeactivate
-        obj.AfterItemFocused = homeAfterItemFocused
         obj.HandleCommand = homeHandleCommand
         obj.OnKeyRelease = homeOnKeyRelease
 
@@ -72,11 +71,6 @@ sub homeShow()
     else
         Debug("HubsShow:: waiting for all requests to be completed")
     end if
-end sub
-
-sub homeAfterItemFocused(item as object)
-    pendingDraw = m.DescriptionBox.Show(item)
-    if pendingDraw then m.screen.DrawAll()
 end sub
 
 function homeHandleCommand(command as string, item as dynamic) as boolean

@@ -12,7 +12,7 @@ function GridScreen() as object
         obj.OnJumpResponse = gsOnJumpResponse
         obj.HandleCommand = gsHandleCommand
         obj.GetComponents = gsGetComponents
-        obj.AfterItemFocused = gsAfterItemFocused
+        obj.OnFocusIn = gsOnFocusIn
 
         ' Shifting Methods
         obj.CalculateShift = gsCalculateShift
@@ -287,16 +287,9 @@ function gsGetGridChunks() as object
     return components
 end function
 
-sub gsAfterItemFocused(item as object)
-    m.jumpBox.AfterItemFocused(item)
-
-    if item.plexObject = invalid or item.plexObject.islibrarysection() then
-        pendingDraw = m.DescriptionBox.Hide()
-    else
-        pendingDraw = m.DescriptionBox.Show(item)
-    end if
-
-    if pendingDraw then m.screen.DrawAll()
+sub gsOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
+    ApplyFunc(ComponentsScreen().OnFocusIn, m, [toFocus, lastFocus])
+    m.jumpBox.OnFocusIn(toFocus)
 end sub
 
 ' ************ shifting ****************'
@@ -517,7 +510,7 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
             ' update focused item if we are replacing the context
             if m.focusedItem <> invalid and m.focuseditem.equals(gridItem) then
                 m.focusedItem = gridItem
-                m.OnItemFocused(m.focusedItem)
+                m.FocusItemManually(m.focusedItem)
             end if
 
             ' redraw the component, only within the loading area (ll_load)

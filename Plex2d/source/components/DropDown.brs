@@ -63,9 +63,7 @@ sub dropdownHide()
     m.screen.Append(m.OrigScreenFunctions)
 
     ' reset the focus to this object
-    m.screen.focusedItem = m
-    m.screen.lastFocusedItem = invalid
-    CompositorScreen().DrawFocus(m, true)
+    m.screen.FocusItemManually(m)
 end sub
 
 sub dropdownShow()
@@ -83,7 +81,7 @@ sub dropdownShow()
         CompositorScreen().DrawComponent(comp)
     end for
 
-    CompositorScreen().DrawFocus(m.screen.focusedItem, true)
+    m.screen.FocusItemManually(m.screen.focusedItem)
 end sub
 
 sub dropdownGetComponents()

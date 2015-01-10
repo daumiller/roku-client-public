@@ -50,8 +50,6 @@ function ComponentsScreen() as object
         ' Message handling
         obj.HandleMessage = compHandleMessage
         obj.HandleCommand = compHandleCommand
-        obj.FocusItemManually = compFocusItemManually
-        obj.OnItemFocused = compOnItemFocused
         obj.OnItemSelected = compOnItemSelected
         obj.OnKeyPress = compOnKeyPress
         obj.OnKeyHeld = compOnKeyHeld
@@ -59,10 +57,14 @@ function ComponentsScreen() as object
         obj.OnInfoButton = compOnInfoButton
         obj.OnPlayButton = compOnPlayButton
 
+        ' Focus handling
+        obj.OnFocus = compOnFocus
+        obj.OnFocusIn = compOnFocusIn
+        obj.OnFocusOut = compOnFocusOut
+        obj.FocusItemManually = compFocusItemManually
+
         ' Playback methods
         obj.CreatePlayerForItem = compCreatePlayerForItem
-
-        obj.AfterItemFocused = function(item as dynamic) : Debug("AfterItemFocused::no-op") : end function
 
         m.ComponentsScreen = obj
     end if
@@ -168,10 +170,7 @@ sub compShow()
     end if
 
     if m.focusedItem <> invalid then
-        m.CalculateShift(m.focusedItem, m.refocus)
-        m.OnItemFocused(m.focusedItem)
-        m.screen.DrawFocus(m.focusedItem)
-        m.refocus = invalid
+        m.OnFocus(m.focusedItem, invalid)
     end if
 
     ' Always make sure we have a focus point regardless of having a focusItem. We
@@ -358,17 +357,9 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
             end if
 
             if toFocus <> invalid then
-                m.lastFocusedItem = m.focusedItem
-                m.lastDirection = direction
-
-                ' TODO(schuyler): Do we want to call things like OnBlur and OnFocus to let the components know?
-                m.focusedItem = toFocus
-
                 perfTimer().Log("Determined next focus")
-
-                m.CalculateShift(toFocus)
-
-                m.OnItemFocused(toFocus, m.lastFocusedItem)
+                m.lastDirection = direction
+                m.OnFocus(toFocus, m.focusedItem)
             end if
         end if
     else if keyCode = m.kp_REV or keyCode = m.kp_FWD then
@@ -400,34 +391,11 @@ sub compOnPlayButton(item as object)
     m.CreatePlayerForItem(item.plexObject)
 end sub
 
-sub compFocusItemManually(item as object)
-    ' reset focus point on manual focus
-    m.focusX = item.x
-    m.focusY = item.y
+sub compFocusItemManually(toFocus as object)
+    m.OnFocus(toFocus, m.focusedItem)
 
-    ' clear lastFocusedItem (pass to OnItemFocused for blur)
-    lastFocus = m.focusedItem
+    ' clear lastFocusedItem (no focus sibling wanted)
     m.lastFocusedItem = invalid
-
-    ' set focused item, shift and draw
-    m.focusedItem = item
-    m.CalculateShift(item)
-    m.OnItemFocused(item, lastFocus)
-end sub
-
-sub compOnItemFocused(item as object, prevItem=invalid as object)
-    ' Make sure that we set an initial focus point.
-    if m.focusX = invalid or m.focusY = invalid then
-        m.focusX = item.x
-        m.focusY = item.y
-    end if
-
-    ' let the components know about the blur/focus state
-    if prevItem <> invalid then prevItem.OnBlur(item)
-    item.OnFocus()
-
-    m.screen.DrawFocus(item, true)
-    m.AfterItemFocused(item)
 end sub
 
 sub compOnItemSelected(item as object)
@@ -1082,5 +1050,45 @@ sub compOnCreatePlayerResponse(request as object, response as object, context as
         else
             Debug("Cannot create player: not sure what to do with " + item.ToString())
         end if
+    end if
+end sub
+
+sub compOnFocus(toFocus as object, lastFocus=invalid as dynamic)
+    ' set focus and last focused item
+    m.focusedItem = toFocus
+    if lastFocus <> invalid then m.lastFocusedItem = lastFocus
+
+    ' reset the focus point
+    m.focusX = toFocus.x
+    m.focusY = toFocus.y
+
+    ' inform the component with the blure state, before shifing
+    m.OnFocusOut(lastFocus, toFocus)
+
+    m.CalculateShift(toFocus, m.refocus)
+    m.refocus = invalid
+
+    ' inform the component with the focus state, after shifting
+    m.OnFocusIn(toFocus, lastFocus)
+
+    m.screen.DrawFocus(toFocus, true)
+end sub
+
+sub compOnFocusIn(toFocus=invalid as dynamic, lastFocus=invalid as dynamic)
+    if toFocus = invalid then return
+
+    ' let the component know it's focus state
+    toFocus.OnFocus()
+end sub
+
+sub compOnFocusOut(lastFocus=invalid as dynamic, toFocus=invalid as dynamic)
+    if lastFocus = invalid then return
+
+    ' let the component know it's focus state
+    lastFocus.OnBlur(toFocus)
+
+    ' update the description box
+    if m.DescriptionBox <> invalid then
+        m.DescriptionBox.Show(toFocus)
     end if
 end sub

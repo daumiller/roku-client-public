@@ -4,7 +4,6 @@ function SectionsScreen() as object
         obj.Append(HubsScreen())
 
         obj.Show = sectionsShow
-        obj.AfterItemFocused = sectionsAfterItemFocused
 
         obj.GetButtons = sectionsGetButtons
         obj.CreateButton = sectionsCreateButton
@@ -64,11 +63,6 @@ sub sectionsShow()
     else
         Debug("HubsShow:: waiting for all requests to be completed")
     end if
-end sub
-
-sub sectionsAfterItemFocused(item as object)
-    pendingDraw = m.DescriptionBox.Show(item)
-    if pendingDraw then m.screen.DrawAll()
 end sub
 
 function sectionsCreateButton(container as object) as object

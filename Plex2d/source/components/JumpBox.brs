@@ -5,7 +5,7 @@ function JumpBoxClass() as object
         obj.ClassName = "JumpBox"
 
         ' Methods
-        obj.AfterItemFocused = jumpboxAfterItemFocused
+        obj.OnFocusIn = jumpboxOnFocusIn
         obj.PerformLayout = jumpboxPerformLayout
 
         m.JumpBoxClass = obj
@@ -38,33 +38,6 @@ function createJumpBox(jumpItems as object, font as object, yOffset as integer, 
 
     return obj
 end function
-
-' highlight and set the desired focusItem in the jumpBox
-sub jumpboxAfterItemFocused(item as object)
-    if item.isJumpItem = true then return
-
-    if item.jumpIndex <> invalid and m.components.count() > 0 then
-        focus = invalid
-        for index = 0 to m.components.count() - 1
-            jump = m.components[index].metadata
-            if item.jumpIndex >= jump.index and item.jumpIndex < jump.index + jump.size then
-                focus = m.components[index]
-                exit for
-            end if
-        end for
-
-        if focus <> invalid and (m.focusedItem = invalid or NOT m.focusedItem.Equals(focus)) then
-            if m.focusedItem <> invalid then
-                m.focusedItem.SetColor(m.fgColor)
-                m.focusedItem.draw(true)
-            end if
-            m.focusedItem = focus
-            m.focusedItem.SetColor(m.fgColorFocus, m.bgColorFocus)
-            m.focusedItem.draw(true)
-            CompositorScreen().DrawAll()
-        end if
-    end if
-end sub
 
 sub jumpboxPerformLayout()
     m.needsLayout = false
@@ -101,6 +74,33 @@ sub jumpboxPerformLayout()
     ApplyFunc(HBoxClass().PerformLayout, m)
 end sub
 
+' highlight and set the desired focusItem in the jumpBox
+sub jumpboxOnFocusIn(item as object)
+    if item.isJumpItem = true then return
+
+    if item.jumpIndex <> invalid and m.components.count() > 0 then
+        focus = invalid
+        for index = 0 to m.components.count() - 1
+            jump = m.components[index].metadata
+            if item.jumpIndex >= jump.index and item.jumpIndex < jump.index + jump.size then
+                focus = m.components[index]
+                exit for
+            end if
+        end for
+
+        if focus <> invalid and (m.focusedItem = invalid or NOT m.focusedItem.Equals(focus)) then
+            if m.focusedItem <> invalid then
+                m.focusedItem.SetColor(m.fgColor)
+                m.focusedItem.draw(true)
+            end if
+            m.focusedItem = focus
+            m.focusedItem.SetColor(m.fgColorFocus, m.bgColorFocus)
+            m.focusedItem.draw(true)
+            CompositorScreen().DrawAll()
+        end if
+    end if
+end sub
+
 sub jbbOnBlur(toFocus as object)
     ' ignore focus if we stay contained in the jump box, or parent is unfocused
     if toFocus.isJumpItem = true or m.parent.isFocused = false then return
@@ -108,10 +108,11 @@ sub jbbOnBlur(toFocus as object)
     ' redraw the components (dim letters)
     m.parent.isFocused = false
     for each comp in m.parent.components
-        comp.SetColor(m.parent.fgColor)
-        comp.draw(true)
+        if not comp.Equals(m.parent.focusedItem) then
+            comp.SetColor(m.parent.fgColor)
+            comp.draw(true)
+        end if
     end for
-    m.parent.focusedItem = invalid
 end sub
 
 sub jbbOnFocus()
@@ -121,8 +122,10 @@ sub jbbOnFocus()
     ' redraw the components (dim letters)
     m.parent.isFocused = true
     for each comp in m.parent.components
-        comp.SetColor(m.parent.fgColorActive, comp.bgColor)
-        comp.draw(true)
+        if not comp.Equals(m.parent.focusedItem) then
+            comp.SetColor(m.parent.fgColorActive, comp.bgColor)
+            comp.draw(true)
+        end if
     end for
 end sub
 
