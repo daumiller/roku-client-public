@@ -69,8 +69,10 @@ function imageDraw() as object
             url: m.source,
             width: width,
             height: height,
-            scaleSize: m.scaleSize,
-            scaleMode: 1
+            ' Do not scale size within the texture manager. We need the true dimensions to
+            ' use our own scaling methods (zoom-to-fill).
+            ' scaleSize: m.scaleSize,
+            ' scaleMode: 1
         }
         TextureManager().RequestTexture(m, context)
     else
@@ -94,7 +96,7 @@ function createImageScaleToParent(source as dynamic, parent as object) as object
     return obj
 end function
 
-function createImage(source as dynamic, width=0 as integer, height=0 as integer, options=invalid as dynamic) as object
+function createImage(source as dynamic, width=0 as integer, height=0 as integer, options=invalid as dynamic, scaleMode="zoom-to-fill" as string) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(ImageClass())
 
@@ -105,6 +107,7 @@ function createImage(source as dynamic, width=0 as integer, height=0 as integer,
     obj.width = width
     obj.height = height
     obj.scaleSize = true
+    obj.scaleMode = scaleMode
     obj.scaleToLayout = false
     obj.useLargerSource = false
 
@@ -173,6 +176,7 @@ sub imageSetBitmap(bmp as object, makeCopy=false as boolean)
         perfTimer().Log("imageSetBitmap:: init new region")
     end if
 
+    ' Use our own scaling methods: zoom-to-fill, scale-to-fill, etc.
     if m.scaleToLayout then
         m.ScaleRegion(m.width, m.height)
         m.bitmap = m.region.GetBitmap()
@@ -202,7 +206,30 @@ sub imageScaleRegion(width as integer, height as integer)
         scaledBitmap = createobject("roBitmap", {width: width, height: height, AlphaEnable: false})
         scaledRegion = CreateObject("roRegion", scaledBitmap, 0, 0, scaledBitmap.GetWidth(), scaledBitmap.GetHeight())
 
-        scaledRegion.DrawScaledObject(0, 0, scaleX, scaleY, m.region)
+        ' zoom-to-fill: scales/crops image to maintain aspect ratio and completely fill requested dimensions.
+        if m.scaleMode = "zoom-to-fill" and scaleX <> scaleY then
+            scale = iif(scaleX <> 1, scaleX, scaleY)
+
+            ' allow a 5% stretch to fill
+            if scale >= .95 and scale <= 1.05 then
+                scaledRegion.DrawScaledObject(0, 0, scaleX, scaleY, m.region)
+            ' move image to center
+            else if scale < 1 then
+                x = cint((width - m.region.GetWidth()) / 2)
+                y = cint((height - m.region.GetHeight()) / 2)
+                scaledRegion.DrawObject(x, y, m.region)
+            ' upscale image
+            else
+                x = cint((width - m.region.GetWidth()*scale) / 2)
+                y = cint((height - m.region.GetHeight()*scale) / 2)
+                scaledRegion.DrawScaledObject(x, y, scale, scale, m.region)
+            end if
+        ' scale-to-fit: scale image to completely fill requested dimensions. Default for any image needing
+        ' to be scaled having identical X/Y multipliers. [fallback scaling method]
+        else
+            scaledRegion.DrawScaledObject(0, 0, scaleX, scaleY, m.region)
+        end if
+
         m.region = scaledRegion
     end if
 end sub
