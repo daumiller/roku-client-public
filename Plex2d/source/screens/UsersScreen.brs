@@ -61,7 +61,7 @@ sub usersGetComponents()
 
     userBox = createVBox(false, false, false, m.buttons.spacing)
     userBox.SetFrame(m.buttons.x, m.buttons.y, m.buttons.width * m.buttons.cols, m.buttons.height * m.buttons.rows)
-    userBox.SetScrollable(scrollHeight, scrollTriggerDown, true, true, "right")
+    userBox.SetScrollable(scrollHeight, scrollTriggerDown, true, true, invalid)
 
     ' User Buttons
     for i = 0 to homeUsers.Count() - 1
