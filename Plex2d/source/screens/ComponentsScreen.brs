@@ -436,6 +436,12 @@ function compHandleCommand(command as string, item as dynamic) as boolean
         else if itemType = "movie" or itemType = "episode" or itemType = "clip" then
             ' Simple preplay
             Application().PushScreen(createPreplayScreen(item.plexObject))
+        else if itemType = "album" then
+            dialog = createDialog("Album track list", "todo...", m)
+            dialog.Show()
+        else if itemType = "artist" then
+            dialog = createDialog("Artist preplay", "todo... hubs!", m)
+            dialog.Show()
         else if itemType = "playlist" then
             ' TODO(rob): what type of preplay do we use for playlists? Do we even include
             ' playlists, or wait for the next iteration when we have playQueue support?
