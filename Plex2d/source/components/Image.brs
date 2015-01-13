@@ -30,7 +30,9 @@ function imageDraw() as object
             m.InitRegion()
         end if
 
-        transcodeOpts = { minSize: 1 }
+        ' case sensitive AA only works by setting with aa["caseSensitive"]
+        transcodeOpts = createObject("roAssociativeArray")
+        transcodeOpts["minSize"] = 1
         if m.transcodeOpts <> invalid then transcodeOpts.Append(m.transcodeOpts)
         width = firstOf(m.preferredWidth, m.width)
         height = firstOf(m.preferredHeight, m.height)
