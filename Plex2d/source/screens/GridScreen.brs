@@ -497,12 +497,18 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
             ' reinit the card - set metadata and plexObject and focusability
             contentType = item.Get("type", "")
             viewGroup = item.container.Get("viewGroup", "")
-            if contentType = "episode" and viewGroup = contentType and item.Get("index") <> invalid then
-                title = "Episode " + item.Get("index")
+
+            ' TODO(rob): handle the viewstate overlays differently (cleaner...)
+            if contentType = "album" or contentType = "artist" then
+                gridItem.ReInit(item, item.GetOverlayTitle())
             else
-                title = item.GetOverlayTitle()
+                if contentType = "episode" and viewGroup = contentType and item.Get("index") <> invalid then
+                    title = "Episode " + item.Get("index")
+                else
+                    title = item.GetOverlayTitle()
+                end if
+                gridItem.ReInit(item, title, item.GetViewOffsetPercentage(), item.GetUnwatchedCount(), item.IsUnwatched())
             end if
-            gridItem.ReInit(item, title, item.GetViewOffsetPercentage(), item.GetUnwatchedCount(), item.IsUnwatched())
             gridItem.setMetadata(item.attrs)
             gridItem.plexObject = item
             gridItem.SetFocusable("show_item")
