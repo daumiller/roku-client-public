@@ -101,13 +101,14 @@ sub vboxPerformLayout()
         ' will allow the components outside of the scroll area stay visible,
         ' by chaning their opacity.
         if m.scrollVisible = true then
-            opacityTop = createBlock(Colors().Background and &hffffffe0)
+            color = firstOf(m.scrollOverflowColor, Colors().Background and &hffffffe0)
+            opacityTop = createBlock(color)
             opacityTop.setFrame(xOffset, 0, m.width, offsets[0])
             opacityTop.zOrder = m.scrollInfo.zOrder
             opacityTop.fixed = false
             opacityTop.fixedVertical = true
 
-            opacityBot = createBlock(Colors().Background and &hffffffe0)
+            opacityBot = createBlock(color)
             opacityBot.zOrder = m.scrollInfo.zOrder
             opacityBot.fixed = false
             opacityBot.fixedVertical = true
