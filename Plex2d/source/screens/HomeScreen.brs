@@ -60,7 +60,7 @@ sub homeShow()
     ' hub requests
     if m.hubsContainer.request = invalid then
         ' TODO(rob): modify to allow non-video sections
-        request = createPlexRequest(m.server, "/hubs?excludePlaylists=1&excludeMusic=1&excludePhotos=1")
+        request = createPlexRequest(m.server, "/hubs?excludePlaylists=1&excludePhotos=1")
         context = request.CreateRequestContext("hubs", createCallable("OnResponse", m))
         Application().StartRequest(request, context)
         m.hubsContainer = context
@@ -101,8 +101,10 @@ end function
 function homeGetButtons() as object
     buttons = []
     for each container in m.buttonsContainer.items
-        if container.Get("type") = "show" or container.Get("type") = "movie" then
+        if container.Get("type") = "show" or container.Get("type") = "movie" or container.Get("type") = "artist" then
             buttons.push(m.createButton(container))
+        else
+            Debug("excluding section type: " + container.Get("type",""))
         end if
     end for
 
