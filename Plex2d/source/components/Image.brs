@@ -33,6 +33,7 @@ function imageDraw() as object
         ' case sensitive AA only works by setting with aa["caseSensitive"]
         transcodeOpts = createObject("roAssociativeArray")
         transcodeOpts["minSize"] = 1
+        transcodeOpts["upscale"] = 1
         if m.transcodeOpts <> invalid then transcodeOpts.Append(m.transcodeOpts)
         width = firstOf(m.preferredWidth, m.width)
         height = firstOf(m.preferredHeight, m.height)
@@ -159,9 +160,14 @@ sub imageSetBitmap(bmp as object, makeCopy=false as boolean)
     else if m.scaleSize = false or m.region <> invalid and (m.region.GetWidth() <> bmp.GetWidth() or m.region.GetHeight() <> bmp.GetHeight()) then
         m.region = invalid
         m.bitmap = bmp
-        m.preferredWidth = bmp.GetWidth()
-        m.preferredHeight = bmp.GetHeight()
-        msg = "use original bitmap and size"
+        ' allow the bitmap to override the requested size (media flags - unknown dimensions)
+        if m.scaleSize = false then
+            m.preferredWidth = bmp.GetWidth()
+            m.preferredHeight = bmp.GetHeight()
+            msg = "use original bitmap and size"
+        else
+            msg = "invalidate region and resize bitmap"
+        end if
     else if m.region <> invalid then
         m.region.DrawObject(0, 0, bmp)
         m.bitmap = m.region.GetBitMap()
@@ -210,7 +216,11 @@ sub imageScaleRegion(width as integer, height as integer)
 
         ' zoom-to-fill: scales/crops image to maintain aspect ratio and completely fill requested dimensions.
         if m.scaleMode = "zoom-to-fill" and scaleX <> scaleY then
-            scale = iif(scaleX <> 1, scaleX, scaleY)
+            if scaleX <> 1 and scaleY <> 1 then
+                scale = iif(scaleX > scaleY, scaleX, scaleY)
+            else
+                scale = iif(scaleX <> 1, scaleX, scaleY)
+            end if
 
             ' allow a 5% stretch to fill
             if scale >= .95 and scale <= 1.05 then
@@ -220,7 +230,7 @@ sub imageScaleRegion(width as integer, height as integer)
                 x = cint((width - m.region.GetWidth()) / 2)
                 y = cint((height - m.region.GetHeight()) / 2)
                 scaledRegion.DrawObject(x, y, m.region)
-            ' upscale image
+            ' upscale image and center
             else
                 x = cint((width - m.region.GetWidth()*scale) / 2)
                 y = cint((height - m.region.GetHeight()*scale) / 2)
