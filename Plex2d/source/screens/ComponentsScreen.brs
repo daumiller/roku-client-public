@@ -433,6 +433,8 @@ function compHandleCommand(command as string, item as dynamic) as boolean
 
         if itemType = invalid then
             Error("Don't know how to show an item with no type")
+        else if itemType = "clip" then
+            m.CreatePlayerForItem(item.plexObject)
         else if itemType = "movie" or itemType = "episode" or itemType = "clip" then
             ' Simple preplay
             Application().PushScreen(createPreplayScreen(item.plexObject))
