@@ -52,10 +52,12 @@ function dboxShow(item as object) as boolean
 
     if contentType = "episode" or contentType = "season" and contentType <> viewGroup then
         if contentType <> viewGroup
-            title = item.plexObject.GetFirst(["grandparentTitle", "parentTitle"])
+            title = item.plexObject.GetFirst(["grandparentTitle", "parentTitle", ""])
         else
             title = item.plexObject.Get("title", "")
         end if
+    else if contentType = "album" or contentType = "clip" then
+        title = item.plexObject.GetFirst(["grandparentTitle", "parentTitle", ""])
     else
         title = item.plexObject.GetLongerTitle()
     end if
@@ -69,16 +71,19 @@ function dboxShow(item as object) as boolean
 
     subtitle = createObject("roList")
     if contentType = "movie" then
-        subtitle.push(item.plexObject.Get("year"))
+        subtitle.push(item.plexObject.Get("year", ""))
     else if contentType = "season" or (contentType = "episode" and viewGroup <> contentType) then
-        subtitle.push(item.plexObject.Get("title"))
+        subtitle.push(item.plexObject.Get("title", ""))
+    else if contentType = "album" or contentType = "clip" then
+        subtitle.push(item.plexObject.Get("title", ""))
+        subtitle.push(item.plexObject.Get("year", ""))
     end if
 
     if contentType = "season" or contentType = "show" then
         subtitle.push(item.plexObject.GetUnwatchedCountString())
     end if
 
-    if contentType <> "movie" and contentType <> "season" and contentType <> "show" then
+    if contentType <> "movie" and contentType <> "season" and contentType <> "show" and contentType <> "album" and contentType <> "clip" then
         if item.plexObject.Has("originallyAvailableAt") then
             subtitle.push(item.plexObject.GetOriginallyAvailableAt())
         else if item.plexObject.Has("AddedAt")
