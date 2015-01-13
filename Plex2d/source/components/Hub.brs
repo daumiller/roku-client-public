@@ -27,6 +27,10 @@ function HubClass() as object
         obj.LAYOUT_LANDSCAPE_5 = 21
         obj.LAYOUT_LANDSCAPE_6 = 22
 
+        ' Custom layouts start at int:30
+        obj.LAYOUT_SQUARE_1 = 30
+        obj.LAYOUT_SQUARE_6 = 31
+
         ' Methods
         obj.PerformLayout = hubPerformLayout
         obj.MaxChildrenForLayout = hubMaxChildrenForLayout
@@ -96,7 +100,7 @@ sub hubPerformLayout()
     title.SetFrame(xOffset, yOffset-m.spacing-title.font.GetOneLineHeight(), 0, title.font.GetOneLineHeight())
     title.fixed = false
 
-    if m.layout = m.LAYOUT_HERO_2 or m.layout = m.LAYOUT_HERO_3 or m.layout = m.LAYOUT_HERO_5 or m.layout = m.LAYOUT_LANDSCAPE_1 then
+    if m.layout = m.LAYOUT_HERO_2 or m.layout = m.LAYOUT_HERO_3 or m.layout = m.LAYOUT_HERO_5 or m.layout = m.LAYOUT_LANDSCAPE_1 or m.layout = m.LAYOUT_SQUARE_1 then
         component = m.components.Next()
         component.fixed = false
 
@@ -116,7 +120,7 @@ sub hubPerformLayout()
             heroHeight = availableHeight - childHeight - m.spacing
             heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight) + m.spacing
             availableHeight = childHeight
-        else if m.layout = m.LAYOUT_LANDSCAPE_1 then
+        else if m.layout = m.LAYOUT_LANDSCAPE_1 or m.layout = m.LAYOUT_SQUARE_1 then
             heroHeight = availableHeight - availableHeight/3 - m.spacing
             heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight) + m.spacing
             rows = 0
@@ -170,7 +174,7 @@ sub hubPerformLayout()
         xOffset = xOffset + itemWidth + m.spacing
         rows = 3
         cols = 1
-    else if m.layout = m.LAYOUT_LANDSCAPE_6 then
+    else if m.layout = m.LAYOUT_LANDSCAPE_6 or m.layout = m.LAYOUT_SQUARE_6 then
         rows = 3
         cols = 1
 
@@ -356,7 +360,7 @@ sub hubCalculateStyle(container as object)
     ' hubs used to have a max size of 5, and that has change recently, so it's
     ' still best to override the max size here.
     if size > 5 then
-        if m.orientation = m.ORIENTATION_LANDSCAPE then
+        if m.orientation = m.ORIENTATION_LANDSCAPE or m.orientation = m.ORIENTATION_SQUARE then
             size = 6
         else
             size = 5
@@ -367,6 +371,8 @@ sub hubCalculateStyle(container as object)
     if size = 1 then
         if m.orientation = m.ORIENTATION_LANDSCAPE then
             m.layout = m.LAYOUT_LANDSCAPE_1
+        else if m.orientation = m.ORIENTATION_SQUARE then
+            m.layout = m.LAYOUT_SQUARE_1
         else
             m.layout = m.LAYOUT_GRID_1
         end if
@@ -393,7 +399,11 @@ sub hubCalculateStyle(container as object)
         else
             m.layout = m.LAYOUT_HERO_5
         end if
-    else if size = 6 and m.orientation = m.ORIENTATION_LANDSCAPE then
-        m.layout = m.LAYOUT_LANDSCAPE_6
+    else if size = 6 then
+        if m.orientation = m.ORIENTATION_LANDSCAPE then
+            m.layout = m.LAYOUT_LANDSCAPE_6
+        else if m.orientation = m.ORIENTATION_SQUARE then
+            m.layout = m.LAYOUT_SQUARE_6
+        end if
     end if
 end sub
