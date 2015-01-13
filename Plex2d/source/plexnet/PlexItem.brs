@@ -26,20 +26,10 @@ function createPlexItem(container as object, xml as object) as object
     obj.Init(container, xml)
 
     obj.mediaItems = CreateObject("roList")
-    obj.extraItems = CreateObject("roList")
-    obj.relatedItems = CreateObject("roList")
 
     for each elem in xml.GetChildElements()
         if elem.GetName() = "Media" then
             obj.mediaItems.Push(createPlexMedia(container, elem))
-        else if elem.GetName() = "Related" then
-            for each node in elem.GetChildElements()
-                obj.relatedItems.push(createPlexObjectFromElement(container, node))
-            end for
-        else if elem.GetName() = "Extras" then
-            for each node in elem.GetChildElements()
-                obj.extraItems.push(createPlexObjectFromElement(container, node))
-            end for
         end if
     next
 

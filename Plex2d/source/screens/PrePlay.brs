@@ -364,7 +364,7 @@ function preplayGetButtons() as object
     }
 
     ' extras drop down
-    if m.item.extraItems.count() > 0 then
+    if m.item.extraItems <> invalid and m.item.extraItems.count() > 0 then
         btn = createDropDown(Glyphs().EXTRAS, m.customFonts.glyphs, int(720 * .80), m)
         btn.SetDropDownPosition("right")
         btn.SetColor(Colors().Text, Colors().Button)
@@ -384,7 +384,7 @@ function preplayGetButtons() as object
     end if
 
     ' more/pivots drop down
-    if m.item.relatedItems.count() > 0 or m.item.Get("type", "") = "episode" then
+    if m.item.extraItems <> invalid and m.item.extraItems.count() > 0 or m.item.Get("type", "") = "episode" then
         btn = createDropDown(Glyphs().MORE, m.customFonts.glyphs, int(720 * .80), m)
         btn.SetDropDownPosition("right")
         btn.SetColor(Colors().Text, Colors().Button)
