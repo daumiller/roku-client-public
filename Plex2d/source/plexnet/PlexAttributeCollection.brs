@@ -62,12 +62,12 @@ function pnacGetBool(attrName, defaultValue=false)
     end if
 end function
 
-function pnacGetFirst(attrNames) as dynamic
+function pnacGetFirst(attrNames as object, defaultValue=invalid as dynamic) as dynamic
     for each attr in attrNames
         if m.attrs[attr] <> invalid and m.attrs[attr] <> "" then return m.attrs[attr]
     end for
 
-    return invalid
+    return defaultValue
 end function
 
 sub pnacSet(attrName as string, attrValue as string)

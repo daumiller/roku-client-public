@@ -52,12 +52,12 @@ function dboxShow(item as object) as boolean
 
     if contentType = "episode" or contentType = "season" and contentType <> viewGroup then
         if contentType <> viewGroup
-            title = item.plexObject.GetFirst(["grandparentTitle", "parentTitle", ""])
+            title = item.plexObject.GetFirst(["grandparentTitle", "parentTitle"], "")
         else
             title = item.plexObject.Get("title", "")
         end if
     else if contentType = "album" or contentType = "clip" then
-        title = item.plexObject.GetFirst(["grandparentTitle", "parentTitle", ""])
+        title = item.plexObject.GetFirst(["grandparentTitle", "parentTitle"], "")
     else
         title = item.plexObject.GetLongerTitle()
     end if
