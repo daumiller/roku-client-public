@@ -64,7 +64,7 @@ end function
 
 function pnacGetFirst(attrNames) as dynamic
     for each attr in attrNames
-        if m.attrs[attr] <> invalid then return m.attrs[attr]
+        if m.attrs[attr] <> invalid and m.attrs[attr] <> "" then return m.attrs[attr]
     end for
 
     return invalid
