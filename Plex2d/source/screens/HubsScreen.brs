@@ -126,8 +126,12 @@ function hubsCreateHub(container) as dynamic
 
         ' Continue Watching Hub is special. Use the shows title instead of the episode string
         title = item.GetOverlayTitle(hub.hubIdentifier = "home.continue", hub.orientation = ComponentClass().ORIENTATION_LANDSCAPE)
-
-        card = createCard(item, title, item.GetViewOffsetPercentage(), item.GetUnwatchedCount(), item.IsUnwatched())
+        ' TODO(rob): handle the viewstate overlays differently (cleaner...)
+        if item.Get("type") = "album" then
+            card = createCard(item)
+        else
+            card = createCard(item, title, item.GetViewOffsetPercentage(), item.GetUnwatchedCount(), item.IsUnwatched())
+        end if
         ' TODO(schuyler): Do we need this? I don't think so.
         ' card.setMetadata(item.attrs)
         card.plexObject = item
