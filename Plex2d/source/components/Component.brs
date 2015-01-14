@@ -41,6 +41,7 @@ function ComponentClass() as object
         obj.SetFrame = compSetFrame
         obj.SetPosition = compSetPosition
         obj.SetVisibility = compSetVisibility
+        obj.SetVisible = compSetVisible
         obj.SetDimensions = compSetDimensions
         obj.SetFocusSibling = compSetFocusSibling
         obj.GetFocusSibling = compGetFocusSibling
@@ -158,6 +159,20 @@ sub compSetPosition(x as integer, y as integer)
     m.y = y
 end sub
 
+sub compSetVisible(visible=true as boolean)
+    if m.sprite = invalid then return
+
+    if visible then
+        zOrder = firstOf(m.zOrder, 1)
+    else
+        zOrder = -1
+    end if
+
+    if m.sprite.GetZ() <> zOrder then
+        m.sprite.SetZ(zOrder)
+    end if
+end sub
+
 sub compSetVisibility(left=invalid as dynamic, right=invalid as dynamic, up=invalid as dynamic, down=invalid as dynamic)
     if m.sprite = invalid then return
     rect = computeRect(m)
@@ -182,9 +197,7 @@ sub compSetVisibility(left=invalid as dynamic, right=invalid as dynamic, up=inva
         return
     end if
 
-    if m.sprite.GetZ() < 0 or m.sprite.GetZ() < firstOf(m.zOrder, 1) then
-        m.sprite.SetZ(firstOf(m.zOrder, 1))
-    end if
+    m.SetVisible(true)
 end sub
 
 sub compShiftPosition(deltaX=0 as integer, deltaY=0 as integer, shiftSprite=true as boolean)

@@ -16,6 +16,7 @@ function BoxClass() as object
         ' Shift Methods Overrides
         obj.ShiftPosition = boxShiftPosition
         obj.SetVisibility = boxSetVisibility
+        obj.SetVisible = boxSetVisible
 
         m.BoxClass = obj
     end if
@@ -146,5 +147,11 @@ end sub
 sub boxSetVisibility(left=invalid as dynamic, right=invalid as dynamic, up=invalid as dynamic, down=invalid as dynamic)
     for each component in m.components
         component.SetVisibility(left, right, up, down)
+    end for
+end sub
+
+sub boxSetVisible(visible=true as boolean)
+    for each component in m.components
+        component.SetVisible(visible)
     end for
 end sub
