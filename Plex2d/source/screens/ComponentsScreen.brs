@@ -120,8 +120,10 @@ sub compShow()
     Application().CheckLoadingModal()
     m.GetComponents()
 
+    ' free up memory before drawing new components (close loading modal)
+    Application().CloseLoadingModal()
+
     for each comp in m.components
-        Application().CheckLoadingModal()
         m.screen.DrawComponent(comp, m)
         comp.GetFocusableItems(m.onScreenComponents)
 
@@ -139,9 +141,6 @@ sub compShow()
             m.FixedComponents.push(comp)
         end if
     end for
-
-    ' close any loading modal before our first draw
-    Application().CloseLoadingModal()
 
     if m.focusedItem = invalid then
         candidates = []
@@ -195,8 +194,10 @@ sub compDeactivate(screen = invalid as dynamic)
     Debug("Deactivate ComponentsScreen: clear components, texture manager, and custom fonts")
 
     ' disable any lazyLoad timer
-    m.lazyLoadTimer.active = false
-    m.lazyLoadTimer = invalid
+    if m.lazyLoadTimer <> invalid then
+        m.lazyLoadTimer.active = false
+        m.lazyLoadTimer = invalid
+    end if
 
     TextureManager().RemoveTextureByScreenId(m.screenID)
     m.DestroyComponents()
