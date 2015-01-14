@@ -25,7 +25,7 @@ function createPreplayContextScreen(item as object, path=invalid as dynamic) as 
     obj = CreateObject("roAssociativeArray")
     obj.Append(PreplayContextScreen())
 
-    obj.item = item
+    obj.requestItem = item
     obj.path = path
 
     obj.Init()
@@ -40,14 +40,14 @@ sub ppcInit()
     if m.path <> invalid then
         m.childrenPath = m.path + "/children"
     else
-        m.path = m.item.GetItemPath()
-        m.childrenPath = m.item.GetAbsolutePath("key")
+        m.path = m.requestItem.GetItemPath()
+        m.childrenPath = m.requestItem.GetAbsolutePath("key")
     end if
 
     m.childrenPath = m.childrenPath + "?excludeAllLeaves=1"
     m.parentPath = m.path + "?includeRelated=1&includeRelatedCount=0&includeOnDeck=1&includeExtras=1"
 
-    m.server = m.item.GetServer()
+    m.server = m.requestItem.GetServer()
 
     m.requestContext = invalid
     m.childRequestContext = invalid
