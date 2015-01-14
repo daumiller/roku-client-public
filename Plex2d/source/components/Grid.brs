@@ -19,11 +19,16 @@ function GridClass() as object
     return m.GridClass
 end function
 
-function createGrid(orientation as integer, rows as integer, spacing=0 as integer) as object
+function createGrid(orientation as integer, rows as integer, spacing=0 as integer, title=invalid as dynamic) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(GridClass())
 
     obj.Init()
+
+    if title <> invalid then
+        obj.title = createLabel(ucase(title), FontRegistry().font16)
+        obj.AddComponent(obj.title)
+    end if
 
     obj.orientation = orientation
     obj.rows = rows
@@ -40,29 +45,24 @@ sub gridPerformLayout()
     if numChildren = 0 then return
 
     ' Figure out how much height we have available.
-
     contentArea = m.GetContentArea()
-    availableHeight = contentArea.height - m.spacing
+    availableHeight = contentArea.height
     xOffset = m.x + contentArea.x
     yOffset = m.y + contentArea.y
 
     Debug("Laying out grid at (" + tostr(xOffset) + "," + tostr(yOffset) + "), available height is " + tostr(availableHeight))
 
-    ' Generally speaking, we end up laying out some number of rows and columns.
-    ' So if we need to layout a hero first, go ahead and do that now. Then we
-    ' can take care of the rows and cols in a general way.
-
     m.components.Reset()
-
     rows = m.rows
-    cols = int((m.components.count() / rows) + .9)
+    cols = cint(iif(m.title <> invalid, m.components.count()-1, m.components.count()) / rows)
+
+    if m.title <> invalid then
+        title = m.components.Next()
+        title.SetFrame(xOffset, yOffset-m.spacing-title.font.GetOneLineHeight(), title.GetPreferredWidth(), title.font.GetOneLineHeight())
+        title.fixed = false
+    end if
 
     grid = CreateObject("roArray", rows * cols, false)
-
-    ' Ok, at this point the components cursor should be pointing at the
-    ' next child to render and rows and cols should both be set. We can
-    ' figure out the height of each element, and then start laying them
-    ' out.
 
     itemHeight = int((availableHeight - (m.spacing * (rows - 1))) / rows)
     itemWidth = m.GetWidthForOrientation(m.orientation, itemHeight)
@@ -117,7 +117,6 @@ sub gridPerformLayout()
     rightX = xOffsets[cols - 1] + itemWidth
     m.preferredWidth = rightX - m.x
     m.width = m.preferredWidth
-
 end sub
 
 function gridGetPreferredWidth() as integer
