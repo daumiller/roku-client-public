@@ -50,6 +50,7 @@ function PlexObjectClass() as object
         obj.GetViewOffsetPercentage = pnoGetViewOffsetPercentage
         obj.GetUnwatchedCount = pnoGetUnwatchedCount
         obj.GetUnwatchedCountString = pnoGetUnwatchedCountString
+        obj.GetChildCountString = pnoGetChildCountString
         obj.GetLimitedTagValues = pnoGetLimitedTagValues
         obj.IsUnwatched = pnoIsUnwatched
         obj.InProgress = pnoInProgress
@@ -326,9 +327,26 @@ end function
 function pnoGetUnwatchedCountString() as string
     count = m.GetUnwatchedCount()
     if count > 0 then
-        text = tostr(count) + " unwatched episode"
-        if count > 1 then text = text + "s"
-        return text
+        suffix = "unwatched episode"
+        return tostr(count) + " " + iif(count > 1, suffix + "s", suffix)
+    end if
+
+    return ""
+end function
+
+function pnoGetChildCountString() as string
+    count = m.GetFirst(["childCount", "leafCount"], "0").toInt()
+    if count > 0 then
+        if m.type = "album" then
+            suffix = "Song"
+        else if m.type = "season" then
+            suffix = "Episode"
+        else if m.type = "show" then
+            suffix = "Season"
+        else
+            suffix = "Item"
+        end if
+        return tostr(count) + " " + iif(count > 1, suffix + "s", suffix)
     end if
 
     return ""
