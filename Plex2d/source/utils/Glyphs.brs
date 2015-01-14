@@ -21,6 +21,8 @@ function Glyphs() as object
         obj.CROWN       = chr(&h1f451)
         obj.LOCK        = chr(&h1f512)
         obj.UNLOCK      = chr(&he205)
+        obj.SHUFFLE     = chr(&he084)
+        obj.INFO        = chr(&he196)
 
         ' Constants Aliases
         obj.SCROBBLE    = obj.CIR_CHECK
