@@ -12,6 +12,8 @@ function PreplayContextScreen() as object
         obj.GetComponents = ppcGetComponents
         obj.GetMainInfo = ppcGetMainInfo
         obj.GetImages = ppcGetImages
+        obj.GetButtons = ppcGetButtons
+        obj.HandleCommand = ppcHandleCommand
 
         m.PreplayContextScreen = obj
     end if
@@ -43,6 +45,8 @@ sub ppcInit()
     end if
 
     m.childrenPath = m.childrenPath + "?excludeAllLeaves=1"
+    m.parentPath = m.path + "?includeRelated=1&includeRelatedCount=0&includeOnDeck=1&includeExtras=1"
+
     m.server = m.item.GetServer()
 
     m.requestContext = invalid
@@ -54,7 +58,7 @@ sub ppcShow()
     if not application().isactivescreen(m) then return
 
     if m.requestContext = invalid then
-        request = createPlexRequest(m.server, m.path)
+        request = createPlexRequest(m.server, m.parentPath)
         context = request.CreateRequestContext("preplay_item", createCallable("OnResponse", m))
         Application().StartRequest(request, context)
         m.requestContext = context
@@ -108,6 +112,16 @@ sub ppcGetComponents()
 
     xOffset = 50
     spacing = 30
+
+    ' *** Buttons *** '
+    vbButtons = createVBox(false, false, false, 10)
+    components = m.GetButtons()
+    for each comp in components
+        vbButtons.AddComponent(comp)
+    end for
+    vbButtons.SetFrame(xOffset, 125, 100, 720-125)
+    m.components.Push(vbButtons)
+    xOffset = xOffset + spacing + m.components.peek().width
 
     ' *** Parent Poster / Art *** '
     vbImages = createVBox(false, false, false, 10)
@@ -220,4 +234,92 @@ function ppcGetImages() as object
     container.components.push(poster)
 
     return container
+end function
+
+
+function ppcGetButtons() as object
+    components = createObject("roList")
+
+    buttons = createObject("roList")
+    ' include a Play and Resume button if there is an OnDeck item
+    if m.item.onDeck <> invalid then
+        item = m.item.onDeck[0]
+        if item.InProgress() then
+            buttons.push({text: Glyphs().RESUME, command: "resume", item: item})
+        end if
+        buttons.push({text: Glyphs().PLAY, command: "play", item: item })
+    end if
+
+    ' TODO(rob): scrobble entire container - with warning?
+
+    for each button in buttons
+        btn = createButton(button.text, m.customFonts.glyphs, button.command)
+        btn.SetColor(Colors().Text, Colors().Button)
+        btn.width = 100
+        btn.height = 50
+        btn.plexObject = button.item
+        if m.focusedItem = invalid then m.focusedItem = btn
+        components.push(btn)
+    end for
+
+    optionPrefs = {
+        halign: "JUSTIFY_LEFT",
+        height: 50,
+        padding: { right: 10, left: 10, top: 0, bottom: 0 }
+        font: FontRegistry().font16,
+    }
+
+    ' extras drop down
+    if m.item.extraItems <> invalid and m.item.extraItems.count() > 0 then
+        btn = createDropDown(Glyphs().EXTRAS, m.customFonts.glyphs, int(720 * .80), m)
+        btn.SetDropDownPosition("right")
+        btn.SetColor(Colors().Text, Colors().Button)
+        btn.width = 100
+        btn.height = 47
+        if m.focusedItem = invalid then m.focusedItem = btn
+        for each item in m.item.extraItems
+            option = {
+                text: item.GetLongerTitle(),
+                command: "play_extra",
+                plexObject: item,
+            }
+            option.Append(optionPrefs)
+            btn.options.push(option)
+        end for
+        components.push(btn)
+    end if
+
+    ' more/pivots drop down
+    if m.item.relatedItems <> invalid and m.item.relatedItems.count() > 0 then
+        btn = createDropDown(Glyphs().MORE, m.customFonts.glyphs, int(720 * .80), m)
+        btn.SetDropDownPosition("right")
+        btn.SetColor(Colors().Text, Colors().Button)
+        btn.width = 100
+        btn.height = 47
+        if m.focusedItem = invalid then m.focusedItem = btn
+        for each item in m.item.relatedItems
+            option = {
+                text: item.GetSingleLineTitle(),
+                command: "show_grid",
+                plexObject: item,
+            }
+            option.Append(optionPrefs)
+            btn.options.push(option)
+        end for
+        components.push(btn)
+    end if
+
+    return components
+end function
+
+function ppcHandleCommand(command as string, item as dynamic) as boolean
+    handled = true
+
+    if command = "play_default" then
+        m.OnPlayButton()
+    else if not ApplyFunc(PreplayScreen().HandleCommand, m, [command, item])
+        handled = false
+    end if
+
+    return handled
 end function

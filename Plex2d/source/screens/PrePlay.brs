@@ -91,10 +91,8 @@ end sub
 function preplayHandleCommand(command as string, item as dynamic) as boolean
     handled = true
 
-    if command = "play" or command = "resume" or command = "play_extra" then
-        handled = true
-        videoItem = iif(command = "play_extra", item.plexObject, m.item)
-        screen = VideoPlayer().CreateVideoScreen(videoItem, (command = "resume"))
+    if command = "play" or command = "resume" then
+        screen = VideoPlayer().CreateVideoScreen(item.plexObject, (command = "resume"))
         if screen.screenError = invalid then
             Application().PushScreen(screen)
         else
@@ -338,9 +336,9 @@ function preplayGetButtons() as object
 
     buttons = createObject("roList")
     if m.item.InProgress() then
-        buttons.push({text: Glyphs().RESUME, command: "resume"})
+        buttons.push({text: Glyphs().RESUME, command: "resume", item: m.item})
     end if
-    buttons.push({text: Glyphs().PLAY, command: "play"})
+    buttons.push({text: Glyphs().PLAY, command: "play", item: m.item})
     if m.item.IsUnwatched() then
         buttons.push({text: Glyphs().SCROBBLE, command: "scrobble"})
     else
@@ -352,6 +350,7 @@ function preplayGetButtons() as object
         btn.SetColor(Colors().Text, Colors().Button)
         btn.width = 100
         btn.height = 50
+        btn.plexObject = button.item
         if m.focusedItem = invalid then m.focusedItem = btn
         components.push(btn)
     end for
@@ -374,7 +373,7 @@ function preplayGetButtons() as object
         for each item in m.item.extraItems
             option = {
                 text: item.GetLongerTitle(),
-                command: "play_extra",
+                command: "play",
                 plexObject: item,
             }
             option.Append(optionPrefs)
