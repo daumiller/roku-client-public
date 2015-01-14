@@ -405,3 +405,19 @@ Function createDigest(value as string, alg="sha256" as string) as string
     digest.Setup(alg)
     return digest.Process(ba)
 end Function
+
+function IntToBa(value as integer, alpha=false as boolean) as object
+    ba = CreateObject("roByteArray")
+    ba.SetResize(4, false)
+
+    ba[0] = value >> 24
+    ba[1] = value >> 16
+    ba[2] = value >> 8
+    if alpha then ba[3] = value
+
+    return ba
+end function
+
+function IntToHex(value as integer, alpha=false as boolean) as string
+    return IntToBa(value, alpha).toHexString()
+end function

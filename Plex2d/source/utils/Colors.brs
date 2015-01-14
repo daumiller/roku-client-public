@@ -2,6 +2,9 @@ function Colors() as object
     if m.Colors = invalid then
         obj = CreateObject("roAssociativeArray")
 
+        ' Methods
+        obj.ToHexString = colorsToHexString
+
         ' Constants
         obj.Background = &h111111ff
 
@@ -25,4 +28,8 @@ function Colors() as object
     end if
 
     return m.Colors
+end function
+
+function colorsToHexString(key as string, alpha=false as boolean)
+    return IntToHex(m[key], alpha)
 end function
