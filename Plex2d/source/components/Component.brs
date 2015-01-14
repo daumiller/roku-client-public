@@ -288,7 +288,7 @@ sub compGetShiftableItems(partShift as object, fullShift as object, lazyLoad=inv
     end if
 
     ' obtain a list of shiftable items, either on screen now, or on screen after the shifted amount
-    if m.IsOnScreen() or m.IsOnscreen(deltaX, deltaY) then
+    if m.IsOnScreen() or ((deltaX <> 0 or deltaY <> 0) and m.IsOnscreen(deltaX, deltaY)) then
         partShift.Push(m)
     else
         fullShift.Push(m)

@@ -162,7 +162,8 @@ function gsOnGridResponse(request as object, response as object, context as obje
 
     m.totalSize = response.container.getint("totalSize")
     if m.totalSize < m.chunkSizeInitial then m.chunkSizeInitial = m.totalSize
-    if m.totalSize < 20 and m.orientation <> ComponentClass().ORIENTATION_LANDSCAPE then m.rows = 1
+    ' TODO(rob): we should use 3/4 height for landscape and square orientation
+    if m.totalSize < 20 and m.orientation = ComponentClass().ORIENTATION_PORTRAIT then m.rows = 1
     placeholder = {
         start: 0,
         size: m.chunkSizeInitial,

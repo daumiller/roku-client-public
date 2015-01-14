@@ -430,7 +430,7 @@ function compHandleCommand(command as string, item as dynamic) as boolean
         ' We want to show a screen for a PlexObject of some sort. Look at the
         ' type and try to choose the best screen type.
         '
-        itemType = item.plexObject.Get("type")
+        itemType = firstOf(item.plexObject.Get("type"), item.plexObject.type)
 
         if itemType = invalid then
             Error("Don't know how to show an item with no type")

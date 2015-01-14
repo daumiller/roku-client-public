@@ -22,7 +22,7 @@ function createScrollbar(yOffset as object, contentHeight as integer, containerH
     obj.contentHeight = contentHeight - yOffset
     obj.containerHeight = containerHeight - yOffset
     obj.height = obj.contentHeight * obj.contentHeight / obj.containerHeight
-    obj.zOrder = -1
+    obj.zOrderInit = -1
     obj.visZOrder = visZOrder
 
     return obj
