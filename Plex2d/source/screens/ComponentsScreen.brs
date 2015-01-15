@@ -443,8 +443,7 @@ function compHandleCommand(command as string, item as dynamic) as boolean
             dialog = createDialog("Album track list", "todo...", m)
             dialog.Show()
         else if itemType = "artist" then
-            dialog = createDialog("Artist preplay", "todo... hubs!", m)
-            dialog.Show()
+            Application().PushScreen(createArtistScreen(item.plexObject))
         else if itemType = "playlist" then
             ' TODO(rob): what type of preplay do we use for playlists? Do we even include
             ' playlists, or wait for the next iteration when we have playQueue support?
@@ -737,7 +736,9 @@ sub compCalculateShift(toFocus as object, refocus=invalid as dynamic)
         shift.x = refocus.left - focusRect.left
     ' verify the component is on the screen if no parent exists
     else if toFocus.parent = invalid or toFocus.parent.ignoreParentShift = true then
-        if focusRect.right > shift.safeRight
+        if toFocus.parent <> invalid and toFocus.parent.demandLeft <> invalid then
+            shift.x = toFocus.parent.demandLeft - focusRect.left
+        else if focusRect.right > shift.safeRight
             shift.x = shift.safeRight - focusRect.right
         else if focusRect.left < shift.safeLeft then
             shift.x = shift.safeLeft - focusRect.left
