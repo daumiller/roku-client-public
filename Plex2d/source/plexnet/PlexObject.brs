@@ -54,6 +54,7 @@ function PlexObjectClass() as object
         obj.GetLimitedTagValues = pnoGetLimitedTagValues
         obj.IsUnwatched = pnoIsUnwatched
         obj.InProgress = pnoInProgress
+        obj.GetIdentifier = pnoGetIdentifier
 
         obj.GetAbsolutePath = pnoGetAbsolutePath
         obj.GetItemPath = pnoGetItemPath
@@ -326,6 +327,16 @@ function pnoInProgress() as boolean
     end if
 
     return (m.has("viewOffset") and m.GetInt("viewOffset") > 0)
+end function
+
+function pnoGetIdentifier() as dynamic
+    identifier = m.Get("identifier")
+
+    if identifier = invalid then
+        identifier = m.container.Get("identifier")
+    end if
+
+    return identifier
 end function
 
 function pnoGetUnwatchedCountString() as string

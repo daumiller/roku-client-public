@@ -180,6 +180,7 @@ sub appRun()
     end while
 
     ' Clean up
+    AudioPlayer().Cleanup()
     Analytics().Cleanup()
     GDMAdvertiser().Cleanup()
     GDMDiscovery().Cleanup()
@@ -225,6 +226,8 @@ function appProcessOneMessage(timeout)
             m.ProcessUrlEvent(msg)
         else if type(msg) = "roChannelStoreEvent" then
             AppManager().HandleChannelStoreEvent(msg)
+        else if type(msg) = "roAudioPlayerEvent" then
+            AudioPlayer().HandleMessage(msg)
         end if
     end if
 
@@ -288,8 +291,11 @@ sub appShowInitialScreen()
 end sub
 
 sub appAddTimer(timer as object, callback as object, screenID=invalid as dynamic)
-    timer.ID = m.nextTimerID.toStr()
-    m.nextTimerID = m.nextTimerID + 1
+    if timer.ID = invalid then
+        timer.ID = m.nextTimerID.toStr()
+        m.nextTimerID = m.nextTimerID + 1
+    end if
+
     timer.callback = callback
     m.timers[timer.ID] = timer
 

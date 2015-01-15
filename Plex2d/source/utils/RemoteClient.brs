@@ -212,6 +212,7 @@ sub remoteOnMetadataResponse(request as object, response as object, context as o
         else
             ' TODO(schuyler): Genericize this for other media types
             ' TODO(schuyler): Handle context in addition to matched item
+            screen = invalid
             if item.IsVideoItem() then
                 screen = VideoPlayer().CreateVideoScreen(item, (validint(context.offset) > 0))
                 if screen.screenError = invalid then
@@ -220,6 +221,9 @@ sub remoteOnMetadataResponse(request as object, response as object, context as o
                 else
                     message = screen.screenError
                 end if
+            else if item.IsMusicItem() then
+                AudioPlayer().SetContext(children, matchIndex, true)
+                success = true
             else
                 message = "Only video is supported at this time"
                 Error(message)
@@ -229,7 +233,7 @@ sub remoteOnMetadataResponse(request as object, response as object, context as o
             ' video won't start until the user wakes the Roku up. We can do that
             ' for them by sending a harmless keystroke. Down is harmless, as long
             ' as they started a video or slideshow.
-            if success then SendEcpCommand("Down")
+            if success and screen <> invalid then SendEcpCommand("Down")
         end if
     else
         message = "unable to find media for key"
@@ -380,22 +384,17 @@ function ProcessPlaybackSetParameters() as boolean
     ProcessCommandID(m.request)
 
     mediaType = m.request.query["type"]
+    player = GetPlayerForType(m.request.query["type"])
 
-    ' TODO(schuyler): Music and photo playback
-    ' if mediaType = "music" then
-    '     if m.request.query["shuffle"] <> invalid then
-    '         AudioPlayer().SetShuffle(m.request.query["shuffle"].toint())
-    '     end if
+    if player <> invalid then
+        if m.request.query["shuffle"] <> invalid and (mediaType = "music" or mediaType = "photo") then
+            player.SetShuffle(m.request.query["shuffle"] = "1")
+        end if
 
-    '     if m.request.query["repeat"] <> invalid then
-    '         AudioPlayer().SetRepeat(m.request.query["repeat"].toint())
-    '     end if
-    ' else if mediaType = "photo" then
-    '     player = PhotoPlayer()
-    '     if player <> invalid AND m.request.query["shuffle"] <> invalid then
-    '         player.SetShuffle(m.request.query["shuffle"].toint())
-    '     end if
-    ' end if
+        if m.request.query["repeat"] <> invalid and mediaType = "music" then
+            player.SetRepeat(m.request.query["repeat"].toint())
+        end if
+    end if
 
     m.simpleOK("")
     return true
@@ -555,7 +554,7 @@ end sub
 
 function GetPlayerForType(mediaType as dynamic) as dynamic
     if mediaType = "music" then
-        ' return AudioPlayer()
+        return AudioPlayer()
     else if mediaType = "photo" then
         ' return PhotoPlayer()
     else if mediaType = "video" then
