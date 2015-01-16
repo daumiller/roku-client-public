@@ -5,12 +5,14 @@ function DescriptionBoxClass() as object
 
         ' Default settings
         obj.spacing = 0
-        obj.title = { font: FontRegistry().font18b, color: Colors().Text}
-        obj.subtitle = { font: FontRegistry().font18, color: Colors().TextDim}
+        obj.titlePrefs = { font: FontRegistry().font18b, color: Colors().Text}
+        obj.subtitlePrefs = { font: FontRegistry().font18, color: Colors().TextDim}
+        obj.zOrder = 500
 
         ' Methods
         obj.Show = dboxShow
         obj.Hide = dboxHide
+        obj.Build = dboxBuild
         obj.IsDisplayed = function() : return (m.components.count() > 0) : end function
 
         m.DescriptionBox = obj
@@ -19,10 +21,39 @@ function DescriptionBoxClass() as object
     return m.DescriptionBox
 end function
 
+function createStaticDescriptionBox(title as string, subtitle as string)
+    obj = CreateObject("roAssociativeArray")
+    obj.Append(DescriptionBoxClass())
+
+    obj.title = title
+    obj.subtitle = subtitle
+
+    return obj.Build()
+end function
+
+function dboxBuild()
+    vbox = createVBox(false, false, false, m.spacing)
+
+    title = createLabel(m.title, m.titlePrefs.font)
+    title.halign = title.JUSTIFY_LEFT
+    title.valign = title.ALIGN_MIDDLE
+    title.SetColor(m.titlePrefs.color)
+    title.zOrder = m.zOrder
+    vbox.AddComponent(title)
+
+    subtitle = createLabel(m.subtitle, m.subtitlePrefs.font)
+    subtitle.halign = title.JUSTIFY_LEFT
+    subtitle.valign = title.ALIGN_MIDDLE
+    subtitle.zOrder = m.zOrder
+    subtitle.SetColor(m.subtitlePrefs.color)
+    vbox.AddComponent(subtitle)
+
+    return vbox
+end function
+
 function createDescriptionBox(screen as object)
     obj = CreateObject("roAssociativeArray")
     obj.Append(DescriptionBoxClass())
-    obj.zOrder = 500
 
     ' Initialize the manual components on the screen
     obj.components = screen.GetManualComponents("DescriptionBox")
@@ -49,9 +80,6 @@ function dboxShow(item as object) as boolean
     Debug("Show description: " + plexObject.toString() + ", contentType=" + contentType + ", viewGroup=" + viewGroup)
 
     ' *** Component Description *** '
-    compDesc = createVBox(false, false, false, m.spacing)
-    compDesc.SetFrame(m.x, m.y, m.width, m.height)
-
     if contentType = "episode" or contentType = "season" and contentType <> viewGroup then
         if contentType <> viewGroup
             title = plexObject.GetFirst(["grandparentTitle", "parentTitle"], "")
@@ -65,13 +93,6 @@ function dboxShow(item as object) as boolean
     else
         title = plexObject.GetLongerTitle()
     end if
-
-    label = createLabel(title, m.title.font)
-    label.halign = label.JUSTIFY_LEFT
-    label.valign = label.ALIGN_MIDDLE
-    label.SetColor(m.title.color)
-    label.zOrder = m.zOrder
-    compDesc.AddComponent(label)
 
     subtitle = createObject("roList")
     if contentType = "movie" then
@@ -102,14 +123,13 @@ function dboxShow(item as object) as boolean
         subtitle.push(plexObject.GetDuration())
     end if
 
-    label = createLabel(joinArray(subtitle, " / "), m.subtitle.font)
-    label.halign = label.JUSTIFY_LEFT
-    label.valign = label.ALIGN_MIDDLE
-    label.SetColor(m.subtitle.color)
-    label.zOrder = m.zOrder
-    compDesc.AddComponent(label)
+    ' set title, subtitle and build
+    m.title = title
+    m.subtitle = joinArray(subtitle, " / ")
 
-    m.components.push(compDesc)
+    dbox = m.Build()
+    dbox.SetFrame(m.x, m.y, m.width, m.height)
+    m.components.push(dbox)
 
     for each comp in m.components
         CompositorScreen().DrawComponent(comp)
