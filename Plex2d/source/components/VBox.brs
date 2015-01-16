@@ -96,6 +96,10 @@ sub vboxPerformLayout()
 
     ' scrollbar and opacity helpers for scrollable containers
     if m.scrollInfo <> invalid then
+        ' disallow manual focus DOWN for scrolling containers
+        if m.scrollInfo.containerHeight > m.scrollInfo.contentHeight then
+            m.disallowExit = { down: true }
+        end if
 
         ' add a semi-transparent block above and below the contentHeight. This
         ' will allow the components outside of the scroll area stay visible,
@@ -120,6 +124,8 @@ sub vboxPerformLayout()
 
         ' add a scrollbar
         if m.scrollbarPos <> invalid and m.scrollInfo.containerHeight > m.scrollInfo.contentHeight then
+            ' disallow manual focus DOWN for scrolling containers
+            m.disallowExit = { down: true }
             yOffset = offsets[0]
             scrollbar = createScrollBar(yOffset, m.scrollInfo.contentHeight, m.scrollInfo.containerHeight, m.scrollInfo.zOrder)
             if scrollbar <> invalid

@@ -321,14 +321,27 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
             toFocus = m.focusedItem.GetFocusSibling(KeyCodeToString(keyCode))
 
             ' Check if we allow manual focus (dialogs/dropdown/etc)
-            if toFocus = invalid and m.focusedItem.FocusNonSiblings = false then
-                ' DropDowns: we need to close (hide) the drop down in a specified direction
-                if m.focusedItem.dropDown <> invalid then
-                    if instr(1, m.focusedItem.dropDown.closeDirection, direction) = 0 then return
-                    m.focusedItem.dropDown.Hide()
+            if toFocus = invalid then
+                if m.focusedItem.FocusNonSiblings = false then
+                    ' DropDowns: we need to close (hide) the drop down in a specified direction
+                    if m.focusedItem.dropDown <> invalid then
+                        if instr(1, m.focusedItem.dropDown.closeDirection, direction) = 0 then return
+                        m.focusedItem.dropDown.Hide()
+                    end if
+
+                    return
+                else
+                    ' check if we disallow manual focus in specific directions (component or parent)
+                    parent = firstOf(m.focusedItem.shiftableParent, m.focusedItem.parent)
+                    if m.focusedItem.disallowExit <> invalid and m.focusedItem.disallowExit[direction] = true then
+                        Debug("manually focus not allowed component: direction=" + tostr(direction))
+                        return
+                    else if parent <> invalid and parent.disallowExit <> invalid and parent.disallowExit[direction] = true then
+                        Debug("manually focus not allowed by parent: direction=" + tostr(direction) )
+                        return
+                    end if
                 end if
 
-                return
             end if
 
             ' If we're doing the opposite of our last direction, go back to
