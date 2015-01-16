@@ -171,6 +171,8 @@ function apHandleMessage(msg as object) as boolean
 
     if type(msg) = "roAudioPlayerEvent" then
         handled = true
+        ' This is possible when executing AudioPlayer().Cleanup()  (switching users)
+        if m.context = invalid or m.curIndex = invalid then return handled
         item = m.context[m.curIndex]
 
         if msg.isRequestSucceeded() then
@@ -282,8 +284,8 @@ end sub
 
 sub apCleanup()
     m.Stop()
-    m.timelineTimer = invalid
-    m.playbackTimer = invalid
+    m.timelineTimer.active = false
+    m.playbackTimer.active = false
     fn = function() :m.AudioPlayer = invalid :end function
     fn()
 end sub

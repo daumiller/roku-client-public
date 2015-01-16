@@ -276,6 +276,8 @@ end sub
 
 sub appOnAccountChange(account as dynamic)
     Debug("Account changed to " + tostr(account.title))
+    ' Clear any AudioPlayer data
+    AudioPlayer().Cleanup()
     m.ShowInitialScreen()
 end sub
 
