@@ -238,7 +238,11 @@ end function
 function pnoGetDuration() as string
     duration = m.Get("duration")
     if duration <> invalid then
-        return GetDurationString(int(duration.toInt()/1000))
+        if m.type = "track" then
+            return GetTimeString(int(duration.toInt()/1000))
+        else
+            return GetDurationString(int(duration.toInt()/1000))
+        end if
     end if
     return ""
 end function
@@ -338,7 +342,7 @@ function pnoGetChildCountString() as string
     count = m.GetFirst(["childCount", "leafCount"], "0").toInt()
     if count > 0 then
         if m.type = "album" then
-            suffix = "Song"
+            suffix = "Track"
         else if m.type = "season" then
             suffix = "Episode"
         else if m.type = "show" then
