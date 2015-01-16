@@ -160,6 +160,7 @@ sub vpShow()
 
         m.playbackTimer.Mark()
         m.bufferingTimer.Mark()
+        AudioPlayer().Stop()
         m.Screen.Show()
         NowPlayingManager().location = "fullScreenVideo"
     else
