@@ -14,6 +14,7 @@ function AlbumScreen() as object
         obj.GetButtons = albumGetButtons
         obj.OnFocusIn = albumOnFocusIn
         obj.OnKeyPress = albumOnKeyPress
+        obj.SetNowPlaying = albumSetNowPlaying
 
         ' Now Playing timer
         obj.OnNowPlayingTimer = albumOnNowPlayingTimer
@@ -188,8 +189,6 @@ sub albumGetComponents()
     m.trackList.SetFrame(xOffset + padding, header.GetPreferredHeight() + padding, trackPrefs.width, 720)
 
     ' *** Tracks *** '
-    playingItem = AudioPlayer().GetItemPlaying()
-
     trackCount = m.children.Count()
     for index = 0 to trackCount - 1
         item = m.children[index]
@@ -198,11 +197,12 @@ sub albumGetComponents()
         track.plexObject = item
         track.trackIndex = index
         track.SetFocusable("play")
-        if m.focusedItem = invalid then m.focusedItem = track
         m.trackList.AddComponent(track)
 
-        if playingItem <> invalid and playingItem.Get("key") = track.plexObject.Get("key") then
-            track.SetPlaying(true)
+        if AudioPlayer().IsCurTrack(item) then
+            m.SetNowPlaying(track)
+            m.focusedItem = track
+        else if m.focusedItem = invalid then
             m.focusedItem = track
         end if
 
@@ -321,8 +321,6 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
     if command = "play" then
         ' TODO(rob): hook into the audio player (logic will obviously change)
 
-        if m.playing <> invalid then m.playing.SetPlaying(false, true)
-
         ' start content from requested index, or at the beginning.
         trackContext = m.children
         if item.trackIndex <> invalid then
@@ -333,17 +331,21 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
             component = m.trackList.components[0]
             m.OnFocus(component)
         end if
-        m.playing = component
 
-        if AudioPlayer().isPlaying and AudioPlayer().curIndex = trackIndex then
-            AudioPlayer().Pause()
-        else if AudioPlayer().isPaused and AudioPlayer().curIndex = trackIndex
-            AudioPlayer().Resume()
-            component.SetPlaying(true, true)
+        if AudioPlayer().IsCurTrack(component.plexObject) and (AudioPlayer().isPlaying or AudioPlayer().isPaused) then
+            if AudioPlayer().isPlaying then
+                isPlaying = false
+                AudioPlayer().Pause()
+            else
+                isPlaying = true
+                AudioPlayer().Resume()
+            end if
         else
+            isPlaying = true
             AudioPlayer().SetContext(trackContext, trackIndex, true)
-            component.SetPlaying(true, true)
         end if
+
+        m.SetNowPlaying(component, isPlaying)
     else if command = "summary" then
         m.summaryVisible = not m.summaryVisible = true
         Debug("toggle summary: summaryVisible=" + tostr(m.summaryVisible))
@@ -387,32 +389,28 @@ end sub
 
 sub albumOnNowPlayingTimer(timer as dynamic)
     if not Application().IsActiveScreen(m) or not AudioPlayer().isPlaying then return
-
-    playingItem = AudioPlayer().GetItemPlaying()
-    playingParentKey = playingItem.Get("parentRatingKey")
-
-    ' failsafe to set the now playing object. this should be set on creation now
+    ' Failsafe to set the now playing object. This should be set on creation now
     ' when a music item is already playing.
     if m.playing = invalid then
         m.playing = m.trackList.components[0]
     end if
 
-    screenItem = m.playing.plexObject
-    screenParentKey = screenItem.Get("parentRatingKey")
-
     ' TODO(rob): update the mini player? The mini player will probably need to be part
     ' of the header, as all screens will probably show the mini player..
 
+    curTrack = AudioPlayer().GetCurTrack()
+    curParentKey = curTrack.Get("parentRatingKey")
+    screenTrack = m.playing.plexObject
+    screenParentKey = screenTrack.Get("parentRatingKey")
+
     ' ignore updating playing item if the screens context <> playing context (browsing)
-    if playingParentKey <> screenParentKey then return
+    if curParentKey <> screenParentKey then return
 
     ' update the UI with the track change
-    if playingItem.Get("key") <> screenItem.Get("key") then
+    if not AudioPlayer().IsCurTrack(screenTrack) then
         for each track in m.trackList.components
-            if track.plexObject <> invalid and playingItem.Get("key") = track.plexObject.Get("key") then
-                if m.playing <> invalid then m.playing.SetPlaying(false, true)
-                track.SetPlaying(true, true)
-                m.playing = track
+            if track.plexObject <> invalid and AudioPlayer().IsCurTrack(track.plexObject) then
+                m.SetNowPlaying(track)
                 exit for
             end if
         end for
@@ -426,4 +424,13 @@ sub albumOnKeyPress(keyCode as integer, repeat as boolean)
     else
         ApplyFunc(ComponentsScreen().OnKeyPress, m, [keyCode, repeat])
     end if
+end sub
+
+sub albumSetNowPlaying(component as object, status=true as boolean)
+    if m.playing <> invalid and not component.Equals(m.playing) then
+        m.playing.SetPlaying(false)
+    end if
+
+    m.playing = component
+    component.SetPlaying(status)
 end sub

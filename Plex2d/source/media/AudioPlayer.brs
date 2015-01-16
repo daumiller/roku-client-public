@@ -60,7 +60,8 @@ function AudioPlayer() as object
         NowPlayingManager().timelines["music"].attrs["shuffle"] = "0"
 
         obj.AdvanceIndex = apAdvanceIndex
-        obj.GetItemPlaying = apGetItemPlaying
+        obj.IsCurTrack = apIsCurTrack
+        obj.GetCurTrack = apGetCurTrack
 
         ' TODO(schuyler): Add support for theme music
 
@@ -344,8 +345,17 @@ sub apSetShuffle(shuffle as boolean)
     NowPlayingManager().timelines["music"].attrs["shuffle"] = iif(shuffle, "1", "0")
 end sub
 
-function apGetItemPlaying() as dynamic
+function apGetCurTrack() as dynamic
     if m.curIndex = invalid or m.context = invalid then return invalid
 
     return m.context[m.curIndex]
+end function
+
+function apIsCurTrack(component as object) as boolean
+    curTrack = m.GetCurTrack()
+    if curTrack <> invalid and curTrack.Get("key") = component.Get("key") then
+        return true
+    end if
+
+    return false
 end function
