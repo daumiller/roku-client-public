@@ -13,6 +13,10 @@ function AlbumScreen() as object
         obj.HandleCommand = albumHandleCommand
         obj.GetButtons = albumGetButtons
         obj.OnFocusIn = albumOnFocusIn
+        obj.OnKeyPress = albumOnKeyPress
+
+        ' Now Playing timer
+        obj.OnNowPlayingTimer = albumOnNowPlayingTimer
 
         m.AlbumScreen = obj
     end if
@@ -76,6 +80,11 @@ sub albumShow()
     if m.requestContext.response <> invalid and m.childRequestContext.response <> invalid then
         if m.item <> invalid then
             ApplyFunc(ComponentsScreen().Show, m)
+
+            ' Create a timer for polling to see if the code has been linked.
+            m.NowPlayingTimer = createTimer("poll")
+            m.NowPlayingTimer.SetDuration(1000, true)
+            Application().AddTimer(m.NowPlayingTimer, createCallable("OnNowPlayingTimer", m))
         else
             dialog = createDialog("Unable to load", "Sorry, we couldn't load the requested item.", m)
             dialog.AddButton("OK", "close_screen")
@@ -178,6 +187,8 @@ sub albumGetComponents()
     m.trackList.SetFrame(xOffset + padding, header.GetPreferredHeight() + padding, trackPrefs.width, 720)
 
     ' *** Tracks *** '
+    playingItem = AudioPlayer().GetItemPlaying()
+
     trackCount = m.children.Count()
     for index = 0 to trackCount - 1
         item = m.children[index]
@@ -188,6 +199,11 @@ sub albumGetComponents()
         track.SetFocusable("play")
         if m.focusedItem = invalid then m.focusedItem = track
         m.trackList.AddComponent(track)
+
+        if playingItem <> invalid and playingItem.Get("key") = track.plexObject.Get("key") then
+            track.SetPlaying(true)
+            m.focusedItem = track
+        end if
 
         if index < trackCount - 1 then
             sep = createBlock(Colors().OverlayDark)
@@ -220,6 +236,7 @@ sub albumOnChildResponse(request as object, response as object, context as objec
     response.ParseResponse()
     context.response = response
     context.items = response.items
+    children = response.items
 
     ' duration calculation until PMS supplies it.
     m.duration = 0
@@ -284,6 +301,8 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
     if command = "play" then
         ' TODO(rob): hook into the audio player (logic will obviously change)
 
+        if m.playing <> invalid then m.playing.SetPlaying(false, true)
+
         ' start content from requested index, or at the beginning.
         trackContext = m.children
         if item.trackIndex <> invalid then
@@ -292,19 +311,19 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
         else
             trackIndex = 0
             component = m.trackList.components[0]
-        end if
-
-        if m.playing <> invalid and not m.playing.Equals(component) then
-            m.playing.SetPlaying(false, true)
+            m.OnFocus(component)
         end if
         m.playing = component
 
-        ' toggle current track (play or pause)
-        isPlaying = not(component.isPlaying = true)
-        component.SetPlaying(isPlaying, true)
-
-        dialog = createDialog("Wire in the AudioPlayer and show Now Playing", "command: " + tostr(item.command), m)
-        dialog.Show()
+        if AudioPlayer().isPlaying and AudioPlayer().curIndex = trackIndex then
+            AudioPlayer().Pause()
+        else if AudioPlayer().isPaused and AudioPlayer().curIndex = trackIndex
+            AudioPlayer().Resume()
+            component.SetPlaying(true, true)
+        else
+            AudioPlayer().SetContext(trackContext, trackIndex, true)
+            component.SetPlaying(true, true)
+        end if
     else if command = "summary" then
         m.summaryVisible = not m.summaryVisible = true
         Debug("toggle summary: summaryVisible=" + tostr(m.summaryVisible))
@@ -341,5 +360,48 @@ sub albumOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
         m.focusBG.sprite.SetZ(1)
     else
         m.focusBG.sprite.SetZ(-1)
+    end if
+end sub
+
+sub albumOnNowPlayingTimer(timer as dynamic)
+    if not AudioPlayer().isPlaying then return
+
+    playingItem = AudioPlayer().GetItemPlaying()
+    playingParentKey = playingItem.Get("parentRatingKey")
+
+    ' failsafe to set the now playing object. this should be set on creation now
+    ' when a music item is already playing.
+    if m.playing = invalid then
+        m.playing = m.trackList.components[0]
+    end if
+
+    screenItem = m.playing.plexObject
+    screenParentKey = screenItem.Get("parentRatingKey")
+
+    ' TODO(rob): update the mini player? The mini player will probably need to be part
+    ' of the header, as all screens will probably show the mini player..
+
+    ' ignore updating playing item if the screens context <> playing context (browsing)
+    if playingParentKey <> screenParentKey then return
+
+    ' update the UI with the track change
+    if playingItem.Get("key") <> screenItem.Get("key") then
+        for each track in m.trackList.components
+            if track.plexObject <> invalid and playingItem.Get("key") = track.plexObject.Get("key") then
+                if m.playing <> invalid then m.playing.SetPlaying(false, true)
+                track.SetPlaying(true, true)
+                m.playing = track
+                exit for
+            end if
+        end for
+    end if
+end sub
+
+sub albumOnKeyPress(keyCode as integer, repeat as boolean)
+    if keyCode = m.kp_FWD or keyCode = m.kp_REV then
+        delta = iif(keyCode = m.kp_FWD, 1, -1)
+        AudioPlayer().Seek(10000 * delta, true)
+    else
+        ApplyFunc(ComponentsScreen().OnKeyPress, m, [keyCode, repeat])
     end if
 end sub
