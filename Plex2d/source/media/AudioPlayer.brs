@@ -103,6 +103,7 @@ sub apStop()
         m.player.SetNext(m.curIndex)
         m.isPlaying = false
         m.isPaused = false
+        Application().Trigger("audio:stop", [m])
     end if
 end sub
 
@@ -188,6 +189,7 @@ function apHandleMessage(msg as object) as boolean
             end if
         else if msg.isRequestFailed() then
             Error("Audio: Playback of track failed (" + tostr(msg.GetIndex()) + "): " + tostr(msg.GetMessage()))
+            Application().Trigger("audio:stop", [m])
             m.ignoreTimelines = false
             m.curIndex = m.AdvanceIndex()
         else if msg.isListItemSelected() then
@@ -197,6 +199,7 @@ function apHandleMessage(msg as object) as boolean
             m.isPaused = false
             m.playbackOffset = 0
             m.playbackTimer.Mark()
+            Application().Trigger("audio:play", [m])
 
             if m.repeat = m.REPEAT_ONE then
                 m.player.SetNext(m.curIndex)
@@ -212,11 +215,13 @@ function apHandleMessage(msg as object) as boolean
             m.isPaused = true
             m.playbackOffset = m.GetPlaybackProgress()
             m.playbackTimer.Mark()
+            Application().Trigger("audio:pause", [m])
         else if msg.isResumed() then
             Debug("Audio: Playback resumed")
             m.isPlaying = true
             m.isPaused = false
             m.playbackTimer.Mark()
+            Application().Trigger("audio:resume", [m])
         else if msg.isStatusMessage() then
             Debug("Audio: Status - " + tostr(msg.GetMessage()))
         else if msg.isFullResult() then
@@ -225,6 +230,7 @@ function apHandleMessage(msg as object) as boolean
             ' TODO(schuyler): Do we ever need to show an error?
         else if msg.isPartialResult() then
             Debug("Audio: isPartialResult")
+            Application().Trigger("audio:stop", [m])
         end if
 
         ' Whatever it was, it was probably worthy of updating now playing

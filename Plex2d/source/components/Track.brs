@@ -28,6 +28,7 @@ function createTrack(item as object, textFont as object, glyphFont as object, tr
     obj.plexObject = item
     obj.bgColor = (Colors().Text and &hffffff00)
     obj.isPlaying = false
+    obj.isPaused = false
     obj.trackCount = trackCount
 
     obj.Init(textFont, glyphFont)
@@ -58,13 +59,18 @@ sub trackSetColor(fgColor as integer, bgColor=invalid as dynamic)
     draw = m.region <> invalid
 
     ' override colors if track is currently playing (maybe paused too?)
-    if m.isPlaying then fgColor = Colors().Orange
+    if m.isPlaying or m.isPaused then fgColor = Colors().Orange
 
     ' set the composites background color to anti-alias
     m.bgColor = firstOf(m.bgColorForce, (fgColor and &hffffff00))
     for each comp in m.components
-        if comp.Equals(m.status) and m.isPlaying = false then
-            comp.SetColor(&h00000000)
+        if comp.Equals(m.status) then
+            if m.isPlaying = false and m.isPaused = false then
+                comp.SetColor(&h00000000)
+            else
+                comp.text = iif(m.isPlaying, Glyphs().PLAY, Glyphs().PAUSE)
+                comp.SetColor(fgColor, bgColor)
+            end if
         else
             comp.SetColor(fgColor, bgColor)
         end if
@@ -87,6 +93,7 @@ end sub
 
 sub trackSetPlaying(playing=true as boolean)
     m.isPlaying = playing
+    m.isPaused = AudioPlayer().isPaused
     m.SetColor(iif(playing, Colors().Orange, Colors().Text), invalid)
 end sub
 
