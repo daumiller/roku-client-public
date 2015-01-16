@@ -332,7 +332,7 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
                     return
                 else
                     ' check if we disallow manual focus in specific directions (component or parent)
-                    parent = firstOf(m.focusedItem.shiftableParent, m.focusedItem.parent)
+                    parent = m.focusedItem.parent
                     if m.focusedItem.disallowExit <> invalid and m.focusedItem.disallowExit[direction] = true then
                         Debug("manually focus not allowed component: direction=" + tostr(direction))
                         return
