@@ -191,7 +191,7 @@ function pnoGetSingleLineTitle() as string
     return m.Get("title", "")
 end function
 
-function pnoGetLongerTitle() as string
+function pnoGetLongerTitle(sep=" - " as string) as string
     parentTitle = invalid
     childTitle = invalid
 
@@ -213,7 +213,7 @@ function pnoGetLongerTitle() as string
     end if
 
     if parentTitle <> invalid and childTitle <> invalid then
-        return parentTitle + " - " + childTitle
+        return parentTitle + sep + childTitle
     else
         return firstOf(parentTitle, childTitle, m.Get("title", ""))
     end if
