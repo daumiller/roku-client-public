@@ -273,13 +273,32 @@ function albumGetButtons() as object
     end for
 
     ' more/pivots drop down
-    if m.item.relatedItems <> invalid and m.item.relatedItems.count() > 0 then
-        btn = createDropDown(Glyphs().MORE, m.customFonts.glyphs, int(720 * .80), m)
-        btn.SetDropDownPosition("right")
-        btn.SetColor(Colors().Text, Colors().Button)
-        btn.width = 100
-        btn.height = 47
-        if m.focusedItem = invalid then m.focusedItem = btn
+    optionPrefs = {
+        halign: "JUSTIFY_LEFT",
+        height: btn.height
+        padding: { right: 10, left: 10, top: 0, bottom: 0 }
+        font: FontRegistry().font16,
+    }
+
+    btn = createDropDown(Glyphs().MORE, m.customFonts.glyphs, int(720 * .80), m)
+    btn.SetDropDownPosition("right")
+    btn.SetColor(Colors().Text, Colors().Button)
+    btn.width = 100
+    btn.height = 47
+    if m.focusedItem = invalid then m.focusedItem = btn
+
+    ' manual pivots
+    manualPivots = [
+        {command: "go_to_artist", text: "Go to Artist"},
+    ]
+    for each pivot in manualPivots
+        option = {}
+        option.Append(pivot)
+        option.Append(optionPrefs)
+        btn.options.push(option)
+    end for
+
+    if m.item.relatedItems <> invalid then
         for each item in m.item.relatedItems
             option = {
                 text: item.GetSingleLineTitle(),
@@ -289,8 +308,8 @@ function albumGetButtons() as object
             option.Append(optionPrefs)
             btn.options.push(option)
         end for
-        components.push(btn)
     end if
+    components.push(btn)
 
     return components
 end function
@@ -345,6 +364,8 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
         m.lastFocusedItem = invalid
 
         m.screen.DrawAll()
+    else if command = "go_to_artist" then
+        Application().PushScreen(createArtistScreen(m.item, m.item.Get("parentKey")))
     else
         return ApplyFunc(ComponentsScreen().HandleCommand, m, [command, item])
     end if
