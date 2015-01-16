@@ -339,7 +339,7 @@ sub gsShiftComponents(shift as object)
     ' as we cannot animate it (for real) due to memory limitations (and speed).
     if shift.x > 1280 or shift.x < -1280 then
         ' cancel any pending textures before we have a large shift
-        TextureManager().CancelAll()
+        TextureManager().CancelAll(false)
 
         ' Two Passes:
         '  1. Get a list of components on the screen after shift
@@ -441,7 +441,7 @@ sub gsShiftComponents(shift as object)
 
     ' lazy-load any components that will be on-screen after we shift
     ' and cancel any pending texture requests
-    TextureManager().CancelAll()
+    TextureManager().CancelAll(false)
     m.LazyLoadExec(partShift)
 
     AnimateShift(shift, partShift, m.screen)

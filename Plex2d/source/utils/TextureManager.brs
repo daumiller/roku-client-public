@@ -115,11 +115,16 @@ function tmGetItem(id as integer) as dynamic
     return m.RequestList[id.toStr()]
 end function
 
-sub tmCancelAll()
+' excludeFixed = do not cancel textures that do not shift. It's possible,
+' we may want to cancel all textures due to a shift, so we'll need to keep
+' any request not shifting.
+sub tmCancelAll(excludeFixed=true as boolean)
     Debug("cancel pending textures")
     if m.ListCount <> invalid and m.ListCount > 0 then
         for each key in m.RequestList
-            m.CancelTexture(m.RequestList[key])
+            if excludeFixed or m.RequestList[key].component.fixed = false then
+                m.CancelTexture(m.RequestList[key])
+            end if
         end for
     end if
     ' TODO(rob) should we clear the RequestList and counts? The question is,

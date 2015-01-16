@@ -98,6 +98,7 @@ end sub
 sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, watchedPercentage=invalid as dynamic, unwatchedCount=invalid as dynamic, unwatched=false as boolean)
     if imageSource <> invalid then
         m.image = createImage(imageSource)
+        m.image.fixed = false
         m.AddComponent(m.image)
     end if
 
