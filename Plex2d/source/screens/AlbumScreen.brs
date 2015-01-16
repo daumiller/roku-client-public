@@ -386,7 +386,7 @@ sub albumOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
 end sub
 
 sub albumOnNowPlayingTimer(timer as dynamic)
-    if not AudioPlayer().isPlaying then return
+    if not Application().IsActiveScreen(m) or not AudioPlayer().isPlaying then return
 
     playingItem = AudioPlayer().GetItemPlaying()
     playingParentKey = playingItem.Get("parentRatingKey")

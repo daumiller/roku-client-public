@@ -53,7 +53,10 @@ sub trackInit(textFont as object, glyphFont as object)
     m.InitComponents()
 end sub
 
-sub trackSetColor(fgColor as integer, bgColor=invalid as dynamic, draw=false as boolean)
+sub trackSetColor(fgColor as integer, bgColor=invalid as dynamic)
+    ' we'll redraw if we have a valid region
+    draw = m.region <> invalid
+
     ' override colors if track is currently playing (maybe paused too?)
     if m.isPlaying then fgColor = Colors().Orange
 
@@ -75,16 +78,16 @@ sub trackSetColor(fgColor as integer, bgColor=invalid as dynamic, draw=false as 
 end sub
 
 sub trackOnFocus()
-    m.SetColor(Colors().Orange, invalid, true)
+    m.SetColor(Colors().Orange, invalid)
 end sub
 
 sub trackOnBlur(toFocus=invalid as dynamic)
-    m.SetColor(Colors().Text, invalid, true)
+    m.SetColor(Colors().Text, invalid)
 end sub
 
-sub trackSetPlaying(playing=true as boolean, draw=false as boolean)
+sub trackSetPlaying(playing=true as boolean)
     m.isPlaying = playing
-    m.SetColor(iif(playing, Colors().Orange, Colors().Text), invalid, draw)
+    m.SetColor(iif(playing, Colors().Orange, Colors().Text), invalid)
 end sub
 
 sub trackInitComponents()
