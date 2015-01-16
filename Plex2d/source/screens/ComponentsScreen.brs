@@ -1116,10 +1116,10 @@ sub compOnFocusIn(toFocus=invalid as dynamic, lastFocus=invalid as dynamic)
 end sub
 
 sub compOnFocusOut(lastFocus=invalid as dynamic, toFocus=invalid as dynamic)
-    if lastFocus = invalid then return
-
     ' let the component know it's focus state
-    lastFocus.OnBlur(toFocus)
+    if lastFocus <> invalid then
+        lastFocus.OnBlur(toFocus)
+    end if
 
     ' update the description box
     if m.DescriptionBox <> invalid then

@@ -63,8 +63,7 @@ sub overlayClose()
     ' refocus on the item we initially came from
     m.screen.lastFocusedItem = invalid
     if m.fromFocusedItem <> invalid then
-        m.screen.FocusedItem = m.fromFocusedItem
-        m.screen.screen.DrawFocus(m.screen.focusedItem, true)
+        m.screen.OnFocus(m.fromFocusedItem)
     else
         m.screen.screen.HideFocus(true, true)
     end if
