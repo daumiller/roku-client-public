@@ -120,7 +120,7 @@ sub artistGetComponents()
     xOffset = xOffset + parentSpacing + vbButtons.width
 
     ' *** Artist title and image ***
-    artistTitle = createLabel(m.item.GetLongerTitle(), FontRegistry().Font16)
+    artistTitle = createLabel(ucase(m.item.GetLongerTitle()), FontRegistry().Font16)
     artistHeight = artistTitle.font.GetOneLineHeight()
     artistTitle.SetFrame(xOffset, yOffset - childSpacing - artistHeight, artistTitle.GetPreferredWidth(), artistHeight)
     artist = createImage(m.item, parentHeight, parentHeight)

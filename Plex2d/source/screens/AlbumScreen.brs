@@ -136,7 +136,7 @@ sub albumGetComponents()
     xOffset = xOffset + parentSpacing + vbButtons.width
 
     ' *** album title and image ***
-    albumTitle = createLabel(m.item.GetLongerTitle(" / "), FontRegistry().Font16)
+    albumTitle = createLabel(ucase(m.item.GetLongerTitle(" / ")), FontRegistry().Font16)
     albumHeight = albumTitle.font.GetOneLineHeight()
     albumTitle.SetFrame(xOffset, yOffset - childSpacing - albumHeight, albumTitle.GetPreferredWidth(), albumHeight)
     m.components.push(albumTitle)
