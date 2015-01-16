@@ -60,6 +60,7 @@ function AudioPlayer() as object
         NowPlayingManager().timelines["music"].attrs["shuffle"] = "0"
 
         obj.AdvanceIndex = apAdvanceIndex
+        obj.GetItemPlaying = apGetItemPlaying
 
         ' TODO(schuyler): Add support for theme music
 
@@ -177,7 +178,7 @@ function apHandleMessage(msg as object) as boolean
             ' Send an analytics event for anything but theme music
             amountPlayed = m.GetPlaybackProgress()
             Debug("Sending analytics event, appear to have listened to audio for " + tostr(amountPlayed) + " seconds")
-            AnalyticsTracker().TrackEvent("Playback", item.Get("type", "track"), tostr(item.GetIdentifier()), amountPlayed)
+            Analytics().TrackEvent("Playback", item.Get("type", "track"), tostr(item.GetIdentifier()), amountPlayed)
 
             if m.repeat <> m.REPEAT_ONE then
                 m.curIndex = m.AdvanceIndex()
@@ -253,7 +254,7 @@ sub apSetContext(context as object, contextIndex as integer, startPlayer=true as
         server = item.GetServer()
         if server <> invalid and item.isAccessible() and item.mediaItems.Count() > 0 then
             media = item.mediaItems[0]
-            if media.HasStreams() then
+            if media.HasStreams() or media.parts <> invalid and media.parts[0] <> invalid then
                 item.StreamFormat = media.Get("container", "mp3")
                 item.Url = server.BuildUrl(media.parts[0].GetAbsolutePath("key"), true)
                 bitrate = media.GetInt("bitrate")
@@ -342,3 +343,9 @@ sub apSetShuffle(shuffle as boolean)
 
     NowPlayingManager().timelines["music"].attrs["shuffle"] = iif(shuffle, "1", "0")
 end sub
+
+function apGetItemPlaying() as dynamic
+    if m.curIndex = invalid or m.context = invalid then return invalid
+
+    return m.context[m.curIndex]
+end function
