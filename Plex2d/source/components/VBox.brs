@@ -104,7 +104,7 @@ sub vboxPerformLayout()
         ' add a semi-transparent block above and below the contentHeight. This
         ' will allow the components outside of the scroll area stay visible,
         ' by chaning their opacity.
-        if m.scrollVisible = true then
+        if m.scrollVisible = true and not m.scrollOverflow = true then
             color = firstOf(m.scrollOverflowColor, Colors().Background and &hffffffe0)
             opacityTop = createBlock(color)
             opacityTop.setFrame(xOffset, 0, m.width, offsets[0])

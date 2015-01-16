@@ -453,8 +453,7 @@ function compHandleCommand(command as string, item as dynamic) as boolean
             ' Simple preplay
             Application().PushScreen(createPreplayScreen(item.plexObject))
         else if itemType = "album" then
-            dialog = createDialog("Album track list", "todo...", m)
-            dialog.Show()
+            Application().PushScreen(createAlbumScreen(item.plexObject))
         else if itemType = "artist" then
             Application().PushScreen(createArtistScreen(item.plexObject))
         else if itemType = "playlist" then
