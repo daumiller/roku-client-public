@@ -258,7 +258,10 @@ sub compSetFocusSibling(direction as string, component as dynamic)
 end sub
 
 function compGetFocusSibling(direction as string) as dynamic
-    return m.focusSiblings[direction]
+    if m.focusSiblings[direction] <> invalid and m.focusSiblings[direction].focusable = true then
+        return m.focusSiblings[direction]
+    end if
+    return invalid
 end function
 
 function compToString() as string
@@ -269,8 +272,8 @@ function compEquals(other=invalid as dynamic) as boolean
     return (other <> invalid and m.uniqId = other.uniqId)
 end function
 
-sub compSetFocusable(command = invalid as dynamic)
-    m.focusable = true
+sub compSetFocusable(command=invalid as dynamic, focusable=true as boolean)
+    m.focusable = focusable
     m.selectable = (command <> invalid)
     m.command = command
 end sub

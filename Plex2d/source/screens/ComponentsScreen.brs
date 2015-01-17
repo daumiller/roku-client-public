@@ -346,7 +346,7 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
 
             ' If we're doing the opposite of our last direction, go back to
             ' where we came from.
-            if toFocus = invalid and m.lastFocusedItem <> invalid and direction = OppositeDirection(m.lastDirection) then
+            if toFocus = invalid and m.lastFocusedItem <> invalid and m.lastFocusedItem.focusable = true and direction = OppositeDirection(m.lastDirection) then
                 toFocus = m.lastFocusedItem
             end if
 
