@@ -1076,24 +1076,30 @@ sub compOnCreatePlayerResponse(request as object, response as object, context as
     end if
 end sub
 
-sub compToggleScrollBar(hide=false as boolean)
-    if m.focusedItem <> invalid then
-        focus = firstOf(m.focusedItem.shiftableParent, m.focusedItem.parent)
+sub compToggleScrollBar(visible=true as boolean, toFocus=invalid as dynamic, lastFocus=invalid as dynamic)
+    if toFocus <> invalid then
+        focusScroll = firstOf(toFocus.shiftableParent, toFocus.parent, {}).scrollbar
     else
-        focus = invalid
+        focusScroll = invalid
     end if
 
-    if m.lastFocusedItem <> invalid then
-        lastFocus = firstOf(m.lastFocusedItem.shiftableParent, m.lastFocusedItem.parent)
+    if lastFocus <> invalid then
+        lastFocusScroll = firstOf(lastFocus.shiftableParent, lastFocus.parent, {}).scrollbar
     else
-        lastFocus = invalid
+        lastFocusScroll = invalid
     end if
 
-    ' hide/show the scroll bar
-    if focus <> invalid and lastFocus <> invalid and focus.scrollbar = invalid and lastFocus.scrollbar <> invalid then
-        lastFocus.scrollbar.Hide()
-    else if hide = false and focus.scrollbar <> invalid then
-        focus.scrollbar.Show()
+    ' ignore if toFocus and lastFocus do not contain a scrollbar
+    if focusScroll = invalid and lastFocusScroll = invalid then return
+
+    ' hide scrollbar regardless of visible boolean if scrollbars are different
+    if lastFocusScroll <> invalid and not lastFocusScroll.Equals(focusScroll) then
+        lastFocusScroll.Hide()
+    end if
+
+    ' show current scrollbar if visible and new
+    if visible = true and focusScroll <> invalid and not focusScroll.Equals(lastFocusScroll) then
+        focusScroll.Show()
     end if
 end sub
 
@@ -1124,7 +1130,7 @@ sub compOnFocusIn(toFocus=invalid as dynamic, lastFocus=invalid as dynamic)
     ' let the component know it's focus state
     toFocus.OnFocus()
 
-    m.ToggleScrollBar()
+    m.ToggleScrollBar(true, toFocus, lastFocus)
 end sub
 
 sub compOnFocusOut(lastFocus=invalid as dynamic, toFocus=invalid as dynamic)
@@ -1138,5 +1144,5 @@ sub compOnFocusOut(lastFocus=invalid as dynamic, toFocus=invalid as dynamic)
         m.DescriptionBox.Show(toFocus)
     end if
 
-    m.ToggleScrollBar(true)
+    m.ToggleScrollBar(false, toFocus, lastFocus)
 end sub
