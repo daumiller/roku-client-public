@@ -31,6 +31,11 @@ end sub
 sub miniplayerInit()
     ApplyFunc(ContainerClass().Init, m)
 
+    m.zOrder = 999
+    m.zOrderInit = -1
+    m.isDrawn = false
+    m.selectCommand = "now_playing"
+
     ' TODO(rob): HD/SD nightmare and lame hardcoded positioning. We
     ' probably need to refactor the header, to have the ability to
     ' know the positioning. (other screens will beneifit too).
@@ -39,12 +44,8 @@ sub miniplayerInit()
     m.height = 50
     m.x = 150
     m.y = 20
-    m.zOrder = 999
-    m.isDrawn = false
-    m.selectCommand = "now_playing"
 
     vbMain = createVBox(false, false, false, m.padding)
-    vbMain = createVBox(false, false, false, 0)
     vbMain.SetFrame(m.x + m.padding, m.y + m.padding, m.width - m.padding*2, m.height - m.padding)
     hbImgTrack = createHBox(false, false, false, 15)
     vbTrack = createVBox(false, false, false, 0)
@@ -52,23 +53,23 @@ sub miniplayerInit()
     ' Image placeholder (transparent region)
     m.Image = createImage(invalid, 28, 28)
     m.Image.pvalign = m.Image.ALIGN_MIDDLE
-    m.Image.zOrderInit = -1
+    m.Image.zOrderInit = m.zOrderInit
 
     ' Title placeholder
     m.Title = createLabel("", FontRegistry().Font12)
     m.Title.width = m.width
-    m.Title.zOrderInit = -1
+    m.Title.zOrderInit = m.zOrderInit
 
     ' Subtitle placeholder
     m.Subtitle = createLabel("", FontRegistry().Font12)
     m.Subtitle.width = m.width
-    m.Subtitle.zOrderInit = -1
+    m.Subtitle.zOrderInit = m.zOrderInit
 
     ' Progress bar placeholder
     m.Progress = createBlock(&hffffff60)
     m.Progress.width = m.width
     m.Progress.height = 1
-    m.Progress.zOrderInit = -1
+    m.Progress.zOrderInit = m.ZOrderInit
 
     vbTrack.AddComponent(m.Title)
     vbTrack.AddComponent(m.Subtitle)
@@ -148,12 +149,6 @@ sub miniplayerOnHideTimer(timer as object)
 end sub
 
 function miniplayerDraw() as object
-    if m.isDrawn = false then
-        for each comp in m.components
-            CompositorScreen().DrawComponent(comp)
-        end for
-        m.isDrawn = true
-    end if
-
-    return m
+    m.isDrawn = true
+    return ApplyFunc(ContainerClass().Draw, m)
 end function

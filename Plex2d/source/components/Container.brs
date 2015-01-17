@@ -117,6 +117,8 @@ sub contSetDimensions(width as integer, height as integer)
 end sub
 
 sub contGetFocusableItems(arr as object)
+    ' containers can be focusable too!
+    ApplyFunc(ComponentClass().GetFocusableItems, m, [arr])
     for each component in m.components
         component.GetFocusableItems(arr)
     next

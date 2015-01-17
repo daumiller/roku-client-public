@@ -142,10 +142,6 @@ sub compShow()
         end if
     end for
 
-    ' Add the MiniPlayer to the fixed components for focusability and
-    ' any other methods checking fixed components.
-    m.FixedComponents.push(MiniPlayer())
-
     if m.focusedItem = invalid then
         candidates = []
         for each component in m.components
@@ -563,6 +559,9 @@ function compGetFocusManual(direction as string, focusableComponenents=invalid a
             if component.focusable then candidates.push(component)
         next
     end if
+
+    ' Add the mini player to the candidates if focusable
+    if MiniPlayer().focusable candidates.push(MiniPlayer())
 
     ' fall back if we do not have any valid candidates (slower check)
     if candidates.count() = 0 and focusableComponenents = invalid then

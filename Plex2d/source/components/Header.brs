@@ -74,6 +74,9 @@ sub headerPerformLayout()
     background.zOrder = m.zOrder
     m.AddComponent(background)
 
+    ' *** Mini Player *** '
+    m.AddComponent(MiniPlayer())
+
     ' *** Logo *** '
     hbox = createHBox(false, false, false, 0)
     hbox.SetFrame(m.left, m.logo.yOffset, m.logo.width, m.height)
@@ -120,6 +123,10 @@ sub headerPerformLayout()
         buttonsWidth = (m.buttons.width * numButtons) + (m.buttons.spacing * (numButtons - 1))
         hbox.setFrame(m.right - buttonsWidth, m.buttons.yOffset, buttonsWidth, m.height)
         m.AddComponent(hbox)
+
+        ' set the focus siblings for the mini player
+        buttons[0].SetFocusSibling("left", MiniPlayer())
+        MiniPlayer().SetFocusSibling("right", buttons[0])
     end if
 
     m.buttons.font = invalid
@@ -192,7 +199,7 @@ function headerSetTriggers() as object
 end function
 
 sub headerOnPlay(context as object, item as object)
-    mp = MiniPlayer().Draw()
+    mp = MiniPlayer()
     mp.SetTitle(item.Get("grandparentTitle", ""))
     mp.SetSubtitle(item.Get("title", ""))
     mp.SetImage(item)
