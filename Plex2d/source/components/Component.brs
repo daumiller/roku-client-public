@@ -4,6 +4,7 @@ function ComponentClass() as object
         obj.Append(EventsMixin())
 
         m.nextComponentId = 1
+        m.uniqComponentId = 1
 
         ' STATIC
         obj.ORIENTATION_SQUARE = 0
@@ -80,6 +81,9 @@ sub componentInit()
     ' Assign a unique ID to all components (per screen)
     m.id = GetGlobalAA()["nextComponentId"]
     GetGlobalAA().AddReplace("nextComponentId", m.id + 1)
+
+    m.uniqId = GetGlobalAA()["uniqComponentId"]
+    GetGlobalAA().AddReplace("uniqComponentId", m.uniqId + 1)
 
     m.focusSiblings = {}
 end sub
@@ -262,7 +266,7 @@ function compToString() as string
 end function
 
 function compEquals(other=invalid as dynamic) as boolean
-    return (other <> invalid and m.id = other.id)
+    return (other <> invalid and m.uniqId = other.uniqId)
 end function
 
 sub compSetFocusable(command = invalid as dynamic)
