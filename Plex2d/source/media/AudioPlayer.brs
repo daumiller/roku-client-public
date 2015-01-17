@@ -16,9 +16,12 @@ function AudioPlayer() as object
 
         obj.context = invalid
         obj.curIndex = invalid
+        obj.playQueue = invalid
         obj.isPlaying = false
         obj.isPaused = false
         obj.ignoreTimelines = false
+
+        obj.audioObjectsById = {}
 
         ' Player API functions
         obj.IsActive = apIsActive
@@ -31,8 +34,10 @@ function AudioPlayer() as object
         obj.Next = apNext
 
         obj.HandleMessage = apHandleMessage
-        obj.SetContext = apSetContext
         obj.Cleanup = apCleanup
+
+        obj.SetPlayQueue = apSetPlayQueue
+        obj.OnPlayQueueUpdate = apOnPlayQueueUpdate
 
         ' Playback offset and timer
         obj.playbackOffset = 0
@@ -173,8 +178,8 @@ function apHandleMessage(msg as object) as boolean
     if type(msg) = "roAudioPlayerEvent" then
         handled = true
         ' This is possible when executing AudioPlayer().Cleanup()  (switching users)
-        if m.context = invalid or m.curIndex = invalid then return handled
-        item = m.context[m.curIndex]
+        if m.context = invalid or m.curIndex = invalid or m.curIndex <= m.context.Count() then return handled
+        item = m.context[m.curIndex].item
 
         if msg.isRequestSucceeded() then
             Info("Audio: Playback of single track completed")
@@ -240,48 +245,80 @@ function apHandleMessage(msg as object) as boolean
     return handled
 end function
 
-sub apSetContext(context as object, contextIndex as integer, startPlayer=true as boolean)
+sub apSetPlayQueue(playQueue as object, startPlayer=true as boolean)
     if startPlayer then
         m.ignoreTimelines = true
         m.Stop()
     end if
 
-    m.context = context
-    m.curIndex = contextIndex
+    ' TODO(schuyler): If we have an old PQ, clean things up
 
-    ' TODO(schuyler): Preferences for repeat? m.player.SetLoop(...)
+    m.playQueue = playQueue
 
-    ' TODO(schuyler): Figure out how to actually prepare the content list. We
-    ' definitely need to set the URL, and we may need to set Streams with
-    ' bitrate for FLAC, and we may need to set StreamFormat. We should also
-    ' support transcoding, and we may want to be smarter about choosing
-    ' Media/Part. We need to decide where exactly to do this preparation. Is
-    ' this the right place? What do we do about unplayable items?
+    m.OnPlayQueueUpdate(playQueue)
+
+    playQueue.On("change", createCallable("OnPlayQueueUpdate", m))
+
+    if m.context.Count() > 0 and startPlayer then
+        m.isPlaying = false
+        m.isPaused = false
+        m.Play()
+    end if
+end sub
+
+sub apOnPlayQueueUpdate(playQueue as object)
+    ' Usually when our play queue updates almost all of the items will be the
+    ' same as the previous window. So keep track of our computed audio objects
+    ' by PQ item ID and reuse them if we can.
+
+    if m.context <> invalid then
+        oldSize = m.context.Count()
+    else
+        oldSize = 0
+    end if
+
+    objectsById = {}
+    metadata = CreateObject("roList")
+    m.context = CreateObject("roList")
+    m.curIndex = 0
+
+    ' Create a list of objects with appropriate content metadata based on the
+    ' current play queue window. We'll skip anything that isn't a music item or
+    ' isn't playable.
     '
-    for each item in m.context
-        item.url = invalid
-        server = item.GetServer()
-        if server <> invalid and item.isAccessible() and item.mediaItems.Count() > 0 then
-            media = item.mediaItems[0]
-            if media.HasStreams() or media.parts <> invalid and media.parts[0] <> invalid then
-                item.StreamFormat = media.Get("container", "mp3")
-                item.Url = server.BuildUrl(media.parts[0].GetAbsolutePath("key"), true)
-                bitrate = media.GetInt("bitrate")
+    for each item in playQueue.items
+        if item.IsMusicItem() then
+            itemId = item.Get("playQueueItemID", "")
 
-                if bitrate > 0 then
-                    item.Streams = [{ url: item.Url, bitrate: bitrate }]
+            if m.audioObjectsById.DoesExist(itemId) then
+                obj = audioObjectsById[itemId]
+            else
+                obj = createAudioObject(item)
+                obj.Build()
+            end if
+
+            objectsById[itemId] = obj
+
+            if obj.audioItem <> invalid then
+                m.context.AddTail(obj)
+                metadata.AddTail(obj.audioItem)
+                if item.GetInt("playQueueItemID") = playQueue.selectedID then
+                    m.curIndex = m.context.Count() - 1
                 end if
             end if
         end if
     next
 
-    m.player.SetContentList(m.context)
+    m.audioObjectsById = objectsById
+
+    m.player.SetContentList(metadata)
     m.player.SetNext(m.curIndex)
+    m.player.SetLoop(playQueue.isRepeat)
 
     NowPlayingManager().SetControllable("music", "skipPrevious", (m.curIndex > 0 or m.repeat = m.REPEAT_ALL))
     NowPlayingManager().SetControllable("music", "skipNext", (m.curIndex < m.context.Count() - 1 or m.repeat = m.REPEAT_ALL))
 
-    if startPlayer then
+    if m.context.Count() > 0 and oldSize = 0 then
         m.isPlaying = false
         m.isPaused = false
         m.Play()
@@ -307,7 +344,7 @@ end sub
 sub apUpdateNowPlaying()
     if m.ignoreTimelines then return
 
-    item = m.context[m.curIndex]
+    item = m.context[m.curIndex].item
 
     ' Make sure we have enough info to actually send a timeline. This would also
     ' avoid sending timelines for theme music.
@@ -356,7 +393,7 @@ end sub
 function apGetCurTrack() as dynamic
     if m.curIndex = invalid or m.context = invalid then return invalid
 
-    return m.context[m.curIndex]
+    return m.context[m.curIndex].item
 end function
 
 function apIsCurTrack(component as object) as boolean

@@ -320,7 +320,9 @@ end function
 function albumHandleCommand(command as string, item as dynamic) as boolean
     handled = true
 
-    if command = "play" then
+    ' TODO(schuyler): The shuffle support here is just a PoC. It's not clever
+    ' about focusing the component that is actually chosen first.
+    if command = "play" or command = "shuffle" then
         ' TODO(rob): create now playing screen
 
         ' start content from requested index, or from the beginning.
@@ -328,8 +330,10 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
         if item.trackIndex <> invalid then
             component = item
             trackIndex = item.trackIndex
+            key = item.plexObject.Get("key")
         else
             trackIndex = 0
+            key = invalid
             component = m.trackList.components[0]
             m.OnFocus(component)
         end if
@@ -342,7 +346,19 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
                 AudioPlayer().Resume()
             end if
         else
-            AudioPlayer().SetContext(trackContext, trackIndex, true)
+            plexItem = trackContext[trackIndex]
+            options = {}
+
+            ' If we selected a particular track, add it as the key.
+            if key <> invalid then
+                options.key = key
+            end if
+
+            if command = "shuffle" then
+                options.shuffle = "1"
+            end if
+
+            createPlayQueue(plexItem.GetServer(), "audio", plexItem.GetItemUri(), options)
         end if
     else if command = "summary" then
         m.summaryVisible = not m.summaryVisible = true

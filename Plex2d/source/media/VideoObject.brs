@@ -13,7 +13,7 @@ function VideoObjectClass() as object
     return m.VideoObjectClass
 end function
 
-function CreateVideoObject(item as object, seekValue=0 as integer) as object
+function createVideoObject(item as object, seekValue=0 as integer) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(VideoObjectClass())
 

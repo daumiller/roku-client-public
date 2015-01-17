@@ -4,7 +4,8 @@ function MediaDecisionEngine() as object
         obj.ClassName = "MediaDecisionEngine"
 
         obj.ChooseMedia = mdeChooseMedia
-        obj.EvaluateMedia = mdeEvaluateMedia
+        obj.EvaluateMediaVideo = mdeEvaluateMediaVideo
+        obj.EvaluateMediaMusic = mdeEvaluateMediaMusic
         obj.CanDirectPlay = mdeCanDirectPlay
         obj.CanUseSoftSubs = mdeCanUseSoftSubs
 
@@ -70,7 +71,13 @@ function mdeChooseMedia(item as object) as object
     bestChoice.score = -1
 
     for each media in candidates
-        choice = m.EvaluateMedia(item, media)
+        if item.IsVideoItem() then
+            choice = m.EvaluateMediaVideo(item, media)
+        else if item.IsMusicItem() then
+            choice = m.EvaluateMediaMusic(item, media)
+        else
+            choice = createMediaChoice(media)
+        end if
 
         if choice.score > bestChoice.score then
             bestChoice = choice
@@ -86,7 +93,7 @@ function mdeChooseMedia(item as object) as object
     return bestChoice
 end function
 
-function mdeEvaluateMedia(item as object, media as object) as object
+function mdeEvaluateMediaVideo(item as object, media as object) as object
     choice = createMediaChoice(media)
 
     ' Resolve indirects before doing anything else.
@@ -338,4 +345,42 @@ function mdeCanUseSoftSubs(stream as object) as boolean
     code = stream.Get("languageCode")
 
     return (code = invalid or m.SoftSubLanguages.DoesExist(code))
+end function
+
+function mdeEvaluateMediaMusic(item as object, media as object) as object
+    choice = createMediaChoice(media)
+
+    ' Resolve indirects before doing anything else.
+    if media.IsIndirect() then
+        media = media.ResolveIndirect()
+    end if
+
+    ' Assign a score to this media item. Items can earn points as follows:
+    '
+    ' 10000 - For being manually selected by the user
+    '  5000 - For being accessible/playable
+    '  2000 - For being direct playable
+    '
+    choice.score = 0
+
+    if media.selected = true then
+        choice.score = choice.score + 10000
+    end if
+
+    if media.IsAccessible() then
+        choice.isPlayable = true
+        choice.score = choice.score + 5000
+    end if
+
+    ' For evaluation purposes, we only care about the first part
+    part = media.parts[0]
+    if part = invalid then return choice
+
+    ' TODO(schuyler): Actually evaluate the media, decide if we can direct play, etc.
+    ' TODO(schuyler): Assume that synced servers always have direct playable media
+
+    choice.isDirectPlayable = true
+    choice.score = choice.score + 2000
+
+    return choice
 end function
