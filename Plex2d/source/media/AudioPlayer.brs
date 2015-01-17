@@ -314,6 +314,12 @@ sub apOnPlayQueueUpdate(playQueue as object)
 
     m.audioObjectsById = objectsById
 
+    ' If we're already playing something, we want the next index instead of
+    ' the matching index.
+    if m.isPlaying or m.isPaused then
+        m.AdvanceIndex()
+    end if
+
     m.player.SetContentList(metadata)
     m.player.SetNext(m.curIndex)
     m.player.SetLoop(playQueue.isRepeat)
