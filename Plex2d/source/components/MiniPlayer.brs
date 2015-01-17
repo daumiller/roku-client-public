@@ -149,6 +149,7 @@ sub miniplayerOnHideTimer(timer as object)
 end sub
 
 function miniplayerDraw() as object
+    if m.isDrawn = true then return [m]
     m.isDrawn = true
     return ApplyFunc(ContainerClass().Draw, m)
 end function
