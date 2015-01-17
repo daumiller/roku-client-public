@@ -18,6 +18,7 @@ function AlbumScreen() as object
         obj.SetNowPlaying = albumSetNowPlaying
         obj.GetTrackComponent = albumGetTrackComponent
         obj.SetTriggers = albumSetTriggers
+        obj.OnPlayButton = albumOnPlayButton
 
         m.AlbumScreen = obj
     end if
@@ -209,13 +210,14 @@ sub albumGetComponents()
     end for
     m.components.Push(m.trackList)
 
+    ' Set the focus to the current AudioPlayer track, if applicable.
     component = m.GetTrackComponent(AudioPlayer().GetCurTrack())
     if component <> invalid then
         m.focusedItem = component
         if AudioPlayer().isPlaying then
-            m.OnPlay(AudioPlayer())
+            m.OnPlay(AudioPlayer(), component.plexObject)
         else if AudioPlayer().isPaused then
-            m.OnPause(AudioPlayer())
+            m.OnPause(AudioPlayer(), component.plexObject)
         end if
     end if
 
@@ -327,7 +329,7 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
 
         ' start content from requested index, or from the beginning.
         trackContext = m.children
-        if item.trackIndex <> invalid then
+        if item <> invalid and item.trackIndex <> invalid then
             component = item
             trackIndex = item.trackIndex
             key = item.plexObject.Get("key")
@@ -339,12 +341,10 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
         end if
 
         ' Pause/Resume or Play (start)
-        if AudioPlayer().IsCurTrack(component.plexObject) and (AudioPlayer().isPlaying or AudioPlayer().isPaused) then
-            if AudioPlayer().isPlaying then
-                AudioPlayer().Pause()
-            else
-                AudioPlayer().Resume()
-            end if
+        if m.paused <> invalid and component.Equals(m.paused) then
+            AudioPlayer().Resume()
+        else if m.playing <> invalid and component.Equals(m.playing) then
+            AudioPlayer().Pause()
         else
             plexItem = trackContext[trackIndex]
             options = {}
@@ -416,10 +416,10 @@ sub albumSetNowPlaying(plexObject as object, status=true as boolean)
         m.paused = invalid
     end if
 
-    if m.playing <> invalid and status = false then
+    if m.playing <> invalid then
         m.playing.SetPlaying(false)
         m.playing = invalid
-        return
+        if status = false then return
     end if
 
     component = m.GetTrackComponent(plexObject)
@@ -429,22 +429,22 @@ sub albumSetNowPlaying(plexObject as object, status=true as boolean)
     end if
 end sub
 
-sub albumOnPlay(context as object)
-    m.SetNowPlaying(context.GetCurTrack(), true)
+sub albumOnPlay(context as object, item as object)
+    m.SetNowPlaying(item, true)
 end sub
 
-sub albumOnStop(context as object)
-    m.SetNowPlaying(context.GetCurTrack(), false)
+sub albumOnStop(context as object, item as object)
+    m.SetNowPlaying(item, false)
 end sub
 
-sub albumOnPause(context as object)
-    m.paused = m.GetTrackComponent(context.GetCurTrack())
-    m.OnStop(context)
+sub albumOnPause(context as object, item as object)
+    m.paused = m.GetTrackComponent(item)
+    m.SetNowPlaying(item, false)
 end sub
 
-sub albumOnResume(context as object)
+sub albumOnResume(context as object, item as object)
     m.paused = invalid
-    m.OnPlay(context)
+    m.SetNowPlaying(item, true)
 end sub
 
 sub albumDeactivate()
@@ -456,10 +456,7 @@ function albumGetTrackComponent(plexObject as dynamic) as dynamic
     if plexObject = invalid then return invalid
 
     ' ignore checking for child if parent is different
-    if m.item.Get("ratingKey") <> plexObject.Get("parentRatingKey") then
-        Debug("ignore setting now playing -- viewing album other than now playing track")
-        return invalid
-    end if
+    if m.item.Get("ratingKey") <> plexObject.Get("parentRatingKey") then return invalid
 
     ' locate the component by the plexObect and return
     for each track in m.trackList.components
@@ -494,3 +491,16 @@ function albumSetTriggers() as object
 
     return m.SetTriggersClass
 end function
+
+sub albumOnPlayButton(focusedItem=invalid as dynamic)
+    ' TODO(rob): do we want the focused track to be played? For now
+    ' I think it's nice to pause/resume with the play button and
+    ' resetve the OK button to start a new track.
+    if AudioPlayer().isPaused then
+        AudioPlayer().Resume()
+    else if AudioPlayer().isPlaying then
+        AudioPlayer().Pause()
+    else
+        m.HandleCommand("play", focusedItem)
+    end if
+end sub

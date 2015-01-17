@@ -142,6 +142,10 @@ sub compShow()
         end if
     end for
 
+    ' Add the MiniPlayer to the fixed components for focusability and
+    ' any other methods checking fixed components.
+    m.FixedComponents.push(MiniPlayer())
+
     if m.focusedItem = invalid then
         candidates = []
         for each component in m.components
