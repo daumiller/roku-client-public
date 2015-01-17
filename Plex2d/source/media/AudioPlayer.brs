@@ -178,7 +178,7 @@ function apHandleMessage(msg as object) as boolean
     if type(msg) = "roAudioPlayerEvent" then
         handled = true
         ' This is possible when executing AudioPlayer().Cleanup()  (switching users)
-        if m.context = invalid or m.curIndex = invalid or m.curIndex <= m.context.Count() then return handled
+        if m.context = invalid or m.curIndex = invalid or m.curIndex >= m.context.Count() then return handled
         item = m.context[m.curIndex].item
 
         if msg.isRequestSucceeded() then
@@ -208,6 +208,9 @@ function apHandleMessage(msg as object) as boolean
 
             if m.repeat = m.REPEAT_ONE then
                 m.player.SetNext(m.curIndex)
+            else
+                ' We started a new track, so refresh the PQ if necessary
+                m.playQueue.Refresh(false)
             end if
 
             if m.context.Count() > 1 then
@@ -291,7 +294,7 @@ sub apOnPlayQueueUpdate(playQueue as object)
             itemId = item.Get("playQueueItemID", "")
 
             if m.audioObjectsById.DoesExist(itemId) then
-                obj = audioObjectsById[itemId]
+                obj = m.audioObjectsById[itemId]
             else
                 obj = createAudioObject(item)
                 obj.Build()

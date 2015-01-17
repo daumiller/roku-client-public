@@ -49,10 +49,17 @@ function createPlayQueue(server as object, contentType as string, uri as string,
     return obj
 end function
 
-sub pqRefresh()
-    request = createPlexRequest(server, "/playQueues/" + tostr(m.id))
-    context = request.CreateRequestContext("refresh", createCallable("OnResponse", m))
-    Application().StartRequest(request, context)
+sub pqRefresh(force=true as boolean)
+    ' We refresh our play queue if the caller insists or if we only have a
+    ' portion of our play queue loaded. In particular, this means that we don't
+    ' refresh the play queue if we're asked to refresh because a new track is
+    ' being played but we have the entire album loaded already.
+    '
+    if force or m.IsWindowed() then
+        request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id))
+        context = request.CreateRequestContext("refresh", createCallable("OnResponse", m))
+        Application().StartRequest(request, context)
+    end if
 end sub
 
 sub pqOnResponse(request as object, response as object, context as object)
