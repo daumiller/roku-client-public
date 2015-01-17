@@ -138,12 +138,10 @@ sub albumGetComponents()
     ' *** album title and image ***
     albumTitle = createLabel(ucase(m.item.GetLongerTitle(" / ")), FontRegistry().Font16)
     albumHeight = albumTitle.font.GetOneLineHeight()
-    albumTitle.fixed = false
     albumTitle.SetFrame(xOffset, yOffset - childSpacing - albumHeight, albumTitle.GetPreferredWidth(), albumHeight)
     m.components.push(albumTitle)
 
     album = createImage(m.item, parentHeight, parentHeight)
-    album.fixed = false
     album.SetFrame(xOffset, yOffset, parentHeight, parentHeight)
     m.components.push(album)
 

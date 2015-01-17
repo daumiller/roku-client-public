@@ -121,6 +121,7 @@ sub artistGetComponents()
 
     ' *** Artist title and image ***
     artistTitle = createLabel(ucase(m.item.GetLongerTitle()), FontRegistry().Font16)
+    artistTitle.fixed = false
     artistHeight = artistTitle.font.GetOneLineHeight()
     artistTitle.SetFrame(xOffset, yOffset - childSpacing - artistHeight, artistTitle.GetPreferredWidth(), artistHeight)
     artist = createImage(m.item, parentHeight, parentHeight)
