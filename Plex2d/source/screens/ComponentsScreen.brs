@@ -487,6 +487,13 @@ function compHandleCommand(command as string, item as dynamic) as boolean
             dialog = createDialog("Unable to switch users", "Please check your connection and try again.", m)
             dialog.Show()
         end if
+    else if command = "now_playing" then
+        ' stub for the Now Playing screen.
+        item = AudioPlayer().GetCurTrack()
+        path = item.Get("parentKey")
+        if m.path <> path then
+            Application().PushScreen(createAlbumScreen(item, path))
+        end if
     else
         handled = false
     end if
