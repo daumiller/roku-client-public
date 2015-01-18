@@ -66,6 +66,7 @@ function TimelineData(timelineType as string) as object
     obj.type = timelineType
     obj.state = "stopped"
     obj.item = invalid
+    obj.playQueue = invalid
 
     obj.controllable = CreateObject("roAssociativeArray")
     obj.controllableStr = invalid
@@ -96,7 +97,7 @@ function TimelineData(timelineType as string) as object
     return obj
 end function
 
-function NowPlayingSubscriber(deviceID as string, connectionUrl as string, commandID as dynamic, poll=false as boolean) as object
+function NowPlayingSubscriber(deviceID as string, connectionUrl as dynamic, commandID as dynamic, poll=false as boolean) as object
     obj = CreateObject("roAssociativeArray")
 
     obj.deviceID = deviceID
@@ -218,10 +219,11 @@ sub nowPlayingSendTimelineToAll()
     next
 end sub
 
-sub nowPlayingUpdatePlaybackState(timelineType as string, item as object, state as string, time as integer)
+sub nowPlayingUpdatePlaybackState(timelineType as string, item as object, state as string, time as integer, playQueue=invalid as dynamic)
     timeline = m.timelines[timelineType]
     timeline.state = state
     timeline.item = item
+    timeline.playQueue = playQueue
     timeline.attrs["time"] = tostr(time)
 
     m.SendTimelineToAll()
@@ -274,16 +276,14 @@ function nowPlayingTimelineDataXmlForSubscriber(deviceID as string) as object
 end function
 
 sub nowPlayingWaitForNextTimeline(deviceID as string, reply as object)
-    reply.source = reply.WAITING
-    reply.ScreenID = -4
-    reply.deviceID = deviceID
-    reply.timeoutTimer = timeoutTimer
-    reply.OnTimerExpired = pollOnTimerExpired
-
     timeoutTimer = createTimer("timeout")
     timeoutTimer.SetDuration(30000)
     timeoutTimer.active = true
     timeoutTimer.reply = reply
+
+    reply.source = reply.WAITING
+    reply.deviceID = deviceID
+    reply.timeoutTimer = timeoutTimer
 
     Application().AddTimer(timeoutTimer, createCallable("pollOnTimerExpired", reply))
 
@@ -357,6 +357,12 @@ sub timelineDataToXmlAttributes(elem as object)
                 end if
             end if
         end if
+    end if
+
+    if m.playQueue <> invalid then
+        elem.AddAttribute("playQueueID", tostr(m.playQueue.id))
+        elem.AddAttribute("playQueueItemID", tostr(m.playQueue.selectedId))
+        elem.AddAttribute("playQueueVersion", tostr(m.playQueue.version))
     end if
 
     for each key in m.attrs

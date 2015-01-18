@@ -103,6 +103,7 @@ end sub
 sub pqOnResponse(request as object, response as object, context as object)
     if response.ParseResponse() then
         m.id = response.container.GetInt("playQueueID")
+        m.version = response.container.GetInt("playQueueVersion")
         m.isShuffled = response.container.GetBool("playQueueShuffled")
         m.selectedId = response.container.GetInt("playQueueSelectedItemID")
         m.totalSize = response.container.GetInt("playQueueTotalCount")

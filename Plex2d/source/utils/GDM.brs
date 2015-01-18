@@ -114,7 +114,7 @@ function gdmAdvertiserGetResponseString() as string
         appendNameValue(buf, "Content-Type", "plex/media-player")
         appendNameValue(buf, "Protocol", "plex")
         appendNameValue(buf, "Protocol-Version", "1")
-        appendNameValue(buf, "Protocol-Capabilities", "timeline,playback,navigation")
+        appendNameValue(buf, "Protocol-Capabilities", "timeline,playback,navigation,playqueues")
         appendNameValue(buf, "Version", settings.GetGlobal("appVersionStr"))
         appendNameValue(buf, "Resource-Identifier", settings.GetGlobal("clientIdentifier"))
         appendNameValue(buf, "Device-Class", "stb")

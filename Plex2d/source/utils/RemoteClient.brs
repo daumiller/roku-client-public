@@ -53,7 +53,7 @@ function ProcessResourcesRequest() as boolean
     settings = AppSettings()
 
     player = mc.AddElement("Player")
-    player.AddAttribute("protocolCapabilities", "timeline,playback,navigation")
+    player.AddAttribute("protocolCapabilities", "timeline,playback,navigation,playqueues")
     player.AddAttribute("product", "Plex for Roku")
     player.AddAttribute("version", settings.GetGlobal("appVersionStr"))
     player.AddAttribute("platformVersion", settings.GetGlobal("rokuVersionStr"))
@@ -416,6 +416,27 @@ function ProcessPlaybackSetParameters() as boolean
     return true
 end function
 
+function ProcessPlaybackRefreshPlayQueue() as boolean
+    if not ValidateRemoteControlRequest(m) then return true
+    ProcessCommandID(m.request)
+
+    playQueue = invalid
+
+    ' TODO(schuyler): Support more than audio. Make it easy to look up a PQ by ID?
+    if AudioPlayer().playQueue <> invalid and tostr(AudioPlayer().playQueue.id) = m.request.query["playQueueID"] then
+        playQueue = AudioPlayer().playQueue
+    end if
+
+    if playQueue <> invalid then
+        playQueue.Refresh(true)
+        m.simpleOK("")
+    else
+        SendErrorResponse(m, 400, "Invalid Play Queue ID")
+    end if
+
+    return true
+end function
+
 function ProcessNavigationMoveRight() as boolean
     if not ValidateRemoteControlRequest(m) then return true
     ProcessCommandID(m.request)
@@ -530,38 +551,41 @@ function ProcessApplicationSetText() as boolean
 end function
 
 sub InitRemoteControlHandlers()
+    router = ClassReply()
+
     ' Advertising
-    ClassReply().AddHandler("/resources", ProcessResourcesRequest)
+    router.AddHandler("/resources", ProcessResourcesRequest)
 
     ' Timeline
-    ClassReply().AddHandler("/player/timeline/subscribe", ProcessTimelineSubscribe)
-    ClassReply().AddHandler("/player/timeline/unsubscribe", ProcessTimelineUnsubscribe)
-    ClassReply().AddHandler("/player/timeline/poll", ProcessTimelinePoll)
+    router.AddHandler("/player/timeline/subscribe", ProcessTimelineSubscribe)
+    router.AddHandler("/player/timeline/unsubscribe", ProcessTimelineUnsubscribe)
+    router.AddHandler("/player/timeline/poll", ProcessTimelinePoll)
 
     ' Playback
-    ClassReply().AddHandler("/player/playback/playMedia", ProcessPlaybackPlayMedia)
-    ClassReply().AddHandler("/player/playback/seekTo", ProcessPlaybackSeekTo)
-    ClassReply().AddHandler("/player/playback/play", ProcessPlaybackPlay)
-    ClassReply().AddHandler("/player/playback/pause", ProcessPlaybackPause)
-    ClassReply().AddHandler("/player/playback/stop", ProcessPlaybackStop)
-    ClassReply().AddHandler("/player/playback/skipNext", ProcessPlaybackSkipNext)
-    ClassReply().AddHandler("/player/playback/skipPrevious", ProcessPlaybackSkipPrevious)
-    ClassReply().AddHandler("/player/playback/stepBack", ProcessPlaybackStepBack)
-    ClassReply().AddHandler("/player/playback/stepForward", ProcessPlaybackStepForward)
-    ClassReply().AddHandler("/player/playback/setParameters", ProcessPlaybackSetParameters)
+    router.AddHandler("/player/playback/playMedia", ProcessPlaybackPlayMedia)
+    router.AddHandler("/player/playback/seekTo", ProcessPlaybackSeekTo)
+    router.AddHandler("/player/playback/play", ProcessPlaybackPlay)
+    router.AddHandler("/player/playback/pause", ProcessPlaybackPause)
+    router.AddHandler("/player/playback/stop", ProcessPlaybackStop)
+    router.AddHandler("/player/playback/skipNext", ProcessPlaybackSkipNext)
+    router.AddHandler("/player/playback/skipPrevious", ProcessPlaybackSkipPrevious)
+    router.AddHandler("/player/playback/stepBack", ProcessPlaybackStepBack)
+    router.AddHandler("/player/playback/stepForward", ProcessPlaybackStepForward)
+    router.AddHandler("/player/playback/setParameters", ProcessPlaybackSetParameters)
+    router.AddHandler("/player/playback/refreshPlayQueue", ProcessPlaybackRefreshPlayQueue)
 
     ' Navigation
-    ClassReply().AddHandler("/player/navigation/moveRight", ProcessNavigationMoveRight)
-    ClassReply().AddHandler("/player/navigation/moveLeft", ProcessNavigationMoveLeft)
-    ClassReply().AddHandler("/player/navigation/moveDown", ProcessNavigationMoveDown)
-    ClassReply().AddHandler("/player/navigation/moveUp", ProcessNavigationMoveUp)
-    ClassReply().AddHandler("/player/navigation/select", ProcessNavigationSelect)
-    ClassReply().AddHandler("/player/navigation/back", ProcessNavigationBack)
-    ClassReply().AddHandler("/player/navigation/music", ProcessNavigationMusic)
-    ClassReply().AddHandler("/player/navigation/home", ProcessNavigationHome)
+    router.AddHandler("/player/navigation/moveRight", ProcessNavigationMoveRight)
+    router.AddHandler("/player/navigation/moveLeft", ProcessNavigationMoveLeft)
+    router.AddHandler("/player/navigation/moveDown", ProcessNavigationMoveDown)
+    router.AddHandler("/player/navigation/moveUp", ProcessNavigationMoveUp)
+    router.AddHandler("/player/navigation/select", ProcessNavigationSelect)
+    router.AddHandler("/player/navigation/back", ProcessNavigationBack)
+    router.AddHandler("/player/navigation/music", ProcessNavigationMusic)
+    router.AddHandler("/player/navigation/home", ProcessNavigationHome)
 
     ' Application
-    ClassReply().AddHandler("/player/application/setText", ProcessApplicationSetText)
+    router.AddHandler("/player/application/setText", ProcessApplicationSetText)
 end sub
 
 sub SendEcpCommand(command as string)

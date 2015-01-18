@@ -375,7 +375,7 @@ sub apUpdateNowPlaying()
     ' TODO(rob): not sure about the ramifications of updating the progress
     ' every second... that means we call DrawAll().
     Application().Trigger("audio:progress", [m, item, time])
-    NowPlayingManager().UpdatePlaybackState("music", item, state, time)
+    NowPlayingManager().UpdatePlaybackState("music", item, state, time, m.playQueue)
 end sub
 
 sub apSetRepeat(mode as integer)
