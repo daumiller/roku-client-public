@@ -284,8 +284,9 @@ sub nowPlayingWaitForNextTimeline(deviceID as string, reply as object)
     reply.source = reply.WAITING
     reply.deviceID = deviceID
     reply.timeoutTimer = timeoutTimer
+    reply.OnTimerExpired = pollOnTimerExpired
 
-    Application().AddTimer(timeoutTimer, createCallable("pollOnTimerExpired", reply))
+    Application().AddTimer(timeoutTimer, createCallable("OnTimerExpired", reply))
 
     m.pollReplies[tostr(reply.id)] = reply
 end sub

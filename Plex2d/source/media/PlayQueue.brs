@@ -110,6 +110,9 @@ sub pqOnResponse(request as object, response as object, context as object)
         m.windowSize = response.items.Count()
         m.items = response.items
 
+        ' Fix up the container for all our items
+        response.container.address = "/playQueues/" + tostr(m.id)
+
         m.Trigger("change", [m])
     end if
 end sub
