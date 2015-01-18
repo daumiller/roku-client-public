@@ -162,14 +162,29 @@ function ProcessPlaybackPlayMedia() as boolean
         return true
     end if
 
-    m.OnMetadataResponse = remoteOnMetadataResponse
-    request = createPlexRequest(server, containerKey)
-    context = request.CreateRequestContext("metadata", CreateCallable("OnMetadataResponse", m))
-    context.offset = offset
-    context.key = key
-    Application().StartRequest(request, context)
+    ' If we were sent a play queue, then assume ownership and use the play queue
+    ' instead of fetching the container key ourselves.
 
-    m.source = m.WAITING
+    tokens = containerKey.Tokenize("/?")
+    contentType = m.request.query["type"]
+    if contentType = "music" then contentType = "audio"
+
+    ' TODO(schuyler): Video play queues
+    if tokens.Count() >= 2 and tokens[0] = "playQueues" and contentType = "audio" then
+        playQueueId = tokens[1].toint()
+        createPlayQueueForId(server, contentType, playQueueId)
+        m.simpleOK("")
+    else
+        m.OnMetadataResponse = remoteOnMetadataResponse
+        request = createPlexRequest(server, containerKey)
+        context = request.CreateRequestContext("metadata", CreateCallable("OnMetadataResponse", m))
+        context.offset = offset
+        context.key = key
+        Application().StartRequest(request, context)
+
+        m.source = m.WAITING
+    end if
+
     return true
 end function
 
@@ -222,7 +237,7 @@ sub remoteOnMetadataResponse(request as object, response as object, context as o
                     message = screen.screenError
                 end if
             else if item.IsMusicItem() then
-                AudioPlayer().SetContext(children, matchIndex, true)
+                createPlayQueueForItem(item)
                 success = true
             else
                 message = "Only video is supported at this time"
@@ -233,6 +248,7 @@ sub remoteOnMetadataResponse(request as object, response as object, context as o
             ' video won't start until the user wakes the Roku up. We can do that
             ' for them by sending a harmless keystroke. Down is harmless, as long
             ' as they started a video or slideshow.
+            ' TODO(schuyler): Should we do this conditionally based on idle time?
             if success and screen <> invalid then SendEcpCommand("Down")
         end if
     else

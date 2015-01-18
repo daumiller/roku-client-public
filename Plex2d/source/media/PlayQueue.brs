@@ -49,6 +49,44 @@ function createPlayQueue(server as object, contentType as string, uri as string,
     return obj
 end function
 
+function createPlayQueueForItem(item as object, options={} as object) as object
+    if item.IsMusicItem() then
+        contentType = "audio"
+    else if item.IsVideoOrDirectoryItem() then
+        contentType = "video"
+    else if item.IsPhotoOrDirectoryItem() then
+        contentType = "photo"
+    else
+        ' TODO(schuyler): We may need to try harder, but I'm not sure yet. For
+        ' example, what if we're shuffling an entire library?
+        Fatal("Don't know how to create play queue for item")
+    end if
+
+    return createPlayQueue(item.GetServer(), contentType, item.GetItemUri(), options)
+end function
+
+function createPlayQueueForId(server as object, contentType as string, id as integer) as object
+    obj = CreateObject("roAssociativeArray")
+    obj.Append(PlayQueueClass())
+
+    obj.server = server
+    obj.type = contentType
+    obj.items = CreateObject("roList")
+    obj.id = id
+
+    request = createPlexRequest(server, "/playQueues/" + tostr(id))
+    request.AddParam("own", "1")
+
+    context = request.CreateRequestContext("own", createCallable("OnResponse", obj))
+    Application().StartRequest(request, context)
+
+    if contentType = "audio" then
+        AudioPlayer().SetPlayQueue(obj, true)
+    end if
+
+    return obj
+end function
+
 sub pqRefresh(force=true as boolean)
     ' We refresh our play queue if the caller insists or if we only have a
     ' portion of our play queue loaded. In particular, this means that we don't
