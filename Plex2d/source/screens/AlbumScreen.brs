@@ -63,7 +63,7 @@ sub albumInit()
 end sub
 
 sub albumShow()
-    if not application().isactivescreen(m) then return
+    if not Application().IsActiveScreen(m) then return
 
     ' enable all our triggers
     m.SetTriggers().On()
@@ -409,6 +409,8 @@ sub albumOnKeyPress(keyCode as integer, repeat as boolean)
 end sub
 
 sub albumSetNowPlaying(plexObject as object, status=true as boolean)
+    if not Application().IsActiveScreen(m) then return
+
     if m.paused <> invalid and status = true then
         m.paused.SetPlaying(false)
         m.paused = invalid
@@ -451,7 +453,7 @@ sub albumDeactivate()
 end sub
 
 function albumGetTrackComponent(plexObject as dynamic) as dynamic
-    if plexObject = invalid then return invalid
+    if plexObject = invalid or m.item = invalid then return invalid
 
     ' ignore checking for child if parent is different
     if m.item.Get("ratingKey") <> plexObject.Get("parentRatingKey") then return invalid
