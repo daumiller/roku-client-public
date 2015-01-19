@@ -104,11 +104,11 @@ end sub
 sub apStop()
     if m.context <> invalid then
         m.player.Stop()
+        m.isPlaying = false
+        m.isPaused = false
         Application().Trigger("audio:stop", [m, m.context[m.curIndex].item])
         m.curIndex = 0
         m.player.SetNext(m.curIndex)
-        m.isPlaying = false
-        m.isPaused = false
     end if
 end sub
 
