@@ -104,10 +104,11 @@ end sub
 sub apStop()
     if m.context <> invalid then
         m.player.Stop()
+        Application().Trigger("audio:stop", [m, m.context[m.curIndex].item])
+        m.curIndex = 0
         m.player.SetNext(m.curIndex)
         m.isPlaying = false
         m.isPaused = false
-        Application().Trigger("audio:stop", [m, m.context[m.curIndex].item])
     end if
 end sub
 
@@ -140,7 +141,7 @@ sub apPrev()
     newIndex = m.AdvanceIndex(-1)
 
     m.ignoreTimelines = true
-    m.Stop()
+    m.player.Stop()
     m.curIndex = newIndex
     m.player.SetNext(newIndex)
     m.Play()
@@ -152,23 +153,15 @@ sub apNext()
     newIndex = m.AdvanceIndex()
 
     m.ignoreTimelines = true
-    m.Stop()
+    m.player.Stop()
     m.curIndex = newIndex
     m.player.SetNext(newIndex)
     m.Play()
 end sub
 
 function apAdvanceIndex(delta=1 as integer) as integer
-    maxIndex = m.context.Count() - 1
-    newIndex = m.curIndex + delta
-
-    if newIndex < 0 then
-        newIndex = maxIndex
-    else if newIndex > maxIndex then
-        newIndex = 0
-    end if
-
-    return newIndex
+    newIndex = (m.curIndex + delta) mod m.context.Count()
+    return iif(newIndex < 0, newIndex + m.context.Count(), newIndex)
 end function
 
 function apHandleMessage(msg as object) as boolean
@@ -316,11 +309,13 @@ sub apOnPlayQueueUpdate(playQueue as object)
     ' If we're already playing something, we want the next index instead of
     ' the matching index.
     if m.isPlaying or m.isPaused then
-        m.AdvanceIndex()
+        nextIndex = m.AdvanceIndex()
+    else
+        nextIndex = m.curIndex
     end if
 
     m.player.SetContentList(metadata)
-    m.player.SetNext(m.curIndex)
+    m.player.SetNext(nextIndex)
     m.player.SetLoop(playQueue.isRepeat)
 
     NowPlayingManager().SetControllable("music", "skipPrevious", (m.curIndex > 0 or m.repeat = m.REPEAT_ALL))
