@@ -10,9 +10,6 @@ function TrackClass() as object
         obj.Init = trackInit
         obj.InitComponents = trackInitComponents
         obj.PerformLayout = trackPerformLayout
-        obj.SetColor = trackSetColor
-        obj.OnFocus = trackOnFocus
-        obj.OnBlur = trackOnBlur
         obj.SetPlaying = trackSetPlaying
 
         m.TrackClass = obj
@@ -54,25 +51,23 @@ sub trackInit(textFont as object, glyphFont as object)
     m.InitComponents()
 end sub
 
-sub trackSetColor(fgColor as integer, bgColor=invalid as dynamic)
-    ' we'll redraw if we have a valid region
-    draw = m.region <> invalid
+sub trackSetPlaying(playing=true as boolean)
+    m.isPlaying = playing
+    m.isPaused = AudioPlayer().isPaused
 
-    ' override colors if track is currently playing (maybe paused too?)
-    if m.isPlaying or m.isPaused then fgColor = Colors().Orange
+    draw = (m.region <> invalid)
+
+    fgColor = iif(m.isPlaying or m.isPaused, Colors().Orange, Colors().Text)
+    fgStatus = iif(fgColor = Colors().Orange, fgColor, Colors().Transparent)
 
     ' set the composites background color to anti-alias
-    m.bgColor = firstOf(m.bgColorForce, (fgColor and &hffffff00))
+    m.bgColor = (fgColor and &hffffff00)
     for each comp in m.components
         if comp.Equals(m.status) then
-            if m.isPlaying = false and m.isPaused = false then
-                comp.SetColor(&h00000000)
-            else
-                comp.text = iif(m.isPlaying, Glyphs().PLAY, Glyphs().PAUSE)
-                comp.SetColor(fgColor, bgColor)
-            end if
+            comp.text = iif(m.isPlaying, Glyphs().PLAY, Glyphs().PAUSE)
+            comp.SetColor(fgStatus)
         else
-            comp.SetColor(fgColor, bgColor)
+            comp.SetColor(fgColor)
         end if
         if draw then comp.Draw(true)
     end for
@@ -83,26 +78,12 @@ sub trackSetColor(fgColor as integer, bgColor=invalid as dynamic)
     end if
 end sub
 
-sub trackOnFocus()
-    m.SetColor(Colors().Orange, invalid)
-end sub
-
-sub trackOnBlur(toFocus=invalid as dynamic)
-    m.SetColor(Colors().Text, invalid)
-end sub
-
-sub trackSetPlaying(playing=true as boolean)
-    m.isPlaying = playing
-    m.isPaused = AudioPlayer().isPaused
-    m.SetColor(iif(playing, Colors().Orange, Colors().Text), invalid)
-end sub
-
 sub trackInitComponents()
     item = m.plexObject
 
     ' TODO(rob): update Play / Paused status
     m.status = createLabel(Glyphs().PLAY, m.customFonts.glyphs)
-    m.status.SetColor(&h00000000)
+    m.status.SetColor(Colors().Transparent)
     m.status.SetPadding(m.padding.top, m.padding.right, m.padding.bottom, m.padding.left)
     m.AddComponent(m.status)
 

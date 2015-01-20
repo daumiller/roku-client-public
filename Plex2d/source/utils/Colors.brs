@@ -18,6 +18,7 @@ function Colors() as object
         obj.Text = &hffffffff
         obj.TextDim = &hffffff60
 
+        obj.Transparent = &h00000000
         obj.Black = &h000000ff
         obj.Red = &hc23529ff
         obj.Green = &h5cb85cff

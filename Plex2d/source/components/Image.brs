@@ -23,7 +23,7 @@ function imageDraw() as object
         ' Nothing to do, region should already be set based on bitmap
     else if m.sourceOrig = invalid then
         ' allow an empty placeholder
-        m.bgColor = &h00000000
+        m.bgColor = Colors().Transparent
         m.InitRegion()
     else if type(m.sourceOrig) = "roAssociativeArray" or left(m.source, 4) = "http" then
         if m.placeholder <> invalid then

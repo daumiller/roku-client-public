@@ -94,7 +94,7 @@ sub usersGetComponents()
     lockLabel.zOrder = 12
     lockLabel.halign = lockLabel.JUSTIFY_CENTER
     lockLabel.valign = lockLabel.ALIGN_MIDDLE
-    lockLabel.SetColor(&h00000000)
+    lockLabel.SetColor(Colors().Transparent)
     lockLabel.SetFrame(xOffset, yOffset + logo.height, logo.width, height)
     m.components.Push(lockLabel)
 

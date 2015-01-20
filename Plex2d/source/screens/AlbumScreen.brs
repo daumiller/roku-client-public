@@ -418,21 +418,20 @@ end sub
 sub albumSetNowPlaying(plexObject as object, status=true as boolean)
     if not Application().IsActiveScreen(m) then return
 
-    if m.paused <> invalid and status = true then
+    if m.paused <> invalid and m.paused.plexObject.Get("key") <> plexObject.Get("key") then
         m.paused.SetPlaying(false)
         m.paused = invalid
     end if
 
-    if m.playing <> invalid then
+    if m.playing <> invalid and m.playing.plexObject.Get("key") <> plexObject.Get("key") then
         m.playing.SetPlaying(false)
         m.playing = invalid
-        if status = false then return
     end if
 
     component = m.GetTrackComponent(plexObject)
     if component <> invalid then
         component.SetPlaying(status)
-        m.playing = component
+        m.playing = iif(status, component, invalid)
     end if
 end sub
 
