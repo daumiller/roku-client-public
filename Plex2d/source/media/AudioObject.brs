@@ -37,11 +37,11 @@ function aoBuild(directPlay=invalid as dynamic) as object
         obj = m.BuildTranscode(obj)
     end if
 
-    m.audioItem = obj
+    m.metadata = obj
 
     Info("Constructed audio item for playback: " + tostr(obj, 1))
 
-    return m.audioItem
+    return m.metadata
 end function
 
 function aoBuildTranscode(obj as object) as dynamic

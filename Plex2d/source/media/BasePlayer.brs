@@ -1,0 +1,266 @@
+function BasePlayerClass() as object
+    if m.BasePlayerClass = invalid then
+        obj = CreateObject("roAssociativeArray")
+        obj.Append(EventsMixin())
+
+        ' Constants
+        obj.REPEAT_NONE = 0
+        obj.REPEAT_ONE = 1
+        obj.REPEAT_ALL = 2
+        obj.STATE_STOPPED = "stopped"
+        obj.STATE_PLAYING = "playing"
+        obj.STATE_PAUSED = "paused"
+        obj.STATE_BUFFERING = "buffering"
+
+        obj.Init = bpInit
+
+        ' Player API functions
+        obj.IsActive = bpIsActive
+        obj.Play = bpPlay
+        obj.Pause = bpPause
+        obj.Resume = bpResume
+        obj.Seek = bpSeek
+        obj.Prev = bpPrev
+        obj.Next = bpNext
+
+        obj.SetPlayQueue = bpSetPlayQueue
+        obj.OnPlayQueueUpdate = bpOnPlayQueueUpdate
+
+        obj.isPlaying = false
+        obj.isPaused = false
+        obj.playState = m.STATE_STOPPED
+        obj.lastTimelineState = invalid
+
+        ' Timelines and now playing
+        obj.OnTimelineTimer = bpOnTimelineTimer
+        obj.UpdateNowPlaying = bpUpdateNowPlaying
+        obj.ShouldSendTimeline = bpShouldSendTimeline
+
+        ' Repeat
+        obj.repeat = obj.REPEAT_NONE
+        obj.SetRepeat = bpSetRepeat
+
+        ' Shuffle
+        obj.isShuffled = false
+        obj.SetShuffle = bpSetShuffle
+
+        obj.AdvanceIndex = bpAdvanceIndex
+
+        m.BasePlayerClass = obj
+    end if
+
+    return m.BasePlayerClass
+end function
+
+sub bpInit()
+        ' context is a list of Content Meta-Data objects, with curIndex
+        ' tracking the current item. The actual PlexObjects are backed by
+        ' playQueue.
+        '
+        m.context = invalid
+        m.curIndex = invalid
+        m.playQueue = invalid
+        m.metadataById = {}
+
+        m.ignoreTimelines = false
+        m.timelineTimer = createTimer("timeline")
+        m.timelineTimer.SetDuration(1000, true)
+        m.timelineTimer.active = false
+        m.timelineTimer.callback = createCallable("OnTimelineTimer", m)
+
+        NowPlayingManager().timelines[m.timelineType].attrs["repeat"] = "0"
+        NowPlayingManager().timelines[m.timelineType].attrs["shuffle"] = "0"
+end sub
+
+function bpIsActive() as boolean
+    return (m.isPlaying or m.isPaused)
+end function
+
+sub bpPlay()
+    ' This will probably have to be specific to each type, but we'll take a stab
+    if m.context <> invalid then
+        m.player.Play()
+        m.timelineTimer.active = true
+        Application().AddTimer(m.timelineTimer, m.timelineTimer.callback)
+    end if
+end sub
+
+sub bpPause()
+    if m.context <> invalid then
+        m.player.Pause()
+    end if
+end sub
+
+sub bpResume()
+    if m.context <> invalid then
+        m.player.Resume()
+    end if
+end sub
+
+sub bpSeek(offset, relative=false as boolean)
+    if not (m.isPlaying or m.isPaused) then return
+
+    if relative then
+        offset = offset + m.GetPlaybackPosition(true)
+
+        if offset < 0 then offset = 0
+    end if
+
+    m.SeekPlayer(offset)
+end sub
+
+sub bpPrev()
+    if m.context = invalid then return
+
+    m.PlayItemAtIndex(m.AdvanceIndex(-1))
+end sub
+
+sub bpNext()
+    if m.context = invalid then return
+
+    m.PlayItemAtIndex(m.AdvanceIndex())
+end sub
+
+function bpAdvanceIndex(delta=1 as integer) as integer
+    newIndex = (m.curIndex + delta) mod m.context.Count()
+    return iif(newIndex < 0, newIndex + m.context.Count(), newIndex)
+end function
+
+sub bpSetPlayQueue(playQueue as object, startPlayer=true as boolean)
+    if startPlayer then
+        m.ignoreTimelines = true
+        m.Stop()
+    end if
+
+    ' TODO(schuyler): If we have an old PQ, clean things up
+    m.metadataById = {}
+    m.playQueue = playQueue
+
+    m.OnPlayQueueUpdate(playQueue)
+
+    playQueue.On("change", createCallable("OnPlayQueueUpdate", m))
+
+    if m.context.Count() > 0 and startPlayer then
+        m.Play()
+    end if
+end sub
+
+sub bpOnPlayQueueUpdate(playQueue as object)
+    ' Usually when our play queue updates almost all of the items will be the
+    ' same as the previous window. So keep track of our computed CMD objects
+    ' by PQ item ID and reuse them if we can.
+
+    if m.context <> invalid then
+        oldSize = m.context.Count()
+    else
+        oldSize = 0
+    end if
+
+    objectsById = {}
+    metadata = CreateObject("roList")
+    m.context = CreateObject("roList")
+    m.curIndex = 0
+
+    ' Create a list of objects with appropriate content metadata based on the
+    ' current play queue window. We'll skip anything that isn't playable for
+    ' this player type.
+    '
+    for each item in playQueue.items
+        if m.IsPlayable(item) then
+            itemId = item.Get("playQueueItemID", "")
+
+            if m.metadataById.DoesExist(itemId) then
+                obj = m.metadataById[itemId]
+            else
+                obj = m.CreateContentMetaData(item)
+            end if
+
+            objectsById[itemId] = obj
+
+            if obj.metadata <> invalid then
+                m.context.AddTail(obj)
+                metadata.AddTail(obj.metadata)
+                if item.GetInt("playQueueItemID") = playQueue.selectedID then
+                    m.curIndex = m.context.Count() - 1
+                end if
+            end if
+        end if
+    next
+
+    m.metadataById = objectsById
+
+    ' If we're already playing something, then we want the next index
+    ' instead of the matching index.
+    '
+    if m.isPlaying or m.isPaused then
+        nextIndex = m.AdvanceIndex()
+    else
+        nextIndex = m.curIndex
+    end if
+
+    m.SetContentList(metadata, nextIndex)
+
+    ' Update our controllable items based on the PQ size
+    NowPlayingManager().SetControllable(m.timelineType, "skipPrevious", (m.curIndex > 0 or m.repeat = m.REPEAT_ALL))
+    NowPlayingManager().SetControllable(m.timelineType, "skipNext", (m.curIndex < m.context.Count() - 1 or m.repeat = m.REPEAT_ALL))
+
+    ' Update shuffle and repeat according to the PQ
+    m.isShuffled = playQueue.isShuffled
+    NowPlayingManager().timelines[m.timelineType].attrs["shuffle"] = iif(m.isShuffled, "1", "0")
+
+    if m.repeat <> m.REPEAT_ONE then
+        m.repeat = iif(playQueue.isRepeat, m.REPEAT_ALL, m.REPEAT_NONE)
+    end if
+    NowPlayingManager().timelines[m.timelineType].attrs["repeat"] = tostr(m.repeat)
+
+    if m.context.Count() > 0 and oldSize = 0 then
+        m.Play()
+    end if
+end sub
+
+sub bpOnTimelineTimer(timer as object)
+    m.UpdateNowPlaying(true)
+end sub
+
+function bpShouldSendTimeline(item as object) as boolean
+    return (item.Get("ratingKey") <> invalid and item.GetServer() <> invalid)
+end function
+
+sub bpUpdateNowPlaying(force=false as boolean)
+    if m.ignoreTimelines then return
+
+    item = m.context[m.curIndex].item
+
+    if not m.ShouldSendTimeline(item) then return
+
+    ' Avoid duplicates
+    if m.playState = m.lastTimelineState and not force then return
+
+    m.lastTimelineState = m.playState
+    m.timelineTimer.Mark()
+
+    time = m.GetPlaybackPosition(true)
+
+    m.Trigger("progress", [m, item, time])
+    NowPlayingManager().UpdatePlaybackState(m.timelineType, item, m.playState, time, m.playQueue)
+end sub
+
+sub bpSetRepeat(mode as integer)
+    if m.repeat = mode then return
+
+    ' TODO(schuyler): Tell the Play Queue to set this repeat mode
+
+    m.repeat = mode
+
+    NowPlayingManager().timelines[m.timelineType].attrs["repeat"] = tostr(mode)
+end sub
+
+sub bpSetShuffle(shuffle as boolean)
+    if shuffle = m.isShuffled then return
+
+    ' TODO(schuyler): Tell the Play Queue to (un)shuffle itself
+
+    m.isShuffled = shuffle
+
+    NowPlayingManager().timelines[m.timelineType].attrs["shuffle"] = iif(shuffle, "1", "0")
+end sub

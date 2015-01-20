@@ -102,6 +102,8 @@ sub pqOnResponse(request as object, response as object, context as object)
         m.windowSize = response.items.Count()
         m.items = response.items
 
+        ' TODO(schuyler): Set repeat as soon as PMS starts returning it
+
         ' Fix up the container for all our items
         response.container.address = "/playQueues/" + tostr(m.id)
 
