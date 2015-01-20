@@ -81,7 +81,7 @@ sub overlayShow(blocking=false as boolean)
     if m.enableOverlay = false then
         dimmer = createBlock(Colors().OverlayMed)
         dimmer.SetFrame(0, 0, 1280, 720)
-        dimmer.zOrder = 98
+        dimmer.zOrder = ZOrders().OVERLAY - 1
         m.components.unshift(dimmer)
     end if
 

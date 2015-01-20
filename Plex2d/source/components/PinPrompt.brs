@@ -72,7 +72,7 @@ sub pinpromptGetComponents()
     title = createLabel(m.title, m.customFonts.title)
     title.halign = title.JUSTIFY_CENTER
     title.valign = title.ALIGN_MIDDLE
-    title.zOrder = 100
+    title.zOrder = ZOrders().OVERLAY
     title.SetColor(m.colors.title, m.colors.titleBg)
     title.SetFrame(m.x, m.y, m.width, 60)
     m.compTitle = title
@@ -97,7 +97,7 @@ sub pinpromptGetComponents()
     for i = 0 to 3
         digit = createLabel("*", m.customFonts.pin)
         digit.SetColor(m.colors.text)
-        digit.zOrder = 100
+        digit.zOrder = ZOrders().OVERLAY
         digit.halign = digit.JUSTIFY_CENTER
         digit.valign = digit.ALIGN_BOTTOM
         m["compPin_" + tostr(i)] = digit
@@ -135,7 +135,7 @@ sub pinpromptGetComponents()
     ' PIN box background
     bkg = createBlock(m.colors.background)
     bkg.SetFrame(m.x, m.y, m.width, m.height)
-    bkg.zOrder = 99
+    bkg.zOrder = ZOrders().OVERLAY - 1
     m.components.push(bkg)
 
     ' pin box border
@@ -149,17 +149,17 @@ sub pinpromptGetComponents()
 
         borderLeft = createBlock(m.border.color)
         borderLeft.SetFrame(rect.left, rect.up, m.border.px, rect.height)
-        borderLeft.zOrder = 99
+        borderLeft.zOrder = ZOrders().OVERLAY - 1
         m.components.push(borderLeft)
 
         borderRight = createBlock(m.border.color)
         borderRight.SetFrame(rect.right, rect.up, m.border.px, rect.height)
-        borderRight.zOrder = 99
+        borderRight.zOrder = ZOrders().OVERLAY - 1
         m.components.push(borderRight)
 
         borderBottom = createBlock(m.border.color)
         borderBottom.SetFrame(rect.left, rect.down, rect.width, m.border.px)
-        borderBottom.zOrder = 99
+        borderBottom.zOrder = ZOrders().OVERLAY -1
         m.components.push(borderBottom)
     end if
 end sub
@@ -169,7 +169,7 @@ function pinpromptCreateButton(title as string, font as object, command as strin
     btn.SetColor(m.colors.text, m.colors.button)
     btn.focusInside = true
     btn.fixed = false
-    btn.zOrder = 100
+    btn.zOrder = ZOrders().OVERLAY
 
     ' custom PIN button properties
     btn.overlay = m

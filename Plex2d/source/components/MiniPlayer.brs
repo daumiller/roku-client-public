@@ -31,7 +31,7 @@ end sub
 sub miniplayerInit()
     ApplyFunc(ContainerClass().Init, m)
 
-    m.zOrder = 999
+    m.zOrder = ZOrders().MINIPLAYER
     m.zOrderInit = -1
     m.isDrawn = false
     m.selectCommand = "now_playing"

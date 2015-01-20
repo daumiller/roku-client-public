@@ -89,7 +89,7 @@ sub vboxPerformLayout()
 
             ' determine the zOrder required for any additional components
             if component.zOrder <> invalid and component.zOrder > m.scrollInfo.zOrder then
-                m.scrollInfo.zOrder = component.zOrder+1
+                m.scrollInfo.zOrder = component.zOrder + 1
             end if
         end if
     end while

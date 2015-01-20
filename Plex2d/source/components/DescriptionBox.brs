@@ -7,7 +7,7 @@ function DescriptionBoxClass() as object
         obj.spacing = 0
         obj.titlePrefs = { font: FontRegistry().font18b, color: Colors().Text}
         obj.subtitlePrefs = { font: FontRegistry().font18, color: Colors().TextDim}
-        obj.zOrder = 500
+        obj.zOrder = ZOrders().DESCBOX
 
         ' Methods
         obj.Show = dboxShow

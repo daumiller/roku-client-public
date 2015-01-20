@@ -105,7 +105,7 @@ sub dropdownGetComponents()
             if option.width  <> invalid then comp.width  = option.width
             if option.height <> invalid then comp.height = option.height
             comp.setColor(Colors().Text, Colors().Button)
-            comp.zOrder = 50
+            comp.zOrder = ZOrders().DROPDOWN
             comp.dropDown = m
             comp.focusParent = m
             comp.fixed = (option.fixed = true)

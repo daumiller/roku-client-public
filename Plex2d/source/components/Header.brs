@@ -66,7 +66,7 @@ function createHeader(screen as object) as object
 
     obj.Init()
 
-    obj.zOrder = 200
+    obj.zOrder = ZOrders().HEADER
     obj.screen = screen
 
     return obj

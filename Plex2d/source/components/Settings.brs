@@ -55,7 +55,7 @@ sub settingsGetComponents()
     title = createLabel(m.title, FontRegistry().font18)
     title.halign = title.JUSTIFY_CENTER
     title.valign = title.ALIGN_MIDDLE
-    title.zOrder = 100
+    title.zOrder = ZOrders().OVERLAY
     title.SetColor(Colors().Text, m.colors.title)
     title.SetFrame(m.x, m.y, m.width, 70)
     m.components.push(title)
@@ -79,7 +79,7 @@ sub settingsGetComponents()
         title.SetDimensions(m.width, 60)
         title.SetPadding(0, 0, 0, m.padding)
         title.valign = title.ALIGN_MIDDLE
-        title.zOrder = 100
+        title.zOrder = ZOrders().OVERLAY
         menuBox.AddComponent(title)
         first = true
         for each pref in group.settings
@@ -102,7 +102,7 @@ sub settingsGetComponents()
     ' settings background
     bkg = createBlock(m.colors.background)
     bkg.SetFrame(m.x, m.y, m.width, m.height)
-    bkg.zOrder = 99
+    bkg.zOrder = ZOrders().OVERLAY - 1
     m.components.push(bkg)
 
     ' settings box border
@@ -110,22 +110,22 @@ sub settingsGetComponents()
 
     borderLeft = createBlock(border.color)
     borderLeft.SetFrame(rect.left - border.px, rect.up, border.px, rect.height)
-    borderLeft.zOrder = 99
+    borderLeft.zOrder = ZOrders().OVERLAY - 1
     m.components.push(borderLeft)
 
     borderRight = createBlock(border.color)
     borderRight.SetFrame(rect.right, rect.up, border.px, rect.height)
-    borderRight.zOrder = 99
+    borderRight.zOrder = ZOrders().OVERLAY - 1
     m.components.push(borderRight)
 
     borderMid = createBlock(border.color)
     borderMid.setFrame(int(rect.left + rect.width/2 - border.px/2), rect.up, border.px, rect.height)
-    borderMid.zOrder = 99
+    borderMid.zOrder = ZOrders().OVERLAY - 1
     m.components.push(borderMid)
 
     borderBottom = createBlock(border.color)
     borderBottom.SetFrame(rect.left, rect.down - border.px, rect.width, border.px)
-    borderBottom.zOrder = 99
+    borderBottom.zOrder = ZOrders().OVERLAY - 1
     m.components.push(borderBottom)
 end sub
 
@@ -134,7 +134,7 @@ function settingsCreateMenuButton(pref as object) as object
     btn.focusInside = true
     btn.fixed = false
     btn.halign = m.JUSTIFY_LEFT
-    btn.zOrder = 100
+    btn.zOrder = ZOrders().OVERLAY
 
     ' special properties for the menu buttons
     btn.overlay = m
@@ -156,7 +156,7 @@ function settingsCreatePrefButton(text as string, command as dynamic, value as s
     btn.focusInside = true
     btn.fixed = false
     btn.halign = m.JUSTIFY_LEFT
-    btn.zOrder = 100
+    btn.zOrder = ZOrders().OVERLAY
 
     ' special properties for the settings buttons
     btn.overlay = m

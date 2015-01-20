@@ -43,11 +43,6 @@ sub dialogInit(title as string, text=invalid as dynamic)
     m.y = int(720/2 - m.height/2)
     m.spacing = 25
 
-    m.zOrder = {
-        components: 200,
-        background: 199,
-    }
-
     m.buttonPrefs = {
         width: 72,
         height: 44,
@@ -74,7 +69,7 @@ sub dialogGetComponents()
         label.SetPadding(int(m.spacing/2))
         label.halign = label.JUSTIFY_CENTER
         label.valign = label.ALIGN_MIDDLE
-        label.zOrder = m.zOrder.components
+        label.zOrder = ZOrders().OVERLAY
         dialogBox.AddComponent(label)
     end if
 
@@ -85,7 +80,7 @@ sub dialogGetComponents()
         label.SetPadding(int(m.spacing/2))
         label.halign = label.JUSTIFY_CENTER
         label.valign = label.ALIGN_MIDDLE
-        label.zOrder = m.zOrder.components
+        label.zOrder = ZOrders().OVERLAY
         dialogBox.AddComponent(label)
     end if
 
@@ -117,7 +112,7 @@ sub dialogGetComponents()
 
     bkg = createBlock(Colors().OverlayVeryDark)
     bkg.SetFrame(m.x, m.y, m.width, m.height)
-    bkg.zOrder = m.zOrder.background
+    bkg.zOrder = ZOrders().OVERLAY - 1
     m.components.push(bkg)
 end sub
 
@@ -127,7 +122,7 @@ function dialogCreateButton(text as string, command=invalid as dynamic) as objec
     btn.width = m.buttonPrefs.width
     btn.height = m.buttonPrefs.height
     btn.fixed = m.buttonPrefs.fixed
-    btn.zOrder = m.zOrder.components
+    btn.zOrder = ZOrders().OVERLAY
     btn.SetPadding(m.buttonPrefs.padding)
     btn.focusNonSiblings = false
     btn.dialog = m

@@ -82,7 +82,7 @@ sub usersGetComponents()
 
     ' Plex Logo
     logo = createImage("pkg:/images/plex-logo-light-200x65.png", 200, 65)
-    logo.zOrder = 11
+    logo.zOrder = ZOrders().HEADER
     xOffset = int(1280/2 - logo.width/2)
     yOffset = int((m.buttons.y/2) - (logo.height/2) + m.buttons.spacing)
     logo.SetFrame(xOffset, yOffset, logo.width, logo.height)
@@ -91,7 +91,7 @@ sub usersGetComponents()
     ' Lock screen status
     height = m.buttons.y - (yOffset + logo.height)
     lockLabel = createLabel("Lock Screen", FontRegistry().font18b)
-    lockLabel.zOrder = 12
+    lockLabel.zOrder = ZOrders().HEADER
     lockLabel.halign = lockLabel.JUSTIFY_CENTER
     lockLabel.valign = lockLabel.ALIGN_MIDDLE
     lockLabel.SetColor(Colors().Transparent)
