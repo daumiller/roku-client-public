@@ -52,6 +52,7 @@ sub apStop()
         m.Trigger("stopped", [m, m.context[m.curIndex].item])
         m.curIndex = 0
         m.player.SetNext(m.curIndex)
+        m.timelineTimer.active = false
     end if
 end sub
 
