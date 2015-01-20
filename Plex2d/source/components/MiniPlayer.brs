@@ -3,6 +3,8 @@ function MiniPlayer() as object
         obj = createObject("roAssociativeArray")
         obj.Append(ContainerClass())
 
+        obj.initComplete = false
+
         ' Methods
         obj.Destroy = miniplayerDestroy
         obj.Init = miniplayerInit
@@ -16,25 +18,50 @@ function MiniPlayer() as object
         obj.SetImage = miniplayerSetImage
         obj.Draw = miniplayerDraw
 
-        obj.Init()
-
         m.miniPlayer = obj
+    end if
+
+    if not m.miniPlayer.initComplete then
+        m.miniPlayer.Init()
     end if
 
     return m.miniPlayer
 end function
 
+' wrapper to use the miniplayer singletone and set the zOrder
+function createMiniPlayer() as object
+    obj = MiniPlayer()
+
+    if AudioPlayer().isActive() then
+        obj.Show(false)
+    end if
+
+    return obj
+end function
+
 sub miniplayerDestroy()
-    ' do not destroy the component
+    ' Hide the mini player instead of destroying it.
+    m.SetZ(-1)
+    m.SetFocusable(invalid, false)
 end sub
 
 sub miniplayerInit()
+    if m.initComplete then return
     ApplyFunc(ContainerClass().Init, m)
 
+    m.initComplete = true
+    m.isDrawn = false
     m.zOrder = ZOrders().MINIPLAYER
     m.zOrderInit = -1
-    m.isDrawn = false
     m.selectCommand = "now_playing"
+
+    ' Use the current track in the audio player, or we'll use placeholders
+    item = AudioPlayer().GetCurTrack()
+    labels = {}
+    if item <> invalid then
+        labels.title = item.Get("title", "")
+        labels.subtitle = item.Get("parentTitle", "")
+    end if
 
     ' TODO(rob): HD/SD nightmare and lame hardcoded positioning. We
     ' probably need to refactor the header, to have the ability to
@@ -51,17 +78,17 @@ sub miniplayerInit()
     vbTrack = createVBox(false, false, false, 0)
 
     ' Image placeholder (transparent region)
-    m.Image = createImage(invalid, 28, 28)
+    m.Image = createImage(item, 28, 28)
     m.Image.pvalign = m.Image.ALIGN_MIDDLE
     m.Image.zOrderInit = m.zOrderInit
 
     ' Title placeholder
-    m.Title = createLabel("", FontRegistry().Font12)
+    m.Title = createLabel(firstOf(labels.title, ""), FontRegistry().Font12)
     m.Title.width = m.width
     m.Title.zOrderInit = m.zOrderInit
 
     ' Subtitle placeholder
-    m.Subtitle = createLabel("", FontRegistry().Font12)
+    m.Subtitle = createLabel(firstOf(labels.subtitle, ""), FontRegistry().Font12)
     m.Subtitle.width = m.width
     m.Subtitle.zOrderInit = m.zOrderInit
 
@@ -115,11 +142,11 @@ sub miniplayerSetImage(item as object)
     m.Image.Draw()
 end sub
 
-sub miniplayerShow()
+sub miniplayerShow(draw=true as boolean)
     if m.hideTimer <> invalid then m.hideTimer.active = false
     m.SetZ(m.zOrder)
     m.SetFocusable(m.selectCommand)
-    CompositorScreen().DrawAll()
+    if draw then CompositorScreen().DrawAll()
 end sub
 
 sub miniplayerHide(screen as object)

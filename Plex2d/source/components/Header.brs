@@ -82,7 +82,7 @@ sub headerPerformLayout()
     m.AddComponent(background)
 
     ' *** Mini Player *** '
-    m.AddComponent(MiniPlayer())
+    m.AddComponent(createMiniPlayer())
 
     ' *** Logo *** '
     hbox = createHBox(false, false, false, 0)
