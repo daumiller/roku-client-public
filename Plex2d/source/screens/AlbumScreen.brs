@@ -356,7 +356,8 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
                 options["shuffle"] = "1"
             end if
 
-            createPlayQueueForItem(plexItem, options)
+            pq = createPlayQueueForItem(plexItem, options)
+            AudioPlayer().SetPlayQueue(pq, true)
         end if
     else if command = "summary" then
         m.summaryVisible = not m.summaryVisible = true

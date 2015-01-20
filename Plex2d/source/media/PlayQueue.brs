@@ -42,10 +42,6 @@ function createPlayQueue(server as object, contentType as string, uri as string,
     context = request.CreateRequestContext("create", createCallable("OnResponse", obj))
     Application().StartRequest(request, context, "")
 
-    if contentType = "audio" then
-        AudioPlayer().SetPlayQueue(obj, true)
-    end if
-
     return obj
 end function
 
@@ -79,10 +75,6 @@ function createPlayQueueForId(server as object, contentType as string, id as int
 
     context = request.CreateRequestContext("own", createCallable("OnResponse", obj))
     Application().StartRequest(request, context)
-
-    if contentType = "audio" then
-        AudioPlayer().SetPlayQueue(obj, true)
-    end if
 
     return obj
 end function

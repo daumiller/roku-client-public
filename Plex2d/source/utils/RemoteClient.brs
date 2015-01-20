@@ -172,7 +172,12 @@ function ProcessPlaybackPlayMedia() as boolean
     ' TODO(schuyler): Video play queues
     if tokens.Count() >= 2 and tokens[0] = "playQueues" and contentType = "audio" then
         playQueueId = tokens[1].toint()
-        createPlayQueueForId(server, contentType, playQueueId)
+        pq = createPlayQueueForId(server, contentType, playQueueId)
+
+        if contentType = "audio" then
+            AudioPlayer().SetPlayQueue(pq, true)
+        end if
+
         m.simpleOK("")
     else
         m.OnMetadataResponse = remoteOnMetadataResponse
@@ -237,7 +242,8 @@ sub remoteOnMetadataResponse(request as object, response as object, context as o
                     message = screen.screenError
                 end if
             else if item.IsMusicItem() then
-                createPlayQueueForItem(item)
+                pq = createPlayQueueForItem(item)
+                AudioPlayer().SetPlayQueue(pq, true)
                 success = true
             else
                 message = "Only video is supported at this time"
