@@ -167,7 +167,7 @@ sub compShow()
             end for
         end for
         ' invalidate any refocus if we didn't find a match
-        if m.focusedItem.id <> m.refocus.id then m.refocus = invalid
+        if m.focusedItem <> invalid and m.focusedItem.id <> m.refocus.id then m.refocus = invalid
     end if
 
     if m.focusedItem <> invalid then
