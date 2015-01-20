@@ -200,7 +200,9 @@ sub apSetRepeat(mode as integer)
 end sub
 
 function apGetCurTrack() as dynamic
-    if m.curIndex = invalid or m.context = invalid then return invalid
+    if m.curIndex <> invalid and m.context <> invalid and m.context[m.curIndex] <> invalid then
+        return m.context[m.curIndex].item
+    end if
 
-    return m.context[m.curIndex].item
+    return invalid
 end function
