@@ -570,6 +570,9 @@ function compGetFocusManual(direction as string, focusableComponenents=invalid a
         next
     end if
 
+    ' Add the mini player to the candidates if focusable
+    if MiniPlayer().focusable then candidates.push(MiniPlayer())
+
     ' fall back if we do not have any valid candidates (slower check)
     if candidates.count() = 0 and focusableComponenents = invalid then
         ' Ask each component to add to our list of candidates.
