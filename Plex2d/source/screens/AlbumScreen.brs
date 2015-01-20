@@ -8,7 +8,6 @@ function AlbumScreen() as object
         ' Methods
         obj.Init = albumInit
         obj.Show = albumShow
-        obj.Deactivate = albumDeactivate
         obj.OnChildResponse = albumOnChildResponse
         obj.GetComponents = albumGetComponents
         obj.HandleCommand = albumHandleCommand
@@ -17,8 +16,11 @@ function AlbumScreen() as object
         obj.OnKeyPress = albumOnKeyPress
         obj.SetNowPlaying = albumSetNowPlaying
         obj.GetTrackComponent = albumGetTrackComponent
-        obj.SetTriggers = albumSetTriggers
         obj.OnPlayButton = albumOnPlayButton
+        obj.OnPlay = albumOnPlay
+        obj.OnStop = albumOnStop
+        obj.OnPause = albumOnPause
+        obj.OnResume = albumOnResume
 
         m.AlbumScreen = obj
     end if
@@ -60,13 +62,17 @@ sub albumInit()
     m.requestContext = invalid
     m.childRequestContext = invalid
     m.children = CreateObject("roList")
+
+    ' Set up audio player listeners
+    player = AudioPlayer()
+    m.AddListener(player, "playing", CreateCallable("OnPlay", m))
+    m.AddListener(player, "stopped", CreateCallable("OnStop", m))
+    m.AddListener(player, "paused", CreateCallable("OnPause", m))
+    m.AddListener(player, "resumed", CreateCallable("OnResume", m))
 end sub
 
 sub albumShow()
     if not Application().IsActiveScreen(m) then return
-
-    ' enable all our triggers
-    m.SetTriggers().On()
 
     if m.requestContext = invalid then
         request = createPlexRequest(m.server, m.parentPath)
@@ -430,27 +436,22 @@ sub albumSetNowPlaying(plexObject as object, status=true as boolean)
     end if
 end sub
 
-sub albumOnPlay(context as object, item as object)
+sub albumOnPlay(player as object, item as object)
     m.SetNowPlaying(item, true)
 end sub
 
-sub albumOnStop(context as object, item as object)
+sub albumOnStop(player as object, item as object)
     m.SetNowPlaying(item, false)
 end sub
 
-sub albumOnPause(context as object, item as object)
+sub albumOnPause(player as object, item as object)
     m.paused = m.GetTrackComponent(item)
     m.SetNowPlaying(item, false)
 end sub
 
-sub albumOnResume(context as object, item as object)
+sub albumOnResume(player as object, item as object)
     m.paused = invalid
     m.SetNowPlaying(item, true)
-end sub
-
-sub albumDeactivate()
-    m.SetTriggers().Off()
-    ApplyFunc(ComponentsScreen().Deactivate, m)
 end sub
 
 function albumGetTrackComponent(plexObject as dynamic) as dynamic
@@ -467,30 +468,6 @@ function albumGetTrackComponent(plexObject as dynamic) as dynamic
     end for
 
     return invalid
-end function
-
-function albumSetTriggers() as object
-    if m.SetTriggersClass = invalid then
-        obj = CreateObject("roAssociativeArray")
-        obj.Append(TriggersClass())
-        obj.Init()
-
-        ' Callback methods
-        m.OnPlay = albumOnPlay
-        m.OnStop = albumOnStop
-        m.OnPause = albumOnPause
-        m.OnResume = albumOnResume
-
-        ' Add("eventName", callback)
-        obj.Add("audio:play", CreateCallable("OnPlay", m, m.screenId))
-        obj.Add("audio:stop", CreateCallable("OnStop", m, m.screenId))
-        obj.Add("audio:pause", CreateCallable("OnPause", m, m.screenId))
-        obj.Add("audio:resume", CreateCallable("OnResume", m, m.screenId))
-
-        m.SetTriggersClass = obj
-    end if
-
-    return m.SetTriggersClass
 end function
 
 sub albumOnPlayButton(focusedItem=invalid as dynamic)

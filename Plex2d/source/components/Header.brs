@@ -12,9 +12,12 @@ function HeaderClass() as object
         obj.PerformLayout = headerPerformLayout
         obj.Init = headerInit
         obj.Draw = headerDraw
-        obj.Destroy = headerDestroy
 
-        obj.SetTriggers = headerSetTriggers
+        obj.OnPlay = headerOnPlay
+        obj.OnStop = headerOnStop
+        obj.OnPause = headerOnPause
+        obj.OnResume = headerOnResume
+        obj.OnProgress = headerOnProgress
 
         m.HeaderClass = obj
     end if
@@ -23,14 +26,9 @@ function HeaderClass() as object
 end function
 
 function headerDraw() as object
-    m.SetTriggers().On()
+    m.EnableListeners()
     return ApplyFunc(ContainerClass().Draw, m)
 end function
-
-sub headerDestroy()
-    m.SetTriggers().Off()
-    ApplyFunc(ContainerClass().Destroy, m)
-end sub
 
 sub headerInit()
     ApplyFunc(ContainerClass().Init, m)
@@ -51,6 +49,15 @@ sub headerInit()
         yOffset: 5,
         font: FontRegistry().font16
     }
+
+    ' Set up listeners for AudioPlayer and the MiniPlayer
+    m.DisableListeners()
+    player = AudioPlayer()
+    m.AddListener(player, "playing", CreateCallable("OnPlay", m))
+    m.AddListener(player, "stopped", CreateCallable("OnStop", m))
+    m.AddListener(player, "paused", CreateCallable("OnPause", m))
+    m.AddListener(player, "resumed", CreateCallable("OnResume", m))
+    m.AddListener(player, "progress", CreateCallable("OnProgress", m))
 end sub
 
 function createHeader(screen as object) as object
@@ -169,36 +176,7 @@ function headerGetOptions() as object
     return m.options
 end function
 
-function headerSetTriggers() as object
-    if m.SetTriggersClass = invalid then
-        obj = CreateObject("roAssociativeArray")
-        obj.Append(TriggersClass())
-        obj.Init()
-
-        ' use a uniq component id
-        id = m.uniqId
-
-        ' Callback methods
-        m.OnPlay = headerOnPlay
-        m.OnStop = headerOnStop
-        m.OnPause = headerOnPause
-        m.OnResume = headerOnResume
-        m.OnProgress = headerOnProgress
-
-        ' Add("eventName", callback)
-        obj.Add("audio:play", CreateCallable("OnPlay", m, id))
-        obj.Add("audio:stop", CreateCallable("OnStop", m, id))
-        obj.Add("audio:pause", CreateCallable("OnPause", m, id))
-        obj.Add("audio:resume", CreateCallable("OnResume", m, id))
-        obj.Add("audio:progress", CreateCallable("OnProgress", m, id))
-
-        m.SetTriggersClass = obj
-    end if
-
-    return m.SetTriggersClass
-end function
-
-sub headerOnPlay(context as object, item as object)
+sub headerOnPlay(player as object, item as object)
     mp = MiniPlayer()
     mp.SetTitle(item.Get("grandparentTitle", ""))
     mp.SetSubtitle(item.Get("title", ""))
@@ -206,21 +184,21 @@ sub headerOnPlay(context as object, item as object)
     mp.Show()
 end sub
 
-sub headerOnStop(context as object, item as object)
+sub headerOnStop(player as object, item as object)
     MiniPlayer().Hide(m.screen)
 end sub
 
-sub headerOnPause(context as object, item as object)
+sub headerOnPause(player as object, item as object)
     ' anything we need here?
 end sub
 
-sub headerOnResume(context as object, item as object)
+sub headerOnResume(player as object, item as object)
     MiniPlayer().Show()
 end sub
 
-sub headerOnProgress(context as object, item as object, time as integer)
+sub headerOnProgress(player as object, item as object, time as integer)
     ' limit gratuitous screen updates as they are expensive.
-    if context.IsPlaying and MiniPlayer().SetProgress(time, item.GetInt("duration")) then
+    if player.IsPlaying and MiniPlayer().SetProgress(time, item.GetInt("duration")) then
         MiniPlayer().Show()
     end if
 end sub

@@ -2,6 +2,7 @@ function ComponentsScreen() as object
     if m.ComponentsScreen = invalid then
         obj = CreateObject("roAssociativeArray")
         obj.Append(BaseScreen())
+        obj.Append(ListenersMixin())
 
         ' Key code constants
         obj.kp_BK   = 0
@@ -218,6 +219,8 @@ sub compDeactivate(screen = invalid as dynamic)
 
     m.customFonts.clear()
     m.focusedItem = invalid
+
+    m.DisableListeners()
 
     ' Encourage some extra memory cleanup
     RunGarbageCollector()

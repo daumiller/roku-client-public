@@ -21,8 +21,9 @@ function createCallable(func as dynamic, context as dynamic, id=invalid as dynam
     obj.context = context
 
     ' Since we can't do a reference equality check on context, if a particular
-    ' callable wants to allow equality checks, it can pass an ID.
-    obj.id = id
+    ' callable wants to allow equality checks, it can pass an ID. If no ID is
+    ' passed, try to default to the context's ID.
+    obj.id = firstOf(id, context.uniqId, context.id)
 
     if isstr(func) and type(context[func]) <> "roFunction" then
         Fatal(func + " not found on object")

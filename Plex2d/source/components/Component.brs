@@ -2,6 +2,7 @@ function ComponentClass() as object
     if m.ComponentClass = invalid then
         obj = CreateObject("roAssociativeArray")
         obj.Append(EventsMixin())
+        obj.Append(ListenersMixin())
 
         m.nextComponentId = 1
         m.uniqComponentId = 1
@@ -334,6 +335,7 @@ end sub
 sub compDestroy()
     ' Clean up anything that could result in circular references.
     m.Off(invalid, invalid)
+    m.DisableListeners()
 
     ' Clean any objects in memory (bitmaps, regions and sprites)
     m.font = invalid

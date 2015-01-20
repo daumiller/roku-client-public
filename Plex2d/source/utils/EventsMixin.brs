@@ -51,18 +51,24 @@ sub eventsOff(eventName as dynamic, callback as dynamic)
     if m.eventsCallbacks = invalid then return
 
     if eventName = invalid then
-        m.eventsCallbacks = invalid
+        if callback = invalid then
+            m.eventsCallbacks = invalid
+        else if callback.id <> invalid then
+            for each name in m.eventsCallbacks
+                m.Off(name, callback)
+            next
+        end if
     else
         if callback = invalid then
             m.eventsCallbacks.Delete(eventName)
-        else
+        else if callback.id <> invalid then
             callbacks = m.eventsCallbacks[eventName]
             if callbacks = invalid then return
 
             ' This is how annoying deleting from a list is, give or take.
             toRemove = -1
             for i = 0 to callbacks.Count() - 1
-                if callback.Equals(callbacks[i]) then
+                if callback.id = callbacks[i].id then
                     toRemove = i
                     exit for
                 end if
