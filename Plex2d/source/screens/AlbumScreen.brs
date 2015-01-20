@@ -353,11 +353,6 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
             plexItem = trackContext[trackIndex]
             options = {}
 
-            ' If we selected a particular track, add it as the key.
-            if key <> invalid then
-                options["key"] = key
-            end if
-
             if command = "shuffle" then
                 options["shuffle"] = "1"
             end if
