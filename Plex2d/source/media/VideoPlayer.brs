@@ -1,11 +1,21 @@
 function VideoPlayer() as object
     if m.VideoPlayer = invalid then
         obj = CreateObject("roAssociativeArray")
+        obj.Append(BasePlayerClass())
 
         ' This is both an implementation of our player API (Pause, Resume, etc.)
         ' and responsible for the actual screen playing the video. So we
         ' inherit from BaseScreen even though we're a long-lived singleton.
-        '
+        ' Both BasePlayerClass and BaseScreen have important Init methods. The
+        ' former should be called once, and the latter is called once for each
+        ' "screen" lifecycle. So we call the player's Init now and don't mind
+        ' that we lose the reference to it when appending BaseScreen.
+
+        obj.timelineType = "video"
+        obj.Init()
+
+        obj.timelineTimer.SetDuration(15000, true)
+
         obj.Append(BaseScreen())
 
         ' Screen functions
@@ -14,19 +24,18 @@ function VideoPlayer() as object
         obj.Init = vpInit
         obj.Cleanup = vpCleanup
 
-        ' Player API functions
-        obj.IsActive = vpIsActive
-        obj.Pause = vpPause
-        obj.Resume = vpResume
+        ' Required player methods
         obj.Stop = vpStop
-        obj.Seek = vpSeek
-        obj.Prev = vpPrev
-        obj.Next = vpNext
+        obj.SeekPlayer = vpSeekPlayer
+        obj.PlayItemAtIndex = vpPlayItemAtIndex
+        obj.SetContentList = vpSetContentList
+        obj.IsPlayable = vpIsPlayable
+        obj.CreateContentMetadata = vpCreateContentMetadata
+        obj.GetPlaybackPosition = vpGetPlaybackPosition
 
-        obj.CreateVideoScreen = vpCreateVideoScreen
+        ' Player overrides
+        obj.Play = vpPlay
 
-        obj.UpdateNowPlaying = vpUpdateNowPlaying
-        obj.OnTimelineTimer = vpOnTimelineTimer
         obj.OnPingTimer = vpOnPingTimer
         obj.SendTranscoderCommand = vpSendTranscoderCommand
 
@@ -39,61 +48,28 @@ function VideoPlayer() as object
     return m.VideoPlayer
 end function
 
-function vpCreateVideoScreen(item as object, resume=false as boolean) as object
-    ' We're supposed to create a video screen for a new item, we better not have
-    ' an old screen still.
-    '
-    if m.screen <> invalid then
-        Fatal("Can't create video screen on top of existing screen!")
-    end if
-
-    m.item = item
-    m.seekValue = iif(resume, item.GetInt("viewOffset"), 0)
-
-    ' To the extent that we're pretending to be a simple screen instance, we
-    ' were just created. So go ahead and call Init, get a new screen ID, etc.
-    '
-    m.Init()
-
-    return m
-end function
-
 sub vpInit()
     m.screenID = invalid
     ApplyFunc(BaseScreen().Init, m)
-    Debug("init videoscreen: " + tostr(m.item.GetLongerTitle()))
 
     ' variables
     m.lastPosition = 0
     m.playBackError = false
     m.isPlayed = false
-    m.playState = "buffering"
+    m.SetPlayState(m.STATE_BUFFERING)
 
     m.bufferingTimer = createTimer("buffering")
     m.playbackTimer = createTimer("playback")
-    m.timelineTimer = invalid
     m.pingTimer = invalid
+
+    ' Reset the timeline timer
+    m.timelineTimer.active = true
+    Application().AddTimer(m.timelineTimer, m.timelineTimer.callback)
 
     ' TODO(rob): multi-parts offset (curPartOffset)
     m.curPartOffset = 0
 
-    settings = AppSettings()
-    allowDirectPlay = settings.GetBoolPreference("playback_direct")
-    allowDirectStream = settings.GetBoolPreference("playback_remux")
-    allowTranscode = settings.GetBoolPreference("playback_transcode")
-
-    if m.forceTranscode = true then
-        directPlay = false
-        if allowDirectStream = false and allowTranscode = false then
-            Debug("Forced transcode requested: allowDirectStream and allowTranscode not enabled")
-            m.screenError = "Transcode required: not enabled"
-            return
-        end if
-    else
-        directPlay = iif(allowDirectPlay, iif(allowDirectStream or allowTranscode, invalid, true), false)
-    end if
-
-    videoItem = CreateVideoObject(m.item, m.seekValue).Build(directPlay, allowDirectStream)
+    videoItem = m.GetCurrentMetadata()
 
     ' TODO(rob): better UX error handling
     if videoItem = invalid then
@@ -121,14 +97,17 @@ sub vpInit()
 
     ' TODO(schuyler): Extra headers for direct play of indirect items
 
+    ' We're pretending to be a player and a screen, so we need to store the
+    ' player in two places.
+    '
     m.screen = screen
-    m.videoItem = videoItem
+    m.player = screen
 end sub
 
 sub vpCleanup()
     ' We're cleaning up after our screen, not anything long-lived.
 
-    timers = ["pingTimer", "timelineTimer", "playbackTimer", "bufferingTimer"]
+    timers = ["pingTimer", "playbackTimer", "bufferingTimer"]
     for each name in timers
         if m[name] <> invalid then
             m[name].active = false
@@ -136,12 +115,19 @@ sub vpCleanup()
         end if
     next
 
-    m.playState = "stopped"
+    m.timelineTimer.active = false
+
+    m.SetPlayState(m.STATE_STOPPED)
     m.screen = invalid
+    m.player = invalid
+    m.context = invalid
+    m.curIndex = invalid
+    m.playQueue = invalid
+    m.metadataById.Clear()
 end sub
 
 sub vpShow()
-    if m.Screen <> invalid then
+    if m.screen <> invalid then
         if m.IsTranscoded then
             ' TODO(rob): log to pms
             'Debug("Starting to play transcoded video", m.item.GetServer())
@@ -154,15 +140,15 @@ sub vpShow()
             'Debug("Starting to direct play video", m.item.GetServer())
         end if
 
-        m.timelineTimer = createTimer("timeline")
-        m.timelineTimer.SetDuration(15000, true)
-        Application().AddTimer(m.timelineTimer, createCallable("OnTimelineTimer", m))
-
+        m.ignoreTimelines = false
+        m.timelineTimer.Mark()
         m.playbackTimer.Mark()
         m.bufferingTimer.Mark()
         AudioPlayer().Stop()
-        m.Screen.Show()
+        m.screen.Show()
         NowPlayingManager().location = "fullScreenVideo"
+        m.UpdateNowPlaying()
+        m.Trigger("playing", [m, m.GetCurrentItem()])
     else
         NowPlayingManager().location = "navigation"
         Application().PopScreen(m)
@@ -171,31 +157,30 @@ end sub
 
 function vpHandleMessage(msg) as boolean
     handled = false
-    server = m.item.GetServer()
 
     if type(msg) = "roVideoScreenEvent" then
         handled = true
+
+        item = m.GetCurrentItem()
 
         if msg.isScreenClosed() then
             m.SendTranscoderCommand("stop")
 
             ' Send an analytics event.
-            startOffset = int(m.SeekValue/1000)
+            startOffset = int(m.seekValue/1000)
             amountPlayed = m.lastPosition - startOffset
             if amountPlayed > m.playbackTimer.GetElapsedSeconds() then amountPlayed = m.playbackTimer.GetElapsedSeconds()
 
             if amountPlayed > 0 then
                 Debug("Sending analytics event, appear to have watched video for " + tostr(amountPlayed) + " seconds")
-                Analytics().TrackEvent("Playback", m.item.Get("type", "clip"), tostr(m.item.GetIdentifier()), amountPlayed)
+                Analytics().TrackEvent("Playback", item.Get("type", "clip"), tostr(item.GetIdentifier()), amountPlayed)
             end if
 
-            m.playState = "stopped"
             Debug("vsHandleMessage::isScreenClosed: position -> " + tostr(m.lastPosition))
-            NowPlayingManager().location = "navigation"
-            m.UpdateNowPlaying()
 
             ' TODO(rob): multi-parts
 
+            ' TODO(schuyler): Make sure this is working after the play queue changes
             ' Fallback transcode
             if m.playbackError and m.IsTranscoded = false and not m.forceTranscode = true then
                 Debug("Direct Play failed: falling back to transcode")
@@ -203,7 +188,17 @@ function vpHandleMessage(msg) as boolean
                 m.Cleanup()
                 m.Init()
                 m.Show()
+            else if m.isPlayed and (m.curIndex < m.context.Count() - 1 or m.repeat <> m.REPEAT_NONE) then
+                Debug("Going to try to play the next item")
+                m.player = invalid
+                m.screen = invalid
+                m.Next()
             else
+                Debug("Done with entire play queue, going to pop screen")
+                m.SetPlayState(m.STATE_STOPPED)
+                NowPlayingManager().location = "navigation"
+                m.UpdateNowPlaying()
+                m.Trigger("stopped", [m, item])
                 Application().PopScreen(m)
                 m.Cleanup()
             end if
@@ -211,7 +206,7 @@ function vpHandleMessage(msg) as boolean
             m.lastPosition = m.curPartOffset + msg.GetIndex()
             Debug("vsHandleMessage::isPlaybackPosition: set progress -> " + tostr(1000*m.lastPosition))
 
-            duration = m.videoItem.duration
+            duration = m.GetCurrentMetadata().duration
             if duration > 0 then
                 playedFraction = (m.lastPosition * 1000)/duration
                 if playedFraction > 0.90 then
@@ -221,11 +216,11 @@ function vpHandleMessage(msg) as boolean
 
             if msg.GetIndex() > 0 then
                 if m.bufferingTimer <> invalid then
-                    Analytics().TrackTiming(m.bufferingTimer.GetElapsedMillis(), "buffering", tostr(m.IsTranscoded), tostr(m.item.GetIdentifier()))
+                    Analytics().TrackTiming(m.bufferingTimer.GetElapsedMillis(), "buffering", tostr(m.IsTranscoded), tostr(item.GetIdentifier()))
                     m.bufferingTimer = invalid
                 end if
 
-                m.playState = "playing"
+                m.SetPlayState(m.STATE_PLAYING)
                 m.UpdateNowPlaying(true)
             end if
         else if msg.isRequestFailed() then
@@ -235,22 +230,20 @@ function vpHandleMessage(msg) as boolean
             m.playbackError = true
         else if msg.isPaused() then
             Debug("vsHandleMessage::isPaused: position -> " + tostr(m.lastPosition))
-            m.playState = "paused"
+            m.SetPlayState(m.STATE_PAUSED)
+            m.Trigger("paused", [m, item])
             m.UpdateNowPlaying()
         else if msg.isResumed() then
             Debug("vsHandleMessage::isResumed")
-            m.playState = "playing"
+            m.SetPlayState(m.STATE_PLAYING)
+            m.Trigger("resumed", [m, item])
             m.UpdateNowPlaying()
         else if msg.isPartialResult() then
             Debug("vsHandleMessage::isPartialResult: position -> " + tostr(m.lastPosition))
-            m.playState = "stopped"
-            m.UpdateNowPlaying()
             m.SendTranscoderCommand("stop")
         else if msg.isFullResult() then
             Debug("vsHandleMessage::isFullResult: position -> " + tostr(m.lastPosition))
             m.isPlayed = true
-            m.playState = "stopped"
-            m.UpdateNowPlaying()
             m.SendTranscoderCommand("stop")
         else if msg.isStreamStarted() then
             Debug("vsHandleMessage::isStreamStarted: position -> " + tostr(m.lastPosition))
@@ -283,74 +276,103 @@ function vpHandleMessage(msg) as boolean
     return handled
 end function
 
-function vpIsActive() as boolean
-    return (m.screen <> invalid)
-end function
+sub vpPlay()
+    ' If we're currently playing something, then we'll have to close the current
+    ' player (and wait for it to fully close) before we can play something new.
 
-sub vpPause()
-    if m.screen <> invalid then
-        m.screen.Pause()
-    end if
-end sub
-
-sub vpResume()
-    if m.screen <> invalid then
-        m.screen.Resume()
-    end if
-end sub
-
-sub vpStop()
-    if m.screen <> invalid then
-        m.screen.Close()
-    end if
-end sub
-
-sub vpSeek(offset, relative=false as boolean)
-    if m.screen = invalid then return
-
-    if relative then
-        offset = offset + (1000 * m.lastPosition)
-        if offset < 0 then offset = 0
-    end if
-
-    if m.playState = "paused" then
-        m.screen.Resume()
-    end if
-
-    m.screen.Seek(offset)
-end sub
-
-sub vpPrev()
-    ' This is currently just a stub to provide a consistent player API (e.g. for remote control)
-end sub
-
-sub vpNext()
-    ' This is currently just a stub to provide a consistent player API (e.g. for remote control)
-end sub
-
-sub vpUpdateNowPlaying(force=false as boolean)
-    ' We can only send the event if we have some basic info about the item
-    if m.item.Get("ratingKey") = invalid or m.item.Get("duration") = invalid or m.item.GetServer() = invalid then
-        m.timelineTimer.Active = false
+    if m.player <> invalid then
+        Info("Can't start video until previous player closes")
         return
     end if
 
-    ' Avoid duplicates
-    if m.playState = m.lastTimelineState and not force then return
-
-    m.lastTimelineState = m.playState
-    m.timelineTimer.Mark()
-
-    NowPlayingManager().UpdatePlaybackState("video", m.item, m.playState, 1000 * m.lastPosition)
-    Debug("vcUpdateNowPlaying:: " + m.playState + " " + tostr(1000 * m.lastPosition))
-end sub
-
-sub vpOnTimelineTimer(timer as object)
-    ' From the timeline timer, we need to force an update. This ensures
-    ' everything works correctly if you, say, leave a video paused for a while.
+    ' We start playback by creating an actual video player object. And to
+    ' the extent that we're pretending to be a typical screen instance, that
+    ' means we want to create a new screen. So go ahead and call Init, get a
+    ' new screen ID, etc.
     '
-    m.UpdateNowPlaying(true)
+    m.Init()
+    Application().PushScreen(m)
 end sub
+
+sub vpStop()
+    if m.player <> invalid then
+        m.player.Close()
+        m.SetPlayState(m.STATE_STOPPED)
+        m.Trigger("stopped", [m, m.GetCurrentItem()])
+        m.curIndex = 0
+        m.timelineTimer.active = false
+    end if
+end sub
+
+sub vpSeekPlayer(offset)
+    if m.isPaused then m.player.Resume()
+
+    m.player.Seek(offset)
+end sub
+
+sub vpPlayItemAtIndex(index as integer)
+    ' If we're currently playing something, then we'll have to close the current
+    ' player (and wait for it to fully close) before we can play something new.
+
+    if m.player = invalid then
+        m.curIndex = index
+        m.Play()
+    else
+        m.playIndexAfterClose = index
+        ' TODO(schuyler): Is this even right? Don't we want to send something about our final progress?
+        m.ignoreTimelines = true
+        m.player.Close()
+    end if
+end sub
+
+sub vpSetContentList(metadata as object, nextIndex as integer)
+    ' Nothing to do here since the video player doesn't have a content list
+end sub
+
+function vpIsPlayable(item as object) as boolean
+    return item.IsVideoItem()
+end function
+
+function vpCreateContentMetadata(item as object) as object
+    ' TODO(schuyler): Is this the best way to handle resuming?
+    if m.shouldResume = true then
+        m.seekValue = item.GetInt("viewOffset")
+        m.shouldResume = false
+    else
+        m.seekValue = 0
+    end if
+
+    obj = createVideoObject(item, m.seekValue)
+
+    settings = AppSettings()
+    allowDirectPlay = settings.GetBoolPreference("playback_direct")
+    allowDirectStream = settings.GetBoolPreference("playback_remux")
+    allowTranscode = settings.GetBoolPreference("playback_transcode")
+
+    if m.forceTranscode = true then
+        directPlay = false
+        if allowDirectStream = false and allowTranscode = false then
+            Debug("Forced transcode requested: allowDirectStream and allowTranscode not enabled")
+            m.screenError = "Transcode required: not enabled"
+            return obj
+        end if
+    else
+        directPlay = iif(allowDirectPlay, iif(allowDirectStream or allowTranscode, invalid, true), false)
+    end if
+
+    obj.Build(directPlay, allowDirectStream)
+    return obj
+end function
+
+function vpGetPlaybackPosition(millis=false as boolean) as integer
+    seconds = m.lastPosition
+
+    if millis then
+        return (seconds * 1000)
+    else
+        return seconds
+    end if
+end function
 
 sub vpOnPingTimer(timer as object)
     m.SendTranscoderCommand("ping")
@@ -358,25 +380,31 @@ sub vpOnPingTimer(timer as object)
 end sub
 
 sub vpSendTranscoderCommand(command as string)
-    if m.videoItem <> invalid and m.videoItem.transcodeServer <> invalid then
+    videoItem = m.GetCurrentMetadata()
+
+    if videoItem <> invalid and videoItem.transcodeServer <> invalid then
         path = "/video/:/transcode/universal/" + command + "?session=" + AppSettings().GetGlobal("clientIdentifier")
-        request = createPlexRequest(m.videoItem.transcodeServer, path)
+        request = createPlexRequest(videoItem.transcodeServer, path)
         context = request.CreateRequestContext(command)
         Application().StartRequest(request, context)
     end if
 end sub
 
 sub vpRequestTranscodeSessionInfo()
-    if m.videoItem <> invalid and m.videoItem.transcodeServer <> invalid then
+    videoItem = m.GetCurrentMetadata()
+
+    if videoItem <> invalid and videoItem.transcodeServer <> invalid then
         path = "/transcode/sessions/" + AppSettings().GetGlobal("clientIdentifier")
-        request = createPlexRequest(m.videoItem.transcodeServer, path)
+        request = createPlexRequest(videoItem.transcodeServer, path)
         context = request.CreateRequestContext("session", CreateCallable("OnTranscodeInfoResponse", m))
         Application().StartRequest(request, context)
     end if
 end sub
 
 sub vpOnTranscodeInfoResponse(request as object, response as object, context as object)
-    if m.videoItem <> invalid and m.screen <> invalid and response.ParseResponse() then
+    videoItem = m.GetCurrentMetadata()
+
+    if videoItem <> invalid and m.screen <> invalid and response.ParseResponse() then
         session = response.items.Peek()
         if session <> invalid then
             ' Dump the interesting info into the logs
@@ -399,8 +427,8 @@ sub vpOnTranscodeInfoResponse(request as object, response as object, context as 
             video = iif(session.Get("videoDecision") = "transcode", "convert", "copy")
             audio = iif(session.Get("audioDecision") = "transcode", "convert", "copy")
 
-            m.videoItem.ReleaseDate = m.VideoItem.OrigReleaseDate + "   video: " + video + " audio: " + audio + curState
-            m.Screen.SetContent(m.videoItem)
+            videoItem.ReleaseDate = videoItem.OrigReleaseDate + "   video: " + video + " audio: " + audio + curState
+            m.Screen.SetContent(videoItem)
         end if
     end if
 end sub

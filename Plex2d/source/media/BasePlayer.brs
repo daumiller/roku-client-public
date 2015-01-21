@@ -44,7 +44,10 @@ function BasePlayerClass() as object
         obj.isShuffled = false
         obj.SetShuffle = bpSetShuffle
 
+        obj.SetPlayState = bpSetPlayState
         obj.AdvanceIndex = bpAdvanceIndex
+        obj.GetCurrentItem = bpGetCurrentItem
+        obj.GetCurrentMetadata = bpGetCurrentMetadata
 
         m.BasePlayerClass = obj
     end if
@@ -121,9 +124,16 @@ sub bpNext()
     m.PlayItemAtIndex(m.AdvanceIndex())
 end sub
 
-function bpAdvanceIndex(delta=1 as integer) as integer
+function bpAdvanceIndex(delta=1 as integer, updatePlayQueue=true as boolean) as integer
     newIndex = (m.curIndex + delta) mod m.context.Count()
-    return iif(newIndex < 0, newIndex + m.context.Count(), newIndex)
+    newIndex = iif(newIndex < 0, newIndex + m.context.Count(), newIndex)
+
+    if updatePlayQueue then
+        m.playQueue.selectedId = m.context[newIndex].item.GetInt("playQueueItemID")
+        m.playQueue.Refresh(false)
+    end if
+
+    return newIndex
 end function
 
 sub bpSetPlayQueue(playQueue as object, startPlayer=true as boolean)
@@ -193,7 +203,7 @@ sub bpOnPlayQueueUpdate(playQueue as object)
     ' instead of the matching index.
     '
     if m.isPlaying or m.isPaused then
-        nextIndex = m.AdvanceIndex()
+        nextIndex = m.AdvanceIndex(1, false)
     else
         nextIndex = m.curIndex
     end if
@@ -229,7 +239,7 @@ end function
 sub bpUpdateNowPlaying(force=false as boolean)
     if m.ignoreTimelines then return
 
-    item = m.context[m.curIndex].item
+    item = m.GetCurrentItem()
 
     if not m.ShouldSendTimeline(item) then return
 
@@ -264,3 +274,30 @@ sub bpSetShuffle(shuffle as boolean)
 
     NowPlayingManager().timelines[m.timelineType].attrs["shuffle"] = iif(shuffle, "1", "0")
 end sub
+
+sub bpSetPlayState(state as string)
+    if state = m.STATE_STOPPED then
+        m.isPlaying = false
+        m.isPaused = false
+    else if state = m.STATE_PAUSED then
+        m.isPlaying = false
+        m.isPaused = true
+    else
+        m.isPlaying = true
+        m.isPaused = false
+    end if
+
+    m.playState = state
+end sub
+
+function bpGetCurrentItem() as dynamic
+    if m.context = invalid or m.curIndex = invalid or m.curIndex >= m.context.Count() then return invalid
+
+    return m.context[m.curIndex].item
+end function
+
+function bpGetCurrentMetadata() as dynamic
+    if m.context = invalid or m.curIndex = invalid or m.curIndex >= m.context.Count() then return invalid
+
+    return m.context[m.curIndex].metadata
+end function

@@ -828,8 +828,12 @@ end sub
 
 sub compShiftComponents(shift)
     ' disable any lazyLoad timer
-    m.lazyLoadTimer.active = false
-    m.lazyLoadTimer.components = invalid
+    ' TODO(schuyler): I added this check to avoid a crash, but it just meant we
+    ' crashed somewhere else. We'll need to figure this out.
+    if m.lazyLoadTimer <> invalid then
+        m.lazyLoadTimer.active = false
+        m.lazyLoadTimer.components = invalid
+    end if
 
     ' If we are shifting by a lot, we'll need to "jump" and clear some components
     ' as we cannot animate it (for real) due to memory limitations (and speed).
@@ -1077,12 +1081,10 @@ sub compOnCreatePlayerResponse(request as object, response as object, context as
 
         ' handle creating and starting the player
         if item.IsVideoItem() then
-            screen = VideoPlayer().CreateVideoScreen(item, resume = true)
-            if screen.screenError = invalid then
-                Application().PushScreen(screen)
-            else
-                createDialog("Playback request failed", screen.screenError, m).Show()
-            end if
+            player = VideoPlayer()
+            pq = createPlayQueueForItem(item)
+            player.shouldResume = resume
+            player.SetPlayQueue(pq, true)
         else
             Debug("Cannot create player: not sure what to do with " + item.ToString())
         end if

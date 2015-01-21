@@ -72,11 +72,11 @@ function voBuild(directPlay=invalid as dynamic, directStream=true as boolean) as
         obj = m.BuildTranscode(obj, partIndex, directStream)
     end if
 
-    m.videoItem = obj
+    m.metadata = obj
 
     Info("Constructed video item for playback: " + tostr(obj, 1))
 
-    return m.videoItem
+    return m.metadata
 end function
 
 function voBuildTranscode(obj as object, partIndex as integer, directStream as boolean) as dynamic

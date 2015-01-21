@@ -59,6 +59,7 @@ function createPlayQueueForItem(item as object, options={} as object) as object
     end if
 
     if options["key"] = invalid then options["key"] = item.Get("key")
+
     return createPlayQueue(item.GetServer(), contentType, item.GetItemUri(), options)
 end function
 
@@ -98,10 +99,18 @@ sub pqOnResponse(request as object, response as object, context as object)
         m.id = response.container.GetInt("playQueueID")
         m.version = response.container.GetInt("playQueueVersion")
         m.isShuffled = response.container.GetBool("playQueueShuffled")
-        m.selectedId = response.container.GetInt("playQueueSelectedItemID")
         m.totalSize = response.container.GetInt("playQueueTotalCount")
         m.windowSize = response.items.Count()
         m.items = response.items
+
+        ' We may have changed the selected ID ourselves as we advanced to the
+        ' next item, and we may have refreshed before the first timeline
+        ' convinced PMS that we've moved on. We should never need to get this
+        ' info from PMS once we've started playing, so don't bother.
+        '
+        if m.selectedId = invalid then
+            m.selectedId = response.container.GetInt("playQueueSelectedItemID")
+        end if
 
         ' TODO(schuyler): Set repeat as soon as PMS starts returning it
 

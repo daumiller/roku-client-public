@@ -169,26 +169,23 @@ function ProcessPlaybackPlayMedia() as boolean
     contentType = m.request.query["type"]
     if contentType = "music" then contentType = "audio"
 
-    ' TODO(schuyler): Video play queues
-    if tokens.Count() >= 2 and tokens[0] = "playQueues" and contentType = "audio" then
+    if tokens.Count() >= 2 and tokens[0] = "playQueues" then
         playQueueId = tokens[1].toint()
-        pq = createPlayQueueForId(server, contentType, playQueueId)
-
-        if contentType = "audio" then
-            AudioPlayer().SetPlayQueue(pq, true)
-        end if
-
-        m.simpleOK("")
+        requestKey = firstOf(key, containerKey)
     else
-        m.OnMetadataResponse = remoteOnMetadataResponse
-        request = createPlexRequest(server, containerKey)
-        context = request.CreateRequestContext("metadata", CreateCallable("OnMetadataResponse", m))
-        context.offset = offset
-        context.key = key
-        Application().StartRequest(request, context)
-
-        m.source = m.WAITING
+        playQueueId = invalid
+        requestKey = containerKey
     end if
+
+    m.OnMetadataResponse = remoteOnMetadataResponse
+    request = createPlexRequest(server, requestKey)
+    context = request.CreateRequestContext("metadata", CreateCallable("OnMetadataResponse", m))
+    context.offset = offset
+    context.key = key
+    context.playQueueId = playQueueId
+    Application().StartRequest(request, context)
+
+    m.source = m.WAITING
 
     return true
 end function
@@ -230,23 +227,27 @@ sub remoteOnMetadataResponse(request as object, response as object, context as o
             ' callback.OnAfterClose = createPlayerAfterClose
             ' GetViewController().CloseScreenWithCallback(callback)
         else
-            ' TODO(schuyler): Genericize this for other media types
-            ' TODO(schuyler): Handle context in addition to matched item
-            screen = invalid
             if item.IsVideoItem() then
-                screen = VideoPlayer().CreateVideoScreen(item, (validint(context.offset) > 0))
-                if screen.screenError = invalid then
-                    success = true
-                    Application().PushScreen(screen)
-                else
-                    message = screen.screenError
-                end if
+                player = VideoPlayer()
+                pqType = "video"
             else if item.IsMusicItem() then
-                pq = createPlayQueueForItem(item)
-                AudioPlayer().SetPlayQueue(pq, true)
+                player = AudioPlayer()
+                pqType = "audio"
+            else
+                player = invalid
+                pqType = invalid
+            end if
+
+            if player <> invalid then
+                if context.playQueueId <> invalid then
+                    pq = createPlayQueueForId(request.server, pqType, context.playQueueId)
+                else
+                    pq = createPlayQueueForItem(item)
+                end if
+                player.SetPlayQueue(pq, true)
                 success = true
             else
-                message = "Only video is supported at this time"
+                message = "Only music and video are supported at this time"
                 Error(message)
             end if
 
@@ -255,7 +256,7 @@ sub remoteOnMetadataResponse(request as object, response as object, context as o
             ' for them by sending a harmless keystroke. Down is harmless, as long
             ' as they started a video or slideshow.
             ' TODO(schuyler): Should we do this conditionally based on idle time?
-            if success and screen <> invalid then SendEcpCommand("Down")
+            if success then SendEcpCommand("Lit_a")
         end if
     else
         message = "unable to find media for key"

@@ -46,10 +46,8 @@ end function
 sub apStop()
     if m.context <> invalid then
         m.player.Stop()
-        m.isPlaying = false
-        m.isPaused = false
-        m.playState = m.STATE_STOPPED
-        m.Trigger("stopped", [m, m.context[m.curIndex].item])
+        m.SetPlayState(m.STATE_STOPPED)
+        m.Trigger("stopped", [m, m.GetCurrentItem()])
         m.curIndex = 0
         m.player.SetNext(m.curIndex)
         m.timelineTimer.active = false
@@ -86,9 +84,10 @@ function apHandleMessage(msg as object) as boolean
 
     if type(msg) = "roAudioPlayerEvent" then
         handled = true
+        item = m.GetCurrentItem()
+
         ' This is possible when executing AudioPlayer().Cleanup()  (switching users)
-        if m.context = invalid or m.curIndex = invalid or m.curIndex >= m.context.Count() then return handled
-        item = m.context[m.curIndex].item
+        if item = invalid then return handled
 
         if msg.isRequestSucceeded() then
             Info("Audio: Playback of single track completed")
@@ -108,9 +107,7 @@ function apHandleMessage(msg as object) as boolean
         else if msg.isListItemSelected() then
             Debug("Audio: Starting to play track: " + tostr(item.Url))
             m.ignoreTimelines = false
-            m.isPlaying = true
-            m.isPaused = false
-            m.playState = m.STATE_PLAYING
+            m.SetPlayState(m.STATE_PLAYING)
             m.playbackOffset = 0
             m.playbackTimer.Mark()
             m.Trigger("playing", [m, item])
@@ -128,17 +125,13 @@ function apHandleMessage(msg as object) as boolean
             end if
         else if msg.isPaused() then
             Debug("Audio: Playback paused")
-            m.isPlaying = false
-            m.isPaused = true
-            m.playState = m.STATE_PAUSED
+            m.SetPlayState(m.STATE_PAUSED)
             m.playbackOffset = m.GetPlaybackPosition()
             m.playbackTimer.Mark()
             m.Trigger("paused", [m, item])
         else if msg.isResumed() then
             Debug("Audio: Playback resumed")
-            m.isPlaying = true
-            m.isPaused = false
-            m.playState = m.STATE_PLAYING
+            m.SetPlayState(m.STATE_PLAYING)
             m.playbackTimer.Mark()
             m.Trigger("resumed", [m, item])
         else if msg.isStatusMessage() then
@@ -173,6 +166,10 @@ sub apCleanup()
     m.Stop()
     m.timelineTimer.active = false
     m.playbackTimer.active = false
+    m.context = invalid
+    m.curIndex = invalid
+    m.playQueue = invalid
+    m.metadataById.Clear()
 end sub
 
 function apGetPlaybackPosition(millis=false as boolean) as integer

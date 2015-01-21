@@ -92,13 +92,10 @@ function preplayHandleCommand(command as string, item as dynamic) as boolean
     handled = true
 
     if command = "play" or command = "resume" then
-        screen = VideoPlayer().CreateVideoScreen(item.plexObject, (command = "resume"))
-        if screen.screenError = invalid then
-            Application().PushScreen(screen)
-        else
-            dialog = createDialog("command failed: " + command, screen.screenError, m)
-            dialog.Show()
-        end if
+        player = VideoPlayer()
+        pq = createPlayQueueForItem(item.plexObject)
+        player.shouldResume = (command = "resume")
+        player.SetPlayQueue(pq, true)
     else if command = "scrobble" then
         m.item.Scrobble(createCallable("Refresh", m))
     else if command = "unscrobble" then
