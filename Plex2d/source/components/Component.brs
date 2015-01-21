@@ -337,7 +337,7 @@ sub compDestroy()
     m.Off(invalid, invalid)
     m.DisableListeners()
 
-    ' Clean any objects in memory (bitmaps, regions and sprites)
+    ' Clean any objects in memory (bitmaps, regions, sprites and fonts)
     m.font = invalid
     m.region = invalid
     m.bitmap = invalid
@@ -345,6 +345,11 @@ sub compDestroy()
         m.sprite.remove()
         m.sprite = invalid
     end if
+
+    if m.customFonts <> invalid then
+        m.customFonts.Clear()
+    end if
+
     if m.components <> invalid then
         for each comp in m.components
             comp.destroy()
