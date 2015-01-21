@@ -44,7 +44,10 @@ sub albumInit()
     ApplyFunc(PreplayScreen().Init, m)
 
     ' Intialize custom fonts for this screen
-    m.customFonts.glyphs = FontRegistry().GetIconFont(32)
+    m.customFonts = {
+        glyphs: FontRegistry().GetIconFont(32)
+        trackStatus: FontRegistry().GetIconFont(16)
+    }
 
     ' path override (optional)
     if m.path <> invalid then
@@ -195,7 +198,7 @@ sub albumGetComponents()
     trackCount = m.children.Count()
     for index = 0 to trackCount - 1
         item = m.children[index]
-        track = createTrack(item, FontRegistry().Font16, FontRegistry().GetIconFont(16), trackCount)
+        track = createTrack(item, FontRegistry().Font16, m.customFonts.trackStatus, trackCount)
         track.Append(trackPrefs)
         track.plexObject = item
         track.trackIndex = index
