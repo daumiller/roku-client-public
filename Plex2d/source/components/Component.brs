@@ -309,6 +309,8 @@ end sub
 sub compUnload(nest=0 as integer)
     ' Ignore fixed components, but only at the first layer. E.G. we still want to unload
     ' all children of a non-fixed components. Use destroy() to "unload" fixed components
+    ' TODO(rob): I need to reevaluated this. We should unload any component, regardless of
+    ' being fixed or not. This must of been a (incorrect) workaround to some issue.
     if m.fixed = true and nest=0 then return
 
     Debug(string(nest," ") + "-- unload component " + tostr(m))

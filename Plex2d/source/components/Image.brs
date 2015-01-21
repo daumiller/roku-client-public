@@ -11,6 +11,7 @@ function ImageClass() as object
         obj.SetBitmap = imageSetBitmap
         obj.SetPlaceholder = imageSetPlaceholder
         obj.FromLocal = imageFromLocal
+        obj.Replace = imageReplace
 
         m.ImageClass = obj
     end if
@@ -49,6 +50,7 @@ function imageDraw() as object
             multiplier = 1
         end if
 
+        newSource = invalid
         if type(m.sourceOrig) = "roAssociativeArray" then
             if m.thumbAttr = invalid then
                 ' Choose an attribute based on orientation
@@ -60,15 +62,23 @@ function imageDraw() as object
             end if
 
             if m.thumbAttr <> invalid then
-                m.source = m.sourceOrig.GetImageTranscodeURL(m.thumbAttr, int(multiplier * width), int(multiplier * height), transcodeOpts)
+                newSource = m.sourceOrig.GetImageTranscodeURL(m.thumbAttr, int(multiplier * width), int(multiplier * height), transcodeOpts)
             else
-                m.source = m.sourceOrig.GetPosterTranscodeURL(int(multiplier * width), int(multiplier * height), transcodeOpts)
+                newSource = m.sourceOrig.GetPosterTranscodeURL(int(multiplier * width), int(multiplier * height), transcodeOpts)
             end if
         else if instr(1, m.sourceOrig, "/photo/:/transcode") = 0 then
             server = PlexServerManager().GetTranscodeServer()
             if server <> invalid then
-                m.source = server.GetImageTranscodeURL(m.sourceOrig, width, height, transcodeOpts)
+                newSource = server.GetImageTranscodeURL(m.sourceOrig, width, height, transcodeOpts)
             end if
+        end if
+
+        ' memory cleanup: unload any existing source url and set our new source if different
+        if newSource <> invalid then
+            if IsString(m.source) and m.source <> newSource then
+                TextureManager().RemoveTexture(m.source, true)
+            end if
+            m.source = newSource
         end if
 
         ' Request texture through the TextureManager
@@ -248,4 +258,16 @@ sub imageScaleRegion(width as integer, height as integer)
 
         m.region = scaledRegion
     end if
+end sub
+
+' Method to replace and image and correctly handle memory cleanup
+sub imageReplace(item as object)
+    if type(item) <> "roAssociativeArray" then
+        Fatal("Replace only handles plex objects")
+    end if
+
+    m.bitmap = invalid
+    m.region = invalid
+    m.sourceOrig = item
+    m.Draw()
 end sub

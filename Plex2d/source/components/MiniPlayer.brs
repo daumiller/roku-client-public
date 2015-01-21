@@ -156,10 +156,7 @@ function miniplayerSetProgress(time as integer, duration as integer) as boolean
 end function
 
 sub miniplayerSetImage(item as object)
-    m.Image.bitmap = invalid
-    m.Image.region = invalid
-    m.Image.sourceOrig = item
-    m.Image.Draw()
+    m.Image.Replace(item)
 end sub
 
 sub miniplayerShow(draw=true as boolean)
