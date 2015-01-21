@@ -11,23 +11,11 @@ function HeaderClass() as object
 
         obj.PerformLayout = headerPerformLayout
         obj.Init = headerInit
-        obj.Draw = headerDraw
-
-        obj.OnPlay = headerOnPlay
-        obj.OnStop = headerOnStop
-        obj.OnPause = headerOnPause
-        obj.OnResume = headerOnResume
-        obj.OnProgress = headerOnProgress
 
         m.HeaderClass = obj
     end if
 
     return m.HeaderClass
-end function
-
-function headerDraw() as object
-    m.EnableListeners()
-    return ApplyFunc(ContainerClass().Draw, m)
 end function
 
 sub headerInit()
@@ -49,15 +37,6 @@ sub headerInit()
         yOffset: 5,
         font: FontRegistry().font16
     }
-
-    ' Set up listeners for AudioPlayer and the MiniPlayer
-    m.DisableListeners()
-    player = AudioPlayer()
-    m.AddListener(player, "playing", CreateCallable("OnPlay", m))
-    m.AddListener(player, "stopped", CreateCallable("OnStop", m))
-    m.AddListener(player, "paused", CreateCallable("OnPause", m))
-    m.AddListener(player, "resumed", CreateCallable("OnResume", m))
-    m.AddListener(player, "progress", CreateCallable("OnProgress", m))
 end sub
 
 function createHeader(screen as object) as object
@@ -82,7 +61,7 @@ sub headerPerformLayout()
     m.AddComponent(background)
 
     ' *** Mini Player *** '
-    m.AddComponent(createMiniPlayer())
+    m.AddComponent(createMiniPlayer(m.screen))
 
     ' *** Logo *** '
     hbox = createHBox(false, false, false, 0)
@@ -175,30 +154,3 @@ function headerGetOptions() as object
 
     return m.options
 end function
-
-sub headerOnPlay(player as object, item as object)
-    mp = MiniPlayer()
-    mp.SetTitle(item.Get("grandparentTitle", ""))
-    mp.SetSubtitle(item.Get("title", ""))
-    mp.SetImage(item)
-    mp.Show()
-end sub
-
-sub headerOnStop(player as object, item as object)
-    MiniPlayer().Hide(m.screen)
-end sub
-
-sub headerOnPause(player as object, item as object)
-    ' anything we need here?
-end sub
-
-sub headerOnResume(player as object, item as object)
-    MiniPlayer().Show()
-end sub
-
-sub headerOnProgress(player as object, item as object, time as integer)
-    ' limit gratuitous screen updates as they are expensive.
-    if player.IsPlaying and MiniPlayer().SetProgress(time, item.GetInt("duration")) then
-        MiniPlayer().Show()
-    end if
-end sub

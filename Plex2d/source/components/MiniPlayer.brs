@@ -3,7 +3,10 @@ function MiniPlayer() as object
         obj = createObject("roAssociativeArray")
         obj.Append(ContainerClass())
 
+        ' Initial settings
         obj.initComplete = false
+        obj.isEnabled = false
+        obj.isDrawn = false
 
         ' Methods
         obj.Destroy = miniplayerDestroy
@@ -11,12 +14,18 @@ function MiniPlayer() as object
         obj.Show = miniplayerShow
         obj.Hide = miniplayerHide
         obj.SetZ = miniplayerSetZ
-        obj.OnHideTimer = miniplayerOnHideTimer
         obj.SetTitle = miniplayerSetTitle
         obj.SetSubtitle = miniplayerSetSubtitle
         obj.SetProgress = miniplayerSetProgress
         obj.SetImage = miniplayerSetImage
         obj.Draw = miniplayerDraw
+
+        ' Listener Methods
+        obj.OnPlay = miniplayerOnPlay
+        obj.OnStop = miniplayerOnStop
+        obj.OnPause = miniplayerOnPause
+        obj.OnResume = miniplayerOnResume
+        obj.OnProgress = miniplayerOnProgress
 
         m.miniPlayer = obj
     end if
@@ -28,9 +37,11 @@ function MiniPlayer() as object
     return m.miniPlayer
 end function
 
-' wrapper to use the miniplayer singletone and set the zOrder
-function createMiniPlayer() as object
+function createMiniPlayer(screen as object) as object
     obj = MiniPlayer()
+
+    obj.isEnabled = true
+    obj.screen = screen
 
     if AudioPlayer().isActive() then
         obj.Show(false)
@@ -41,8 +52,8 @@ end function
 
 sub miniplayerDestroy()
     ' Hide the mini player instead of destroying it.
-    m.SetZ(-1)
-    m.SetFocusable(invalid, false)
+    m.isEnabled = false
+    m.Hide()
 end sub
 
 sub miniplayerInit()
@@ -108,6 +119,16 @@ sub miniplayerInit()
     vbMain.AddComponent(m.Progress)
 
     m.AddComponent(vbMain)
+
+    ' Set up listeners for AudioPlayer and the MiniPlayer
+    m.DisableListeners()
+    player = AudioPlayer()
+    m.AddListener(player, "playing", CreateCallable("OnPlay", m))
+    m.AddListener(player, "stopped", CreateCallable("OnStop", m))
+    m.AddListener(player, "paused", CreateCallable("OnPause", m))
+    m.AddListener(player, "resumed", CreateCallable("OnResume", m))
+    m.AddListener(player, "progress", CreateCallable("OnProgress", m))
+    m.EnableListeners()
 end sub
 
 sub miniplayerSetTitle(text as string)
@@ -126,12 +147,10 @@ end sub
 
 function miniplayerSetProgress(time as integer, duration as integer) as boolean
     if m.Progress.sprite = invalid or duration = 0 then return false
-    percentPlayed = time / duration
 
-    progressWidth = cint(m.Progress.width * percentPlayed)
     region = m.Progress.sprite.GetRegion()
     region.Clear(m.Progress.bgColor)
-    region.DrawRect(0, 0, progressWidth, m.Progress.height, Colors().Orange)
+    region.DrawRect(0, 0, cint(m.Progress.width * time/duration), m.Progress.height, Colors().Orange)
     return true
 end function
 
@@ -143,40 +162,63 @@ sub miniplayerSetImage(item as object)
 end sub
 
 sub miniplayerShow(draw=true as boolean)
-    if m.hideTimer <> invalid then m.hideTimer.active = false
+    if not m.isEnabled then return
+
     m.SetZ(m.zOrder)
     m.SetFocusable(m.selectCommand)
     if draw then CompositorScreen().DrawAll()
 end sub
 
-sub miniplayerHide(screen as object)
-    ' Handle short-lived stop events (track change)
+sub miniplayerHide()
     m.SetFocusable(invalid, false)
-    m.hideTimer = createTimer("hideTimer")
-    m.hideTimer.SetDuration(1000)
-    m.hideTimer.screen = screen
-    Application().AddTimer(m.hideTimer, createCallable("OnHideTimer", m))
+    m.SetZ(-1)
+
+    if Application().IsActiveScreen(m.screen) and m.Equals(m.screen.focusedItem) then
+        m.screen.screen.HideFocus(true)
+    end if
 end sub
 
 sub miniPlayerSetZ(zOrder as integer)
     if m.isDrawn = false then return
+
     m.Image.sprite.setZ(zOrder)
     m.Title.sprite.setZ(zOrder)
     m.Subtitle.sprite.setZ(zOrder)
     m.Progress.sprite.setZ(zOrder)
 end sub
 
-sub miniplayerOnHideTimer(timer as object)
-    ' hide the focus box if selected.
-    if m.Equals(timer.screen.focusedItem) then
-        timer.screen.screen.HideFocus(true)
-    end if
-    m.SetZ(-1)
-    CompositorScreen().DrawAll()
-end sub
-
 function miniplayerDraw() as object
     if m.isDrawn = true then return [m]
+
     m.isDrawn = true
     return ApplyFunc(ContainerClass().Draw, m)
 end function
+
+sub miniplayerOnPlay(player as object, item as object)
+    m.SetTitle(item.Get("grandparentTitle", ""))
+    m.SetSubtitle(item.Get("title", ""))
+    m.SetProgress(0, item.GetInt("duration"))
+    m.SetImage(item)
+    m.Show()
+end sub
+
+sub miniplayerOnStop(player as object, item as object)
+    m.Hide()
+end sub
+
+sub miniplayerOnPause(player as object, item as object)
+    ' anything we need here?
+end sub
+
+sub miniplayerOnResume(player as object, item as object)
+    m.Show()
+end sub
+
+sub miniplayerOnProgress(player as object, item as object, time as integer)
+    ' limit gratuitous screen updates as they are expensive.
+    if not player.IsPlaying or not  Application().IsActiveScreen(m.screen) then return
+
+    if m.SetProgress(time, item.GetInt("duration")) then
+        m.Show()
+    end if
+end sub
