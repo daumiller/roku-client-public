@@ -291,7 +291,14 @@ sub vpPlay()
     ' new screen ID, etc.
     '
     m.Init()
-    Application().PushScreen(m)
+
+    ' Show the existing video player if it's the screen on top, otherwise
+    ' push the video player to the stack.
+    if Application().IsActiveScreen(m) then
+        m.screen.Show()
+    else
+        Application().PushScreen(m)
+    end if
 end sub
 
 sub vpStop()

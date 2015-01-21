@@ -152,6 +152,7 @@ sub appPopScreen(screen as object, callActivate=true as boolean)
 
     if m.screens.Count() > 0 and callActivate then
         newScreen = m.screens.Peek()
+        Debug("Activate previous screen: " + tostr(newScreen.screenName))
         newScreen.Activate()
         Analytics().TrackScreen(newScreen.screenName)
     end if
