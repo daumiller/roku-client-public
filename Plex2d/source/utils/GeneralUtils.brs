@@ -287,9 +287,9 @@ function OppositeDirection(direction as string) as string
 end function
 
 function GetDateTimeFromSeconds(seconds as dynamic) as dynamic
-    if type(seconds) = "roString" then
+    if IsString(seconds) then
         sec = seconds.toint()
-    else if type(seconds) = "roInteger" or type(seconds) = "Integer" then
+    else if IsNumber(seconds) then
         sec = seconds
     else
         return invalid
@@ -420,4 +420,57 @@ end function
 
 function IntToHex(value as integer, alpha=false as boolean) as string
     return IntToBa(value, alpha).toHexString()
+end function
+
+
+function IsXmlElement(value as dynamic) as boolean
+    return IsValid(value) and GetInterface(value, "ifXMLElement") <> invalid
+end function
+
+function IsFunction(value as dynamic) as boolean
+    return IsValid(value) and GetInterface(value, "ifFunction") <> invalid
+end function
+
+function IsBoolean(value as dynamic) as boolean
+    return IsValid(value) and GetInterface(value, "ifBoolean") <> invalid
+end function
+
+function IsInteger(value as dynamic) as boolean
+    return IsValid(value) and GetInterface(value, "ifInt") <> invalid and (type(value) = "roInt" or type(value) = "roInteger" or type(value) = "Integer")
+end function
+
+function IsFloat(value as dynamic) as boolean
+    return IsValid(value) and (GetInterface(value, "ifFloat") <> invalid or (type(value) = "roFloat" or type(value) = "Float"))
+end function
+
+function IsDouble(value as dynamic) as boolean
+    return IsValid(value) and (GetInterface(value, "ifDouble") <> invalid or (type(value) = "roDouble" or type(value) = "roIntrinsicDouble" or type(value) = "Double"))
+end function
+
+function IsList(value as dynamic) as boolean
+    return IsValid(value) and GetInterface(value, "ifList") <> invalid
+end function
+
+function IsArray(value as dynamic) as boolean
+    return IsValid(value) and GetInterface(value, "ifArray") <> invalid
+end function
+
+function IsAssociativeArray(value as dynamic) as boolean
+    return IsValid(value) and GetInterface(value, "ifAssociativeArray") <> invalid
+end function
+
+function IsString(value as dynamic) as boolean
+    return IsValid(value) and GetInterface(value, "ifString") <> invalid
+end function
+
+function IsDateTime(value as dynamic) as boolean
+    return IsValid(value) and (GetInterface(value, "ifDateTime") <> invalid or type(value) = "roDateTime")
+end function
+
+function IsValid(value as dynamic) as boolean
+    return type(value) <> "<uninitialized>" and value <> invalid
+end function
+
+function IsNumber(value as dynamic) as boolean
+    return IsValid(value) and (IsInteger(value) or IsFloat(value) or IsDouble(value))
 end function
