@@ -23,6 +23,11 @@ function BasePlayerClass() as object
         obj.Prev = bpPrev
         obj.Next = bpNext
 
+        ' Remote buttons
+        obj.OnPlayButton = bpOnPlayButton
+        obj.OnFwdButton = bpOnFwdButton
+        obj.OnRevButton = bpOnRevButton
+
         obj.SetPlayQueue = bpSetPlayQueue
         obj.OnPlayQueueUpdate = bpOnPlayQueueUpdate
 
@@ -305,3 +310,25 @@ function bpGetCurrentMetadata() as dynamic
 
     return m.context[m.curIndex].metadata
 end function
+
+sub bpOnPlayButton()
+    if m.isPaused then
+        m.Resume()
+    else if m.isPlaying then
+        m.Pause()
+    else if m.GetCurrentItem() <> invalid then
+        m.Play()
+    end if
+end sub
+
+sub bpOnFwdButton()
+    if AudioPlayer().isPlaying then
+        AudioPlayer().Seek(10000, true)
+    end if
+end sub
+
+sub bpOnRevButton()
+    if AudioPlayer().isPlaying then
+        AudioPlayer().Seek(-10000, true)
+    end if
+end sub

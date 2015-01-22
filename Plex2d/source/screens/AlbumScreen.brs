@@ -13,14 +13,19 @@ function AlbumScreen() as object
         obj.HandleCommand = albumHandleCommand
         obj.GetButtons = albumGetButtons
         obj.OnFocusIn = albumOnFocusIn
-        obj.OnKeyPress = albumOnKeyPress
         obj.SetNowPlaying = albumSetNowPlaying
         obj.GetTrackComponent = albumGetTrackComponent
-        obj.OnPlayButton = albumOnPlayButton
+
+        ' Listener Methods
         obj.OnPlay = albumOnPlay
         obj.OnStop = albumOnStop
         obj.OnPause = albumOnPause
         obj.OnResume = albumOnResume
+
+        ' Remote button methods
+        obj.OnPlayButton = albumOnPlayButton
+        obj.OnFwdButton = albumOnFwdButton
+        obj.OnRevButton = albumOnRevButton
 
         m.AlbumScreen = obj
     end if
@@ -404,15 +409,6 @@ sub albumOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
     end if
 end sub
 
-sub albumOnKeyPress(keyCode as integer, repeat as boolean)
-    if keyCode = m.kp_FWD or keyCode = m.kp_REV then
-        delta = iif(keyCode = m.kp_FWD, 1, -1)
-        AudioPlayer().Seek(10000 * delta, true)
-    else
-        ApplyFunc(ComponentsScreen().OnKeyPress, m, [keyCode, repeat])
-    end if
-end sub
-
 sub albumSetNowPlaying(plexObject as object, status=true as boolean)
     if not Application().IsActiveScreen(m) then return
 
@@ -467,15 +463,18 @@ function albumGetTrackComponent(plexObject as dynamic) as dynamic
     return invalid
 end function
 
-sub albumOnPlayButton(focusedItem=invalid as dynamic)
-    ' TODO(rob): do we want the focused track to be played? For now
-    ' I think it's nice to pause/resume with the play button and
-    ' resetve the OK button to start a new track.
-    if AudioPlayer().isPaused then
-        AudioPlayer().Resume()
-    else if AudioPlayer().isPlaying then
-        AudioPlayer().Pause()
+sub albumOnPlayButton(item=invalid as dynamic)
+    if AudioPlayer().IsActive() then
+        AudioPlayer().OnPlayButton()
     else
-        m.HandleCommand("play", focusedItem)
+        m.HandleCommand("play", item)
     end if
+end sub
+
+sub albumOnFwdButton(item=invalid as dynamic)
+    AudioPlayer().OnFwdButton()
+end sub
+
+sub albumOnRevButton(item=invalid as dynamic)
+    AudioPlayer().OnRevButton()
 end sub

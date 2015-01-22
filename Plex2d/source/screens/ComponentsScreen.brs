@@ -383,6 +383,11 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
     else if keyCode = m.kp_REV or keyCode = m.kp_FWD then
         ' TODO(schuyler): Handle focus (big) shift
         ' m.OnItemFocused(m.focusedItem)
+        if keyCode = m.kp_FWD then
+            m.OnFwdButton(m.focusedItem)
+        else
+            m.OnRevButton(m.focusedItem)
+        end if
     end if
 end sub
 

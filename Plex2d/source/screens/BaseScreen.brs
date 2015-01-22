@@ -15,11 +15,13 @@ function BaseScreen()
         obj.HandleMessage = bsHandleMessage
 
         ' debugging
-        obj.OnInfoButton = function() : Debug("OnInfoButton:no-op") : end function
-        obj.OnRewindButton = function() : Debug("OnRewindButton:no-op") : end function
+        obj.OnInfoButton = bsNoOp
+        obj.OnRewindButton = bsNoOp
 
         ' no-op methods
-        obj.OnPlayButton = function() : Debug("OnPlayButton:no-op") : end function
+        obj.OnPlayButton = bsNoOp
+        obj.OnRevButton = bsNoOp
+        obj.OnFwdButton = bsNoOp
 
         obj.reset()
         m.BaseScreen = obj
@@ -58,3 +60,7 @@ function bsHandleMessage(msg)
 
     return false
 end function
+
+sub bsNoOP(arg1=invalid as dynamic)
+    ' no-op defaults
+end sub
