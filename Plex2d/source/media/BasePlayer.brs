@@ -52,6 +52,7 @@ function BasePlayerClass() as object
         obj.SetPlayState = bpSetPlayState
         obj.AdvanceIndex = bpAdvanceIndex
         obj.GetCurrentItem = bpGetCurrentItem
+        obj.GetNextItem = bpGetNextItem
         obj.GetCurrentMetadata = bpGetCurrentMetadata
 
         m.BasePlayerClass = obj
@@ -303,6 +304,12 @@ function bpGetCurrentItem() as dynamic
     if m.context = invalid or m.curIndex = invalid or m.curIndex >= m.context.Count() then return invalid
 
     return m.context[m.curIndex].item
+end function
+
+function bpGetNextItem() as dynamic
+    if m.context = invalid or m.curIndex = invalid or m.curIndex + 1 >= m.context.Count() then return invalid
+
+    return m.context[m.curIndex + 1].item
 end function
 
 function bpGetCurrentMetadata() as dynamic
