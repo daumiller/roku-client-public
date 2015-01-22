@@ -492,7 +492,7 @@ function compHandleCommand(command as string, item as dynamic) as boolean
         end if
     else if command = "now_playing" then
         ' stub for the Now Playing screen.
-        item = AudioPlayer().GetCurTrack()
+        item = AudioPlayer().GetCurrentItem()
         path = item.Get("parentKey")
         if m.path <> path then
             Application().PushScreen(createAlbumScreen(item, path))

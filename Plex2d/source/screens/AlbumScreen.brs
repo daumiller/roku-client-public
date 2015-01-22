@@ -218,7 +218,7 @@ sub albumGetComponents()
     m.components.Push(m.trackList)
 
     ' Set the focus to the current AudioPlayer track, if applicable.
-    component = m.GetTrackComponent(AudioPlayer().GetCurTrack())
+    component = m.GetTrackComponent(AudioPlayer().GetCurrentItem())
     if component <> invalid then
         m.focusedItem = component
         if AudioPlayer().isPlaying then

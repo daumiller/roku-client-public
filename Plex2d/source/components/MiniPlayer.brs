@@ -67,7 +67,7 @@ sub miniplayerInit()
     m.selectCommand = "now_playing"
 
     ' Use the current track in the audio player, or we'll use placeholders
-    item = AudioPlayer().GetCurTrack()
+    item = AudioPlayer().GetCurrentItem()
     labels = {}
     if item <> invalid then
         labels.title = item.Get("title", "")

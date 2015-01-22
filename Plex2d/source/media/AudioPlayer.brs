@@ -32,8 +32,6 @@ function AudioPlayer() as object
         obj.playbackOffset = 0
         obj.playbackTimer = createTimer("playback")
 
-        obj.GetCurTrack = apGetCurTrack
-
         ' TODO(schuyler): Add support for theme music
 
         obj.Init()
@@ -49,6 +47,7 @@ sub apStop()
         m.player.Stop()
         m.SetPlayState(m.STATE_STOPPED)
         m.Trigger("stopped", [m, m.GetCurrentItem()])
+        ' TODO(rob): do we want to keep/reset the last position on stop?
         m.curIndex = 0
         m.player.SetNext(m.curIndex)
         m.timelineTimer.active = false
@@ -196,11 +195,3 @@ sub apSetRepeat(mode as integer)
         m.player.SetNext(m.curIndex)
     end if
 end sub
-
-function apGetCurTrack() as dynamic
-    if m.curIndex <> invalid and m.context <> invalid and m.context[m.curIndex] <> invalid then
-        return m.context[m.curIndex].item
-    end if
-
-    return invalid
-end function
