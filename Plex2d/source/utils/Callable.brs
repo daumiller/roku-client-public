@@ -6,6 +6,8 @@ function CallableClass() as object
         obj.Call = callableCall
         obj.Equals = callableEquals
 
+        GetGlobalAA()["nextCallableId"] = 0
+
         m.CallableClass = obj
     end if
 
@@ -23,7 +25,11 @@ function createCallable(func as dynamic, context as dynamic, id=invalid as dynam
     ' Since we can't do a reference equality check on context, if a particular
     ' callable wants to allow equality checks, it can pass an ID. If no ID is
     ' passed, try to default to the context's ID.
-    obj.id = firstOf(id, context.uniqId, context.id)
+    obj.id = firstOf(id, context.uniqId, context.id, context.screenId)
+    if obj.id = invalid then
+        GetGlobalAA()["nextCallableId"] = GetGlobalAA()["nextCallableId"] + 1
+        obj.id = GetGlobalAA()["nextCallableId"]
+    end if
 
     if isstr(func) and type(context[func]) <> "roFunction" then
         Fatal(func + " not found on object")
