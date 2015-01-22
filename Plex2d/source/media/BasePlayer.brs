@@ -271,6 +271,7 @@ sub bpSetRepeat(mode as integer)
 
     m.repeat = mode
 
+    m.Trigger("repeat", [m, m.GetCurrentItem(), m.repeat])
     NowPlayingManager().timelines[m.timelineType].attrs["repeat"] = tostr(mode)
 end sub
 
@@ -282,6 +283,7 @@ sub bpSetShuffle(shuffle as boolean)
 
     m.isShuffled = shuffle
 
+    m.Trigger("shuffle", [m, m.GetCurrentItem(), m.isShuffled])
     NowPlayingManager().timelines[m.timelineType].attrs["shuffle"] = iif(shuffle, "1", "0")
 end sub
 
