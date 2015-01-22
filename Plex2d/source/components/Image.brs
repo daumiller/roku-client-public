@@ -160,8 +160,15 @@ function imageFromLocal(source as string) as dynamic
     return bmp
 end function
 
-sub imageSetBitmap(bmp as object, makeCopy=false as boolean)
+sub imageSetBitmap(bmp=invalid as dynamic, makeCopy=false as boolean)
     perfTimer().mark()
+
+    ' Handle TextureManager failures by clearing the bitmap
+    if bmp = invalid then
+        Debug("Invalid bitmap: set empty")
+        bmp = CreateObject("roBitmap", {width: m.GetPreferredWidth(), height: m.GetPreferredHeight(), alphaEnable: false})
+        bmp.Clear(Colors().Empty)
+    end if
 
     if makeCopy then
         m.region = invalid

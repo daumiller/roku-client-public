@@ -159,6 +159,7 @@ end sub
 sub tmRequestTexture(component as object, context as object)
     if context.url = invalid then
         Warn("Ignoring texture request. URL is invalid.")
+        component.SetBitmap(invalid)
         return
     end if
     component.pendingTexture = true
@@ -169,7 +170,7 @@ sub tmRequestTexture(component as object, context as object)
     request = m.CreateTextureRequest(context)
 
     if context.retriesRemaining = invalid then
-        context.retriesRemaining = 3
+        context.retriesRemaining = 1
     end if
 
     ' TODO(schuyler): Figure out how to ignore requests that come back after the
@@ -294,10 +295,11 @@ function tmReceiveTexture(tmsg as object, screenID as integer) as boolean
 
                 ' TODO(schuyler): Should we notify the component? Call SetBitmap(invalid)?
 
-                str = "Handled Failure with blank (card) Image. State: " + state.toStr() + "  Bitmap: " + type(tmsg.GetBitmap())
+                str = "Handle failure by setting bitmap invalid. State: " + state.toStr() + "  Bitmap: " + type(tmsg.GetBitmap())
                 str = str + " URI: " + context.url
                 Debug(str)
 
+                context.component.SetBitmap(invalid)
                 return true
             end if
 
