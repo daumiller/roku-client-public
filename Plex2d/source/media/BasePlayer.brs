@@ -309,9 +309,20 @@ function bpGetCurrentItem() as dynamic
 end function
 
 function bpGetNextItem() as dynamic
-    if m.context = invalid or m.curIndex = invalid or m.curIndex + 1 >= m.context.Count() then return invalid
+    if m.context = invalid or m.curIndex = invalid then return invalid
 
-    return m.context[m.curIndex + 1].item
+    if m.repeat = m.REPEAT_ONE then
+        index = m.curIndex
+    else
+        index = m.curIndex + 1
+        if m.repeat = m.REPEAT_ALL and index >= m.context.Count() then
+            index = 0
+        end if
+    end if
+
+    if index >= m.context.Count() then return invalid
+
+    return m.context[index].item
 end function
 
 function bpGetCurrentMetadata() as dynamic
