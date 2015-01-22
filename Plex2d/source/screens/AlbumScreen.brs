@@ -72,6 +72,7 @@ sub albumInit()
     m.children = CreateObject("roList")
 
     ' Set up audio player listeners
+    m.DisableListeners()
     player = AudioPlayer()
     m.AddListener(player, "playing", CreateCallable("OnPlay", m))
     m.AddListener(player, "stopped", CreateCallable("OnStop", m))
@@ -156,6 +157,7 @@ sub albumGetComponents()
     m.components.push(albumTitle)
 
     album = createImage(m.item, parentHeight, parentHeight)
+    album.thumbAttr = ["thumb", "art", "parentThumb"]
     album.SetFrame(xOffset, yOffset, parentHeight, parentHeight)
     m.components.push(album)
 
@@ -352,11 +354,8 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
             m.OnFocus(component)
         end if
 
-        ' Pause/Resume or Play (start)
-        if m.paused <> invalid and component.Equals(m.paused) then
-            AudioPlayer().Resume()
-        else if m.playing <> invalid and component.Equals(m.playing) then
-            AudioPlayer().Pause()
+        if component.Equals(m.paused) or component.Equals(m.playing) then
+            Application().PushScreen(createNowPlayingScreen(AudioPlayer().GetCurrentItem()))
         else
             plexItem = trackContext[trackIndex]
             options = {}
@@ -367,6 +366,7 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
 
             pq = createPlayQueueForItem(plexItem, options)
             AudioPlayer().SetPlayQueue(pq, true)
+            Application().PushScreen(createNowPlayingScreen(plexItem))
         end if
     else if command = "summary" then
         m.summaryVisible = not m.summaryVisible = true

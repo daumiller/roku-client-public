@@ -516,11 +516,7 @@ function ProcessNavigationMusic() as boolean
     if not ValidateRemoteControlRequest(m) then return true
     ProcessCommandID(m.request)
 
-    ' TODO(schuyler): Music
-    ' dummyItem = CreateObject("roAssociativeArray")
-    ' dummyItem.ContentType = "audio"
-    ' dummyItem.Key = "nowplaying"
-    ' GetViewController().CreateScreenForItem(dummyItem, invalid, ["Now Playing"])
+    Application().PushScreen(createNowPlayingScreen(AudioPlayer().GetCurrentItem()))
 
     m.simpleOK("")
     return true

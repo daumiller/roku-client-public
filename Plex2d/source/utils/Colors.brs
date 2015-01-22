@@ -13,9 +13,11 @@ function Colors() as object
         obj.OverlayMed = &h00000080
         obj.OverlayLht = &h00000060
 
+        obj.Empty = &h1f1f1fff
         obj.Card = &h1f1f1fff
         obj.Button = &h1f1f1fff
         obj.Text = &hffffffff
+        obj.TextLight = &hffffffe0
         obj.TextDim = &hffffff60
 
         obj.Transparent = &h00000000

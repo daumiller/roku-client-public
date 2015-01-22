@@ -136,6 +136,11 @@ sub appPopScreen(screen as object, callActivate=true as boolean)
     ' Clean up any requests initiated by this screen
     m.CancelRequests(screenID)
 
+    ' Disable any listeners immediately
+    if IsFunction(screen.DisableListeners) then
+        screen.DisableListeners()
+    end if
+
     ' Clean up any timers initiated by this screen
     timers = m.timersByScreen[screenID]
     if timers <> invalid then
@@ -149,6 +154,9 @@ sub appPopScreen(screen as object, callActivate=true as boolean)
         next
         m.timersByScreen.Delete(screenID)
     end if
+
+    ' Set the remote back to navigation (default for all screens)
+    NowPlayingManager().location = "navigation"
 
     if m.screens.Count() > 0 and callActivate then
         newScreen = m.screens.Peek()

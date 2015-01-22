@@ -186,6 +186,8 @@ sub compShow()
         comp.Animate()
     end for
 
+    ' Enable listeners once we completed drawing the screen
+    m.EnableListeners()
 end sub
 
 ' TODO(rob) screen is not required to be passed, but we might want to ignore
@@ -494,12 +496,7 @@ function compHandleCommand(command as string, item as dynamic) as boolean
             dialog.Show()
         end if
     else if command = "now_playing" then
-        ' stub for the Now Playing screen.
-        item = AudioPlayer().GetCurrentItem()
-        path = item.Get("parentKey")
-        if m.path <> path then
-            Application().PushScreen(createAlbumScreen(item, path))
-        end if
+        Application().PushScreen(createNowPlayingScreen(AudioPlayer().GetCurrentItem()))
     else
         handled = false
     end if
