@@ -38,7 +38,7 @@ function imageDraw() as object
         ' case sensitive AA only works by setting with aa["caseSensitive"]
         transcodeOpts = createObject("roAssociativeArray")
         transcodeOpts["minSize"] = 1
-        transcodeOpts["upscale"] = 1
+'        transcodeOpts["upscale"] = 1
         if m.transcodeOpts <> invalid then transcodeOpts.Append(m.transcodeOpts)
         width = firstOf(m.preferredWidth, m.width)
         height = firstOf(m.preferredHeight, m.height)
