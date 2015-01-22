@@ -99,6 +99,11 @@ sub compositorHideFocus(unload=false as boolean, drawAllNow=false as boolean)
 end sub
 
 sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
+    if component.focusBorder = false then
+        if m.focusSprite <> invalid then m.HideFocus(true)
+        return
+    end if
+
     numPixels = m.focusPixels
 
     ' pad the cards focus border for cards (watched status visibility)
