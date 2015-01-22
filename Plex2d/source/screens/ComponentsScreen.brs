@@ -313,12 +313,14 @@ end sub
 
 sub compOnKeyPress(keyCode as integer, repeat as boolean)
     if keyCode = m.kp_RT or keyCode = m.kp_LT or keyCode = m.kp_UP or keyCode = m.kp_DN then
+        direction = KeyCodeToString(keyCode)
+        toFocus = invalid
+
+        ' Locate the next focusable item baed on direction and current focus
         if m.focusedItem <> invalid then
             perfTimer().mark()
             m.screen.ClearDebugSprites()
             m.screen.DrawDebugRect(m.focusX, m.focusY, 15, 15, Colors().Text, true)
-
-            direction = KeyCodeToString(keyCode)
 
             ' If the component knows its sibling, always use that.
             toFocus = m.focusedItem.GetFocusSibling(KeyCodeToString(keyCode))
@@ -353,32 +355,28 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
                 toFocus = m.lastFocusedItem
             end if
 
-            if toFocus = invalid then
-                ' support to manually focus on an overlay screen. Force GetFocusManual
-                ' to only use the components on the overlay as focus candidates
-                if m.overlayScreen <> invalid then
-                    components = m.overlayScreen.components
-                else
-                    components = invalid
-                end if
+        ' Use the last focused item if nothing is currently focused
+        else if m.lastFocusedItem <> invalid then
+            toFocus = m.lastFocusedItem
+        end if
 
-                ' All else failed, search manually.
-                toFocus = m.GetFocusManual(KeyCodeToString(keyCode), components)
+        ' fallback to a full manual search for any focusable component
+        if toFocus = invalid then
+            ' support to manually focus on an overlay screen. Force GetFocusManual
+            ' to only use the components on the overlay as focus candidates
+            if m.overlayScreen <> invalid then
+                components = m.overlayScreen.components
             else
-                ' We didn't have to search focus candidates, but we still need
-                ' to update our focus point.
-                '
-                point = m.CalculateFocusPoint(toFocus, direction)
-                m.focusX = point.x
-                m.focusY = point.y
-                m.screen.DrawDebugRect(point.x, point.y, 15, 15, &h00ff00ff, true)
+                components = invalid
             end if
+             ' All else failed, search manually.
+            toFocus = m.GetFocusManual(KeyCodeToString(keyCode), components)
+        end if
 
-            if toFocus <> invalid then
-                perfTimer().Log("Determined next focus")
-                m.lastDirection = direction
-                m.OnFocus(toFocus, m.focusedItem)
-            end if
+        if toFocus <> invalid then
+            perfTimer().Log("Determined next focus")
+            m.lastDirection = direction
+            m.OnFocus(toFocus, m.focusedItem, direction)
         end if
     else if keyCode = m.kp_REV or keyCode = m.kp_FWD then
         ' TODO(schuyler): Handle focus (big) shift
@@ -1123,7 +1121,7 @@ sub compToggleScrollBar(visible=true as boolean, toFocus=invalid as dynamic, las
     end if
 end sub
 
-sub compOnFocus(toFocus as object, lastFocus=invalid as dynamic)
+sub compOnFocus(toFocus as object, lastFocus=invalid as dynamic, direction=invalid as dynamic)
     if toFocus.focusBorder = false then m.screen.HideFocus(true)
 
     ' set focus and last focused item
@@ -1131,8 +1129,16 @@ sub compOnFocus(toFocus as object, lastFocus=invalid as dynamic)
     if lastFocus <> invalid then m.lastFocusedItem = lastFocus
 
     ' reset the focus point
-    m.focusX = toFocus.x
-    m.focusY = toFocus.y
+    if direction <> invalid then
+        focusPoint = m.CalculateFocusPoint(toFocus, direction)
+        m.focusX = focusPoint.x
+        m.focusY = focusPoint.y
+    else
+        m.focusX = toFocus.x
+        m.focusY = toFocus.y
+    end if
+
+    m.screen.DrawDebugRect(m.focusX, m.focusY, 15, 15, &h00ff00ff, true)
 
     ' inform the component with the blure state, before shifing
     m.OnFocusOut(lastFocus, toFocus)
