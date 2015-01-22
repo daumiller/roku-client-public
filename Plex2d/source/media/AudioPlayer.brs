@@ -125,8 +125,8 @@ function apHandleMessage(msg as object) as boolean
             end if
         else if msg.isPaused() then
             Debug("Audio: Playback paused")
-            m.SetPlayState(m.STATE_PAUSED)
             m.playbackOffset = m.GetPlaybackPosition()
+            m.SetPlayState(m.STATE_PAUSED)
             m.playbackTimer.Mark()
             m.Trigger("paused", [m, item])
         else if msg.isResumed() then
