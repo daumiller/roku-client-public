@@ -6,6 +6,7 @@ function PlayQueueClass() as object
 
         obj.id = invalid
         obj.selectedId = invalid
+        obj.version = -1
         obj.isShuffled = false
         obj.isRepeat = false
         obj.totalSize = 0
@@ -14,6 +15,9 @@ function PlayQueueClass() as object
         obj.Refresh = pqRefresh
         obj.OnResponse = pqOnResponse
         obj.IsWindowed = pqIsWindowed
+
+        obj.SetShuffle = pqSetShuffle
+        obj.SetRepeat = pqSetRepeat
 
         obj.Equals = pqEquals
 
@@ -94,22 +98,50 @@ sub pqRefresh(force=true as boolean)
     end if
 end sub
 
+sub pqSetShuffle(shuffle as boolean)
+    if m.isShuffled = shuffle then return
+
+    if shuffle then
+        command = "/shuffle"
+    else
+        command = "/unshuffle"
+    end if
+
+    ' Don't change m.isShuffled, it'll be set in OnResponse if all goes well
+
+    request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id) + command + "?_method=PUT")
+    context = request.CreateRequestContext("shuffle", createCallable("OnResponse", m))
+    Application().StartRequest(request, context, "")
+end sub
+
+sub pqSetRepeat(repeat as boolean)
+    if m.isRepeat = repeat then return
+
+    ' TODO(schuyler): Flesh this out once PMS supports it
+
+    m.isRepeat = repeat
+end sub
+
 sub pqOnResponse(request as object, response as object, context as object)
     if response.ParseResponse() then
         m.id = response.container.GetInt("playQueueID")
-        m.version = response.container.GetInt("playQueueVersion")
         m.isShuffled = response.container.GetBool("playQueueShuffled")
         m.totalSize = response.container.GetInt("playQueueTotalCount")
         m.windowSize = response.items.Count()
         m.items = response.items
 
+        newVersion = response.container.GetInt("playQueueVersion")
+
         ' We may have changed the selected ID ourselves as we advanced to the
         ' next item, and we may have refreshed before the first timeline
         ' convinced PMS that we've moved on. We should never need to get this
-        ' info from PMS once we've started playing, so don't bother.
+        ' info from PMS once we've started playing, so don't bother. The one
+        ' important exception is that if the version changed then our item IDs
+        ' probably changed along with it.
         '
-        if m.selectedId = invalid then
+        if m.selectedId = invalid or newVersion <> m.version then
             m.selectedId = response.container.GetInt("playQueueSelectedItemID")
+            m.version = newVersion
         end if
 
         ' TODO(schuyler): Set repeat as soon as PMS starts returning it

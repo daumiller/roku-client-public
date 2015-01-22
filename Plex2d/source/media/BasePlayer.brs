@@ -258,7 +258,8 @@ end sub
 sub bpSetRepeat(mode as integer)
     if m.repeat = mode then return
 
-    ' TODO(schuyler): Tell the Play Queue to set this repeat mode
+    ' Tell the Play Queue to set this repeat mode
+    m.playQueue.SetRepeat(mode)
 
     m.repeat = mode
 
@@ -268,7 +269,8 @@ end sub
 sub bpSetShuffle(shuffle as boolean)
     if shuffle = m.isShuffled then return
 
-    ' TODO(schuyler): Tell the Play Queue to (un)shuffle itself
+    ' Tell the Play Queue to (un)shuffle itself
+    m.playQueue.SetShuffle(shuffle)
 
     m.isShuffled = shuffle
 
