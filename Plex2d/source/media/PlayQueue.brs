@@ -109,7 +109,7 @@ sub pqSetShuffle(shuffle as boolean)
 
     ' Don't change m.isShuffled, it'll be set in OnResponse if all goes well
 
-    request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id) + command + "?_method=PUT")
+    request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id) + command, "PUT")
     context = request.CreateRequestContext("shuffle", createCallable("OnResponse", m))
     Application().StartRequest(request, context, "")
 end sub

@@ -19,7 +19,7 @@ function HttpRequestClass() as object
     return m.HttpRequestClass
 end function
 
-function createHttpRequest(url as string) as object
+function createHttpRequest(url as string, method=invalid as dynamic) as object
     obj = CreateObject("roAssociativeArray")
 
     obj.append(HttpRequestClass())
@@ -29,6 +29,9 @@ function createHttpRequest(url as string) as object
 
     ' Initialize the actual transfer object
     obj.request = CreateObject("roUrlTransfer")
+
+    ' Change the request method if requested
+    if method <> invalid then obj.request.setRequest(method)
 
     ' the roku does not allow ">" || "<"  in the string during setUrl()
     if instr(1, url, ">") > 0 then

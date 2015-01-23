@@ -11,8 +11,8 @@ function PlexRequestClass() as object
     return m.PlexRequestClass
 end function
 
-function createPlexRequest(server as object, path as string) as object
-    obj = createHttpRequest(server.BuildUrl(path))
+function createPlexRequest(server as object, path as string, method=invalid as dynamic) as object
+    obj = createHttpRequest(server.BuildUrl(path), method)
     obj.Append(PlexRequestClass())
 
     obj.server = server
