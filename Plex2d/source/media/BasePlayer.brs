@@ -224,6 +224,7 @@ sub bpOnPlayQueueUpdate(playQueue as object)
 
     ' Update shuffle and repeat according to the PQ
     m.isShuffled = playQueue.isShuffled
+    m.Trigger("shuffle", [m, m.GetCurrentItem(), m.isShuffled])
     NowPlayingManager().timelines[m.timelineType].attrs["shuffle"] = iif(m.isShuffled, "1", "0")
 
     if m.repeat <> m.REPEAT_ONE then
