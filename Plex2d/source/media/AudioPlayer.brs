@@ -9,6 +9,7 @@ function AudioPlayer() as object
         obj.player = CreateObject("roAudioPlayer")
         obj.player.SetMessagePort(Application().port)
         AddPlexHeaders(obj.player)
+        obj.player.AddHeader("X-Plex-Chunked", "1")
 
         obj.timelineType = "music"
 

@@ -45,8 +45,27 @@ function aoBuild(directPlay=invalid as dynamic) as object
 end function
 
 function aoBuildTranscode(obj as object) as dynamic
-    ' TODO(schuyler): All of this
-    Fatal("Audio transcoding not supported yet")
+    part = m.media.parts[0]
+    settings = AppSettings()
+
+    transcodeServer = m.item.GetTranscodeServer(true)
+    if transcodeServer = invalid then return invalid
+
+    obj.StreamFormat = "mp3"
+    obj.IsTranscoded = true
+    obj.transcodeServer = transcodeServer
+
+    builder = createHttpRequest(transcodeServer.BuildUrl("/music/:/transcode/universal/start.mp3", true))
+
+    builder.AddParam("protocol", "http")
+    builder.AddParam("path", m.item.GetAbsolutePath("key"))
+    builder.AddParam("session", settings.GetGlobal("clientIdentifier"))
+    builder.AddParam("directPlay", "0")
+    builder.AddParam("directStream", "0")
+
+    obj.Url = builder.GetUrl()
+
+    return obj
 end function
 
 function aoBuildDirectPlay(obj as object) as dynamic
