@@ -349,6 +349,7 @@ end function
 
 function mdeEvaluateMediaMusic(item as object, media as object) as object
     choice = createMediaChoice(media)
+    settings = AppSettings()
 
     ' Resolve indirects before doing anything else.
     if media.IsIndirect() then
@@ -372,15 +373,20 @@ function mdeEvaluateMediaMusic(item as object, media as object) as object
         choice.score = choice.score + 5000
     end if
 
-    ' For evaluation purposes, we only care about the first part
-    part = media.parts[0]
-    if part = invalid then return choice
+    ' We can generally get away with just looking at the codec, and we can get
+    ' that from the media element. So we don't bother going into the
+    ' part/streams.
 
-    ' TODO(schuyler): Actually evaluate the media, decide if we can direct play, etc.
+    codec = media.Get("audioCodec", "invalid")
+
+    if settings.GetBoolPreference("directplay_" + codec) then
+        choice.isDirectPlayable = true
+        choice.score = choice.score + 2000
+    else
+        choice.isDirectPlayable = false
+    end if
+
     ' TODO(schuyler): Assume that synced servers always have direct playable media
-
-    choice.isDirectPlayable = true
-    choice.score = choice.score + 2000
 
     return choice
 end function

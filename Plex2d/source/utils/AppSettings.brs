@@ -215,6 +215,31 @@ sub settingsInitPrefs()
         prefType: "bool",
         isRestricted: true,
     }
+
+    ' Audio direct play
+    m.prefs["directplay_mp3"] = {
+        key: "directplay_mp3",
+        title: "MP3",
+        default: "1",
+        section: "preferences",
+        prefType: "bool"
+    }
+
+    m.prefs["directplay_aac"] = {
+        key: "directplay_aac",
+        title: "AAC",
+        default: "1",
+        section: "preferences",
+        prefType: "bool"
+    }
+
+    m.prefs["directplay_flac"] = {
+        key: "directplay_flac",
+        title: "FLAC",
+        default: "1",
+        section: "preferences",
+        prefType: "bool"
+    }
 end sub
 
 function settingsGetSectionKey(pref as string) as string
