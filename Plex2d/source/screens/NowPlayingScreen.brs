@@ -29,6 +29,8 @@ function NowPlayingScreen() as object
         obj.SetImage = nowplayingSetImage
         obj.GetNextTrack = nowplayingGetNextTrack
         obj.OnFocusTimer = nowplayingOnFocusTimer
+        obj.OnToggleTimer = nowplayingOnToggleTimer
+        obj.AddToggleTimer = nowplayingAddToggleTimer
 
         ' Remote button methods
         obj.OnPlayButton = nowplayingOnPlayButton
@@ -311,6 +313,25 @@ sub nowplayingOnFocusTimer(timer as object)
     end if
 end sub
 
+sub nowplayingAddToggleTimer(component as object)
+    if component.Equals(m.focusedItem) then
+        toggleTimer = createTimer("toggleTimer")
+        toggleTimer.SetDuration(800)
+        toggleTimer.component = component
+        Application().AddTimer(toggleTimer, createCallable("OnToggleTimer", m))
+    end if
+end sub
+
+sub nowplayingOnToggleTimer(timer as object)
+    if timer.component.Equals(m.focusedItem) then
+        if m.focusTimer <> invalid then m.focusTimer.mark()
+        timer.component = timer.component
+        timer.component.SetColor(Colors().OrangeLight)
+        timer.component.Draw(true)
+        m.Refresh()
+    end if
+end sub
+
 sub nowplayingUpdateTracks(item as object)
     m.SetTitle(item.Get("grandparentTitle", ""), m.grandparentTitle)
     m.SetTitle(item.Get("parentTitle", ""), m.parentTitle)
@@ -398,6 +419,8 @@ sub nowplayingOnShuffle(player as object, item as object, shuffle as boolean)
     m.shuffleButton.Draw(true)
 
     m.UpdateTracks(item)
+
+    m.AddToggleTimer(m.shuffleButton)
 end sub
 
 sub nowplayingOnRepeat(player as object, item as object, repeat as integer)
@@ -410,6 +433,8 @@ sub nowplayingOnRepeat(player as object, item as object, repeat as integer)
     m.repeatButton.Draw(true)
 
     m.UpdateTracks(item)
+
+    m.AddToggleTimer(m.repeatButton)
 end sub
 
 sub nowplayingOnPlayButton(item=invalid as dynamic)
