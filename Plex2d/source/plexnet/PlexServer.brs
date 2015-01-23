@@ -35,6 +35,7 @@ function PlexServerClass() as object
         obj.IsReachable = pnsIsReachable
         obj.IsLocalConnection = pnsIsLocalConnection
         obj.IsRequestToServer = pnsIsRequestToServer
+        obj.SupportsFeature = pnsSupportsFeature
         obj.Merge = pnsMerge
         obj.Equals = pnsEquals
         obj.ToString = pnsToString
@@ -51,6 +52,7 @@ function createPlexServer() as object
     obj.Append(PlexServerClass())
 
     obj.connections = CreateObject("roList")
+    obj.features = {}
 
     return obj
 end function
@@ -166,7 +168,14 @@ function pnsCollectDataFromRoot(xml as object) as boolean
     m.name = firstOf(xml@friendlyName, m.name)
 
     ' TODO(schuyler): Process transcoder qualities
-    ' TODO(schuyler): Version
+
+    if isnonemptystr(xml@version) then
+        m.version = ParseVersion(xml@version)
+    end if
+
+    if CheckMinimumVersion([0, 9, 11, 11], m.version) then
+        m.features["mkv_transcode"] = true
+    end if
 
     Debug("Server information updated from reachability check: " + tostr(m))
 
@@ -277,6 +286,10 @@ sub pnsMerge(other as object)
         m.owner = other.owner
     end if
 end sub
+
+function pnsSupportsFeature(feature as string) as boolean
+    return m.features.DoesExist(feature)
+end function
 
 function pnsEquals(other as dynamic) as boolean
     if other = invalid then return false

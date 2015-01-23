@@ -4,7 +4,8 @@ function VideoObjectClass() as object
         obj.ClassName = "VideoObject"
 
         obj.Build = voBuild
-        obj.BuildTranscode = voBuildTranscode
+        obj.BuildTranscodeHls = voBuildTranscodeHls
+        obj.BuildTranscodeMkv = voBuildTranscodeMkv
         obj.BuildDirectPlay = voBuildDirectPlay
 
         m.VideoObjectClass = obj
@@ -69,7 +70,15 @@ function voBuild(directPlay=invalid as dynamic, directStream=true as boolean) as
     if directPlay then
         obj = m.BuildDirectPlay(obj, partIndex)
     else
-        obj = m.BuildTranscode(obj, partIndex, directStream)
+        ' TODO(schuyler): Do we need a preference here? Also, clean this up. If
+        ' we're going to just use MKV, then this is fine. If we're going to
+        ' support both, then we can reduce some code duplication.
+        '
+        if server.SupportsFeature("mkv_transcode") then
+            obj = m.BuildTranscodeMkv(obj, partIndex, directStream)
+        else
+            obj = m.BuildTranscodeHls(obj, partIndex, directStream)
+        end if
     end if
 
     m.metadata = obj
@@ -79,7 +88,7 @@ function voBuild(directPlay=invalid as dynamic, directStream=true as boolean) as
     return m.metadata
 end function
 
-function voBuildTranscode(obj as object, partIndex as integer, directStream as boolean) as dynamic
+function voBuildTranscodeHls(obj as object, partIndex as integer, directStream as boolean) as dynamic
     ' TODO(schuyler): Kepler builds this URL in plexnet. And we build the
     ' image transcoding URL in plexnet. Should this move there?
 
@@ -129,6 +138,69 @@ function voBuildTranscode(obj as object, partIndex as integer, directStream as b
     settings = AppSettings()
     if settings.SupportsSurroundSound() and settings.GetBoolPreference("surround_sound_ac3") then
         extras = extras + "+add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=hls&audioCodec=ac3)"
+    end if
+
+    if Len(extras) > 0 then
+        builder.AddParam("X-Plex-Client-Profile-Extra", extras)
+    end if
+
+    obj.StreamUrls = [builder.GetUrl()]
+
+    return obj
+end function
+
+function voBuildTranscodeMkv(obj as object, partIndex as integer, directStream as boolean) as dynamic
+    part = m.media.parts[partIndex]
+    settings = AppSettings()
+
+    transcodeServer = m.item.GetTranscodeServer(true)
+    if transcodeServer = invalid then return invalid
+
+    obj.StreamFormat = "mkv"
+    obj.StreamBitrates = [0]
+    obj.IsTranscoded = true
+    obj.transcodeServer = transcodeServer
+    obj.ReleaseDate = obj.ReleaseDate + "   Transcoded"
+
+    builder = createHttpRequest(transcodeServer.BuildUrl("/video/:/transcode/universal/start.mkv", true))
+
+    builder.AddParam("protocol", "http")
+    builder.AddParam("path", m.item.GetAbsolutePath("key"))
+    builder.AddParam("session", settings.GetGlobal("clientIdentifier"))
+    builder.AddParam("offset", tostr(int(m.seekValue/1000)))
+    builder.AddParam("directPlay", "0")
+    builder.AddParam("directStream", iif(directStream, "1", "0"))
+
+    if transcodeServer.IsLocalConnection() then
+        qualityIndex = settings.GetIntPreference("local_quality")
+    else
+        qualityIndex = settings.GetIntPreference("remote_quality")
+    end if
+    builder.AddParam("videoQuality", settings.GetGlobal("transcodeVideoQualities")[qualityIndex])
+    builder.AddParam("videoResolution", settings.GetGlobal("transcodeVideoResolutions")[qualityIndex])
+    builder.AddParam("maxVideoBitrate", settings.GetGlobal("transcodeVideoBitrates")[qualityIndex])
+
+    if m.choice.isExternalSoftSub then
+        builder.AddParam("subtitles", "muxed")
+        obj.SubtitleUrl = invalid
+    end if
+
+    builder.AddParam("partIndex", tostr(partIndex))
+
+    ' Augment the server's profile for things that depend on the Roku's configuration.
+
+    ' TODO(schuyler): Do we still need this to be tweakable? Can we move it to the profile?
+    extras = "add-limitation(scope=videoCodec&scopeName=h264&type=upperBound&name=video.level&value=41&isRequired=true)"
+
+    settings = AppSettings()
+    if settings.SupportsSurroundSound() then
+        if settings.GetBoolPreference("surround_sound_ac3") then
+            extras = extras + "+add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=http&audioCodec=ac3)"
+        end if
+
+        if settings.GetBoolPreference("surround_sound_dca") then
+            extras = extras + "+add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=http&audioCodec=dca)"
+        end if
     end if
 
     if Len(extras) > 0 then

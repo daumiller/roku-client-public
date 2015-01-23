@@ -90,6 +90,8 @@ sub vpInit()
     ' URL.
     '
     AddPlexHeaders(screen)
+    screen.AddHeader("X-Plex-Chunked", "1")
+    screen.AddHeader("X-Plex-Strict-Ranges", "0")
 
     screen.SetContent(videoItem)
 
