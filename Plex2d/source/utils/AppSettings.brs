@@ -44,6 +44,8 @@ end function
 function settingsGetPreference(name as string) as dynamic
     obj = m.prefs[name]
 
+    if obj = invalid then return invalid
+
     if obj.DoesExist("managedValue") and MyPlexAccount().isManaged then
         return obj.managedValue
     end if
@@ -53,6 +55,7 @@ function settingsGetPreference(name as string) as dynamic
 end function
 
 function settingsGetIntPreference(name as string) as integer
+    if not m.prefs.DoesExist(name) then return 0
     section = m.GetSectionKey(name)
     return m.GetIntRegistry(name, m.prefs[name].default.toInt(), section)
 end function

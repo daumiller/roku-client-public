@@ -71,6 +71,8 @@ sub bpInit()
         m.timelineTimer.active = false
         m.timelineTimer.callback = createCallable("OnTimelineTimer", m)
 
+        m.SetPlayState(m.STATE_STOPPED)
+
         NowPlayingManager().timelines[m.timelineType].attrs["repeat"] = "0"
         NowPlayingManager().timelines[m.timelineType].attrs["shuffle"] = "0"
 end sub

@@ -73,7 +73,7 @@ function aoBuildDirectPlay(obj as object) as dynamic
 
     if m.media.parts <> invalid and m.media.parts[0] <> invalid then
         part = m.media.parts[0]
-        obj.StreamFormat = m.media.Get("container", "mp3")
+        obj.StreamFormat = m.media.Get("audioCodec", "mp3")
         obj.Url = m.item.GetServer().BuildUrl(part.GetAbsolutePath("key"), true)
         bitrate = m.media.GetInt("bitrate")
 
