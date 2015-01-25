@@ -245,9 +245,6 @@ sub compDestroyComponents(clear=true as boolean)
         end if
         Debug("compDestroyComponents:: after: " + tostr(m.components.count()))
     end if
-
-    ' reset the nextComponentId
-    GetGlobalAA().AddReplace("nextComponentId", 1)
 end sub
 
 sub compGetComponents()
