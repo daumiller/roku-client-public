@@ -351,7 +351,6 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
             trackIndex = 0
             key = invalid
             component = m.trackList.components[0]
-            m.OnFocus(component)
         end if
 
         if component.Equals(m.paused) or component.Equals(m.playing) then
