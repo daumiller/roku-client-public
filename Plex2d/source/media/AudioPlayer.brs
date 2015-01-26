@@ -24,6 +24,8 @@ function AudioPlayer() as object
 
         ' BasePlayer overrides
         obj.SetRepeat = apSetRepeat
+        obj.OnFwdButton = apOnFwdButton
+        obj.OnRevButton = apOnRevButton
 
         obj.HandleMessage = apHandleMessage
         obj.Cleanup = apCleanup
@@ -193,5 +195,17 @@ sub apSetRepeat(mode as integer)
 
     if mode = m.REPEAT_ONE then
         m.player.SetNext(m.curIndex)
+    end if
+end sub
+
+sub apOnFwdButton()
+    if m.isPlaying then
+        m.Seek(10000, true)
+    end if
+end sub
+
+sub apOnRevButton()
+    if m.isPlaying then
+        m.Seek(-10000, true)
     end if
 end sub

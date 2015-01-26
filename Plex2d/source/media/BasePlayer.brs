@@ -343,13 +343,9 @@ sub bpOnPlayButton()
 end sub
 
 sub bpOnFwdButton()
-    if AudioPlayer().isPlaying then
-        AudioPlayer().Seek(10000, true)
-    end if
+    ' no-op
 end sub
 
 sub bpOnRevButton()
-    if AudioPlayer().isPlaying then
-        AudioPlayer().Seek(-10000, true)
-    end if
+    ' no-op
 end sub
