@@ -368,9 +368,9 @@ function nowplayingSetProgress(time as integer, duration as integer) as boolean
 end function
 
 sub nowplayingOnPlay(player as object, item as object)
-    ' TODO(rob): remote location is only needed since we do not close
-    ' the screen on a stop.
-    NowPlayingManager().location = "fullScreenMusic"
+'    ' TODO(rob): remote location is only needed since we do not close
+'    ' the screen on a stop.
+'    NowPlayingManager().location = "fullScreenMusic"
     m.OnRepeat(player, item, player.repeat)
     m.OnShuffle(player, item, player.isShuffled)
     m.SetProgress(0, item.GetInt("duration"))
@@ -380,11 +380,7 @@ sub nowplayingOnPlay(player as object, item as object)
 end sub
 
 sub nowplayingOnStop(player as object, item as object)
-    ' TODO(rob): show a stop close this screen? for now we'll just set
-    ' the remote location to navigation.
-    NowPlayingManager().location = "navigation"
-    m.SetTitle(Glyphs().PLAY, m.playButton)
-    m.Refresh()
+    Application().popScreen(m)
 end sub
 
 sub nowplayingOnPause(player as object, item as object)
