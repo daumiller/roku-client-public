@@ -236,14 +236,18 @@ sub imageScaleRegion(width as integer, height as integer)
         if m.scaleMode = "zoom-to-fill" and scaleX <> scaleY then
             if scaleX <> 1 and scaleY <> 1 then
                 scale = iif(scaleX > scaleY, scaleX, scaleY)
+                ratioX = abs(1 - 1/scaleX)
+                ratioY = abs(1 - 1/scaleY)
+                ratio = iif(ratioX > ratioY, ratioX, ratioY)
             else
                 scale = iif(scaleX <> 1, scaleX, scaleY)
+                ratio = abs(1 - 1/scale)
             end if
 
             ' allow a 5% stretch to fill
-            if scale >= .95 and scale <= 1.05 then
+            if ratio <= .05 then
                 scaledRegion.DrawScaledObject(0, 0, scaleX, scaleY, m.region)
-            ' move image to center
+            ' move (crop) image to center
             else if scale < 1 then
                 x = cint((width - m.region.GetWidth()) / 2)
                 y = cint((height - m.region.GetHeight()) / 2)
