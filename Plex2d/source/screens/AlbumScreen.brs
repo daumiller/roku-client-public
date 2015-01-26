@@ -73,11 +73,11 @@ sub albumInit()
 
     ' Set up audio player listeners
     m.DisableListeners()
-    player = AudioPlayer()
-    m.AddListener(player, "playing", CreateCallable("OnPlay", m))
-    m.AddListener(player, "stopped", CreateCallable("OnStop", m))
-    m.AddListener(player, "paused", CreateCallable("OnPause", m))
-    m.AddListener(player, "resumed", CreateCallable("OnResume", m))
+    m.player = AudioPlayer()
+    m.AddListener(m.player, "playing", CreateCallable("OnPlay", m))
+    m.AddListener(m.player, "stopped", CreateCallable("OnStop", m))
+    m.AddListener(m.player, "paused", CreateCallable("OnPause", m))
+    m.AddListener(m.player, "resumed", CreateCallable("OnResume", m))
 end sub
 
 sub albumShow()
@@ -225,13 +225,13 @@ sub albumGetComponents()
     m.components.Push(m.trackList)
 
     ' Set the focus to the current AudioPlayer track, if applicable.
-    component = m.GetTrackComponent(AudioPlayer().GetCurrentItem())
+    component = m.GetTrackComponent(m.player.GetCurrentItem())
     if component <> invalid then
         m.focusedItem = component
-        if AudioPlayer().isPlaying then
-            m.OnPlay(AudioPlayer(), component.plexObject)
-        else if AudioPlayer().isPaused then
-            m.OnPause(AudioPlayer(), component.plexObject)
+        if m.player.isPlaying then
+            m.OnPlay(m.player, component.plexObject)
+        else if m.player.isPaused then
+            m.OnPause(m.player, component.plexObject)
         end if
     end if
 
@@ -355,7 +355,7 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
         end if
 
         if component.Equals(m.paused) or component.Equals(m.playing) then
-            Application().PushScreen(createNowPlayingScreen(AudioPlayer().GetCurrentItem()))
+            Application().PushScreen(createNowPlayingScreen(m.player.GetCurrentItem()))
         else
             plexItem = trackContext[trackIndex]
             options = {}
@@ -365,7 +365,7 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
             end if
 
             pq = createPlayQueueForItem(plexItem, options)
-            AudioPlayer().SetPlayQueue(pq, true)
+            m.player.SetPlayQueue(pq, true)
             Application().PushScreen(createNowPlayingScreen(plexItem))
         end if
     else if command = "summary" then
@@ -464,17 +464,17 @@ function albumGetTrackComponent(plexObject as dynamic) as dynamic
 end function
 
 sub albumOnPlayButton(item=invalid as dynamic)
-    if AudioPlayer().IsActive() then
-        AudioPlayer().OnPlayButton()
+    if m.player.IsActive() then
+        m.player.OnPlayButton()
     else
         m.HandleCommand("play", item)
     end if
 end sub
 
 sub albumOnFwdButton(item=invalid as dynamic)
-    AudioPlayer().OnFwdButton()
+    m.player.OnFwdButton()
 end sub
 
 sub albumOnRevButton(item=invalid as dynamic)
-    AudioPlayer().OnRevButton()
+    m.player.OnRevButton()
 end sub

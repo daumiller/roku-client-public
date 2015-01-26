@@ -69,14 +69,14 @@ sub nowplayingInit()
 
     ' Set up audio player listeners
     m.DisableListeners()
-    player = AudioPlayer()
-    m.AddListener(player, "playing", CreateCallable("OnPlay", m))
-    m.AddListener(player, "stopped", CreateCallable("OnStop", m))
-    m.AddListener(player, "paused", CreateCallable("OnPause", m))
-    m.AddListener(player, "resumed", CreateCallable("OnResume", m))
-    m.AddListener(player, "progress", CreateCallable("OnProgress", m))
-    m.AddListener(player, "shuffle", CreateCallable("OnShuffle", m))
-    m.AddListener(player, "repeat", CreateCallable("OnRepeat", m))
+    m.player = AudioPlayer()
+    m.AddListener(m.player, "playing", CreateCallable("OnPlay", m))
+    m.AddListener(m.player, "stopped", CreateCallable("OnStop", m))
+    m.AddListener(m.player, "paused", CreateCallable("OnPause", m))
+    m.AddListener(m.player, "resumed", CreateCallable("OnResume", m))
+    m.AddListener(m.player, "progress", CreateCallable("OnProgress", m))
+    m.AddListener(m.player, "shuffle", CreateCallable("OnShuffle", m))
+    m.AddListener(m.player, "repeat", CreateCallable("OnRepeat", m))
 end sub
 
 sub nowplayingGetComponents()
@@ -192,26 +192,25 @@ function nowplayingHandleCommand(command as string, item=invalid as dynamic) as 
 
     if m.focusTimer <> invalid then m.focusTimer.Mark()
 
-    player = AudioPlayer()
     if command = "playToggle" then
-        if AudioPlayer().IsPlaying then
-            player.Pause()
-        else if AudioPlayer().IsPaused
-            player.Resume()
+        if m.player.IsPlaying then
+            m.player.Pause()
+        else if m.player.IsPaused
+            m.player.Resume()
         else
-            player.Play()
+            m.player.Play()
         end if
     else if command = "stop" then
-        player.Stop()
+        m.player.Stop()
     else if command = "repeat" then
-        repeat = iif(player.repeat = player.REPEAT_NONE, player.REPEAT_ALL, player.REPEAT_NONE)
-        player.SetRepeat(repeat)
+        repeat = iif(m.player.repeat = m.player.REPEAT_NONE, m.player.REPEAT_ALL, m.player.REPEAT_NONE)
+        m.player.SetRepeat(repeat)
     else if command = "shuffle" then
-        player.SetShuffle(not(player.isShuffled))
+        m.player.SetShuffle(not(m.player.isShuffled))
     else if command = "prev_track" then
-        player.Prev()
+        m.player.Prev()
     else if command = "next_track" then
-        player.Next()
+        m.player.Next()
     else
         return ApplyFunc(ComponentsScreen().HandleCommand, m, [command, item])
     end if
@@ -231,15 +230,13 @@ function nowplayingGetButtons() as object
 
     buttons = createObject("roAssociativeArray")
 
-    player = AudioPlayer()
-
     buttons["left"] = createObject("roList")
-    buttons["left"].push({text: Glyphs().SHUFFLE, command: "shuffle", componentKey: "shuffleButton", statusColor: iif(player.isShuffled, Colors().Orange, invalid) })
-    buttons["left"].push({text: Glyphs().REPEAT, command: "repeat", componentKey: "repeatButton", statusColor: iif(player.repeat <> player.REPEAT_NONE, Colors().Orange, invalid) })
+    buttons["left"].push({text: Glyphs().SHUFFLE, command: "shuffle", componentKey: "shuffleButton", statusColor: iif(m.player.isShuffled, Colors().Orange, invalid) })
+    buttons["left"].push({text: Glyphs().REPEAT, command: "repeat", componentKey: "repeatButton", statusColor: iif(m.player.repeat <> m.player.REPEAT_NONE, Colors().Orange, invalid) })
 
     buttons["middle"] = createObject("roList")
     buttons["middle"].push({text: Glyphs().STEP_REV, command: "prev_track", componentKey: "prevTrackButton"})
-    buttons["middle"].push({text: iif(AudioPlayer().isPlaying, Glyphs().PAUSE, Glyphs().PLAY), command: "playToggle", componentKey: "playButton", defaultFocus: true})
+    buttons["middle"].push({text: iif(m.player.isPlaying, Glyphs().PAUSE, Glyphs().PLAY), command: "playToggle", componentKey: "playButton", defaultFocus: true})
     buttons["middle"].push({text: Glyphs().STEP_FWD, command: "next_track", componentKey: "nextTrackButton"})
 
     buttons["right"] = createObject("roList")
@@ -289,7 +286,7 @@ end sub
 function nowplayingGetNextTrack() as object
     obj = CreateObject("roAssociativeArray")
 
-    nextTrack = AudioPlayer().GetNextItem()
+    nextTrack = m.player.GetNextItem()
     if nextTrack <> invalid then
         obj.grandparentTitle = nextTrack.Get("grandparentTitle")
         obj.parentTitle = nextTrack.Get("parentTitle")
@@ -438,14 +435,14 @@ sub nowplayingOnRepeat(player as object, item as object, repeat as integer)
 end sub
 
 sub nowplayingOnPlayButton(item=invalid as dynamic)
-    AudioPlayer().OnPlayButton()
+    m.player.OnPlayButton()
 end sub
 
 sub nowplayingOnFwdButton(item=invalid as dynamic)
-    AudioPlayer().OnFwdButton()
+    m.player.OnFwdButton()
 end sub
 
 sub nowplayingOnRevButton(item=invalid as dynamic)
-    AudioPlayer().OnRevButton()
+    m.player.OnRevButton()
 end sub
 

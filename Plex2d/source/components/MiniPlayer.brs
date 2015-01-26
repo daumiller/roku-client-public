@@ -43,7 +43,7 @@ function createMiniPlayer(screen as object) as object
     obj.isEnabled = true
     obj.screen = screen
 
-    if AudioPlayer().isActive() then
+    if obj.player.isActive() then
         obj.Show(false)
     end if
 
@@ -60,6 +60,7 @@ sub miniplayerInit()
     if m.initComplete then return
     ApplyFunc(ContainerClass().Init, m)
 
+    m.player = AudioPlayer()
     m.initComplete = true
     m.isDrawn = false
     m.zOrder = ZOrders().MINIPLAYER
@@ -67,7 +68,7 @@ sub miniplayerInit()
     m.selectCommand = "now_playing"
 
     ' Use the current track in the audio player, or we'll use placeholders
-    item = AudioPlayer().GetCurrentItem()
+    item = m.player.GetCurrentItem()
     labels = {}
     if item <> invalid then
         labels.title = item.Get("title", "")
@@ -122,12 +123,11 @@ sub miniplayerInit()
 
     ' Set up listeners for AudioPlayer and the MiniPlayer
     m.DisableListeners()
-    player = AudioPlayer()
-    m.AddListener(player, "playing", CreateCallable("OnPlay", m))
-    m.AddListener(player, "stopped", CreateCallable("OnStop", m))
-    m.AddListener(player, "paused", CreateCallable("OnPause", m))
-    m.AddListener(player, "resumed", CreateCallable("OnResume", m))
-    m.AddListener(player, "progress", CreateCallable("OnProgress", m))
+    m.AddListener(m.player, "playing", CreateCallable("OnPlay", m))
+    m.AddListener(m.player, "stopped", CreateCallable("OnStop", m))
+    m.AddListener(m.player, "paused", CreateCallable("OnPause", m))
+    m.AddListener(m.player, "resumed", CreateCallable("OnResume", m))
+    m.AddListener(m.player, "progress", CreateCallable("OnProgress", m))
     m.EnableListeners()
 end sub
 
