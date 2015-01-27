@@ -27,6 +27,10 @@ function Colors() as object
         obj.Orange = &hcc7b19ff
         obj.OrangeLight = &hf9be03ff
 
+        ' Component specific
+        obj.ScrollbarBg = &hffffff10
+        obj.ScrollbarFg = obj.Orange and &hffffff60
+
         m.Colors = obj
     end if
 

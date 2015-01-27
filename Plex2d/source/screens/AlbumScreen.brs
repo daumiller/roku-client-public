@@ -15,6 +15,7 @@ function AlbumScreen() as object
         obj.OnFocusIn = albumOnFocusIn
         obj.SetNowPlaying = albumSetNowPlaying
         obj.GetTrackComponent = albumGetTrackComponent
+        obj.ToggleSummary = albumToggleSummary
 
         ' Listener Methods
         obj.OnPlay = albumOnPlay
@@ -70,6 +71,7 @@ sub albumInit()
     m.requestContext = invalid
     m.childRequestContext = invalid
     m.children = CreateObject("roList")
+    m.summaryVisible = false
 
     ' Set up audio player listeners
     m.DisableListeners()
@@ -100,6 +102,7 @@ sub albumShow()
     if m.requestContext.response <> invalid and m.childRequestContext.response <> invalid then
         if m.item <> invalid then
             ApplyFunc(ComponentsScreen().Show, m)
+            m.ToggleSummary()
         else
             dialog = createDialog("Unable to load", "Sorry, we couldn't load the requested item.", m)
             dialog.AddButton("OK", "close_screen")
@@ -163,19 +166,20 @@ sub albumGetComponents()
 
     ' xOffset share with Summary and Track list
     xOffset = xOffset + parentSpacing + parentHeight
+    width = 1230 - xOffset
 
     ' *** REVIEW: title and summary *** '
     m.summaryTitle = createLabel("REVIEW", FontRegistry().Font16)
-    m.summaryHeight = m.summaryTitle.font.GetOneLineHeight()
-    m.summaryTitle.SetFrame(xOffset, yOffset - childSpacing - m.summaryHeight, m.summaryTitle.GetPreferredWidth(), m.summaryHeight)
+    height = m.summaryTitle.font.GetOneLineHeight()
+    m.summaryTitle.SetFrame(xOffset, yOffset - childSpacing - height, m.summaryTitle.GetPreferredWidth(), height)
     m.summaryTitle.zOrderInit = -1
     m.components.push(m.summaryTitle)
 
-    m.summary = createLabel(m.item.Get("summary", ""), FontRegistry().Font16)
-    m.summary.SetColor(Colors().Text, Colors().OverlayDark)
-    m.summary.SetPadding(20)
-    m.summary.wrap = true
-    m.summary.SetFrame(xOffset, yOffset, 1230 - xOffset, parentHeight)
+    m.summary = createTextArea(m.item.Get("summary", ""), FontRegistry().Font16, 0)
+    m.summary.SetFrame(xOffset, yOffset, width, parentHeight)
+    m.summary.SetColor(Colors().Text, Colors().OverlayDark, Colors().OverlayMed)
+    m.summary.SetPadding(10, 10, 10, 15)
+    m.summary.halign = m.summary.JUSTIFY_LEFT
     m.summary.zOrderInit = -1
     m.components.push(m.summary)
 
@@ -197,9 +201,10 @@ sub albumGetComponents()
     m.components.Push(m.trackBG)
 
     m.trackList = createVBox(false, false, false, 0)
-    m.trackList.SetScrollable(720 + trackPrefs.height, 720 / 2, true, true, invalid)
+    m.trackList.SetFrame(xOffset + padding, header.GetPreferredHeight() + padding, trackPrefs.width, 720/2 - padding)
+    m.trackList.SetScrollable(720 / 2, true, true, invalid)
+    m.trackList.stopShiftIfInView = true
     m.trackList.scrollOverflow = true
-    m.trackList.SetFrame(xOffset + padding, header.GetPreferredHeight() + padding, trackPrefs.width, 720)
 
     ' *** Tracks *** '
     trackCount = m.children.Count()
@@ -369,25 +374,7 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
         end if
     else if command = "summary" then
         m.summaryVisible = not m.summaryVisible = true
-        Debug("toggle summary: summaryVisible=" + tostr(m.summaryVisible))
-
-        ' toggle summary
-        m.summaryTitle.SetVisible(m.summaryVisible)
-        m.summary.SetVisible(m.summaryVisible)
-
-        ' toggle track list
-        visible = m.summaryVisible = false
-        m.trackBG.SetVisible(visible)
-        for each component in m.trackList.components
-            component.focusable = visible
-            if component.IsOnScreen() then component.SetVisible(visible)
-        end for
-
-        ' invalidate focus sibling and last focus item
-        m.focusedItem.SetFocusSibling("right", invalid)
-        m.lastFocusedItem = invalid
-
-        m.screen.DrawAll()
+        m.ToggleSummary()
     else if command = "go_to_artist" then
         Application().PushScreen(createArtistScreen(m.item, m.item.Get("parentKey")))
     else
@@ -476,4 +463,26 @@ end sub
 
 sub albumOnRevButton(item=invalid as dynamic)
     m.player.OnRevButton()
+end sub
+
+sub albumToggleSummary()
+    Debug("toggle summary: summaryVisible=" + tostr(m.summaryVisible))
+
+    ' toggle summary
+    m.summaryTitle.SetVisible(m.summaryVisible)
+    m.summary.SetVisible(m.summaryVisible)
+
+    ' toggle track list
+    visible = m.summaryVisible = false
+    m.trackBG.SetVisible(visible)
+    for each component in m.trackList.components
+        component.focusable = visible
+        if component.IsOnScreen() then component.SetVisible(visible)
+    end for
+
+    ' invalidate focus sibling and last focus item
+    m.focusedItem.SetFocusSibling("right", invalid)
+    m.lastFocusedItem = invalid
+
+    m.screen.DrawAll()
 end sub

@@ -202,11 +202,10 @@ sub preplayGetComponents()
     vbInfo.SetFrame(xOffset, 125, 1130-xOffset, 239)
     m.components.Push(vbInfo)
 
-    ' TODO(rob): dynamic width
-    summary = createLabel(m.item.Get("summary", ""), FontRegistry().font16)
-    summary.SetPadding(20, 20, 20, 0)
-    summary.wrap = true
+    summary = createTextArea(m.item.Get("summary", ""), FontRegistry().Font16, 0)
+    summary.SetPadding(10)
     summary.SetFrame(xOffset, 364, 1230-xOffset, 239)
+    summary.SetColor(Colors().Text, &h00000000, Colors().OverlayLht)
     m.components.push(summary)
 
     ' *** Right Side Info *** '

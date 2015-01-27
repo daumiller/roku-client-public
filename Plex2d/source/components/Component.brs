@@ -91,7 +91,6 @@ end sub
 
 sub compInitRegion()
     perfTimer().mark()
-    ' performance++ clear and resuse a region
     if m.region <> invalid then
         m.region.clear(m.bgColor)
         msg = "clear and reuse"
@@ -101,7 +100,6 @@ sub compInitRegion()
         m.region = CreateObject("roRegion", bmp, 0, 0, bmp.GetWidth(), bmp.GetHeight())
         msg = "new bitmap/region"
     end if
-
     PerfTimer().Log("compInitRegion:: " + msg + " " + tostr(m.region.getWidth()) + "x" + tostr(m.region.getHeight()))
 end sub
 
@@ -149,8 +147,7 @@ function compGetContentArea() as object
 end function
 
 sub compSetFrame(x as integer, y as integer, width as integer, height as integer)
-    m.x = x
-    m.y = y
+    m.SetPosition(x, y)
     m.width = width
     m.height = height
     ' move the sprite components sprite if applicable
@@ -162,6 +159,8 @@ end sub
 sub compSetPosition(x as integer, y as integer)
     m.x = x
     m.y = y
+    m.origX = x
+    m.origY = y
 end sub
 
 sub compSetVisible(visible=true as boolean)
@@ -207,15 +206,21 @@ end sub
 
 sub compShiftPosition(deltaX=0 as integer, deltaY=0 as integer, shiftSprite=true as boolean)
     ' ignore shifting fixed components
-    if m.fixed = true then return
+    if m.fixed = true or (m.fixedVertical = true and m.fixedHorizontal = true) then return
 
-    ' ignore vertical shift, if vertically fixed (allow horizontal shift if supplied)
+    ' ignore vertical shift / allow horizontal shift
     if m.fixedVertical = true then
         if deltaX = 0 then return
         deltaY = 0
     end if
 
-    ' set the componets new coords
+    ' ignore horizontal shift / allow vertical shift
+    if m.fixedHorizontal = true then
+        if deltaY = 0 then return
+        deltaX = 0
+    end if
+
+    ' set the components new coords
     m.x = m.x + deltaX
     m.y = m.y + deltaY
 
@@ -230,7 +235,8 @@ sub compShiftPosition(deltaX=0 as integer, deltaY=0 as integer, shiftSprite=true
     if m.sprite <> invalid then
         ' Ignore setting zOrder for scrollable parents. e.g. VBOX vertical
         ' scroll. Just move the sprite as the parent handles visibility.
-        if m.parent <> invalid and m.parent.scrollHeight <> invalid then
+        parent = firstOf(m.shiftableParent, m.parent)
+        if parent <> invalid and parent.isVScrollable = true then
             m.sprite.moveTo(m.x, m.y)
         else if m.IsOnScreen() then
             m.sprite.moveTo(m.x, m.y)

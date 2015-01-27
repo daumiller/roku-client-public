@@ -12,6 +12,7 @@ function ArtistScreen() as object
         obj.GetComponents = artistGetComponents
         obj.HandleCommand = artistHandleCommand
         obj.GetButtons = artistGetButtons
+        obj.ToggleSummary = artistToggleSummary
 
         m.ArtistScreen = obj
     end if
@@ -53,6 +54,7 @@ sub artistInit()
     m.requestContext = invalid
     m.childRequestContext = invalid
     m.children = CreateObject("roList")
+    m.summaryVisible = false
 end sub
 
 sub artistShow()
@@ -75,6 +77,7 @@ sub artistShow()
     if m.requestContext.response <> invalid and m.childRequestContext.response <> invalid then
         if m.item <> invalid then
             ApplyFunc(ComponentsScreen().Show, m)
+            m.ToggleSummary()
         else
             dialog = createDialog("Unable to load", "Sorry, we couldn't load the requested item.", m)
             dialog.AddButton("OK", "close_screen")
@@ -129,20 +132,22 @@ sub artistGetComponents()
     artist.SetFrame(xOffset, yOffset, parentHeight, parentHeight)
     m.components.push(artistTitle)
     m.components.push(artist)
-    xOffset = xOffset + parentSpacing + parentHeight
 
     ' *** Biography: title and summary *** '
+    xOffset = xOffset + parentSpacing + parentHeight
+    width = 1230 - xOffset
+
     m.summaryTitle = createLabel("BIOGRAPHY", FontRegistry().Font16)
     m.summaryHeight = m.summaryTitle.font.GetOneLineHeight()
     m.summaryTitle.SetFrame(xOffset, yOffset - childSpacing - m.summaryHeight, m.summaryTitle.GetPreferredWidth(), m.summaryHeight)
     m.summaryTitle.zOrderInit = -1
     m.components.push(m.summaryTitle)
 
-    m.summary = createLabel(m.item.Get("summary", ""), FontRegistry().Font16)
-    m.summary.SetColor(Colors().Text, Colors().OverlayDark)
-    m.summary.SetPadding(20)
-    m.summary.wrap = true
-    m.summary.SetFrame(xOffset, yOffset, 1230 - xOffset, parentHeight)
+    m.summary = createTextArea(m.item.Get("summary", ""), FontRegistry().Font16, 0)
+    m.summary.SetFrame(xOffset, yOffset, width, parentHeight)
+    m.summary.SetColor(Colors().Text, Colors().OverlayDark, Colors().OverlayMed)
+    m.summary.SetPadding(10, 10, 10, 15)
+    m.summary.halign = m.summary.JUSTIFY_LEFT
     m.summary.zOrderInit = -1
     m.components.push(m.summary)
 
@@ -250,29 +255,33 @@ function artistHandleCommand(command as string, item as dynamic) as boolean
 
     if command = "summary" then
         m.summaryVisible = not m.summaryVisible = true
-        gridVisible = not m.summaryVisible
-        Debug("toggle summary: gridVisible=" + tostr(gridVisible) + ", summaryVisible=" + tostr(m.summaryVisible))
-
-        ' toggle summary
-        m.summaryTitle.SetVisible(m.summaryVisible)
-        m.summary.SetVisible(m.summaryVisible)
-
-        ' toggle grid (hubs)
-        for each grid in m.hbGrid.components
-            for each component in grid.components
-                component.focusable = gridVisible
-                if component.IsOnScreen() then component.SetVisible(gridVisible)
-            end for
-        end for
-
-        ' invalidate focus sibling and last focus item
-        m.focusedItem.SetFocusSibling("right", invalid)
-        m.lastFocusedItem = invalid
-
-        m.screen.DrawAll()
+        m.ToggleSummary()
     else
         return ApplyFunc(ComponentsScreen().HandleCommand, m, [command, item])
     end if
 
     return handled
 end function
+
+sub artistToggleSummary()
+    gridVisible = not m.summaryVisible
+    Debug("toggle summary: gridVisible=" + tostr(gridVisible) + ", summaryVisible=" + tostr(m.summaryVisible))
+
+    ' toggle summary
+    m.summaryTitle.SetVisible(m.summaryVisible)
+    m.summary.SetVisible(m.summaryVisible)
+
+    ' toggle grid (hubs)
+    for each grid in m.hbGrid.components
+        for each component in grid.components
+            component.focusable = gridVisible
+            if component.IsOnScreen() then component.SetVisible(gridVisible)
+        end for
+    end for
+
+    ' invalidate focus sibling and last focus item
+    m.focusedItem.SetFocusSibling("right", invalid)
+    m.lastFocusedItem = invalid
+
+    m.screen.DrawAll()
+end sub

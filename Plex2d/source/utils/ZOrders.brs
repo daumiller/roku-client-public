@@ -8,6 +8,7 @@ function ZOrders() as object
         obj.OVERLAY = 30
         obj.MODAL = 100
         obj.MINIPLAYER = obj.HEADER + 1
+        obj.SCROLLBAR = obj.MODAL - 1
 
         m.ZOrders = obj
     end if

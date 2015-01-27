@@ -71,9 +71,9 @@ sub hubsGetComponents()
     if buttons.count() > 0 then
         ' Calculate how many columns we need and allow
         vbox = createVBox(false, false, false, 10)
-        vbox.SetScrollable(500+125, invalid, true, true, "left")
         vbox.scrollOverflowColor = Colors().Background
         vbox.SetFrame(100, 125, 300, 500)
+        vbox.SetScrollable(invalid, true, true, "left")
         ' TODO(rob): hide components when shifted outside viewport
         vbox.ignoreFirstLast = true
 

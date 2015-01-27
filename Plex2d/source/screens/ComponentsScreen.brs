@@ -1088,7 +1088,7 @@ sub compOnCreatePlayerResponse(request as object, response as object, context as
     end if
 end sub
 
-sub compToggleScrollBar(visible=true as boolean, toFocus=invalid as dynamic, lastFocus=invalid as dynamic)
+sub compToggleScrollbar(visible=true as boolean, toFocus=invalid as dynamic, lastFocus=invalid as dynamic)
     if toFocus <> invalid then
         focusScroll = firstOf(toFocus.shiftableParent, toFocus.parent, {}).scrollbar
     else
@@ -1152,7 +1152,7 @@ sub compOnFocusIn(toFocus=invalid as dynamic, lastFocus=invalid as dynamic)
     ' let the component know it's focus state
     toFocus.OnFocus()
 
-    m.ToggleScrollBar(true, toFocus, lastFocus)
+    m.ToggleScrollbar(true, toFocus, lastFocus)
 end sub
 
 sub compOnFocusOut(lastFocus=invalid as dynamic, toFocus=invalid as dynamic)
@@ -1166,5 +1166,5 @@ sub compOnFocusOut(lastFocus=invalid as dynamic, toFocus=invalid as dynamic)
         m.DescriptionBox.Show(toFocus)
     end if
 
-    m.ToggleScrollBar(false, toFocus, lastFocus)
+    m.ToggleScrollbar(false, toFocus, lastFocus)
 end sub

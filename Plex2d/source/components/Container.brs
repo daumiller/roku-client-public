@@ -54,10 +54,10 @@ function contDraw() as object
             childRegions = component.Draw()
             for each region in childRegions
                 ' containers of containers! we'll need to check the vertical scrolling
-                ' contraints here to override the zOrder for the sprite creation.
-                if component.scrollHeight <> invalid and component.scrollVisible = false and (region.y < component.y or region.y + region.height > component.scrollHeight) then
+                ' constraints here to override the zOrder for the sprite creation.
+                if component.isVScrollable = true and component.scrollVisible = false and (region.y < component.y or region.y + region.height > component.scrollHeight) then
                     region.zOrderInit = -1
-                else if m.scrollHeight <> invalid and m.scrollVisible = false and (region.y < m.y or region.y + region.height > m.scrollHeight) then
+                else if m.isVScrollable <> invalid and m.scrollVisible = false and (region.y < m.y or region.y + region.height > m.scrollHeight) then
                     region.zOrderInit = -1
                 end if
                 regions.Push(region)
@@ -95,6 +95,8 @@ sub contSetPosition(x as integer, y as integer)
 
         m.x = x
         m.y = y
+        m.origX = x
+        m.origY = y
 
         ' If we need to reperform layout anyway, then there's no value in
         ' updating the position of our children.

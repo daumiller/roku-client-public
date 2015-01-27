@@ -14,6 +14,7 @@ function LabelClass() as object
 
         obj.WrapText = labelWrapText
         obj.TruncateText = labelTruncateText
+        obj.GetAllLines = labelGetAllLines
         obj.MaxLineLength = labelMaxLineLength
 
         m.LabelClass = obj
@@ -119,17 +120,21 @@ sub labelSetColor(fgColor as integer, bgColor=invalid as dynamic)
     end if
 end sub
 
-function labelWrapText() as object
+function labelWrapText(includeAllLines=false as boolean) as object
     contentArea = m.GetContentArea()
     lines = []
     lineNum = 0
-    maxLines = int(contentArea.height / m.font.GetOneLineHeight())
+    if includeAllLines then
+        maxLines = invalid
+    else
+        maxLines = int(contentArea.height / m.font.GetOneLineHeight())
+    end if
 
     startPos = 0
 
-    while lines.Count() < maxLines and startPos < m.text.len()
+    while (maxLines <> invalid and lines.Count() < maxLines and startPos < m.text.len())  or (startPos < m.text.len())
         ' If this is the last allowed line, then just truncate the string
-        if lines.Count() = maxLines-1 then
+        if maxLines <> invalid and lines.Count() = maxLines-1 then
             lines.Push(m.TruncateText(m.text.Mid(startPos)))
         else
             ' Try to break on spaces. If the first whole word won't fit,
@@ -159,6 +164,11 @@ function labelWrapText() as object
     end while
 
     return lines
+end function
+
+function labelGetAllLines(width=invalid as dynamic) as object
+    if width <> invalid then m.width = width
+    return m.WrapText(true)
 end function
 
 function labelTruncateText(fullText=invalid as dynamic) as string

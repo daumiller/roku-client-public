@@ -101,6 +101,7 @@ end sub
 sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
     if component.focusBorder = false then
         if m.focusSprite <> invalid then m.HideFocus(true)
+        if drawAllNow then m.DrawAll()
         return
     end if
 

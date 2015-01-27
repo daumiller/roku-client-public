@@ -87,6 +87,16 @@ sub ppcGetComponents()
     m.DestroyComponents()
     m.focusedItem = invalid
 
+    prop = {
+        yOffset: 125
+        xOffset: 50
+        spacing: 30
+        buttonWidth: 100
+        gridHeight: 206
+        rightWidth: 200
+        yOffsetOverlay: 265
+    }
+
     ' *** Background Artwork *** '
     if m.item.Get("art") <> invalid then
         background = createImage(m.item, 1280, 720, { blur: 4 })
@@ -98,20 +108,12 @@ sub ppcGetComponents()
         m.components.Push(background)
     end if
 
-    background = createBlock(Colors().OverlayMed)
-    background.setFrame(0, 265, 1280, 720)
-    m.components.Push(background)
+    overlay = createBlock(Colors().OverlayMed)
+    overlay.setFrame(0, prop.yOffsetOverlay, 1280, 720)
+    m.components.Push(overlay)
 
     ' *** HEADER *** '
     m.components.Push(createHeader(m))
-
-    ' NOTE: the poster images can vary in height/width depending on the content.
-    ' This means we will have to calculate the offsets ahead of time to know
-    ' where to place the summary. That is, until we have a way to tell a HBox to
-    ' use all the left ofter space and resize accordingly.
-
-    xOffset = 50
-    spacing = 30
 
     ' *** Buttons *** '
     vbButtons = createVBox(false, false, false, 10)
@@ -119,9 +121,9 @@ sub ppcGetComponents()
     for each comp in components
         vbButtons.AddComponent(comp)
     end for
-    vbButtons.SetFrame(xOffset, 125, 100, 720-125)
+    vbButtons.SetFrame(prop.xOffset, prop.yOffset, prop.buttonWidth, 720 - prop.yOffset)
     m.components.Push(vbButtons)
-    xOffset = xOffset + spacing + m.components.peek().width
+    xOffset = prop.xOffset + prop.spacing + m.components.peek().width
 
     ' *** Parent Poster / Art *** '
     vbImages = createVBox(false, false, false, 10)
@@ -129,16 +131,13 @@ sub ppcGetComponents()
     for each comp in container.components
         vbImages.AddComponent(comp)
     end for
-    vbImages.SetFrame(xOffset, 125, container.width, 720-125)
+    vbImages.SetFrame(xOffset, prop.yOffset, container.width, 720 - prop.yOffset)
     m.components.Push(vbImages)
-    xOffset = xOffset + spacing + m.components.peek().width
+    xOffset = xOffset + prop.spacing + m.components.peek().width
 
     ' *** Grid for Children *** '
-    yOffset = 125 + spacing + container.height
     hbGrid = createHBox(false, false, false, 10)
-    hbGrid.SetFrame(50, yOffset, 2000*2000, 206)
     hbGrid.ignoreParentShift = true
-
     for each item in m.children
         ' TODO(rob): another place to figure out how to determine orientation
         contentType = item.Get("type")
@@ -150,14 +149,22 @@ sub ppcGetComponents()
 
         card = createCard(item, item.GetOverlayTitle(), invalid, item.GetUnwatchedCount())
         card.SetOrientation(orientation)
-        card.width = card.GetWidthForOrientation(card.orientation, hbGrid.Height)
+        card.width = card.GetWidthForOrientation(card.orientation, prop.gridHeight)
         card.fixed = false
         card.plexObject = item
         card.SetFocusable("show_item")
         if m.focusedItem = invalid then m.focusedItem = card
         hbGrid.AddComponent(card)
     end for
+    hbGrid.SetFrame(prop.xOffset, prop.yOffset + prop.spacing + container.height, hbgrid.getpreferredwidth(), prop.gridHeight)
     m.components.Push(hbGrid)
+
+    ' *** Sumary (dependent on child placement)
+    summary = createTextArea(m.item.Get("summary", ""), FontRegistry().Font16, 0)
+    summary.SetPadding(10)
+    summary.SetFrame(xOffset, prop.yOffsetOverlay, 1230 - xOffset, hbGrid.y - prop.yOffsetOverlay)
+    summary.SetColor(Colors().Text, &h00000000, Colors().OverlayLht)
+    m.components.push(summary)
 
     ' *** Title, Media Info ***
     vbInfo = createVBox(false, false, false, 0)
@@ -165,19 +172,12 @@ sub ppcGetComponents()
     for each comp in components
         vbInfo.AddComponent(comp)
     end for
-    vbInfo.SetFrame(xOffset, 125, 1230-xOffset, 239)
+    vbInfo.SetFrame(xOffset, prop.yOffset, 1230 - xOffset, hbGrid.y - prop.yOffset)
     m.components.Push(vbInfo)
-
-    ' TODO(rob): dynamic width
-    summary = createLabel(m.item.Get("summary", ""), FontRegistry().font16)
-    summary.SetPadding(20, 20, 20, 0)
-    summary.wrap = true
-    summary.SetFrame(xOffset, 265, 1230-xOffset, 200)
-    m.components.push(summary)
 
     ' *** Right Side Info *** '
     vbox = createVBox(false, false, false, 0)
-    vbox.SetFrame(1230-200, 125, 200, 239)
+    vbox.SetFrame(1230 - prop.rightWidth, prop.yOffset, prop.rightWidth, hbGrid.y - prop.yOffset)
     components = m.GetSideInfo()
     for each comp in components
         vbox.AddComponent(comp)
@@ -235,7 +235,6 @@ function ppcGetImages() as object
 
     return container
 end function
-
 
 function ppcGetButtons() as object
     components = createObject("roList")
