@@ -14,8 +14,11 @@ function Glyphs() as object
         obj.STEP_FWD    = chr(&he179)
         obj.STEP_REV    = chr(&he171)
         obj.STOP        = chr(&he176)
-        ' TODO(rob): add the repeat glyph into the custom ttf
-        obj.REPEAT      = chr(&he230)
+
+        ' Custom glyphs from the TV app
+        obj.SHUFFLE     = chr(&he084)
+        obj.REPEAT      = chr(&he085)
+        obj.REPEAT_ONE  = chr(&he086)
 
         obj.STAR_FULL   = chr(&he050)
         obj.STAR_HALF   = chr(&he04f)
@@ -29,7 +32,6 @@ function Glyphs() as object
         obj.CROWN       = chr(&h1f451)
         obj.LOCK        = chr(&h1f512)
         obj.UNLOCK      = chr(&he205)
-        obj.SHUFFLE     = chr(&he084)
         obj.INFO        = chr(&he196)
 
         ' TODO(rob): verify which one is correct for the now playing screen
