@@ -68,8 +68,8 @@ sub settingsGetComponents()
     settingsBox.AddComponent(menuBox)
     settingsBox.AddComponent(listBox)
 
+    menuBox.SetScrollable(m.scrollHeight, false, false, "left")
     listBox.SetScrollable(m.scrollHeight)
-    menuBox.SetScrollable(m.scrollHeight)
 
     prefs = m.GetPrefs()
     for each group in prefs

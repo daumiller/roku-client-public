@@ -1116,6 +1116,7 @@ sub compToggleScrollbar(visible=true as boolean, toFocus=invalid as dynamic, las
 end sub
 
 sub compOnFocus(toFocus as object, lastFocus=invalid as dynamic, direction=invalid as dynamic)
+    if toFocus.Equals(lastFocus) then lastFocus = invalid
     if toFocus.focusBorder = false then m.screen.HideFocus(true)
 
     ' set focus and last focused item
