@@ -88,7 +88,7 @@ sub nowplayingGetComponents()
     parentSpacing = 30
     parentHeight = 504
     childSpacing = 10
-    buttonSpacing = 50
+    buttonSpacing = 100
     progressHeight = 6
 
     ' *** Background Artwork *** '
@@ -203,8 +203,7 @@ function nowplayingHandleCommand(command as string, item=invalid as dynamic) as 
     else if command = "stop" then
         m.player.Stop()
     else if command = "repeat" then
-        repeat = iif(m.player.repeat = m.player.REPEAT_NONE, m.player.REPEAT_ALL, m.player.REPEAT_NONE)
-        m.player.SetRepeat(repeat)
+        m.player.SetRepeat(iif(m.player.repeat >= 2, 0, m.player.repeat + 1))
     else if command = "shuffle" then
         m.player.SetShuffle(not(m.player.isShuffled))
     else if command = "prev_track" then
@@ -241,8 +240,7 @@ function nowplayingGetButtons() as object
 
     buttons["right"] = createObject("roList")
     buttons["right"].push({text: Glyphs().STOP, command: "stop", componentKey: "stopButton"})
-    ' TODO(rob): playQueue selection screen or scrollable fun
-    '    buttons["right"].push({text: Glyphs().LIST, command: "queue", componentKey: "queueButton"})
+    buttons["right"].push({text: Glyphs().LIST, command: "queue", componentKey: "queueButton"})
 
     for each key in components.keys
         for each button in buttons[key]
@@ -417,11 +415,8 @@ sub nowplayingOnShuffle(player as object, item as object, shuffle as boolean)
 end sub
 
 sub nowplayingOnRepeat(player as object, item as object, repeat as integer)
-    if player.repeat = player.REPEAT_NONE then
-        m.repeatButton.statusColor = Colors().TextDim
-    else
-        m.repeatButton.statusColor = Colors().Orange
-    end if
+    m.repeatButton.text = iif(player.repeat = player.REPEAT_ONE, Glyphs().REPEAT_ONE, Glyphs().REPEAT)
+    m.repeatButton.statusColor = iif(player.repeat = player.REPEAT_NONE, Colors().TextDim, Colors().Orange)
     m.repeatButton.SetColor(m.repeatButton.statusColor)
     m.repeatButton.Draw(true)
 
