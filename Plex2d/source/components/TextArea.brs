@@ -159,12 +159,7 @@ sub textareaSetVisible(visible=true as boolean)
     m.components.Reset()
     while m.components.IsNext()
         component = m.components.Next()
-        if not visible and component.focusable = true then
-            component.SetFocusable(invalid, visible)
-            component.wasFocusable = true
-        else if visible and component.wasFocusable = true then
-            component.SetFocusable(invalid, visible)
-        end if
+        component.ToggleFocusable(visible)
     end while
 end sub
 

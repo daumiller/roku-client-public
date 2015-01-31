@@ -274,7 +274,7 @@ sub artistToggleSummary()
     ' toggle grid (hubs)
     for each grid in m.hbGrid.components
         for each component in grid.components
-            component.focusable = gridVisible
+            component.ToggleFocusable(gridVisible)
             if component.IsOnScreen() then component.SetVisible(gridVisible)
         end for
     end for

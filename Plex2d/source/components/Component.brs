@@ -48,6 +48,7 @@ function ComponentClass() as object
         obj.SetFocusSibling = compSetFocusSibling
         obj.GetFocusSibling = compGetFocusSibling
         obj.SetFocusable = compSetFocusable
+        obj.ToggleFocusable = compToggleFocusable
         obj.GetFocusableItems = compGetFocusableItems
         obj.Destroy = compDestroy
         obj.DestroyComponents = compDestroyComponents
@@ -428,3 +429,12 @@ function compGetWidthForOrientation(orientation as integer, height as integer) a
         Fatal("Unknown hub orientation: " + tostr(orientation))
     end if
 end function
+
+sub compToggleFocusable(visible=true as boolean)
+    if not visible and m.focusable = true then
+        m.SetFocusable(invalid, visible)
+        m.wasFocusable = true
+    else if visible and m.wasFocusable = true then
+        m.SetFocusable(invalid, visible)
+    end if
+end sub

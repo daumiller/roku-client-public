@@ -482,7 +482,7 @@ sub albumToggleSummary()
     visible = m.summaryVisible = false
     m.trackBG.SetVisible(visible)
     for each component in m.trackList.components
-        component.focusable = visible
+        component.ToggleFocusable(visible)
         if component.IsOnScreen() then component.SetVisible(visible)
     end for
 
