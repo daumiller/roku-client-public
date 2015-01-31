@@ -56,11 +56,9 @@ sub usersGetComponents()
     m.buttons.y = int(720/2 - m.buttons.height/2)
 
     ' show all rows, and scroll on every row
-    scrollTriggerDown = m.buttons.y + m.buttons.height
-
     userBox = createVBox(false, false, false, m.buttons.spacing)
     userBox.SetFrame(m.buttons.x, m.buttons.y, m.buttons.width * m.buttons.cols, m.buttons.height * m.buttons.rows)
-    userBox.SetScrollable(scrollTriggerDown, true, true, invalid)
+    userBox.SetScrollable(m.buttons.height, true, true, invalid)
 
     ' User Buttons
     for i = 0 to homeUsers.Count() - 1

@@ -76,7 +76,7 @@ sub headerPerformLayout()
     buttons = createObject("roList")
     if tostr(m.screen.screenName) = "Home Screen" then
         ' Server List Drop Down
-        button = createDropDown(m.screen.server.name, m.buttons.font, int(720 * .80), m.screen)
+        button = createDropDown(m.screen.server.name, m.buttons.font, int(720 / 2), m.screen)
         button.width = m.buttons.width
         button.pvalign = button[m.buttons.valign]
         button.GetOptions = headerGetServerOptions
@@ -84,7 +84,7 @@ sub headerPerformLayout()
         buttons.push(button)
 
         ' Options Drop Down: Settings, Sign Out/In
-        button = createDropDown(firstOf(MyPlexAccount().title, "Options"), m.buttons.font, int(720 * .80), m.screen)
+        button = createDropDown(firstOf(MyPlexAccount().title, "Options"), m.buttons.font, int(720 / 2), m.screen)
         button.width = m.buttons.width
         button.pvalign = button[m.buttons.valign]
         button.GetOptions = headerGetOptions

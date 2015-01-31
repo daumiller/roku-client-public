@@ -40,12 +40,15 @@ end sub
 
 sub vboxPerformLayout()
     m.needsLayout = false
-    m.scrollHeight = m.height + m.y
-
     numChildren = m.components.Count()
 
     ' Strange, but let's not even bother with the complicated stuff if we don't need to.
     if numChildren = 0 then return
+
+    m.scrollHeight = m.height + m.y
+    if m.scrollTriggerHeight <> invalid then
+        m.scrollTriggerDown = m.scrollTriggerHeight + m.y
+    end if
 
     offsets = m.CalculateOffsets(m.height, m.y, "GetPreferredHeight", m.valign)
 
@@ -109,6 +112,13 @@ sub vboxPerformLayout()
         ' are in view. We might want to make this a default.
         if m.stopShiftIfInView = true then
             m.lastShiftInView = m.containerHeight - m.contentHeight + offsets[0]
+
+            ' we have to account for the scrollDownTrigger
+            offset = m.contentHeight - m.scrollTriggerDown
+            if offset > 0 then
+                m.lastShiftInView = m.containerheight - offset
+            end if
+
             m.scrollInfo.offsetContainer = m.containerHeight - m.lastShiftInView
         end if
 
@@ -197,7 +207,7 @@ sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic)
     ' reuse the last position on refocus
     if refocus <> invalid and focusRect.up <> refocus.up then
         shift.y = refocus.up - focusRect.up
-    ' failsafe refocus: locate the last item to fit, and shift based on it.
+    ' locate the last item to fit, and shift based on it.
     else if focusRect.down > shift.triggerDown
         candidates = firstOf(tofocus.shiftableParent, tofocus.parent)
         if focusRect.down + shift.y > shift.triggerDown then
@@ -222,17 +232,26 @@ sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic)
         shift.y = shift.hideUp - focusRect.up
     end if
 
-    if m.isVScrollable <> invalid then
-        if toFocus.origY > firstOf(m.lastShiftInView, m.lastShift) then
+    lastShift = firstOf(m.lastShiftInView, m.lastShift)
+    ' Ignore shifting if we have reached the end.
+    if m.lastShiftInView <> invalid then
+        toFocusY = toFocus.origY + toFocus.height
+        if toFocusY > lastShift then
             shift.y = 0
+            ' Handle refocusing on items below our last shift point
+            if toFocus.origY = toFocus.y then
+                shift.y = m.scrollTriggerDown - focusRect.down
+                offset = m.contentHeight - (m.containerHeight + shift.y)
+                if offset > 0 then shift.y = shift.y + offset
+            end if
         end if
+    end if
 
-        ' shift the scrollbar if applicable
-        if m.scrollbar <> invalid then
-            isLast = (iif(m.lastShiftInView = invalid, toFocus.origY + toFocus.height, toFocus.origY) >= m.lastShift)
-            isFirst = (toFocus.origY = m.y)
-            m.scrollbar.Move(toFocus, isFirst, isLast)
-        end if
+    ' shift the scrollbar if applicable
+    if m.scrollbar <> invalid then
+        isFirst = (toFocus.origY = m.y)
+        isLast = (toFocus.origY + toFocus.height >= lastShift)
+        m.scrollbar.Move(toFocus, isFirst, isLast)
     end if
 
     if shift.y <> 0 then
@@ -258,7 +277,7 @@ end sub
 
 sub vboxSetScrollable(scrollTriggerDown=invalid as dynamic, scrollAnimate=false as boolean, scrollVisible=false as boolean, scrollbarPos="right" as dynamic)
     m.isVScrollable = true
-    m.scrollTriggerDown = firstOf(scrollTriggerDown, m.height + m.y)
+    m.scrollTriggerHeight = firstOf(scrollTriggerDown, m.height)
     m.scrollAnimate = scrollAnimate
     m.scrollVisible = scrollVisible
     m.scrollbarPos = scrollbarPos

@@ -197,12 +197,18 @@ sub albumGetComponents()
 
     m.trackBG = createBlock(trackPrefs.background)
     m.trackBG.zOrder = trackPrefs.zOrder
-    m.trackBG.setFrame(xOffset, header.GetPreferredHeight(), 1280 - xOffset, 720)
+    m.trackBG.setFrame(xOffset, header.GetPreferredHeight(), 1280 - xOffset, 720 - header.GetPreferredHeight())
     m.components.Push(m.trackBG)
 
+    ' TODO(rob): HD/SD note. We need to set some contstants for safe viewable areas of the
+    ' screen. We have arbitrarily picked 50px. e.g. x=50, w=1230, so we'll assume the same
+    ' for y and height, e.g. y=50, h=670.
+
+    trackListY = header.GetPreferredHeight() + padding
+    trackListH = 670 - trackListY
     m.trackList = createVBox(false, false, false, 0)
-    m.trackList.SetFrame(xOffset + padding, header.GetPreferredHeight() + padding, trackPrefs.width, 720/2 - padding)
-    m.trackList.SetScrollable(720 / 2, true, true, invalid)
+    m.trackList.SetFrame(xOffset + padding, trackListY, trackPrefs.width, trackListH)
+    m.trackList.SetScrollable(trackListH / 2, true, true, invalid)
     m.trackList.stopShiftIfInView = true
     m.trackList.scrollOverflow = true
 

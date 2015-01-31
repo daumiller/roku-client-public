@@ -38,7 +38,6 @@ sub settingsInit()
     m.height = 560
     m.x = int(1280/2 - m.width/2)
     m.y = int(720/2 - m.height/2)
-    m.scrollHeight = m.y + m.height
 
     m.colors = {
         category: Colors().Button and &hffffff90,
@@ -68,8 +67,8 @@ sub settingsGetComponents()
     settingsBox.AddComponent(menuBox)
     settingsBox.AddComponent(listBox)
 
-    menuBox.SetScrollable(m.scrollHeight, false, false, "left")
-    listBox.SetScrollable(m.scrollHeight)
+    menuBox.SetScrollable(settingsBox.height, false, false, "left")
+    listBox.SetScrollable(settingsBox.height)
 
     prefs = m.GetPrefs()
     for each group in prefs
