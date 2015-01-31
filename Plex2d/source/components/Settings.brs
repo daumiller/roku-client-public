@@ -85,10 +85,7 @@ sub settingsGetComponents()
             ' hide restricted prefs from managed users
             if not (pref.isRestricted = true and MyPlexAccount().isManaged) then
                 btn = m.createMenuButton(pref)
-                if first = true then
-                    btn.scrollOffset = title.height
-                    first = false
-                end if
+                btn.scrollGroupTop = title
                 btn.SetDimensions(m.width, 60)
                 btn.SetPadding(0, 0, 0, m.padding*2)
                 btn.listBox = listBox

@@ -200,8 +200,15 @@ sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic)
         hideUp: m.y
         hideDown: m.scrollHeight
         triggerDown: m.scrollTriggerDown
-        shiftAmount: toFocus.height + m.spacing + firstOf(toFocus.scrollOffset, 0)
+        shiftAmount: toFocus.height + m.spacing
     }
+
+    ' handle shifting groups (settings menu box)
+    if toFocus.scrollGroupTop <> invalid and toFocus.scrollGroupTop.y < shift.hideUp then
+        if toFocus.y - toFocus.scrollGroupTop.y < m.contentHeight - m.y then
+            toFocus = toFocus.scrollGroupTop
+        end if
+    end if
 
     focusRect = computeRect(toFocus)
     ' reuse the last position on refocus
