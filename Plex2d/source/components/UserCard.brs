@@ -38,13 +38,27 @@ end sub
 
 sub usercardInitComponents()
     ' blur hack (could use some tuning)
-    m.bkg = createImage(m.user.thumb + "?rw=5&rh=5", 8, 8)
-    m.bkg.scaleToLayout = true
-    m.AddComponent(m.bkg)
+    if m.user.thumb <> invalid then
+        m.bkg = createImage(m.user.thumb + "?rw=5&rh=5", 8, 8)
+        m.bkg.scaleToLayout = true
+        m.AddComponent(m.bkg)
 
-    ' dim background image
-    m.bkgDimmer = createBlock(Colors().OverlayDark)
-    m.AddComponent(m.bkgDimmer)
+        ' dim background image
+        m.bkgDimmer = createBlock(Colors().OverlayDark)
+        m.AddComponent(m.bkgDimmer)
+    end if
+
+    ' thumb image
+    m.bkgThumb = createBlock(&hfffffff20)
+    m.AddComponent(m.bkgThumb)
+
+    if m.user.thumb = invalid then
+        thumb = "pkg:/images/homeusers.png"
+    else
+        thumb = iif(instr(1, m.user.thumb, "gravatar") > 0, m.user.thumb + "&s=125", m.user.thumb)
+    end if
+    m.thumb = createImage(thumb, 125, 125)
+    m.AddComponent(m.thumb)
 
     ' user title
     m.title = createLabel(firstOf(m.user.title, ""), FontRegistry().font16)
@@ -52,13 +66,6 @@ sub usercardInitComponents()
     m.title.SetColor(Colors().Text, &h00000070)
     m.title.halign = m.title.JUSTIFY_CENTER
     m.AddComponent(m.title)
-
-    ' thumb image
-    m.bkgThumb = createBlock(&hfffffff20)
-    m.AddComponent(m.bkgThumb)
-    thumb = iif(instr(1, m.user.thumb, "gravatar") > 0, m.user.thumb + "&s=125", m.user.thumb)
-    m.thumb = createImage(thumb, 125, 125)
-    m.AddComponent(m.thumb)
 
     ' check mark
     if m.user.isSelected = true then
@@ -69,7 +76,7 @@ sub usercardInitComponents()
     end if
 
     ' user PIN protected
-    if m.user.protected = "1" then
+    if (m.user.isProtected = true or m.user.protected = "1") then
         m.pin = createLabel(Glyphs().LOCK, FontRegistry().GetIconFont(16))
         m.pin.SetPadding(0, 10, 5, 10)
         m.pin.SetColor(Colors().Green)
@@ -82,7 +89,7 @@ sub usercardInitComponents()
     end if
 
     ' user is ADMIN (crown)
-    if m.user.admin = "1" then
+    if (m.user.isAdmin = true or m.user.admin = "1") then
         m.crown = createLabel(Glyphs().CROWN, FontRegistry().GetIconFont(16))
         m.crown.SetPadding(0, 10, 5, 10)
         m.crown.SetColor(Colors().OrangeLight)
@@ -94,8 +101,10 @@ sub usercardPerformLayout()
     m.needsLayout = false
 
     ' background image and dimmer
-    m.bkg.SetFrame(0, 0, m.width, m.height)
-    m.bkgDimmer.SetFrame(0, 0, m.width, m.height)
+    if m.bkg <> invalid then
+        m.bkg.SetFrame(0, 0, m.width, m.height)
+        m.bkgDimmer.SetFrame(0, 0, m.width, m.height)
+    end if
 
     ' user thumb and dimmer
     border = int((m.thumb.height * .03) + .5)

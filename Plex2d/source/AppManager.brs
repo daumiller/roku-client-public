@@ -80,7 +80,9 @@ sub managerFetchProducts()
         m.pendingRequestPurchased = true
 
         m.storeTimer = createTimer("channelStore")
-        m.storeTimer.SetDuration(10000)
+        m.storeTimer.SetDuration(1000, true)
+        m.storeTimer.maxDuration = 10000
+        m.storeTimer.curDuration = 0
         Application().AddTimer(m.storeTimer, createCallable("OnStoreTimer", m))
     else
         ' Rather than force these users to have a Plex Pass, we'll exempt them.
@@ -160,9 +162,14 @@ end sub
 
 sub managerOnStoreTimer(timer as dynamic)
     if m.storeTimer <> invalid then
-        Debug("Channel Store timed out: " + tostr(m.storeTimer.GetElapsedSeconds()) + "s")
-        m.storeTimer = invalid
-        m.ResetState()
-        Application().ClearInitializer("channelstore")
+        timer.curDuration = timer.curDuration + timer.durationMillis
+        ' timeout faster if we are offline
+        if MyPlexAccount().isOffline or timer.curDuration >= timer.maxDuration then
+            Debug("Channel Store timed out: " + tostr(m.storeTimer.GetElapsedSeconds()) + "s")
+            m.storeTimer.active = false
+            m.storeTimer = invalid
+            m.ResetState()
+            Application().ClearInitializer("channelstore")
+        end if
    end if
 end sub

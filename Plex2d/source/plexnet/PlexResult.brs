@@ -9,6 +9,7 @@ function PlexResultClass() as object
 
         obj.SetResponse = pnrSetResponse
         obj.ParseResponse = pnrParseResponse
+        obj.ParseFakeXMLResponse = pnrParseFakeXMLResponse
 
         m.PlexResultClass = obj
     end if
@@ -33,7 +34,8 @@ sub pnrSetResponse(event as dynamic)
 end sub
 
 function pnrParseResponse() as boolean
-    if m.parsed <> invalid then return m.parsed
+    if m.parsed = true then return m.parsed
+    m.parsed = false
 
     if m.IsSuccess() then
         xml = m.GetBodyXml()
@@ -47,10 +49,27 @@ function pnrParseResponse() as boolean
             next
 
             m.parsed = true
-            return true
         end if
     end if
 
+    return m.parsed
+end function
+
+function pnrParseFakeXMLResponse(xml as object) as boolean
+    if m.parsed = true then return m.parsed
     m.parsed = false
-    return false
+
+    if xml <> invalid then
+        m.container = createPlexContainer(m.server, m.address, xml)
+
+        children = xml.GetChildElements()
+        for each node in children
+            item = createPlexObjectFromElement(m.container, node)
+            m.items.Push(item)
+        next
+
+        m.parsed = true
+    end if
+
+    return m.parsed
 end function

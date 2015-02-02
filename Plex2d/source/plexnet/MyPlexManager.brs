@@ -38,6 +38,7 @@ end sub
 sub mpRefreshResources()
     request = createMyPlexRequest("/pms/resources")
     context = request.CreateRequestContext("resources", createCallable("OnResourcesResponse", m))
+    context.timeout = iif(MyPlexAccount().isOffline, 1000, 10000)
 
     Application().StartRequest(request, context)
 end sub
@@ -46,6 +47,19 @@ sub mpOnResourcesResponse(request as object, response as object, context as obje
     servers = CreateObject("roList")
 
     response.ParseResponse()
+
+    ' Save the last successful response to cache
+    if response.IsSuccess() and response.event <> invalid then
+        AppSettings().SetRegistry("mpaResources", response.event.GetString(), "xml_cache")
+        Debug("Saved resources response to registry")
+    ' Load the last successful response from cache
+    else if AppSettings().GetRegistry("mpaResources", invalid, "xml_cache") <> invalid then
+        xml = CreateObject("roXMLElement")
+        xml.Parse(AppSettings().GetRegistry("mpaResources", invalid, "xml_cache"))
+        response.ParseFakeXMLResponse(xml)
+        Debug("Using cached resources")
+    end if
+
     for each resource in response.items
         Debug("Parsed resource from plex.tv: nodeName:" + resource.name + " type:" + resource.type + " clientIdentifier:" + resource.Get("clientIdentifier") + " name:" + resource.Get("name") + " product:" + resource.Get("product") + " provides:" + resource.Get("provides"))
         for each conn in resource.connections

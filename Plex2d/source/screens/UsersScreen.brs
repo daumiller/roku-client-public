@@ -50,6 +50,7 @@ sub usersGetComponents()
     m.buttons = { width: 200, height: 200 + FontRegistry().font16.GetOneLineHeight(), maxCols: 3, rows: 2, spacing: 10 }
 
     ' Obtain use count to determine max columns for positioning
+    MyPlexAccount().UpdateHomeUsers()
     homeUsers = MyPlexAccount().homeUsers
     m.buttons.cols = iif(homeUsers.Count() > m.buttons.maxCols, m.buttons.maxCols, homeUsers.Count())
     m.buttons.x = int(1280/2 - (m.buttons.width*m.buttons.cols)/2)
@@ -86,14 +87,26 @@ sub usersGetComponents()
     m.components.Push(logo)
 
     ' Lock screen status
-    height = m.buttons.y - (yOffset + logo.height)
+    height = m.buttons.y - (logo.y + logo.height)
+    msgBox = createVBox(true, true, true, 0)
+    msgBox.SetFrame(xOffset, logo.y + logo.height, logo.width, height)
+
     lockLabel = createLabel("Lock Screen", FontRegistry().font18b)
+    lockLabel.SetPadding(10)
+    lockLabel.SetColor(Colors().Transparent)
     lockLabel.zOrder = ZOrders().HEADER
     lockLabel.halign = lockLabel.JUSTIFY_CENTER
-    lockLabel.valign = lockLabel.ALIGN_MIDDLE
-    lockLabel.SetColor(Colors().Transparent)
-    lockLabel.SetFrame(xOffset, yOffset + logo.height, logo.width, height)
-    m.components.Push(lockLabel)
+    msgBox.AddComponent(lockLabel)
+
+    if MyPlexAccount().isOffline then
+        offlineLabel = createLabel("Offline Mode", FontRegistry().font18b)
+        offlineLabel.zOrder = ZOrders().HEADER
+        offlineLabel.SetColor(Colors().Red)
+        offlineLabel.halign = offlineLabel.JUSTIFY_CENTER
+        msgBox.AddComponent(offlineLabel)
+    end if
+
+    m.components.Push(msgBox)
 
     ' Lock the screen if applicable. Support to convert an existing
     ' UsersScreen into a lock screen.

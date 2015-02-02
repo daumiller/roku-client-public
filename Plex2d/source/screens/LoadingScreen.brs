@@ -55,7 +55,7 @@ sub loadingOnServerSelected(server=invalid as dynamic)
     end if
 
     ' TODO(rob): logic will need to be modified when we allow IAP
-    if MyPlexAccount().isSignedIn = false or MyPlexAccount().isEntitled = false then
+    if (MyPlexAccount().isOffline = false and MyPlexAccount().isSignedIn = false) or MyPlexAccount().isEntitled = false then
         Application().PushScreen(createPinScreen())
     else if server <> invalid then
         Application().pushScreen(createHomeScreen(server))

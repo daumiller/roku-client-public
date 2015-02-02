@@ -92,6 +92,7 @@ sub mpaLoadState()
     if m.authToken <> invalid then
         request = createMyPlexRequest("/users/account")
         context = request.CreateRequestContext("account", createCallable("OnAccountResponse", m))
+        context.timeout = 5000
         Application().StartRequest(request, context)
     else
         Application().ClearInitializer("myplex")
@@ -105,6 +106,7 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
         xml = response.GetBodyXml()
 
         ' The user is signed in
+        m.isSignedIn = true
         m.isOffline = false
         m.id = xml@id
         m.title = xml@title
@@ -153,7 +155,7 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
             end for
         end if
 
-        ' consider a single, unproteced user authenticated
+        ' consider a single, unprotected user authenticated
         if m.isAuthenticated = false and m.isProtected = false and m.homeUsers.Count() <= 1 then
             m.isAuthenticated = true
         end if
@@ -179,6 +181,10 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
         ' Unexpected error, keep using whatever we read from the registry
         Warn("Unexpected response from plex.tv (" + tostr(response.GetStatus()) + "), switching to offline mode")
         m.isOffline = true
+        ' consider a single, unprotected user authenticated
+        if m.isAuthenticated = false and m.isProtected = false then
+            m.isAuthenticated = true
+        end if
     end if
 
     Application().ClearInitializer("myplex")
@@ -214,11 +220,11 @@ end sub
 
 sub mpaValidateToken(token as string, switchUser=false as boolean)
     m.authToken = token
-    m.isSignedIn = true
     m.switchUser = switchUser
 
     request = createMyPlexRequest("/users/sign_in.xml")
     context = request.CreateRequestContext("sign_in", createCallable("OnAccountResponse", m))
+    context.timeout = iif(m.isOffline, 1000, 10000)
     Application().StartRequest(request, context, "")
 end sub
 
@@ -227,7 +233,7 @@ sub mpaUpdateHomeUsers()
     if m.isSignedIn = false then
         m.homeUsers.clear()
         if m.isOffline then
-            m.homeUsers.push(MyPlexManager())
+            m.homeUsers.push(MyPlexAccount())
         end if
         return
     end if
@@ -253,12 +259,12 @@ end sub
 function mpaSwitchHomeUser(userId as string, pin="" as dynamic) as boolean
     if userId = m.id and m.isAuthenticated = true then return true
 
-    ' TODO(rob): offline support
+    ' Offline support
     if m.IsOffline then
-        if createDigest(pin + m.AuthToken, "sha256") = firstOf(m.pin, "") then
-            Debug("Offline PIN accepted")
+        if m.isProtected = false or MyPlexAccount().isAuthenticated or createDigest(pin + m.AuthToken, "sha256") = firstOf(m.pin, "") then
+            Debug("Offline access granted")
             m.isAuthenticated = true
-            ' TODO(rob): we probably need to trigger change:user for this to work
+            m.ValidateToken(m.AuthToken, true)
             return true
         end if
     else
