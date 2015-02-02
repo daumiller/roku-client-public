@@ -224,7 +224,7 @@ sub albumGetComponents()
     trackCount = m.children.Count()
     for index = 0 to trackCount - 1
         item = m.children[index]
-        track = createTrack(item, FontRegistry().Font16, m.customFonts.trackStatus, trackCount)
+        track = createTrack(item, FontRegistry().Font16, FontRegistry().Font12, m.customFonts.trackStatus, trackCount)
         track.Append(trackPrefs)
         track.plexObject = item
         track.trackIndex = index

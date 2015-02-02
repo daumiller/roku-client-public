@@ -11,6 +11,7 @@ function NowPlayingScreen() as object
         obj.HandleCommand = nowplayingHandleCommand
         obj.GetButtons = nowplayingGetButtons
         obj.OnFocusIn = nowplayingOnFocusIn
+        obj.OnOverlayClose = nowplayingOnOverlayClose
 
         ' Listener Methods
         obj.OnPlay = nowplayingOnPlay
@@ -31,6 +32,9 @@ function NowPlayingScreen() as object
         obj.OnFocusTimer = nowplayingOnFocusTimer
         obj.OnToggleTimer = nowplayingOnToggleTimer
         obj.AddToggleTimer = nowplayingAddToggleTimer
+
+        ' Queue methods
+        obj.ToggleQueue = nowplayingToggleQueue
 
         ' Remote button methods
         obj.OnPlayButton = nowplayingOnPlayButton
@@ -77,6 +81,9 @@ sub nowplayingInit()
     m.AddListener(m.player, "progress", CreateCallable("OnProgress", m))
     m.AddListener(m.player, "shuffle", CreateCallable("OnShuffle", m))
     m.AddListener(m.player, "repeat", CreateCallable("OnRepeat", m))
+
+    ' Container to toggle
+    m.nowPlayingView = CreateObject("roList")
 end sub
 
 sub nowplayingGetComponents()
@@ -135,6 +142,9 @@ sub nowplayingGetComponents()
 
     m.components.push(vbox)
 
+    ' add reference to this container to toggle view
+    m.nowplayingView.Push(vbox)
+
     ' *** Next track info: grandparentTitle and Title *** '
     height = m.customFonts.title.GetOneLineHeight()*2
 
@@ -155,6 +165,9 @@ sub nowplayingGetComponents()
     vbox.AddComponent(m.nextGrandparentTitle)
     vbox.AddComponent(m.nextTitle)
     m.components.push(vbox)
+
+    ' add reference to this container to toggle view
+    m.nowplayingView.Push(vbox)
 
     ' *** Progress bar ****
     yOffset = yOffset + parentHeight + border*2 + parentSpacing
@@ -210,6 +223,8 @@ function nowplayingHandleCommand(command as string, item=invalid as dynamic) as 
         m.player.Prev()
     else if command = "next_track" then
         m.player.Next()
+    else if command = "queue" then
+        m.toggleQueue()
     else
         return ApplyFunc(ComponentsScreen().HandleCommand, m, [command, item])
     end if
@@ -437,3 +452,29 @@ sub nowplayingOnRevButton(item=invalid as dynamic)
     m.player.OnRevButton()
 end sub
 
+sub nowplayingToggleQueue()
+    m.showQueue = not m.showQueue = true
+
+    showNowPlaying = m.showQueue = false
+    for each component in m.nowplayingView
+        component.focusable = showNowPlaying
+        component.SetVisible(showNowPlaying)
+    end for
+
+    if m.showQueue then
+        if m.focusTimer <> invalid then
+            m.focusTimer.active = false
+            m.focusTimer = invalid
+        end if
+        m.queueOverlay = createNowPlayingQueueOverlay(m)
+        m.queueOverlay.Show()
+    else
+        m.screen.DrawAll()
+    end if
+end sub
+
+sub nowplayingOnOverlayClose(overlay=invalid as dynamic, backButton=false as boolean)
+    if m.queueOverlay.Equals(overlay) then
+        m.ToggleQueue()
+    end if
+end sub

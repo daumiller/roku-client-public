@@ -17,6 +17,7 @@ function AudioPlayer() as object
         obj.Stop = apStop
         obj.SeekPlayer = apSeekPlayer
         obj.PlayItemAtIndex = apPlayItemAtIndex
+        obj.PlayItemAtPQIID = apPlayItemAtPQIID
         obj.SetContentList = apSetContentList
         obj.IsPlayable = apIsPlayable
         obj.CreateContentMetadata = apCreateContentMetadata
@@ -79,6 +80,17 @@ sub apPlayItemAtIndex(index as integer)
     m.Play()
 end sub
 
+sub apPlayItemAtPQIID(playQueueItemID as integer)
+    for index = 0 to m.context.Count() - 1
+        track = m.context[index]
+        if track.item.GetInt("playQueueItemID") = playQueueItemID then
+            m.playQueue.selectedId = playQueueItemID
+            m.PlayItemAtIndex(index)
+            exit for
+        end if
+    end for
+end sub
+
 sub apSetContentList(metadata as object, nextIndex as integer)
     m.player.SetContentList(metadata)
     m.player.SetNext(nextIndex)
@@ -91,6 +103,7 @@ function apHandleMessage(msg as object) as boolean
     if type(msg) = "roAudioPlayerEvent" then
         handled = true
         forceTimeline = false
+        refreshQueue = false
         item = m.GetCurrentItem()
         metadata = m.GetCurrentMetadata()
 
@@ -125,7 +138,7 @@ function apHandleMessage(msg as object) as boolean
                 m.player.SetNext(m.curIndex)
             else
                 ' We started a new track, so refresh the PQ if necessary
-                m.playQueue.Refresh(false)
+                refreshQueue = true
             end if
 
             if m.context.Count() > 1 then
@@ -155,7 +168,7 @@ function apHandleMessage(msg as object) as boolean
         end if
 
         ' Whatever it was, it was probably worthy of updating now playing
-        m.UpdateNowPlaying(forceTimeline)
+        m.UpdateNowPlaying(forceTimeline, refreshQueue)
     end if
 
     return handled

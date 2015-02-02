@@ -41,6 +41,7 @@ function NowPlayingManager()
         obj.WaitForNextTimeline = nowPlayingWaitForNextTimeline
         obj.SetControllable = nowPlayingSetControllable
         obj.SetFocusedTextField = nowPlayingSetFocusedTextField
+        obj.OnTimelineResponse = nowPlayingOnTimelineResponse
 
         ' Initialization
         for each timelineType in obj.TIMELINE_TYPES
@@ -170,7 +171,7 @@ sub nowPlayingSendTimelineToSubscriber(subscriber as object, xml=invalid as dyna
     Application().StartRequestIgnoringResponse(url, xml.GenXml(false), invalid, true)
 end sub
 
-sub nowPlayingSendTimelineToServer(item as object, state as string, time as integer)
+sub nowPlayingSendTimelineToServer(item as object, state as string, time as integer, playQueue=invalid as dynamic)
     if type(item.GetServer) <> "roFunction" or item.GetServer() = invalid then return
 
     ' only send the timeline if it's the first timeline, item changes, playstate changes or timer pops
@@ -192,7 +193,8 @@ sub nowPlayingSendTimelineToServer(item as object, state as string, time as inte
     if item.container.Get("address") <> invalid then query = query + "&containerKey=" + encoder.Escape(item.container.Get("address"))
 
     request = createPlexRequest(item.GetServer(), "/:/timeline?" + query)
-    context = request.CreateRequestContext("ignored")
+    context = request.CreateRequestContext("timelineUpdate", createCallable("OnTimelineResponse", m))
+    context.playQueue = playQueue
     Application().StartRequest(request, context)
 end sub
 
@@ -240,7 +242,7 @@ sub nowPlayingUpdatePlaybackState(timelineType as string, item as object, state 
 
     m.pollReplies.Clear()
 
-    m.SendTimelineToServer(item, state, time)
+    m.SendTimelineToServer(item, state, time, playQueue)
 end sub
 
 function nowPlayingCreateTimelineDataXml() as object
@@ -382,4 +384,10 @@ sub nowPlayingSetFocusedTextField(name=invalid as dynamic, content=invalid as dy
     m.textFieldContent = firstOf(content, "")
     m.textFieldSecure = secure
     m.SendTimelineToAll()
+end sub
+
+sub nowplayingOnTimelineResponse(request as object, response as object, context as object)
+    if context.playQueue = invalid or context.playQueue.refreshOnTimeline <> true then return
+    context.playQueue.refreshOnTimeline = false
+    context.playQueue.Refresh(false)
 end sub

@@ -69,6 +69,7 @@ sub overlayClose(backButton=false as boolean)
     ' reset screen OnKeyRelease to original
     m.screen.Append(m.OrigScreenFunctions)
 
+    m.DisableListeners()
     m.DestroyComponents()
     m.customFonts.clear()
 
@@ -105,6 +106,9 @@ sub overlayShow(blocking=false as boolean)
     end for
 
     m.screen.FocusItemManually(m.screen.focusedItem)
+
+    ' Enable listeners once we completed drawing the screen
+    m.EnableListeners()
 
     m.blocking = blocking
     if m.blocking = true then

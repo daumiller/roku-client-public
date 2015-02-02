@@ -49,6 +49,10 @@ function createPlexItem(container as object, xml as object) as object
         if obj.Has("totalTime") then
             obj.Set("duration", obj.Get("totalTime"))
         end if
+
+        if obj.GetInt("index", -1) = 0 then
+            obj.Set("index", "")
+        end if
     end if
 
     ' Synthesize media and do further iTunes normalization if necessary

@@ -172,10 +172,15 @@ sub bpOnPlayQueueUpdate(playQueue as object)
     ' same as the previous window. So keep track of our computed CMD objects
     ' by PQ item ID and reuse them if we can.
 
-    if m.context <> invalid then
+    if m.context <> invalid and m.context.Count() > 0 then
         oldSize = m.context.Count()
+        changes = {
+            origFirst: m.context[0].item.GetInt("playQueueItemID"),
+            origLast: m.context.Peek().item.GetInt("playQueueItemID")
+        }
     else
         oldSize = 0
+        changes = CreateObject("roAssociativeArray")
     end if
 
     objectsById = {}
@@ -240,6 +245,15 @@ sub bpOnPlayQueueUpdate(playQueue as object)
         m.Play()
         m.Trigger("playbackStarted", [m, m.GetCurrentItem()])
     end if
+
+    ' Verify the contents of the playQueue have changed before we fire off an event.
+    if m.context.count() > 0 then
+        changes.first = m.context[0].item.GetInt("playQueueItemID")
+        changes.last = m.context.Peek().item.GetInt("playQueueItemID")
+        if (changes.first <> changes.origFirst or changes.last <> changes.origLast) then
+            m.Trigger("change", [m, m.GetCurrentItem()])
+        end if
+    end if
 end sub
 
 sub bpOnTimelineTimer(timer as object)
@@ -250,7 +264,7 @@ function bpShouldSendTimeline(item as object) as boolean
     return (item.Get("ratingKey") <> invalid and item.GetServer() <> invalid)
 end function
 
-sub bpUpdateNowPlaying(force=false as boolean)
+sub bpUpdateNowPlaying(force=false as boolean, refreshQueue=false as boolean)
     if m.ignoreTimelines then return
 
     item = m.GetCurrentItem()
@@ -266,6 +280,10 @@ sub bpUpdateNowPlaying(force=false as boolean)
     time = m.GetPlaybackPosition(true)
 
     m.Trigger("progress", [m, item, time])
+
+    if refreshQueue and m.playQueue <> invalid then
+        m.playQueue.refreshOnTimeline = true
+    end if
     NowPlayingManager().UpdatePlaybackState(m.timelineType, item, m.playState, time, m.playQueue)
 end sub
 

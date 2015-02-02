@@ -92,6 +92,7 @@ sub pqRefresh(force=true as boolean)
     ' being played but we have the entire album loaded already.
     '
     if force or m.IsWindowed() then
+'        request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id) + "?center=" + tostr(m.selectedId))
         request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id))
         context = request.CreateRequestContext("refresh", createCallable("OnResponse", m))
         Application().StartRequest(request, context)
@@ -129,6 +130,20 @@ sub pqOnResponse(request as object, response as object, context as object)
         m.totalSize = response.container.GetInt("playQueueTotalCount")
         m.windowSize = response.items.Count()
         m.items = response.items
+
+        ' Determine if we have mixed parents
+        lastItem = invalid
+        m.isMixed = false
+        for each i in m.items
+            if m.IsMixed = true then exit for
+
+            if i.Get("parentKey") = invalid then
+                m.isMixed = true
+            else if lastItem <> invalid and i.Get("parentKey") <> lastItem.Get("parentKey") then
+                m.isMixed = true
+            end if
+            lastItem = i
+        end for
 
         newVersion = response.container.GetInt("playQueueVersion")
 
