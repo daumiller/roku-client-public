@@ -413,12 +413,35 @@ function IntToBa(value as integer, alpha=false as boolean) as object
     ba = CreateObject("roByteArray")
     ba.SetResize(4, false)
 
-    ba[0] = value >> 24
-    ba[1] = value >> 16
-    ba[2] = value >> 8
-    if alpha then ba[3] = value
+    ' TODO(rob): use the bitwise operators when 6.1 firmware is live
+    i% = value
+    if alpha then ba[3] = i%
+    i% = i% / 256 : ba[2] = i%
+    i% = i% / 256 : ba[1] = i%
+    i% = i% / 256 : ba[0] = i%
+
+    ' 6.1 firmware support
+    ' ba[0] = value >> 24
+    ' ba[1] = value >> 16
+    ' ba[2] = value >> 8
+    ' if alpha then ba[3] = value
 
     return ba
+end function
+
+function rdRightShift(num as integer, count = 1 as integer) as integer
+    mult    = 2 ^ count
+    summand = 1
+    total   = 0
+
+    for i = count to 31
+        if (num and summand * mult)
+            total = total + summand
+        end if
+        summand = summand * 2
+    end for
+
+    return total
 end function
 
 function IntToHex(value as integer, alpha=false as boolean) as string
