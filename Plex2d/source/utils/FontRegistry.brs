@@ -9,16 +9,11 @@ function FontRegistry() as object
 
         obj.GetTextFont = frGetTextFont
         obj.GetIconFont = frGetIconFont
+        obj.HDtoSDFont = frHDtoSDFont
 
         ' TODO(schuyler): What's the best way to adjust requested font sizes
         ' for SD screens? At low sizes we're always doing `requested - 4`, but
         ' is that reasonable for huge sizes like on the PIN screen?
-
-        if AppSettings().GetGlobal("IsHD") = true then
-            obj.fontSizeDelta = 0
-        else
-            obj.fontSizeDelta = 4
-        end if
 
         ' Initialize some common fonts that are expected to be used on many
         ' screens. Anything more unusual should be initialized by the screen
@@ -38,9 +33,18 @@ function FontRegistry() as object
 end function
 
 function frGetTextFont(size as integer, bold=false as boolean, italic=false as boolean) as object
-    return m.registry.GetFont("Open Sans", size - m.fontSizeDelta, bold, italic)
+    return m.registry.GetFont("Open Sans", m.HDtoSDFont(size), bold, italic)
 end function
 
 function frGetIconFont(size as integer) as object
-    return m.registry.GetFont("GLYPHICONS", size - m.fontSizeDelta, false, false)
+    return m.registry.GetFont("GLYPHICONS", m.HDtoSDFont(size), false, false)
+end function
+
+function frHDtoSDFont(fontSize as integer) as object
+    ' anything less than 10 on SD looks _more_ horrible.
+    minSize = 10
+    size = HDtoSDHeight(fontSize) + 1
+    if size < minSize then size = minSize
+
+    return size
 end function

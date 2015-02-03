@@ -500,3 +500,38 @@ end function
 function IsNumber(value as dynamic) as boolean
     return IsValid(value) and (IsInteger(value) or IsFloat(value) or IsDouble(value))
 end function
+
+sub HDtoSD(rect As Object)
+    if AppSettings().GetGlobal("IsHD") then return
+    wMultiplier = 720 / 1280
+    hMultiplier = 480 / 720
+
+    if rect.x <> invalid then
+        rect.x = cint(rect.x * wMultiplier)
+        rect.x = iif(rect.x < 1, 0, rect.x)
+    end if
+    if rect.y <> invalid then
+        rect.y = cint(rect.y * hMultiplier)
+        rect.y = iif(rect.y < 1, 0, rect.y)
+    end if
+    if rect.w <> invalid then
+        rect.w = cint(rect.w * wMultiplier)
+        rect.w = iif(rect.w < 1, 0, rect.w)
+    end if
+    if rect.h <> invalid then
+        rect.h = cint(rect.h * hMultiplier)
+        rect.h = iif(rect.h < 1, 0, rect.h)
+   end if
+end sub
+
+function HDtoSDheight(delta as integer) as integer
+    obj = { h: delta }
+    HDtoSD(obj)
+    return obj.h
+end function
+
+function HDtoSDwidth(delta as integer) as integer
+    obj = { w: delta }
+    HDtoSD(obj)
+    return obj.w
+end function

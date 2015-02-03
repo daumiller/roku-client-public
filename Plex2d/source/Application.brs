@@ -30,6 +30,7 @@ function Application()
         obj.IsActiveScreen = appIsActiveScreen
         obj.GoHome = appGoHome
         obj.CreateLockScreen = appCreateLockScreen
+        obj.CheckExclusions = appCheckExclusions
 
         obj.AddTimer = appAddTimer
 
@@ -269,6 +270,9 @@ function appProcessOneMessage(timeout)
 end function
 
 sub appOnInitialized()
+    ' Check for any exclusions and redirect to the official client
+    if m.CheckExclusions() then return
+
     ' Wire up a few of our own listeners
     PlexServerManager()
     m.On("change:user", createCallable("OnAccountChange", m))
@@ -575,3 +579,36 @@ sub appCreateLockScreen()
         m.pushScreen(createUsersScreen(false))
     end if
 end sub
+
+function appCheckExclusions() as boolean
+    ' basics we'll be verifying
+    modelCode = ucase(AppSettings().GetGlobal("roDeviceInfo").GetModel())
+    modelName = ucase(AppSettings().GetGlobal("rokumodel"))
+    resolution = not AppSettings().GetGlobal("IsHD")
+    firmware = not CheckMinimumVersion([5, 6])
+
+    excluded = false
+    if modelName = "ROKU 2 XS" or modelCode = "3100X" then
+        excluded = true
+        title =  AppSettings().GetGlobal("rokumodel") + " is not supported."
+        message = "We're sorry, this application is currently not supported on this Roku model."
+    else if resolution then
+        excluded = true
+        title =  "SD resolution is not supported."
+        message = "We're sorry, this application is currently not supported on SD screens."
+    else if firmware then
+        excluded = true
+        title =  "Roku firmware version (" + appsettings().GetGlobal("rokuVersionStr") + ") is not supported."
+        message = "We're sorry, this application is currently not supported on firmware versions less than 5.6."
+    end if
+
+    if excluded = true then
+        ' We are not going to support earlier firmware.
+        if not firmware then
+            message = message + " Don't worry though, we're working hard to have it ready for everyone very soon."
+        end if
+        m.PushScreen(createRedirectScreen(title, message))
+    end if
+
+    return excluded
+end function
