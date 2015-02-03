@@ -13,6 +13,7 @@ function MyPlexAccount() as object
         obj.isAuthenticated = AppSettings().GetBoolPreference("auto_signin")
         obj.isSignedIn = false
         obj.isOffline = false
+        obj.isExpired = false
         obj.isPlexPass = false
         obj.isEntitled = false
         obj.isManaged = false
@@ -52,8 +53,8 @@ sub mpaSaveState()
         pin: m.pin,
         isPlexPass: m.isPlexPass,
         isEntitled: m.isEntitled,
-        isManaged: m.isManaged
-        isAdmin: m.isAdmin
+        isManaged: m.isManaged,
+        isAdmin: m.isAdmin,
     }
 
     AppSettings().SetRegistry("MyPlexAccount", FormatJson(obj), "myplex")
@@ -176,7 +177,7 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
     else if response.GetStatus() >= 400 and response.GetStatus() < 500 then
         ' The user is specifically unauthorized, clear everything
         Warn("Sign Out: User is unauthorized")
-        m.SignOut()
+        m.SignOut(true)
     else
         ' Unexpected error, keep using whatever we read from the registry
         Warn("Unexpected response from plex.tv (" + tostr(response.GetStatus()) + "), switching to offline mode")
@@ -196,9 +197,7 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
     end if
 end sub
 
-sub mpaSignOut()
-    if not m.isSignedIn then return
-
+sub mpaSignOut(expired=false as boolean)
     ' Strings
     m.id = invalid
     m.title = invalid
@@ -212,6 +211,7 @@ sub mpaSignOut()
     m.isPlexPass = false
     m.isEntitled = false
     m.isManaged = false
+    m.isExpired = expired
 
     Application().Trigger("change:user", [m])
 

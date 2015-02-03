@@ -7,7 +7,6 @@ function PinScreen() as object
 
         obj.pollUrl = invalid
         obj.pinCode = invalid
-        obj.hasError = false
 
         obj.Init = pinInit
         obj.GetComponents = pinGetComponents
@@ -16,6 +15,7 @@ function PinScreen() as object
         obj.OnCodeResponse = pinOnCodeResponse
         obj.OnPollResponse = pinOnPollResponse
         obj.OnPollTimer = pinOnPollTimer
+        obj.HasError = pinHasError
 
         obj.OnItemSelected = pinOnItemSelected
         obj.Activate = pinActivate
@@ -43,15 +43,15 @@ function createPinScreen(clearScreens=true as boolean) as object
 
     if clearScreens then Application().clearScreens()
 
-    ' TODO(rob): setting hasEntitlementError could be done on one line, but we
-    ' also need to sign out the user without calling 'change:user'. We rely on
-    ' change:user after pin validation, and that requires the ID's to differ
-    obj.hasEntitlementError = (MyPlexAccount().isSignedIn and MyPlexAccount().isEntitled = false)
-    if obj.hasEntitlementError
+    if MyPlexAccount().isSignedIn and MyPlexAccount().isEntitled = false then
+        obj.error = "entitlement"
+    else if MyPlexAccount().isExpired then
+        obj.error = "expiredToken"
+    end if
+
+    if obj.error <> invalid then
         MyPlexAccount().id = invalid
-        obj.show()
     else
-        ' Request a code
         obj.RequestCode()
     end if
 
@@ -84,12 +84,12 @@ sub pinOnCodeResponse(request as object, response as object, context as object)
         m.pollUrl = response.GetResponseHeader("Location")
         xml = response.GetBodyXml()
         m.pinCode = xml.code.GetText()
-        m.hasError = false
+        m.error = invalid
         m.Show()
         Debug("Got a PIN (" + tostr(xml.code.GetText()) + ") that expires at " + tostr(xml.GetNamedElements("expires-at").GetText()))
     else
         Debug("Request for new PIN failed: " + tostr(response.getStatus()) + " - " + tostr(response.getErrorString()))
-        m.hasError = true
+        m.error = "pinRequestFailure"
         m.Show()
     end if
 end sub
@@ -109,7 +109,7 @@ sub pinOnPollResponse(request as object, response as object, context as object)
         ' 404 is expected for expired pins, but treat all errors as expired
         Warn("Expired PIN, server response was " + tostr(response.getStatus()))
         m.pollUrl = invalid
-        m.hasError = true
+        m.error = "pinExpired"
         m.Show()
     end if
 end sub
@@ -137,8 +137,7 @@ sub pinOnItemSelected(item as object)
         ' screen immediately.
         if item.command = "refresh" then
             ' clear all errors and refresh the code/screen.
-            m.hasEntitlementError = false
-            m.hasError = false
+            m.error = invalid
             m.RequestCode()
             m.Show()
         end if
@@ -159,50 +158,74 @@ sub pinGetComponents()
     chevron = createImage("pkg:/images/plex-chevron.png", 195, 320)
     mainBox.AddComponent(chevron)
 
+    vbWidth = 500
     vb = createVBox(false, false, false, 5)
+    mainBox.AddComponent(vb)
 
     titleBox = createHBox(false, false, false, m.customFonts.welcome.GetOneLineWidth(" ", 1280))
     welcomeLabel = createLabel("Welcome to Plex", m.customFonts.welcome)
     titleBox.AddComponent(welcomeLabel)
-    if m.hasEntitlementError then
+    if m.HasError("entitlement") then
         previewLabel = createLabel("- Plex Pass Preview", m.customFonts.welcome)
         previewLabel.SetColor(Colors().TextDim)
         titleBox.AddComponent(previewLabel)
+    else if m.HasError("expiredToken") then
+        welcomeLabel.text = "Please Sign In Again"
+        welcomeLabel.SetColor(Colors().Orange)
+        welcomeLabel.halign = welcomeLabel.JUSTIFY_CENTER
+        welcomeLabel.width = vbWidth
     end if
     vb.AddComponent(titleBox)
 
-    if m.hasEntitlementError then
-        infoLabel = createLabel("Plex Pass Required", m.customFonts.info)
-        infoLabel.SetColor(Colors().Red)
-    else if m.hasError then
-        if m.pinCode <> invalid then
-            infoLabel = createLabel("The PIN has expired. Please 'Refresh' to try again.", m.customFonts.info)
+    ' PIN subtitle
+    if m.error <> invalid then
+        subtitleText = ""
+        if m.HasError("pinExpired") then
+            subtitleText = "The PIN has expired. Please 'Refresh' to try again."
+        else if m.HasError("pinRequestFailure") then
+            subtitleText = "A PIN could not be created. Please check your connection and 'Refresh' to try again."
+        else if m.HasError("entitlement") then
+            subtitleText = "Plex Pass Required"
+        else if m.HasError("expiredToken") then
+            subtitleText = ""
         else
-            infoLabel = createLabel("A PIN could not be created. Please check your connection and 'Refresh' to try again.", m.customFonts.info)
+            subtitleText = "An unknown error has occured. Please try again."
         end if
-        infoLabel.SetColor(Colors().Red)
+
+        subtitle = createLabel(subTitleText, m.customFonts.info)
+        subtitle.SetColor(Colors().Red)
         pinColor = Colors().Background
     else
-        infoLabel = createLabel("From your browser, go to http://plex.tv/pin and enter this PIN:", m.customFonts.info)
-        infoLabel.SetColor(Colors().Orange)
+        subtitle = createLabel("From your browser, go to http://plex.tv/pin and enter this PIN:", m.customFonts.info)
+        subtitle.SetColor(Colors().Orange)
         pinColor = Colors().Text
     end if
-    vb.AddComponent(infoLabel)
-
+    vb.AddComponent(subtitle)
     vb.AddSpacer(10)
 
-    if m.hasEntitlementError then
+    ' Entitlement error message
+    if m.HasError("entitlement") then
         message = "We're sorry, this application is currently only available for Plex "
         message = message + "Pass subscribers. Don't worry though, we're working hard to have it "
         message = message + "ready for everyone very soon. Can't wait? Buy a Plex Pass now."
         msgLabel = createLabel(message, FontRegistry().font16)
         msgLabel.wrap = true
-        msgLabel.SetFrame(0, 0, 500, FontRegistry().font16.getOneLineHeight() * 3)
+        msgLabel.SetFrame(0, 0, vbWidth, FontRegistry().font16.getOneLineHeight() * 3)
         vb.AddComponent(msgLabel)
         vb.AddSpacer(10)
         urlLabel = createLabel("http://plex.tv/plexpass", FontRegistry().font16)
         urlLabel.SetColor(Colors().Orange)
         vb.AddComponent(urlLabel)
+    ' Expired token error message
+    else if m.HasError("expiredToken") then
+        message = "Your credentials have expired. Please sign in again."
+        msgLabel = createLabel(message, FontRegistry().font16)
+        msgLabel.wrap = true
+        msgLabel.halign = msgLabel.JUSTIFY_CENTER
+        msgLabel.SetFrame(0, 0, vbWidth, FontRegistry().font16.getOneLineHeight())
+        vb.AddComponent(msgLabel)
+        vb.AddSpacer(10)
+    ' PIN code display
     else
         pinDigits = createHBox(true, true, false, 20)
         for i = 1 to 4
@@ -220,23 +243,32 @@ sub pinGetComponents()
         end for
         vb.AddComponent(pinDigits)
     end if
-
     vb.AddSpacer(15)
 
+    ' Buttons
     buttons = createHBox(false, false, false, 10)
     buttons.halign = buttons.JUSTIFY_RIGHT
-
-    if m.hasError or m.hasEntitlementError then
-        refreshButton = createButton(iif(m.hasEntitlementError, "Retry", "Refresh"), FontRegistry().font16, "refresh")
+    if m.error <> invalid then
+        if m.HasError("entitlement") then
+            buttonText = "Retry"
+        else if m.HasError("expiredToken") then
+            buttonText = "Sign In"
+            buttons.halign = buttons.JUSTIFY_CENTER
+        else
+            buttonText = "Refresh"
+        end if
+        refreshButton = createButton(buttonText, FontRegistry().font16, "refresh")
         refreshButton.SetColor(Colors().Text, Colors().Button)
         refreshButton.width = 72
         refreshButton.height = 44
         m.focusedItem = refreshButton
         buttons.AddComponent(refreshButton)
     end if
-
     vb.AddComponent(buttons)
-    mainBox.AddComponent(vb)
 
     m.components.Push(mainBox)
 end sub
+
+function pinHasError(errorType as string) as boolean
+    return (m.error <> invalid and m.error = errorType)
+end function
