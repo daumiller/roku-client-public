@@ -70,6 +70,7 @@ sub pinRequestCode()
     m.pollUrl = invalid
     request = createMyPlexRequest("/pins.xml")
     context = request.CreateRequestContext("code", createCallable("OnCodeResponse", m))
+    context.timeout = 5000
     Application().StartRequest(request, context, "")
 
     ' Create a timer for polling to see if the code has been linked.
@@ -135,9 +136,11 @@ sub pinOnItemSelected(item as object)
         ' i.e. If the app isn't purchased, then we should just show the PIN
         ' screen immediately.
         if item.command = "refresh" then
+            ' clear all errors and refresh the code/screen.
             m.hasEntitlementError = false
-            ' Request a new code
+            m.hasError = false
             m.RequestCode()
+            m.Show()
         end if
     end if
 end sub
@@ -175,7 +178,7 @@ sub pinGetComponents()
         if m.pinCode <> invalid then
             infoLabel = createLabel("The PIN has expired. Please 'Refresh' to try again.", m.customFonts.info)
         else
-            infoLabel = createLabel("A PIN could not be created. Please 'Refresh' to try again.", m.customFonts.info)
+            infoLabel = createLabel("A PIN could not be created. Please check your connection and 'Refresh' to try again.", m.customFonts.info)
         end if
         infoLabel.SetColor(Colors().Red)
         pinColor = Colors().Background
