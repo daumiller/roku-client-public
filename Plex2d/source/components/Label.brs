@@ -132,7 +132,7 @@ function labelWrapText(includeAllLines=false as boolean) as object
 
     startPos = 0
 
-    while (maxLines <> invalid and lines.Count() < maxLines and startPos < m.text.len())  or (startPos < m.text.len())
+    while (maxLines <> invalid and lines.Count() < maxLines and startPos < m.text.len())  or (maxLines = invalid and startPos < m.text.len())
         ' If this is the last allowed line, then just truncate the string
         if maxLines <> invalid and lines.Count() = maxLines-1 then
             lines.Push(m.TruncateText(m.text.Mid(startPos)))
