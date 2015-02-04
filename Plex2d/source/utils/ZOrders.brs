@@ -6,9 +6,10 @@ function ZOrders() as object
         obj.DESCBOX = 10
         obj.DROPDOWN = 20
         obj.OVERLAY = 30
-        obj.MODAL = 100
+        obj.MODAL = 900
         obj.MINIPLAYER = obj.HEADER + 1
-        obj.SCROLLBAR = obj.MODAL - 1
+        obj.SCROLLBAR = obj.MODAL - 2
+        obj.FOCUS = obj.MODAL - 1
 
         m.ZOrders = obj
     end if

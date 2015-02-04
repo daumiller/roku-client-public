@@ -131,7 +131,7 @@ sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
     end if
     focus.append({
         color: Colors().OrangeLight,
-        z: 995,
+        zOrder: ZOrders().FOCUS,
     })
 
     ' If we've already focused something of the same size, we can simply
@@ -145,7 +145,7 @@ sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
     if reuseFocus then
         Debug("Reusing existing focus sprite")
         m.focusSprite.MoveTo(focus.x, focus.y)
-        m.focusSprite.SetZ(focus.z)
+        m.focusSprite.SetZ(focus.zOrder)
     else
         m.HideFocus(true)
 
@@ -156,7 +156,7 @@ sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
         bmp.DrawRect(0, focus.h - numPixels, focus.w, numPixels, focus.color)
 
         region = CreateObject("roRegion", bmp, 0, 0, focus.w, focus.h)
-        m.focusSprite = m.compositor.NewSprite(focus.x, focus.y, region, focus.z)
+        m.focusSprite = m.compositor.NewSprite(focus.x, focus.y, region, focus.zOrder)
     end if
 
     if drawAllNow then m.DrawAll()
