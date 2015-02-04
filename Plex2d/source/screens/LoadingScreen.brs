@@ -96,38 +96,5 @@ sub loadingShowFailureDialog()
         m.waitTimer.active = false
         m.waitTimer = invalid
     end if
-    dialog = createDialog("Unable to find a server", "Please try again", m)
-    dialog.enableOverlay = true
-    dialog.AddButton("Retry", "find_servers")
-    dialog.AddButton("Users", "user_list")
-    if MyPlexAccount().isSignedIn then
-        dialog.AddButton("Sign Out", "sign_out")
-    else
-        dialog.AddButton("Sign In", "sign_in")
-    end if
-    dialog.AddButton("Exit", "exit")
-
-    dialog.buttonsSingleLine = true
-    dialog.HandleButton = loadingDialogHandleButton
-    dialog.Show()
-end sub
-
-sub loadingDialogHandleButton(button as object)
-    Debug("dialog button selected with command: " + tostr(button.command))
-
-    m.Close()
-    if button.command = "exit" then
-        Application().popScreen(m.screen)
-    else if button.command = "find_servers" then
-        ' TODO(rob): retry loading servers, before finding servers
-        m.screen.FindServer()
-    else if button.command = "sign_out" then
-        MyPlexAccount().SignOut()
-    else if button.command = "sign_in" then
-        Application().PushScreen(createPinScreen(false))
-    else if button.command = "user_list" then
-        Application().PushScreen(createUsersScreen(true))
-    else
-        Debug("command not defined: (closing dialog now) " + tostr(button.command))
-    end if
+    Application().PushScreen(createServersUnavailableScreen())
 end sub
