@@ -83,8 +83,22 @@ function homeHandleCommand(command as string, item as dynamic) as boolean
         ' is available to IAP users.
         Application().PushScreen(createPinScreen(false))
     else if command = "selected_server" then
-        PlexServerManager().SetSelectedServer(item.metadata, true)
-        Application().PushScreen(createHomeScreen(item.metadata))
+        server = item.metadata
+        ' Provide some feedback for unsupported and unreachable servers
+        if server.IsSupported = false then
+            title = "Please upgrade your server"
+            subtitle = "Plex Media Server version " + AppSettings().GetGlobal("MinServerVersionStr") + " or higher is required"
+            dialog = createDialog(title, subtitle, m)
+            dialog.Show()
+        else if server.IsReachable() = false then
+            title = server.name + " is not reachable"
+            subtitle = "Please sign into your server and check your connection"
+            dialog = createDialog(title, subtitle, m)
+            dialog.Show()
+        else
+            PlexServerManager().SetSelectedServer(item.metadata, true)
+            Application().PushScreen(createHomeScreen(item.metadata))
+        end if
     else if command = "settings" then
         ' TODO(rob): temporary placement and code
         settings = createSettings(m)

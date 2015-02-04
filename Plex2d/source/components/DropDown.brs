@@ -13,6 +13,7 @@ function DropDownClass() as object
         obj.OnKeyRelease = dropdownOnKeyRelease
         obj.GetComponents = dropdownGetComponents
         obj.GetOptions = dropdownGetOptions
+        obj.CalculatePosition = dropdownCalculatePosition
 
         m.DropDownClass = obj
     end if
@@ -88,7 +89,6 @@ sub dropdownGetComponents()
     vbox = createVBox(false, false, false, 0)
     vbox.SetScrollable(m.maxHeight)
 
-    ddProp = { width: m.width, height: 0, x: m.x, y: m.y }
     for each option in m.GetOptions()
         if option.component <> invalid then
             comp = option.component
@@ -115,27 +115,9 @@ sub dropdownGetComponents()
         end if
 
         vbox.AddComponent(comp)
-        ' calculate the required height and width for the homogeneous buttons
-        if comp.getPreferredWidth() > ddProp.width then
-            ddProp.width = comp.getPreferredWidth()
-        end if
-        ddProp.height = ddProp.height + comp.getPreferredHeight() + vbox.spacing
     end for
 
-    ' we cannot set the VBox homogeneous due to arbitary heights, but
-    ' we do need the widths to all be consistent.
-    for each component in vbox.components
-        component.width = ddProp.width
-    end for
-    m.components.push(vbox)
-
-    ' set the position of the drop down (supported: bottom [default], and right)
-    if m.dropDownPosition = "right" then
-        ddProp.x = m.x + m.width + m.parent.spacing
-    else
-        ddProp.y = m.y + m.height + m.parent.spacing
-    end if
-    vbox.SetFrame(ddProp.x, ddProp.y, ddProp.width, ddProp.height)
+    m.CalculatePosition(vbox)
 end sub
 
 sub dropdownToggle()
@@ -187,3 +169,35 @@ end sub
 function dropdownGetOptions() as object
     return m.options
 end function
+
+sub dropdownCalculatePosition(vbox as object)
+    ddProp = { width: m.width, height: 0, x: m.x, y: m.y }
+
+    ' calculate the required height and width for the homogeneous buttons
+    for each component in vbox.components
+        if component.getPreferredWidth() > ddProp.width then
+            ddProp.width = component.getPreferredWidth()
+        end if
+        ddProp.height = ddProp.height + component.getPreferredHeight() + vbox.spacing
+    end for
+
+    ' we cannot set the VBox homogeneous due to arbitary heights, but
+    ' we do need the widths to all be consistent.
+    for each component in vbox.components
+        component.width = ddProp.width
+    end for
+    m.components.push(vbox)
+
+    ' set the position of the drop down (supported: bottom [default], and right)
+    if m.dropDownPosition = "right" then
+        ddProp.x = m.x + m.width + m.parent.spacing
+    else
+        ddProp.y = m.y + m.height + m.parent.spacing
+    end if
+
+    ' verify the xOffset+width is not off the screen (safe area)
+    if ddProp.x + ddProp.width > 1230 then
+        ddProp.x = 1230 - ddProp.width
+    end if
+    vbox.SetFrame(ddProp.x, ddProp.y, ddProp.width, ddProp.height)
+end sub

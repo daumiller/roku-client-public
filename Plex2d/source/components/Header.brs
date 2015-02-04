@@ -76,10 +76,9 @@ sub headerPerformLayout()
     buttons = createObject("roList")
     if tostr(m.screen.screenName) = "Home Screen" then
         ' Server List Drop Down
-        button = createDropDown(m.screen.server.name, m.buttons.font, int(720 / 2), m.screen)
+        button = createDropDownServers(m.screen.server.name, m.buttons.font, int(720 / 2), m.screen)
         button.width = m.buttons.width
         button.pvalign = button[m.buttons.valign]
-        button.GetOptions = headerGetServerOptions
         button.zOrder = m.zOrder
         buttons.push(button)
 
@@ -117,19 +116,6 @@ sub headerPerformLayout()
 
     m.buttons.font = invalid
 end sub
-
-' TODO(rob): sorted list, selected checkmark, info: offline|remote|update required?
-function headerGetServerOptions() as object
-    m.options.clear()
-    MyPlexManager().RefreshResources()
-    for each server in PlexServerManager().GetServers()
-        if server.isReachable() = true then
-            m.options.push({text: server.name, command: "selected_server", font: FontRegistry().font16, height: 66, width: 128, metadata: server })
-        end if
-    end for
-
-    return m.options
-end function
 
 function headerGetOptions() as object
     m.options.clear()

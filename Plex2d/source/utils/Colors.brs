@@ -16,12 +16,14 @@ function Colors() as object
         obj.Empty = &h1f1f1fff
         obj.Card = &h1f1f1fff
         obj.Button = &h1f1f1fff
+        obj.ButtonDark = &h171717ff
         obj.Text = &hffffffff
         obj.TextLight = &hffffffe0
         obj.TextDim = &hffffff60
 
         obj.Transparent = &h00000000
         obj.Black = &h000000ff
+        obj.Blue = &h0033CCff
         obj.Red = &hc23529ff
         obj.Green = &h5cb85cff
         obj.Orange = &hcc7b19ff
