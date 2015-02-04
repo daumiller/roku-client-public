@@ -153,8 +153,8 @@ function GDMDiscovery() as object
 end function
 
 sub gdmDiscoveryDiscover()
-    ' Only if enabled
-    if not AppSettings().GetBoolPreference("gdm_discovery") then return
+    ' Only if enabled and not currently running
+    if not AppSettings().GetBoolPreference("gdm_discovery") or m.socket <> invalid then return
 
     message = "M-SEARCH * HTTP/1.1" + WinNL() + WinNL()
 

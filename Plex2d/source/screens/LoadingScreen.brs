@@ -68,6 +68,7 @@ sub loadingFindServer()
     server = PlexServerManager().GetSelectedServer()
 
     if server = invalid then
+        GDMDiscovery().Discover()
         MyPlexManager().RefreshResources()
 
         m.waitTimer = createTimer("waitTimer")

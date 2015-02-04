@@ -174,6 +174,7 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
         m.SaveState()
         MyPlexManager().Publish()
         MyPlexManager().RefreshResources()
+        GDMDiscovery().Discover()
     else if response.GetStatus() >= 400 and response.GetStatus() < 500 then
         ' The user is specifically unauthorized, clear everything
         Warn("Sign Out: User is unauthorized")
