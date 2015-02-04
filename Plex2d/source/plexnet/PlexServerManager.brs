@@ -54,6 +54,9 @@ function psmSetSelectedServer(server as dynamic, force as boolean) as boolean
         ' Don't select servers that don't have connections.
         if server.activeConnection = invalid then return false
 
+        ' Don't select servers that are not supported
+        if server.IsSupported = false then return false
+
         ' Don't select synced servers.
         if server.synced then return false
     end if
@@ -176,7 +179,7 @@ end sub
 sub psmUpdateReachabilityResult(server as object, reachable as boolean)
     searching = (m.selectedServer = invalid and m.searchContext <> invalid and not server.synced)
 
-    if reachable
+    if reachable then
         ' If we're in the middle of a search for our selected server, see if
         ' this is a candidate.
         '
@@ -240,7 +243,7 @@ sub psmCheckSelectedServerSearch()
 end sub
 
 function psmCompareServers(first as dynamic, second as dynamic) as integer
-    if first = invalid then
+    if first = invalid or first.IsSupported = false then
         return iif(second = invalid, 0, -1)
     else if second = invalid then
         return 1

@@ -385,6 +385,10 @@ sub settingsInitGlobals()
     else
         m.globals["idleLockTimeout"] = 30 * 60
     end if
+
+    ' Minimum server version required
+    m.globals["minServerVersionStr"] = "0.9.11.7"
+    m.globals["minServerVersionArr"] = ParseVersion(m.globals["minServerVersionStr"])
 end sub
 
 function settingsGetCapabilities(recompute=false as boolean) as string

@@ -112,7 +112,9 @@ function pnsGetImageTranscodeURL(path as string, width as integer, height as int
     return m.BuildUrl("/photo/:/transcode?url=" + UrlEscape(imageUrl) + params, true)
 end function
 
-function pnsIsReachable() as boolean
+function pnsIsReachable(onlySupported=true as boolean) as boolean
+    if onlySupported = true and m.IsSupported = false then return false
+
     return (m.activeConnection <> invalid and m.activeConnection.state = PlexConnectionClass().STATE_REACHABLE)
 end function
 
@@ -176,6 +178,8 @@ function pnsCollectDataFromRoot(xml as object) as boolean
     if CheckMinimumVersion([0, 9, 11, 11], m.version) then
         m.features["mkv_transcode"] = true
     end if
+
+    m.IsSupported = CheckMinimumVersion(AppSettings().GetGlobal("minServerVersionArr"), m.version)
 
     Debug("Server information updated from reachability check: " + tostr(m))
 
