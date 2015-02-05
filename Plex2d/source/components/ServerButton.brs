@@ -1,23 +1,23 @@
-function ButtonServerClass() as object
-    if m.ButtonServerClass = invalid then
+function ServerButtonClass() as object
+    if m.ServerButtonClass = invalid then
         obj = CreateObject("roAssociativeArray")
         obj.Append(ComponentClass())
         obj.Append(AlignmentMixin())
         obj.Append(PaddingMixin())
-        obj.ClassName = "ButtonServer"
+        obj.ClassName = "ServerButton"
 
-        obj.Draw = buttonServerDraw
-        obj.Init = buttonServerInit
+        obj.Draw = serverbuttonDraw
+        obj.Init = serverbuttonInit
 
-        m.ButtonServerClass = obj
+        m.ServerButtonClass = obj
     end if
 
-    return m.ButtonServerClass
+    return m.ServerButtonClass
 end function
 
-function createButtonServer(server as object, command as dynamic, titleFont as object, subtitleFont as object, glyphFont as object, statusFont as object) as object
+function createServerButton(server as object, command as dynamic, titleFont as object, subtitleFont as object, glyphFont as object, statusFont as object) as object
     obj = CreateObject("roAssociativeArray")
-    obj.Append(ButtonServerClass())
+    obj.Append(ServerButtonClass())
 
     obj.server = server
     obj.command = command
@@ -28,7 +28,7 @@ function createButtonServer(server as object, command as dynamic, titleFont as o
     return obj
 end function
 
-sub buttonServerInit(titleFont as object, subtitleFont as object, glyphFont as object, statusFont as object)
+sub serverbuttonInit(titleFont as object, subtitleFont as object, glyphFont as object, statusFont as object)
     ApplyFunc(ComponentClass().Init, m)
 
     m.customFonts = {
@@ -50,7 +50,7 @@ sub buttonServerInit(titleFont as object, subtitleFont as object, glyphFont as o
     m.valign = m.ALIGN_MIDDLE
 end sub
 
-function buttonServerDraw(redraw=false as boolean) as object
+function serverbuttonDraw(redraw=false as boolean) as object
     if redraw = false and m.region <> invalid then return [m]
     m.InitRegion()
 

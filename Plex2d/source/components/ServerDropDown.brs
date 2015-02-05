@@ -1,22 +1,22 @@
-function DropDownServersClass() as object
-    if m.DropDownServersClass = invalid then
+function ServerDropDownClass() as object
+    if m.ServerDropDownClass = invalid then
         obj = CreateObject("roAssociativeArray")
         obj.Append(DropDownClass())
-        obj.ClassName = "DropDownServers"
+        obj.ClassName = "ServerDropDown"
 
-        obj.Init = ddsInit
-        obj.GetComponents = ddsGetComponents
-        obj.CreateButton = ddsCreateButton
+        obj.Init = sddInit
+        obj.GetComponents = sddGetComponents
+        obj.CreateButton = sddCreateButton
 
-        m.DropDownServerClass = obj
+        m.ServerDropDownClass = obj
     end if
 
-    return m.DropDownServerClass
+    return m.ServerDropDownClass
 end function
 
-function createDropDownServers(text as string, font as object, maxHeight as integer, screen as object) as object
+function createServerDropDown(text as string, font as object, maxHeight as integer, screen as object) as object
     obj = CreateObject("roAssociativeArray")
-    obj.Append(DropDownServersClass())
+    obj.Append(ServerDropDownClass())
 
     obj.screen = screen
     obj.Init(text, font, maxHeight)
@@ -24,7 +24,7 @@ function createDropDownServers(text as string, font as object, maxHeight as inte
     return obj
 end function
 
-sub ddsInit(text as string, font as object,  maxHeight as integer)
+sub sddInit(text as string, font as object,  maxHeight as integer)
     ApplyFunc(DropDownClass().Init, m, [text, font, maxHeight])
 
     ' Custom fonts for the drop down options. These need to be references at this
@@ -41,7 +41,7 @@ sub ddsInit(text as string, font as object,  maxHeight as integer)
     m.minWidth = 128
 end sub
 
-sub ddsGetComponents()
+sub sddGetComponents()
     GDMDiscovery().Discover()
     MyPlexManager().RefreshResources()
 
@@ -98,8 +98,8 @@ sub ddsGetComponents()
     m.CalculatePosition(vbox)
 end sub
 
-function ddsCreateButton(server as object, command as dynamic, width as integer, height as integer, padding=invalid as dynamic) as object
-    obj = createButtonServer(server, command, m.customFonts.title, m.customFonts.subtitle, m.customFonts.glyph, m.customFonts.status)
+function sddCreateButton(server as object, command as dynamic, width as integer, height as integer, padding=invalid as dynamic) as object
+    obj = createServerButton(server, command, m.customFonts.title, m.customFonts.subtitle, m.customFonts.glyph, m.customFonts.status)
 
     obj.width = width
     obj.height = height

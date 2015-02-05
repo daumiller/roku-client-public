@@ -1,22 +1,22 @@
-function ButtonPrefClass() as object
-    if m.ButtonPrefClass = invalid then
+function SettingsButtonClass() as object
+    if m.SettingsButtonClass = invalid then
         obj = CreateObject("roAssociativeArray")
         obj.Append(LabelClass())
-        obj.ClassName = "ButtonPref"
+        obj.ClassName = "SettingsButton"
 
-        obj.Draw = buttonprefDraw
-        obj.Init = buttonprefInit
-        obj.OnSelected = buttonprefOnSelected
+        obj.Draw = settingsbuttonDraw
+        obj.Init = settingsbuttonInit
+        obj.OnSelected = settingsbuttonOnSelected
 
-        m.ButtonPrefClass = obj
+        m.SettingsButtonClass = obj
     end if
 
-    return m.ButtonPrefClass
+    return m.SettingsButtonClass
 end function
 
-function createButtonPref(text as string, font as object, command as dynamic, value as string, prefType as string, screenPref=false as boolean) as object
+function createSettingsButton(text as string, font as object, command as dynamic, value as string, prefType as string, screenPref=false as boolean) as object
     obj = CreateObject("roAssociativeArray")
-    obj.Append(ButtonPrefClass())
+    obj.Append(SettingsButtonClass())
 
     obj.Init(text, font)
 
@@ -29,7 +29,7 @@ function createButtonPref(text as string, font as object, command as dynamic, va
     return obj
 end function
 
-sub buttonprefInit(text as string, font as object)
+sub settingsbuttonInit(text as string, font as object)
     ApplyFunc(LabelClass().Init, m, [text, font])
 
     m.focusable = true
@@ -38,7 +38,7 @@ sub buttonprefInit(text as string, font as object)
     m.valign = m.ALIGN_MIDDLE
 end sub
 
-function buttonprefDraw(redraw=false as boolean) as object
+function settingsbuttonDraw(redraw=false as boolean) as object
     if redraw = false and m.region <> invalid then return [m]
 
     m.InitRegion()
@@ -92,7 +92,7 @@ function buttonprefDraw(redraw=false as boolean) as object
     return [m]
 end function
 
-sub buttonprefOnSelected()
+sub settingsbuttonOnSelected()
     prefKey = m.command
 
     if m.prefType = "bool" then

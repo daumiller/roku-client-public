@@ -72,11 +72,11 @@ sub headerPerformLayout()
     hbox.AddComponent(logo)
     m.AddComponent(hbox)
 
-    ' *** Buttons/DropDowns - depended on the screen type (TBD) *** '
+    ' *** Buttons/DropDowns - dependent on the current screen (TBD) *** '
     buttons = createObject("roList")
     if tostr(m.screen.screenName) = "Home Screen" then
         ' Server List Drop Down
-        button = createDropDownServers(m.screen.server.name, m.buttons.font, int(720 / 2), m.screen)
+        button = createServerDropDown(m.screen.server.name, m.buttons.font, int(720 / 2), m.screen)
         button.width = m.buttons.width
         button.pvalign = button[m.buttons.valign]
         button.zOrder = m.zOrder

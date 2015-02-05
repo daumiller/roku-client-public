@@ -148,7 +148,7 @@ function settingsCreateMenuButton(pref as object) as object
 end function
 
 function settingsCreatePrefButton(text as string, command as dynamic, value as string, prefType as string) as object
-    btn = createButtonPref(text, FontRegistry().font16, command, value, prefType, m.screenPref)
+    btn = createSettingsButton(text, FontRegistry().font16, command, value, prefType, m.screenPref)
     btn.focusInside = true
     btn.fixed = false
     btn.halign = m.JUSTIFY_LEFT
