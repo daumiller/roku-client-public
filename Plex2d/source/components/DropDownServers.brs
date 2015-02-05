@@ -76,7 +76,9 @@ sub ddsGetComponents()
     servers.Append(serversOnline)
     servers.Append(serversOffline)
 
-    ' cacluate the dynamic width incuding the status and padding offsets
+    if servers.Count() = 0 then return
+
+    ' finalize the dynamic width including the status and padding offsets
     focusPx = CompositorScreen().focusPixels
     padding = {
         top: 0 + focusPx,
@@ -84,8 +86,8 @@ sub ddsGetComponents()
         bottom: 5 + focusPx,
         left: 10 + focusPx
     }
-    m.statusWidth = m.customFonts.glyph.GetOneLineWidth(Glyphs().CHECK, m.maxWidth)*2 + padding.left + padding.right
-    buttonWidth = buttonWidth + m.statusWidth
+    statusWidth = m.createButton(servers[0], "", 0, 0, padding).statusWidth
+    buttonWidth = buttonWidth + statusWidth + padding.left + padding.right
     if buttonWidth > m.maxWidth then buttonWidth = m.maxWidth
 
     for each server in servers
@@ -102,7 +104,6 @@ function ddsCreateButton(server as object, command as dynamic, width as integer,
     obj.width = width
     obj.height = height
     obj.padding = padding
-    obj.statusWidth = m.statusWidth
     obj.focusInside = true
     obj.focusNonSiblings = false
     obj.zOrder = ZOrders().DROPDOWN

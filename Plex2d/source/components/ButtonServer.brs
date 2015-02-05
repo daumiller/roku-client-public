@@ -21,6 +21,7 @@ function createButtonServer(server as object, command as dynamic, titleFont as o
 
     obj.server = server
     obj.command = command
+    obj.statusWidth = statusFont.GetOneLineWidth(Glyphs().CHECK, 1280) * 2
 
     obj.Init(titleFont, subtitleFont, glyphFont, statusFont)
 
@@ -45,31 +46,21 @@ sub buttonServerInit(titleFont as object, subtitleFont as object, glyphFont as o
     m.selectable = true
     m.fixed = false
 
-    m.halign = m.JUSTIFY_RIGHT
+    m.halign = m.JUSTIFY_LEFT
     m.valign = m.ALIGN_MIDDLE
-    m.statusWidth = 0
 end sub
 
 function buttonServerDraw(redraw=false as boolean) as object
     if redraw = false and m.region <> invalid then return [m]
     m.InitRegion()
 
-    if m.server.owned = true then
-        titleText = tostr(m.server.name)
-        subtitleText = invalid
+    if m.padding <> invalid then
+        childWidth = m.width - m.padding.left - m.padding.right - m.statusWidth
+        xOffset = m.padding.left
     else
-        titleText = tostr(m.server.owner)
-        subtitleText = tostr(m.server.name)
+        childWidth = m.width - m.statusWidth
+        xOffset = 0
     end if
-
-    ' Title
-    title = createLabel(titleText, m.customFonts.title)
-    title.width = m.width - m.statusWidth
-    titleText = title.TruncateText()
-    yOffset = m.GetYOffsetAlignment(m.customFonts.title.GetOneLineHeight())
-    xOffset = m.GetXOffsetAlignment(m.customFonts.title.GetOneLineWidth(titleText, m.width))
-    m.region.DrawText(titleText, xOffset, yOffset, m.titleColor, m.customFonts.title)
-    xOffset = iif(m.padding <> invalid, m.padding.left, 0)
 
     ' Not supported - blue dot (upgraded required)
     if m.server.IsSupported = false then
@@ -81,23 +72,43 @@ function buttonServerDraw(redraw=false as boolean) as object
         yOffset = m.GetYOffsetAlignment(m.customFonts.status.GetOneLineHeight())
         m.region.DrawText("•", xOffset, yOffset, Colors().Red, m.customFonts.status)
         subtitleText = "Offline"
-    end if
-
     ' Check mark for selected server
-    if m.server.Equals(PlexServerManager().GetSelectedServer())
+    else if m.server.Equals(PlexServerManager().GetSelectedServer())
         yOffset = m.GetYOffsetAlignment(m.customFonts.glyph.GetOneLineHeight())
         m.region.DrawText(Glyphs().CHECK, xOffset, yOffset, Colors().Green, m.customFonts.glyph)
     end if
+    xOffset = xOffset + m.statusWidth
+
+    ' Swap title/subtitle based on server ownership
+    if m.server.owned = true then
+        titleText = tostr(m.server.name)
+        subtitleText = invalid
+    else
+        titleText = tostr(m.server.owner)
+        subtitleText = tostr(m.server.name)
+    end if
+
+    ' Title
+    title = createLabel(titleText, m.customFonts.title)
+    title.width = childWidth
+    titleText = title.TruncateText()
+    yOffset = m.GetYOffsetAlignment(m.customFonts.title.GetOneLineHeight())
+    if m.halign <> m.JUSTIFY_LEFT then
+        xOffset = m.GetXOffsetAlignment(m.customFonts.title.GetOneLineWidth(titleText, m.width))
+    end if
+    m.region.DrawText(titleText, xOffset, yOffset, m.titleColor, m.customFonts.title)
 
     ' Subtitle
     if subtitleText <> invalid then
         subtitle = createLabel(subtitleText, m.customFonts.title)
-        subtitle.width = m.width
+        subtitle.width = childWidth
         subtitleText = subtitle.TruncateText()
-        xOffset = m.GetXOffsetAlignment(m.customFonts.subtitle.GetOneLineWidth(subtitleText, m.width))
         yOffset = m.height - m.customFonts.subtitle.GetOneLineHeight()
         if m.padding <> invalid then
             yOffset = yOffset - m.padding.bottom
+        end if
+        if m.halign <> m.JUSTIFY_LEFT then
+            xOffset = m.GetXOffsetAlignment(m.customFonts.subtitle.GetOneLineWidth(subtitleText, m.width))
         end if
         m.region.DrawText(subtitleText, xOffset, yOffset, m.subtitleColor, m.customFonts.subtitle)
     end if
