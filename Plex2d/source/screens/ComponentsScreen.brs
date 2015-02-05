@@ -482,7 +482,7 @@ function compHandleCommand(command as string, item as dynamic) as boolean
         if MyPlexAccount().isAuthenticated = true and user.id = MyPlexAccount().id then
             Application().Trigger("change:user", [MyPlexAccount()])
         ' PIN prompt protected user, unless switching from an admin user
-        else if (user.IsProtected = true or user.protected = "1") and (MyPlexAccount().isAuthenticated = false or MyPlexAccount().isAdmin = false) then
+        else if user.IsProtected and (MyPlexAccount().isAuthenticated = false or MyPlexAccount().isAdmin = false) then
             ' pinPrompt handles switching and error feedback
             pinPrompt = createPinPrompt(m, user)
             pinPrompt.Show(true)

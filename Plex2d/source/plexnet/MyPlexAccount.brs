@@ -249,7 +249,11 @@ sub mpaUpdateHomeUsers()
             if user@thumb <> invalid and instr(1, user@thumb, "http://www.gravatar.com") > 0 then
                 user.AddAttribute("thumb", ResolveRedirect(user@thumb))
             end if
-            m.homeUsers.push(user.GetAttributes())
+            homeUser = user.GetAttributes()
+            homeUser.isAdmin = (homeUser.admin = "1")
+            homeUser.isManaged = (homeUser.restricted = "1")
+            homeUser.isProtected = (homeUser.protected = "1")
+            m.homeUsers.Push(homeUser)
         end for
     end if
 

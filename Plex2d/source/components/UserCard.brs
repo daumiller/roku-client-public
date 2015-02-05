@@ -76,7 +76,7 @@ sub usercardInitComponents()
     end if
 
     ' user PIN protected
-    if (m.user.isProtected = true or m.user.protected = "1") then
+    if m.user.isProtected then
         m.pin = createLabel(Glyphs().LOCK, FontRegistry().GetIconFont(16))
         m.pin.SetPadding(0, 10, 5, 10)
         m.pin.SetColor(Colors().Green)
@@ -89,7 +89,7 @@ sub usercardInitComponents()
     end if
 
     ' user is ADMIN (crown)
-    if (m.user.isAdmin = true or m.user.admin = "1") then
+    if m.user.isAdmin then
         m.crown = createLabel(Glyphs().CROWN, FontRegistry().GetIconFont(16))
         m.crown.SetPadding(0, 10, 5, 10)
         m.crown.SetColor(Colors().OrangeLight)
