@@ -34,14 +34,18 @@ sub dialogInit(title as string, text=invalid as dynamic)
     m.components = m.screen.GetManualComponents(m.ClassName)
     m.buttons = CreateObject("roList")
     m.title = title
-    if text <> invalid then m.text = text
+    m.text = text
 
-    ' TODO(rob) how do we handle dynamic width/height along with center placement?
     m.width = 500
-    m.height = 225
-    m.x = int(1280/2 - m.width/2)
-    m.y = int(720/2 - m.height/2)
     m.spacing = 25
+    m.maxLines = 4
+
+    m.padding = {
+        top: 10,
+        right: 25,
+        bottom: 10,
+        left: 25,
+    }
 
     m.buttonPrefs = {
         width: 72,
@@ -62,25 +66,40 @@ end sub
 
 sub dialogGetComponents()
     dialogBox = createVBox(false, false, false, m.spacing)
-    dialogBox.SetFrame(m.x, m.y, m.width, m.height)
 
     if m.title <> invalid then
-        label = createLabel(m.title, m.customFonts.titleFont)
-        label.SetPadding(int(m.spacing/2))
-        label.halign = label.JUSTIFY_CENTER
-        label.valign = label.ALIGN_MIDDLE
-        label.zOrder = ZOrders().OVERLAY
-        dialogBox.AddComponent(label)
+        m.titleLabel = createLabel(m.title, m.customFonts.titleFont)
+        m.titleLabel.padding = m.padding
+        m.titleLabel.halign = m.titleLabel.JUSTIFY_CENTER
+        m.titleLabel.valign = m.titleLabel.ALIGN_MIDDLE
+        m.titleLabel.zOrder = ZOrders().OVERLAY
+        m.titleLabel.SetColor(Colors().Text, Colors().ButtonDark)
+        dialogBox.AddComponent(m.titleLabel)
     end if
 
-    ' TODO(rob): how do we allow the labels height to be "auto" based
-    ' on the amount of text, maybe including a "maxHeight"
     if m.text <> invalid then
         label = createLabel(m.text, m.customFonts.textFont)
-        label.SetPadding(int(m.spacing/2))
-        label.halign = label.JUSTIFY_CENTER
-        label.valign = label.ALIGN_MIDDLE
+        label.SetPadding(0, m.padding.right, m.padding.bottom, m.padding.left)
+        label.wrap = true
         label.zOrder = ZOrders().OVERLAY
+        label.phalign = label.JUSTIFY_CENTER
+
+        ' Calculate the height based on the number of lines to fit (m.maxLines)
+        padHeight = label.padding.bottom + label.padding.top
+        oneLineHeight = m.customFonts.textFont.GetOneLineHeight()
+        label.width = m.width
+        label.height = oneLineHeight * m.maxLines + padHeight
+        lineCount = label.WrapText().Count()
+
+        ' Resize height based on number of lines
+        label.height = oneLineHeight * lineCount + padHeight
+
+        ' Resize width and center align if we only have one line
+        if lineCount = 1 then
+            label.width = m.customFonts.textFont.GetOneLineWidth(m.text, label.width)
+            label.halign = label.JUSTIFY_CENTER
+        end if
+
         dialogBox.AddComponent(label)
     end if
 
@@ -88,9 +107,9 @@ sub dialogGetComponents()
         dialogBox.AddComponent(m.createButton("OK", "close"))
     else
         if m.buttonsSingleLine then
-            btnCont = createHBox(false, false, false, 10)
+            btnCont = createHBox(false, false, false, m.spacing)
         else
-            btnCont = createVBox(false, false, false, 10)
+            btnCont = createVBox(false, false, false, m.spacing)
         end if
         btnCont.phalign = btnCont.JUSTIFY_CENTER
 
@@ -107,13 +126,35 @@ sub dialogGetComponents()
         end for
         dialogBox.AddComponent(btnCont)
     end if
-
     m.components.push(dialogBox)
 
+    ' resize and position the dialog based on the available components
+    width = 0
+    height = 0
+    for each comp in dialogBox.components
+        if comp.GetPreferredWidth() > width then
+            width = comp.GetPreferredWidth()
+        end if
+        height = height + comp.GetPreferredHeight()
+    end for
+    m.width = width + m.padding.left + m.padding.right
+    m.height = height + m.padding.top + m.padding.bottom + (dialogBox.spacing * (dialogBox.components.count()-1))
+
+    ' Position the dialog in the center of the screen
+    m.x = int(1280/2 - m.width/2)
+    m.y = int(720/2 - m.height/2)
+    dialogBox.SetFrame(m.x, m.y, m.width, m.height)
+
+    ' Add the background
     bkg = createBlock(Colors().OverlayVeryDark)
     bkg.SetFrame(m.x, m.y, m.width, m.height)
     bkg.zOrder = ZOrders().OVERLAY - 1
     m.components.push(bkg)
+
+    ' Reset the title width to the size of the dialog
+    if m.titleLabel <> invalid then
+        m.titleLabel.width = m.width
+    end if
 end sub
 
 function dialogCreateButton(text as string, command=invalid as dynamic) as object
