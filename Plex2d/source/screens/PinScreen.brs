@@ -70,7 +70,7 @@ sub pinRequestCode()
     m.pollUrl = invalid
     request = createMyPlexRequest("/pins.xml")
     context = request.CreateRequestContext("code", createCallable("OnCodeResponse", m))
-    context.timeout = 5000
+    context.timeout = 10000
     Application().StartRequest(request, context, "")
 
     ' Create a timer for polling to see if the code has been linked.

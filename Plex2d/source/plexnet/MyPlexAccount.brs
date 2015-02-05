@@ -93,7 +93,7 @@ sub mpaLoadState()
     if m.authToken <> invalid then
         request = createMyPlexRequest("/users/account")
         context = request.CreateRequestContext("account", createCallable("OnAccountResponse", m))
-        context.timeout = 5000
+        context.timeout = 10000
         Application().StartRequest(request, context)
     else
         Application().ClearInitializer("myplex")
