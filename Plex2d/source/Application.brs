@@ -88,8 +88,8 @@ sub appPushScreen(screen)
         oldScreen = m.screens.Peek()
 
         ' close any overlay screen (resets focusedItem)
-        if oldScreen.overlayScreen <> invalid then
-            oldScreen.overlayScreen.Close()
+        if oldScreen.overlayScreen <> invalid and oldScreen.overlayScreen.Count() > 0 then
+            oldScreen.overlayScreen.Peek().Close()
         end if
 
         ' Remember the last focus ID and position to refocus

@@ -72,7 +72,7 @@ sub dialogGetComponents()
         m.titleLabel.padding = m.padding
         m.titleLabel.halign = m.titleLabel.JUSTIFY_CENTER
         m.titleLabel.valign = m.titleLabel.ALIGN_MIDDLE
-        m.titleLabel.zOrder = ZOrders().OVERLAY
+        m.titleLabel.zOrder = m.zOrderOverlay
         m.titleLabel.SetColor(Colors().Text, Colors().ButtonDark)
         dialogBox.AddComponent(m.titleLabel)
     end if
@@ -81,7 +81,7 @@ sub dialogGetComponents()
         label = createLabel(m.text, m.customFonts.textFont)
         label.SetPadding(0, m.padding.right, m.padding.bottom, m.padding.left)
         label.wrap = true
-        label.zOrder = ZOrders().OVERLAY
+        label.zOrder = m.zOrderOverlay
         label.phalign = label.JUSTIFY_CENTER
 
         ' Calculate the height based on the number of lines to fit (m.maxLines)
@@ -148,7 +148,7 @@ sub dialogGetComponents()
     ' Add the background
     bkg = createBlock(Colors().OverlayVeryDark)
     bkg.SetFrame(m.x, m.y, m.width, m.height)
-    bkg.zOrder = ZOrders().OVERLAY - 1
+    bkg.zOrder = m.zOrderOverlay - 1
     m.components.push(bkg)
 
     ' Reset the title width to the size of the dialog
@@ -163,7 +163,7 @@ function dialogCreateButton(text as string, command=invalid as dynamic) as objec
     btn.width = m.buttonPrefs.width
     btn.height = m.buttonPrefs.height
     btn.fixed = m.buttonPrefs.fixed
-    btn.zOrder = ZOrders().OVERLAY
+    btn.zOrder = m.zOrderOverlay
     btn.SetPadding(m.buttonPrefs.padding)
     btn.focusNonSiblings = false
     btn.dialog = m

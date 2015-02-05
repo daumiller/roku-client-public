@@ -17,6 +17,11 @@ end function
 
 sub overlayInit()
     ApplyFunc(ComponentClass().Init, m)
+
+    ' support for multiple overlay screens
+    m.zOrderOverlay = ZOrders().OVERLAY + m.screen.overlayScreen.count()
+    m.screen.overlayScreen.Push(m)
+
     m.enableBackButton = true
     m.enableOverlay = false
     m.blocking = false
@@ -29,10 +34,17 @@ sub overlayInit()
     m.OrigScreenFunctions = {
         OnKeyRelease: m.screen.OnKeyRelease,
         OrigOnKeyRelease: m.screen.OrigOnKeyRelease
+        OnFocusIn: m.screen.OnFocusIn,
+        OrigOnFocusIn: m.screen.OrigOnFocusIn
+        OnFocusOut: m.screen.OnFocusOut,
+        OrigOnFocusOut: m.screen.OrigOnFocusOut
     }
     m.screen.OrigOnKeyRelease = firstOf(m.screen.OrigOnKeyRelease, m.screen.OnKeyRelease)
     m.screen.OnKeyRelease = m.OnKeyRelease
-    m.screen.overlayScreen = m
+    m.screen.OrigOnFocusIn = firstOf(m.screen.OrigOnFocusIn, m.screen.OnFocusIn)
+    m.screen.OnFocusIn = compOnFocusIn
+    m.screen.OrigOnFocusOut = firstOf(m.screen.OrigOnFocusOut, m.screen.OnFocusOut)
+    m.screen.OnFocusOut = compOnFocusOut
 
     m.components = m.screen.GetManualComponents(m.ClassName)
     m.buttons = CreateObject("roList")
@@ -44,13 +56,13 @@ end sub
 sub overlayOnKeyRelease(keyCode as integer)
     if keyCode = m.kp_BK then
         Debug("back button pressed: closing overlay")
-        m.overlayScreen.Close()
+        m.overlayScreen.Peek().Close(true)
     else
         m.OrigOnKeyRelease(keyCode)
     end if
 end sub
 
-sub overlayClose()
+sub overlayClose(backButton=false as boolean)
     if m.enableBackButton = false then EnableBackButton()
     m.blocking = false
 
@@ -60,6 +72,8 @@ sub overlayClose()
     m.DestroyComponents()
     m.customFonts.clear()
 
+    m.screen.overlayScreen.Pop()
+
     ' refocus on the item we initially came from
     m.screen.lastFocusedItem = invalid
     if m.fromFocusedItem <> invalid then
@@ -68,7 +82,8 @@ sub overlayClose()
         m.screen.screen.HideFocus(true, true)
     end if
 
-    m.screen.overlayScreen = invalid
+    ' Let the parent screen know we closed
+    m.screen.OnOverlayClose(m, backButton)
 end sub
 
 sub overlayShow(blocking=false as boolean)
@@ -81,7 +96,7 @@ sub overlayShow(blocking=false as boolean)
     if m.enableOverlay = false then
         dimmer = createBlock(Colors().OverlayMed)
         dimmer.SetFrame(0, 0, 1280, 720)
-        dimmer.zOrder = ZOrders().OVERLAY - 1
+        dimmer.zOrder = m.zOrderOverlay - 1
         m.components.unshift(dimmer)
     end if
 

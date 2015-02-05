@@ -58,6 +58,7 @@ function ComponentsScreen() as object
         obj.OnKeyRelease = compOnKeyRelease
         obj.OnInfoButton = compOnInfoButton
         obj.OnPlayButton = compOnPlayButton
+        obj.OnOverlayClose = compOnOverlayClose
 
         ' Focus handling
         obj.OnFocus = compOnFocus
@@ -94,6 +95,7 @@ sub compInit()
     m.lastKey = -1
     m.customFonts = CreateObject("roAssociativeArray")
     m.manualComponents = CreateObject("roAssociativeArray")
+    m.overlayScreen = CreateObject("roList")
 
     ' reset the nextComponentId
     GetGlobalAA().AddReplace("nextComponentId", 1)
@@ -363,8 +365,8 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
         if toFocus = invalid then
             ' support to manually focus on an overlay screen. Force GetFocusManual
             ' to only use the components on the overlay as focus candidates
-            if m.overlayScreen <> invalid then
-                components = m.overlayScreen.components
+            if m.overlayScreen.Count() > 0 then
+                components = m.overlayScreen.Peek().components
             else
                 components = invalid
             end if
@@ -1168,4 +1170,8 @@ sub compOnFocusOut(lastFocus=invalid as dynamic, toFocus=invalid as dynamic)
     end if
 
     m.ToggleScrollbar(false, toFocus, lastFocus)
+end sub
+
+sub compOnOverlayClose(overlay=invalid as dynamic, backButton=false as boolean)
+    ' no-op
 end sub
