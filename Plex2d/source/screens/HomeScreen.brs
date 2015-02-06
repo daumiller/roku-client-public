@@ -4,9 +4,9 @@ function HomeScreen() as object
         obj.Append(HubsScreen())
 
         obj.Show = homeShow
-        obj.Deactivate = homeDeactivate
         obj.HandleCommand = homeHandleCommand
         obj.OnKeyRelease = homeOnKeyRelease
+        obj.OnOverlayClose = homeOnOverlayClose
 
         ' TODO(rob): remove/modify to allow non-video sections
         ' temporary override to exclude non-video sections
@@ -32,15 +32,6 @@ function createHomeScreen(server as object) as object
 
     return obj
 end function
-
-sub homeDeactivate()
-    if m.exitDialog <> invalid then
-        m.exitDialog.Close()
-        m.exitDialog = invalid
-    end if
-
-    ApplyFunc(ComponentsScreen().Deactivate, m)
-end sub
 
 sub homeShow()
     if NOT Application().IsActiveScreen(m) then return
@@ -126,21 +117,16 @@ function homeGetButtons() as object
 end function
 
 sub homeOnKeyRelease(keyCode as integer)
-    if keyCode = m.kp_BK and m.exitDialog = invalid then
+    if keyCode = m.kp_BK then
         dialog = createDialog("Are you ready to exit Plex?", invalid, m)
+        dialog.exitDialog = true
         dialog.enableBackButton = true
         dialog.buttonsSingleLine = true
         dialog.AddButton("Yes", "exit")
         dialog.AddButton("No", "no_exit")
         dialog.HandleButton = homeDialogHandleButton
         dialog.Show()
-        m.exitDialog = dialog
     else
-        ' exit the channel on back button in the dialog
-        if keyCode = m.kp_BK and m.exitDialog <> invalid then
-            m.exitDialog.Close()
-            m.exitDialog = invalid
-        end if
         ApplyFunc(ComponentsScreen().OnKeyRelease, m, [keyCode])
     end if
 end sub
@@ -151,9 +137,11 @@ sub homeDialogHandleButton(button as object)
     m.Close()
     if button.command = "exit" then
         Application().popScreen(m.screen)
-    else if button.command = "no_exit" then
-        m.screen.exitDialog = invalid
-    else
-        Debug("command not defined: " + tostr(button.command))
+    end if
+end sub
+
+sub homeOnOverlayClose(overlay as object, backButton as boolean)
+    if backButton and overlay.exitDialog = true then
+        Application().popScreen(m)
     end if
 end sub
