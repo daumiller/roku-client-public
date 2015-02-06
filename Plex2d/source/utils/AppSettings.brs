@@ -369,9 +369,7 @@ sub settingsInitGlobals()
     m.globals["animationSupport"] = true
     m.globals["animationTest"] = AnimateTest()
     m.globals["animationFull"] = (m.globals["animationTest"] < 20)
-
-    ' TODO(schuyler): Preference? Rely on GetFriendlyName from firmware 6.1? Make HTTP dial call?
-    m.globals["friendlyName"] = m.globals["rokuModel"]
+    m.globals["friendlyName"] = GetFriendlyName()
 
     ' Idle timeout (PIN lock). Utilize screensaver timeout, or 5 minutes if we know
     ' the screensaver is disabled (fw 5.6+), or fallback to 30 minutes.

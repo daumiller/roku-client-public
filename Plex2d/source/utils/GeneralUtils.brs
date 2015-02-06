@@ -535,3 +535,20 @@ function HDtoSDwidth(delta as integer) as integer
     HDtoSD(obj)
     return obj.w
 end function
+
+function GetFriendlyName() as string
+    device = AppSettings().GetGlobal("roDeviceInfo")
+
+    if CheckMinimumVersion([6, 1]) then
+        return device.GetFriendlyName()
+    else
+        obj = CreateObject("roURLTransfer")
+        obj.SetURL("http://" + GetFirstIPAddress() + ":8060/dial/dd.xml")
+        xml = CreateObject("roXMLElement")
+        xml.Parse(obj.GetToString())
+        name = xml.device.friendlyName.GetText()
+        if name <> "" then return name
+    end if
+
+    return device.GetModelDisplayName() + " - " + device.GetDeviceUniqueId()
+end function
