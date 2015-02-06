@@ -137,12 +137,17 @@ function labelWrapText(includeAllLines=false as boolean) as object
         if maxLines <> invalid and lines.Count() = maxLines-1 then
             lines.Push(m.TruncateText(m.text.Mid(startPos)))
         else
-            ' Try to break on spaces. If the first whole word won't fit,
-            ' then force a break mid-word.
+            ' Try to break on spaces and newlines. If the first whole
+            ' word won't fit, then force a break mid-word.
+            newline = CreateObject("roRegex", "\n", "")
 
             breakPos = startPos
             for index = startPos+1 to m.text.len()
-                if m.text.mid(index, 1) = " " or index >= m.text.len() then
+                text = m.text.mid(index, 1)
+                if newline.IsMatch(text) then
+                    breakPos = index
+                    exit for
+                else if text = " " or index >= m.text.len() then
                     if m.font.GetOneLineWidth(m.text.mid(startPos, index - startPos), 1280) > contentArea.width then
                         exit for
                     else
@@ -173,6 +178,9 @@ end function
 
 function labelTruncateText(fullText=invalid as dynamic) as string
     if fullText = invalid then fullText = m.text
+
+    ' Only use the first line of text (split on newlines)
+    fullText = firstOf(fullText.Tokenize(chr(10))[0], "")
 
     ' See if we need to truncate at all
     textWidth = m.font.GetOneLineWidth(fullText, 1280)
