@@ -210,7 +210,7 @@ sub pinGetComponents()
         message = message + "ready for everyone very soon. Can't wait? Buy a Plex Pass now."
         msgLabel = createLabel(message, FontRegistry().font16)
         msgLabel.wrap = true
-        msgLabel.SetFrame(0, 0, vbWidth, FontRegistry().font16.getOneLineHeight() * 3)
+        msgLabel.SetFrame(0, 0, vbWidth, FontRegistry().font16.getOneLineHeight() * 4)
         vb.AddComponent(msgLabel)
         vb.AddSpacer(10)
         urlLabel = createLabel("http://plex.tv/plexpass", FontRegistry().font16)
