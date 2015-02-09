@@ -2,6 +2,7 @@ function MiniPlayer() as object
     if m.MiniPlayer = invalid then
         obj = createObject("roAssociativeArray")
         obj.Append(ContainerClass())
+        obj.ClassName = "MiniPlayer"
 
         ' Initial settings
         obj.initComplete = false
@@ -186,7 +187,7 @@ sub miniPlayerSetZ(zOrder as integer)
 end sub
 
 function miniplayerDraw() as object
-    if m.isDrawn = true then return [m]
+    if m.isDrawn = true then return []
 
     m.isDrawn = true
     return ApplyFunc(ContainerClass().Draw, m)
