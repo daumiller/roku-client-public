@@ -62,6 +62,15 @@ function serverbuttonDraw(redraw=false as boolean) as object
         xOffset = 0
     end if
 
+    ' Swap title/subtitle based on server ownership
+    if m.server.owned = true then
+        titleText = tostr(m.server.name)
+        subtitleText = invalid
+    else
+        titleText = tostr(m.server.owner)
+        subtitleText = tostr(m.server.name)
+    end if
+
     ' Not supported - blue dot (upgraded required)
     if m.server.IsSupported = false then
         yOffset = m.GetYOffsetAlignment(m.customFonts.status.GetOneLineHeight())
@@ -79,15 +88,6 @@ function serverbuttonDraw(redraw=false as boolean) as object
     end if
     xOffset = xOffset + m.statusWidth
 
-    ' Swap title/subtitle based on server ownership
-    if m.server.owned = true then
-        titleText = tostr(m.server.name)
-        subtitleText = invalid
-    else
-        titleText = tostr(m.server.owner)
-        subtitleText = tostr(m.server.name)
-    end if
-
     ' Title
     title = createLabel(titleText, m.customFonts.title)
     title.width = childWidth
@@ -100,7 +100,7 @@ function serverbuttonDraw(redraw=false as boolean) as object
 
     ' Subtitle
     if subtitleText <> invalid then
-        subtitle = createLabel(subtitleText, m.customFonts.title)
+        subtitle = createLabel(subtitleText, m.customFonts.subtitle)
         subtitle.width = childWidth
         subtitleText = subtitle.TruncateText()
         yOffset = m.height - m.customFonts.subtitle.GetOneLineHeight()
