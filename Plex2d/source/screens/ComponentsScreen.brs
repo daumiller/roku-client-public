@@ -1040,6 +1040,7 @@ sub compCreatePlayerForItem(plexObject=invalid as dynamic)
             path = path + iif(instr(1, path, "?") = 0, "?", "&") + "includeOnDeck=1"
         end if
 
+        Application().ShowLoadingModal(m)
         request = createPlexRequest(plexObject.GetServer(), path)
         context = request.CreateRequestContext("metadata", CreateCallable("OnCreatePlayerResponse", m))
         context.key = plexObject.Get("key")
