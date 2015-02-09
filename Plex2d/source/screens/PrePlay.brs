@@ -97,6 +97,7 @@ function preplayHandleCommand(command as string, item as dynamic) as boolean
         pq = createPlayQueueForItem(item.plexObject)
         player.shouldResume = (command = "resume")
         player.SetPlayQueue(pq, true)
+        Application().CloseLoadingModal()
     else if command = "scrobble" then
         m.item.Scrobble(createCallable("Refresh", m))
     else if command = "unscrobble" then

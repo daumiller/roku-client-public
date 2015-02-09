@@ -1060,6 +1060,8 @@ sub compOnCreatePlayerResponse(request as object, response as object, context as
         end if
     end for
     if item = invalid and children.Count() = 1 then item = children[0]
+
+    Application().CloseLoadingModal()
     if item = invalid then return
 
     ' use the onDeck item from a container (show -> next episode)
