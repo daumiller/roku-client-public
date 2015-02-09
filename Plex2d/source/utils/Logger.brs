@@ -226,17 +226,23 @@ function ProcessLogsRequest()
         end if
     next
 
-    m.mimetype = "text/plain"
-    m.fileLength = totalLen
-    m.source = m.CONCATFILES
-    m.lastmod = Now()
+    if log.level = log.LEVEL_OFF then
+        m.default(501, "Logging is disabled. Please enable logging in the settings.")
+    else if totalLen = 0 then
+        m.default(404, "Could not find any log files.")
+    else
+        m.mimetype = "text/plain"
+        m.fileLength = totalLen
+        m.source = m.CONCATFILES
+        m.lastmod = Now()
 
-    ' Not handling range requests...
-    m.start = 0
-    m.length = m.fileLength
-    m.http_code = 200
+        ' Not handling range requests...
+        m.start = 0
+        m.length = m.fileLength
+        m.http_code = 200
 
-    m.genHdr()
+        m.genHdr()
+    end if
     return true
 end function
 
