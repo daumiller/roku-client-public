@@ -182,14 +182,13 @@ function vpHandleMessage(msg) as boolean
 
             ' TODO(rob): multi-parts
 
-            ' TODO(schuyler): Make sure this is working after the play queue changes
-            ' Fallback transcode
-            if m.playbackError and m.IsTranscoded = false and not m.forceTranscode = true then
+            ' Fallback transcode with resume support
+            if m.playbackError and m.IsTranscoded = false then
                 Debug("Direct Play failed: falling back to transcode")
-                m.forceTranscode = true
-                m.Cleanup()
-                m.Init()
-                m.Show()
+                m.context[m.curIndex] = m.CreateContentMetadata(m.GetCurrentItem(), true, m.GetPlaybackPosition(true))
+                m.player = invalid
+                m.screen = invalid
+                m.Play()
             else if m.isPlayed and (m.curIndex < m.context.Count() - 1 or m.repeat <> m.REPEAT_NONE) then
                 Debug("Going to try to play the next item")
                 m.player = invalid
@@ -342,9 +341,11 @@ function vpIsPlayable(item as object) as boolean
     return item.IsVideoItem()
 end function
 
-function vpCreateContentMetadata(item as object) as object
+function vpCreateContentMetadata(item as object, forceTranscode=false as boolean, resumeOffset=invalid as dynamic) as object
     ' TODO(schuyler): Is this the best way to handle resuming?
-    if m.shouldResume = true then
+    if resumeOffset <> invalid then
+        m.seekValue = validint(resumeOffset)
+    else if m.shouldResume = true then
         m.seekValue = item.GetInt("viewOffset")
         m.shouldResume = false
     else
@@ -358,7 +359,7 @@ function vpCreateContentMetadata(item as object) as object
     allowDirectStream = settings.GetBoolPreference("playback_remux")
     allowTranscode = settings.GetBoolPreference("playback_transcode")
 
-    if m.forceTranscode = true then
+    if forceTranscode then
         directPlay = false
         if allowDirectStream = false and allowTranscode = false then
             Debug("Forced transcode requested: allowDirectStream and allowTranscode not enabled")
@@ -374,7 +375,7 @@ function vpCreateContentMetadata(item as object) as object
 end function
 
 function vpGetPlaybackPosition(millis=false as boolean) as integer
-    seconds = m.lastPosition
+    seconds = validint(m.lastPosition)
 
     if millis then
         return (seconds * 1000)
