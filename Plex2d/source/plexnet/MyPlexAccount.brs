@@ -191,6 +191,7 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
 
     Application().ClearInitializer("myplex")
     AppManager().ResetState()
+    Logger().UpdateSyslogHeader()
 
     if oldId <> m.id or m.switchUser = true then
         m.switchUser = invalid

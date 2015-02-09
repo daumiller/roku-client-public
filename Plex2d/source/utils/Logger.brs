@@ -26,6 +26,7 @@ function Logger()
         obj.LogToPapertrail = loggerLogToPapertrail
         obj.EnablePapertrail = loggerEnablePapertrail
         obj.Flush = loggerFlush
+        obj.UpdateSyslogHeader = loggerUpdateSyslogHeader
 
         obj.reset()
         m.Logger = obj
@@ -167,9 +168,6 @@ sub loggerLogToPapertrail(msg)
 end sub
 
 sub loggerEnablePapertrail(minutes=20)
-    ' TODO(schuyler): This should be the signed in username, or a unique ID
-    label = "Plex2DTest"
-
     ' Create the remote syslog socket
     addr = CreateObject("roSocketAddress")
     udp = CreateObject("roDatagramSocket")
@@ -184,12 +182,20 @@ sub loggerEnablePapertrail(minutes=20)
 
     m.syslogSocket = udp
     m.syslogPackets = CreateObject("roList")
-    m.syslogHeader = "<135> PlexForRoku: [" + label + "] "
+    m.UpdateSyslogHeader()
 
     m.remoteLoggingTimer = createTimer("logger")
     m.remoteLoggingTimer.SetDuration(minutes * 60 * 1000)
 
     ' TODO(schuyler): Enable papertrail logging for PMS, potentially
+end sub
+
+sub loggerUpdateSyslogHeader()
+    label = AppSettings().GetGlobal("rokuUniqueID")
+    if MyPlexAccount().title <> invalid then
+        label = MyPlexAccount().title + ":" + label
+    end if
+    m.syslogHeader = "<135> PlexForRoku: [" + label + "] "
 end sub
 
 sub loggerFlush()
