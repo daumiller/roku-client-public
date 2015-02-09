@@ -26,6 +26,7 @@ function AppSettings()
         obj.GetIntGlobal = settingsGetIntGlobal
         obj.InitGlobals = settingsInitGlobals
         obj.GetCapabilities = settingsGetCapabilities
+        obj.DumpRegistry = settingsDumpRegistry
 
         obj.GetGlobalSettings = settingsGetGlobalSettings
         obj.SupportsSurroundSound = settingsSupportsSurroundSound
@@ -310,8 +311,35 @@ sub settingsProcessLaunchArgs(args)
             else
                 m.ClearPreference(pref)
             end if
+        else if arg = "debug" and value = "1" then
+            l = Logger()
+            l.SetLevel(l.LEVEL_DEBUG)
+            l.EnablePapertrail()
+            Debug("Enabling debugger because of launch args")
+            m.DumpRegistry()
         end if
     next
+end sub
+
+sub settingsDumpRegistry()
+    Debug("---- Registry Contents ----")
+    registry = CreateObject("roRegistry")
+    sections = registry.GetSectionList()
+
+    for each sectionName in sections
+        Debug("---- Start " + sectionName + " ----")
+        section = CreateObject("roRegistrySection", sectionName)
+        keys = section.GetKeyList()
+
+        for each key in keys
+            value = section.Read(key)
+            Debug(key + ": " + tostr(value))
+        end for
+
+        Debug("---- End " + sectionName + " ----")
+    end for
+
+    Debug("---- End Registry ---------")
 end sub
 
 function settingsGetGlobal(name, defaultValue=invalid)
