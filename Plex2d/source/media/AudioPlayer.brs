@@ -86,7 +86,9 @@ function apHandleMessage(msg as object) as boolean
 
     if type(msg) = "roAudioPlayerEvent" then
         handled = true
+        forceTimeline = false
         item = m.GetCurrentItem()
+        metadata = m.GetCurrentMetadata()
 
         ' This is possible when executing AudioPlayer().Cleanup()  (switching users)
         if item = invalid then return handled
@@ -107,7 +109,8 @@ function apHandleMessage(msg as object) as boolean
             m.ignoreTimelines = false
             m.curIndex = m.AdvanceIndex()
         else if msg.isListItemSelected() then
-            Debug("Audio: Starting to play track: " + tostr(item.Url))
+            Debug("Audio: Starting to play track: " + tostr(metadata.Url))
+            forceTimeline = true
             m.ignoreTimelines = false
             m.SetPlayState(m.STATE_PLAYING)
             m.playbackOffset = 0
@@ -148,7 +151,7 @@ function apHandleMessage(msg as object) as boolean
         end if
 
         ' Whatever it was, it was probably worthy of updating now playing
-        m.UpdateNowPlaying()
+        m.UpdateNowPlaying(forceTimeline)
     end if
 
     return handled

@@ -174,7 +174,7 @@ sub nowPlayingSendTimelineToServer(item as object, state as string, time as inte
     if type(item.GetServer) <> "roFunction" or item.GetServer() = invalid then return
 
     ' only send the timeline if it's the first timeline, item changes, playstate changes or timer pops
-    itemsEqual = (item <> invalid AND m.pmsLastTimelineItem <> invalid AND item.ratingKey = m.pmsLastTimelineItem.ratingKey)
+    itemsEqual = (item <> invalid and m.pmsLastTimelineItem <> invalid and item.Get("ratingKey") = m.pmsLastTimelineItem.Get("ratingKey"))
     if itemsEqual AND state = m.pmsLastTimelineState AND NOT m.pmsTimelineTimer.IsExpired() then return
 
     m.pmsTimelineTimer.Mark()
