@@ -74,7 +74,11 @@ function voBuild(directPlay=invalid as dynamic, directStream=true as boolean) as
         ' we're going to just use MKV, then this is fine. If we're going to
         ' support both, then we can reduce some code duplication.
         '
-        if server.SupportsFeature("mkv_transcode") then
+        ' TODO(schuyler): Actually, we can't seek an MKV transcode until we
+        ' have full control over the seekbar and controls. So for now, we'll
+        ' stick to HLS.
+        '
+        if server.SupportsFeature("mkv_transcode") and false then
             obj = m.BuildTranscodeMkv(obj, partIndex, directStream)
         else
             obj = m.BuildTranscodeHls(obj, partIndex, directStream)
