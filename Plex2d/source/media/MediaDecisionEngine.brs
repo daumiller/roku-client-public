@@ -378,8 +378,12 @@ function mdeEvaluateMediaMusic(item as object, media as object) as object
     ' part/streams.
 
     codec = media.Get("audioCodec", "invalid")
+    container = media.Get("container", "invalid")
 
-    if settings.GetBoolPreference("directplay_" + codec) then
+    canPlayCodec = settings.GetBoolPreference("directplay_" + codec)
+    canPlayContainer = ((codec = container) or (container = "mp4" or container = "mka" or container = "mkv"))
+
+    if canPlayCodec and canPlayContainer then
         choice.isDirectPlayable = true
         choice.score = choice.score + 2000
     else
