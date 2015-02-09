@@ -385,7 +385,7 @@ sub settingsInitGlobals()
     end if
 
     ' Minimum server version required
-    m.globals["minServerVersionStr"] = "0.9.11.7"
+    m.globals["minServerVersionStr"] = "0.9.11.1"
     m.globals["minServerVersionArr"] = ParseVersion(m.globals["minServerVersionStr"])
 end sub
 
