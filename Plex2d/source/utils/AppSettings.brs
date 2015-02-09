@@ -32,10 +32,10 @@ function AppSettings()
         obj.GetMaxResolution = settingsGetMaxResolution
 
         obj.reset()
+        obj.InitPrefs()
         m.AppSettings = obj
 
         obj.InitGlobals()
-        obj.InitPrefs()
     end if
 
     return m.AppSettings
