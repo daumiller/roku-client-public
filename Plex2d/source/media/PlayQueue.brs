@@ -50,7 +50,7 @@ function createPlayQueue(server as object, contentType as string, uri as string,
 end function
 
 function createPlayQueueForItem(item as object, options={} as object) as object
-    if item.IsMusicItem() then
+    if item.IsMusicOrDirectoryItem() then
         contentType = "audio"
     else if item.IsVideoOrDirectoryItem() then
         contentType = "video"
@@ -62,7 +62,7 @@ function createPlayQueueForItem(item as object, options={} as object) as object
         Fatal("Don't know how to create play queue for item")
     end if
 
-    if options["key"] = invalid then options["key"] = item.Get("key")
+    if options["key"] = invalid and not item.IsDirectory() then options["key"] = item.Get("key")
 
     return createPlayQueue(item.GetServer(), contentType, item.GetItemUri(), options)
 end function

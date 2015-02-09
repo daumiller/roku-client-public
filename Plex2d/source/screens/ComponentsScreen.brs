@@ -496,6 +496,23 @@ function compHandleCommand(command as string, item as dynamic) as boolean
         end if
     else if command = "now_playing" then
         Application().PushScreen(createNowPlayingScreen(AudioPlayer().GetCurrentItem()))
+    else if command = "play" or command = "shuffle" then
+        plexItem = firstOf(item.plexObject, m.item)
+
+        if plexItem <> invalid then
+            options = {}
+
+            if command = "shuffle" then
+                options["shuffle"] = "1"
+            end if
+
+            pq = createPlayQueueForItem(plexItem, options)
+            player = GetPlayerForType(pq.type)
+
+            if player <> invalid then
+                player.SetPlayQueue(pq, true)
+            end if
+        end if
     else
         handled = false
     end if

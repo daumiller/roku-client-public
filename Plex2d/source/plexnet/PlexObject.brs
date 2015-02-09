@@ -27,6 +27,7 @@ function PlexObjectClass() as object
         obj.IsMusicItem = pnoIsMusicItem
         obj.IsPhotoItem = pnoIsPhotoItem
         obj.IsVideoOrDirectoryItem = pnoIsVideoOrDirectoryItem
+        obj.IsMusicOrDirectoryItem = pnoIsMusicOrDirectoryItem
         obj.IsPhotoOrDirectoryItem = pnoIsPhotoOrDirectoryItem
         obj.IsDirectory = pnoIsDirectory
         obj.IsLibrarySection = pnoIsLibrarySection
@@ -145,6 +146,10 @@ end function
 
 function pnoIsVideoOrDirectoryItem() as boolean
     return (m.IsVideoItem() or m.type = "season" or m.type = "show")
+end function
+
+function pnoIsMusicOrDirectoryItem() as boolean
+    return (m.IsMusicItem() or m.type = "artist")
 end function
 
 function pnoIsPhotoOrDirectoryItem() as boolean
@@ -376,6 +381,8 @@ function pnoGetItemUri() as string
     else if m.type = "photoalbum" then
         path = m.container.address
         path = path + "?type=13&parent=" + UrlEscape(m.Get("ratingKey", ""))
+    else if m.IsDirectory() then
+        path = m.GetItemPath()
     else
         path = m.GetAbsolutePath("key")
     end if

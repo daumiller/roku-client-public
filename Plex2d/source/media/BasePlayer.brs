@@ -145,6 +145,10 @@ function bpAdvanceIndex(delta=1 as integer, updatePlayQueue=true as boolean) as 
 end function
 
 sub bpSetPlayQueue(playQueue as object, startPlayer=true as boolean)
+    ' TODO(schuyler): startPlayer is never false. If it ever is, then
+    ' we probably need to reconsider how playback is started in
+    ' OnPlayQueueUpdate.
+
     if startPlayer then
         m.ignoreTimelines = true
         m.Stop()
@@ -234,6 +238,7 @@ sub bpOnPlayQueueUpdate(playQueue as object)
 
     if m.context.Count() > 0 and oldSize = 0 then
         m.Play()
+        m.Trigger("playbackStarted", [m, m.GetCurrentItem()])
     end if
 end sub
 
@@ -349,3 +354,15 @@ end sub
 sub bpOnRevButton()
     ' no-op
 end sub
+
+function GetPlayerForType(mediaType as dynamic) as dynamic
+    if mediaType = "music" or mediaType = "audio" then
+        return AudioPlayer()
+    else if mediaType = "photo" then
+        ' return PhotoPlayer()
+    else if mediaType = "video" then
+        return VideoPlayer()
+    end if
+
+    return invalid
+end function

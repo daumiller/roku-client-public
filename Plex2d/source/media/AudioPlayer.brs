@@ -34,9 +34,13 @@ function AudioPlayer() as object
         obj.playbackOffset = 0
         obj.playbackTimer = createTimer("playback")
 
+        obj.OnPlaybackStarted = apOnPlaybackStarted
+
         ' TODO(schuyler): Add support for theme music
 
         obj.Init()
+
+        obj.On("playbackStarted", createCallable("OnPlaybackStarted", obj))
 
         m.AudioPlayer = obj
     end if
@@ -211,4 +215,9 @@ sub apOnRevButton()
     if m.isPlaying then
         m.Seek(-10000, true)
     end if
+end sub
+
+sub apOnPlaybackStarted(player as object, item as object)
+    ' If we're starting playback fresh, show the now playing screen.
+    Application().PushScreen(createNowPlayingScreen(item))
 end sub

@@ -376,7 +376,6 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
 
             pq = createPlayQueueForItem(plexItem, options)
             m.player.SetPlayQueue(pq, true)
-            Application().PushScreen(createNowPlayingScreen(plexItem))
         end if
     else if command = "summary" then
         m.summaryVisible = not m.summaryVisible = true

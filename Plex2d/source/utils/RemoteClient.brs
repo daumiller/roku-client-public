@@ -594,15 +594,3 @@ end sub
 sub SendEcpCommand(command as string)
     Application().StartRequestIgnoringResponse("http://127.0.0.1:8060/keypress/" + command, "", "txt")
 end sub
-
-function GetPlayerForType(mediaType as dynamic) as dynamic
-    if mediaType = "music" then
-        return AudioPlayer()
-    else if mediaType = "photo" then
-        ' return PhotoPlayer()
-    else if mediaType = "video" then
-        return VideoPlayer()
-    end if
-
-    return invalid
-end function
