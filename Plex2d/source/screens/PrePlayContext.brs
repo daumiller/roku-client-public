@@ -250,12 +250,12 @@ function ppcGetButtons() as object
     end if
 
     ' TODO(rob): scrobble entire container - with warning?
-
+    buttonHeight = 50
     for each button in buttons
         btn = createButton(button.text, m.customFonts.glyphs, button.command)
         btn.SetColor(Colors().Text, Colors().Button)
         btn.width = 100
-        btn.height = 50
+        btn.height = buttonHeight
         btn.plexObject = button.item
         if m.focusedItem = invalid then m.focusedItem = btn
         components.push(btn)
@@ -263,18 +263,18 @@ function ppcGetButtons() as object
 
     optionPrefs = {
         halign: "JUSTIFY_LEFT",
-        height: 50,
+        height: buttonHeight
         padding: { right: 10, left: 10, top: 0, bottom: 0 }
         font: FontRegistry().font16,
     }
 
     ' extras drop down
     if m.item.extraItems <> invalid and m.item.extraItems.count() > 0 then
-        btn = createDropDown(Glyphs().EXTRAS, m.customFonts.glyphs, int(720 * .80), m)
+        btn = createDropDown(Glyphs().EXTRAS, m.customFonts.glyphs, buttonHeight * 5, m)
         btn.SetDropDownPosition("right")
         btn.SetColor(Colors().Text, Colors().Button)
         btn.width = 100
-        btn.height = 47
+        btn.height = buttonHeight
         if m.focusedItem = invalid then m.focusedItem = btn
         for each item in m.item.extraItems
             option = {
@@ -290,11 +290,11 @@ function ppcGetButtons() as object
 
     ' more/pivots drop down
     if m.item.relatedItems <> invalid and m.item.relatedItems.count() > 0 then
-        btn = createDropDown(Glyphs().MORE, m.customFonts.glyphs, int(720 * .80), m)
+        btn = createDropDown(Glyphs().MORE, m.customFonts.glyphs, buttonHeight * 5, m)
         btn.SetDropDownPosition("right")
         btn.SetColor(Colors().Text, Colors().Button)
         btn.width = 100
-        btn.height = 47
+        btn.height = buttonHeight
         if m.focusedItem = invalid then m.focusedItem = btn
         for each item in m.item.relatedItems
             option = {
