@@ -1048,64 +1048,24 @@ sub compCreatePlayerForItem(plexObject=invalid as dynamic)
     if type(plexObject) <> "roAssociativeArray" or type(plexObject.isLibraryItem) <> "roFunction" then return
 
     if plexObject.isLibraryItem() then
-        m.OnCreatePlayerResponse = compOnCreatePlayerResponse
+        ' TODO(schuyler): Figure out when to set continuous=1
+        options = {}
 
-        ' include an onDeck request for directories
-        path = plexObject.GetItemPath()
-        if plexObject.isDirectory() then
-            path = firstOf(plexObject.Get("grandParentKey"), plexObject.Get("parentKey"), path)
-            path = path + iif(instr(1, path, "?") = 0, "?", "&") + "includeOnDeck=1"
-        end if
+        pq = createPlayQueueForItem(plexObject, options)
+        player = GetPlayerForType(pq.type)
 
-        Application().ShowLoadingModal(m)
-        request = createPlexRequest(plexObject.GetServer(), path)
-        context = request.CreateRequestContext("metadata", CreateCallable("OnCreatePlayerResponse", m))
-        context.key = plexObject.Get("key")
-        Application().StartRequest(request, context)
-    end if
-end sub
+        if player <> invalid then
+            ' If this is a video item with a resume point, ask if we should resume
+            if plexObject.IsVideoItem() and plexObject.GetInt("viewOffset") > 0 then
+                dialog = createDialog(plexObject.GetLongerTitle(), invalid, m)
+                dialog.AddButton("Resume from " + plexObject.GetViewOffset(), true)
+                dialog.AddButton("Play from beginning", false)
+                dialog.Show(true)
+                if dialog.result = invalid then return
+                player.shouldResume = dialog.result
+            end if
 
-sub compOnCreatePlayerResponse(request as object, response as object, context as object)
-    response.ParseResponse()
-    children = response.items
-    item = invalid
-
-    for i = 0 to children.Count() - 1
-        if context.key = children[i].Get("key") then
-            item = children[i]
-            exit for
-        end if
-    end for
-    if item = invalid and children.Count() = 1 then item = children[0]
-
-    Application().CloseLoadingModal()
-    if item = invalid then return
-
-    ' use the onDeck item from a container (show -> next episode)
-    if item.onDeck <> invalid and item.onDeck[0] <> invalid then item = item.onDeck[0]
-
-    if item.isLibraryItem() then
-        ' Resume Dialog (blocking): can this be gerneric as is? we may need to
-        ' ignore resume for other content types.
-        if item.GetInt("viewOffset") > 0 then
-            dialog = createDialog(item.GetLongerTitle(), invalid, m)
-            dialog.AddButton("Resume from " + item.GetViewOffset(), true)
-            dialog.AddButton("Play from beginning", false)
-            dialog.Show(true)
-            if dialog.result = invalid then return
-            resume = dialog.result
-        else
-            resume = false
-        end if
-
-        ' handle creating and starting the player
-        if item.IsVideoItem() then
-            player = VideoPlayer()
-            pq = createPlayQueueForItem(item)
-            player.shouldResume = resume
             player.SetPlayQueue(pq, true)
-        else
-            Debug("Cannot create player: not sure what to do with " + item.ToString())
         end if
     end if
 end sub
