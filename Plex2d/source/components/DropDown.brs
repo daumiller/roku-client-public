@@ -88,6 +88,7 @@ end sub
 sub dropdownGetComponents()
     vbox = createVBox(false, false, false, 0)
     vbox.SetScrollable(m.maxHeight)
+    vbox.stopShiftIfInView = true
 
     for each option in m.GetOptions()
         if option.component <> invalid then
@@ -199,5 +200,11 @@ sub dropdownCalculatePosition(vbox as object)
     if ddProp.x + ddProp.width > 1230 then
         ddProp.x = 1230 - ddProp.width
     end if
+
+    ' verify the yOffset+height is not off the screen (safe area)
+    if ddProp.y + ddProp.height > 670 then
+        ddProp.height = 670 - ddProp.y
+    end if
+
     vbox.SetFrame(ddProp.x, ddProp.y, ddProp.width, ddProp.height)
 end sub

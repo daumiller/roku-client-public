@@ -47,6 +47,7 @@ sub sddGetComponents()
 
     vbox = createVBox(false, false, false, 0)
     vbox.SetScrollable(m.maxHeight)
+    vbox.stopShiftIfInView = true
 
     ' server containers for ordering. This may be better handles inside of
     ' `PlexServerManager().GetServers()`

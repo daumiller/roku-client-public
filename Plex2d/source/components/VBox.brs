@@ -45,7 +45,6 @@ sub vboxPerformLayout()
     ' Strange, but let's not even bother with the complicated stuff if we don't need to.
     if numChildren = 0 then return
 
-    m.scrollHeight = m.height + m.y
     if m.scrollTriggerHeight <> invalid then
         m.scrollTriggerDown = m.scrollTriggerHeight + m.y
     end if
@@ -150,8 +149,7 @@ sub vboxPerformLayout()
 
         ' add a scrollbar
         if m.scrollbarPos <> invalid and m.containerHeight > m.contentHeight then
-            contentHeight = iif(m.stopShiftIfInView = true, m.scrollHeight, m.contentHeight)
-            m.scrollbar = createScrollbar(offsets[0], contentHeight, m.containerHeight, m.scrollInfo.zOrder, m.scrollInfo.offsetContainer)
+            m.scrollbar = createScrollbar(offsets[0], m.contentHeight, m.containerHeight, m.scrollInfo.zOrder, m.scrollInfo.offsetContainer)
             if m.scrollbar <> invalid
                 width = int(CompositorScreen().focusPixels * 1.5)
                 spacing = iif(m.scrollInfo.focusInside = true, CompositorScreen().focusPixels, CompositorScreen().focusPixels*2)
@@ -198,7 +196,7 @@ sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic)
         x: 0
         y: 0
         hideUp: m.y
-        hideDown: m.scrollHeight
+        hideDown: m.contentHeight
         triggerDown: m.scrollTriggerDown
         shiftAmount: toFocus.height + m.spacing
     }
@@ -300,7 +298,7 @@ sub vboxSetVisible(visible=true as boolean)
     else if m.scrollVisible = true then
         ApplyFunc(BoxClass().SetVisible, m, [true])
     else
-        hide = {up: m.y, down: m.scrollHeight}
+        hide = {up: m.y, down: m.contentHeight}
 
         ' set the visibility based on the constraints
         for each comp in m.components
