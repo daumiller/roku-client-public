@@ -2,7 +2,6 @@ function PlexHubClass() as object
     if m.PlexHubClass = invalid then
         obj = CreateObject("roAssociativeArray")
         obj.Append(PlexObjectClass())
-        obj.Append(PlexContainerMixin())
         obj.ClassName = "PlexHub"
 
         obj.ToString = pnhToString
@@ -32,14 +31,15 @@ function createPlexHub(container as object, xml as object) as object
     obj.Append(PlexHubClass())
 
     obj.Init(container, xml)
-    obj.SetAddress(container.server, obj.Get("key", container.address))
 
     obj.items = CreateObject("roList")
 
     children = xml.GetChildElements()
     if children <> invalid then
-        for each elem in xml.GetChildElements()
-            obj.items.Push(createPlexItem(obj, elem))
+        syntheticContainer = createPlexHubContainer(container, obj)
+
+        for each elem in children
+            obj.items.Push(createPlexItem(syntheticContainer, elem))
         next
     end if
 
