@@ -85,7 +85,11 @@ sub preplayOnResponse(request as object, response as object, context as object)
 end sub
 
 sub preplayOnPlayButton(focusedItem=invalid as dynamic)
-    m.CreatePlayerForItem(m.item)
+    if focusedItem <> invalid and focusedItem.plexObject <> invalid then
+        m.CreatePlayerForItem(focusedItem.plexObject)
+    else
+        m.CreatePlayerForItem(m.item)
+    end if
 end sub
 
 function preplayHandleCommand(command as string, item as dynamic) as boolean
