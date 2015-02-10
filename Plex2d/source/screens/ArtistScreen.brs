@@ -109,8 +109,9 @@ sub artistGetComponents()
     xOffset = 50
     parentSpacing = 30
     parentHeight = 434
+    parentWidth = parentHeight
     childSpacing = 10
-    demandLeft = xOffset + parentSpacing + parentHeight
+    demandLeft = xOffset + parentSpacing + parentWidth
 
     ' *** Buttons *** '
     vbButtons = createVBox(false, false, false, childSpacing)
@@ -122,19 +123,21 @@ sub artistGetComponents()
     m.components.Push(vbButtons)
     xOffset = xOffset + parentSpacing + vbButtons.width
 
-    ' *** Artist title and image ***
+    ' *** Artist title ***
     artistTitle = createLabel(ucase(m.item.GetLongerTitle()), FontRegistry().Font16)
     artistTitle.fixed = false
     artistHeight = artistTitle.font.GetOneLineHeight()
-    artistTitle.SetFrame(xOffset, yOffset - childSpacing - artistHeight, artistTitle.GetPreferredWidth(), artistHeight)
-    artist = createImage(m.item, parentHeight, parentHeight)
+    artistTitle.SetFrame(xOffset, yOffset - childSpacing - artistHeight, parentWidth, artistHeight)
+
+    ' *** Artist image ***
+    artist = createImage(m.item, parentWidth, parentHeight)
     artist.fixed = false
-    artist.SetFrame(xOffset, yOffset, parentHeight, parentHeight)
+    artist.SetFrame(xOffset, yOffset, parentWidth, parentHeight)
     m.components.push(artistTitle)
     m.components.push(artist)
 
     ' *** Biography: title and summary *** '
-    xOffset = xOffset + parentSpacing + parentHeight
+    xOffset = xOffset + parentSpacing + parentWidth
     width = 1230 - xOffset
 
     m.summaryTitle = createLabel("BIOGRAPHY", FontRegistry().Font16)

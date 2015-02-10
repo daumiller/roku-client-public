@@ -137,10 +137,11 @@ sub albumGetComponents()
     header = createHeader(m)
     m.components.Push(header)
 
-    yOffset = 125
+    yOffset = 140
     xOffset = 50
     parentSpacing = 30
     parentHeight = 434
+    parentWidth = parentHeight
     childSpacing = 10
 
     ' *** Buttons *** '
@@ -153,19 +154,26 @@ sub albumGetComponents()
     m.components.Push(vbButtons)
     xOffset = xOffset + parentSpacing + vbButtons.width
 
-    ' *** album title and image ***
-    albumTitle = createLabel(ucase(m.item.GetLongerTitle(" / ")), FontRegistry().Font16)
-    albumHeight = albumTitle.font.GetOneLineHeight()
-    albumTitle.SetFrame(xOffset, yOffset - childSpacing - albumHeight, albumTitle.GetPreferredWidth(), albumHeight)
+    ' *** Artist title ***
+    lineHeight = FontRegistry().Font16.GetOneLineHeight()
+    artistTitle = createLabel(ucase(m.item.Get("parentTitle")), FontRegistry().Font16)
+    artistTitle.SetFrame(xOffset, yOffset - childSpacing - (lineHeight*2), parentWidth, lineHeight)
+    m.components.push(artistTitle)
+
+    ' *** Album title ***
+    albumTitle = createLabel(ucase(m.item.Get("title")), FontRegistry().Font16)
+    albumTitle.SetFrame(xOffset, yOffset - childSpacing - lineHeight, parentWidth, lineHeight)
+    albumTitle.SetColor(Colors().TextDim)
     m.components.push(albumTitle)
 
-    album = createImage(m.item, parentHeight, parentHeight)
+    ' *** Album image ***
+    album = createImage(m.item, parentWidth, parentHeight)
     album.thumbAttr = ["thumb", "art", "parentThumb"]
-    album.SetFrame(xOffset, yOffset, parentHeight, parentHeight)
+    album.SetFrame(xOffset, yOffset, parentWidth, parentHeight)
     m.components.push(album)
 
     ' xOffset share with Summary and Track list
-    xOffset = xOffset + parentSpacing + parentHeight
+    xOffset = xOffset + parentSpacing + parentWidth
     width = 1230 - xOffset
 
     ' *** REVIEW: title and summary *** '
