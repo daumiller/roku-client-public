@@ -350,9 +350,6 @@ sub nowplayingUpdateTracks(item as object)
     nextTrack = m.GetNextTrack()
     m.SetTitle(firstOf(nextTrack.grandparentTitle, ""), m.nextGrandparentTitle)
     m.SetTitle(firstOf(nextTrack.title, ""), m.nextTitle)
-
-    m.SetImage(item, m.image)
-    m.SetImage(item, m.background)
 end sub
 
 sub nowplayingSetTitle(text as string, component as object)
@@ -381,14 +378,15 @@ function nowplayingSetProgress(time as integer, duration as integer) as boolean
 end function
 
 sub nowplayingOnPlay(player as object, item as object)
-'    ' TODO(rob): remote location is only needed since we do not close
-'    ' the screen on a stop.
-'    NowPlayingManager().location = "fullScreenMusic"
+    m.SetImage(item, m.image)
+    m.SetImage(item, m.background)
+
     m.OnRepeat(player, item, player.repeat)
     m.OnShuffle(player, item, player.isShuffled)
     m.SetProgress(0, item.GetInt("duration"))
     m.SetTitle(Glyphs().PAUSE, m.playButton)
     m.UpdateTracks(item)
+
     m.Refresh()
 end sub
 
