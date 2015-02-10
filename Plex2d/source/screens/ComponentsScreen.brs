@@ -1048,8 +1048,13 @@ sub compCreatePlayerForItem(plexObject=invalid as dynamic)
     if type(plexObject) <> "roAssociativeArray" or type(plexObject.isLibraryItem) <> "roFunction" then return
 
     if plexObject.isLibraryItem() then
-        ' TODO(schuyler): Figure out when to set continuous=1
         options = {}
+
+        ' See if we're playing from a continuous hub/container, but only use
+        ' continuous play if the item itself is an episode.
+        if plexObject.container.IsContinuous() and plexObject.type = "episode" then
+            options["continuous"] = "1"
+        end if
 
         pq = createPlayQueueForItem(plexObject, options)
         player = GetPlayerForType(pq.type)
