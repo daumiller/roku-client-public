@@ -267,7 +267,7 @@ function KeyCodeToString(keyCode as integer) as string
         return "fwd"
     else if keyCode = 10 then
         return "info"
-    else if keyCode = 11 then
+    else if keyCode = 13 then
         return "play"
     else
         return ""
