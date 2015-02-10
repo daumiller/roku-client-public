@@ -192,7 +192,7 @@ function vboxGetPreferredHeight() as integer
 end function
 
 sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic)
-    if toFocus.fixed = true then return
+    if toFocus.fixed = true or m.scrolltriggerdown >= m.containerHeight then return
 
     shift = {
         x: 0
@@ -282,9 +282,9 @@ sub vboxShiftComponents(shift)
     m.SetVisible()
 end sub
 
-sub vboxSetScrollable(scrollTriggerDown=invalid as dynamic, scrollAnimate=false as boolean, scrollVisible=false as boolean, scrollbarPos="right" as dynamic)
+sub vboxSetScrollable(scrollTriggerHeight=invalid as dynamic, scrollAnimate=false as boolean, scrollVisible=false as boolean, scrollbarPos="right" as dynamic)
     m.isVScrollable = true
-    m.scrollTriggerHeight = firstOf(scrollTriggerDown, m.height)
+    m.scrollTriggerHeight = firstOf(scrollTriggerHeight, m.height)
     m.scrollAnimate = scrollAnimate
     m.scrollVisible = scrollVisible
     m.scrollbarPos = scrollbarPos
