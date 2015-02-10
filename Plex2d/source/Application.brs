@@ -236,7 +236,16 @@ function appProcessOneMessage(timeout as integer) as integer
         ' Socket events are chatty (every 5 seconds per PMS) and URL events
         ' almost always log immediately, so this is just noise.
         '
-        if type(msg) <> "roSocketEvent" and type(msg) <> "roUrlEvent" and type(msg) <> "roTextureRequestEvent" and type(msg) <> "roUniversalControlEvent" then
+        ' Process any audio event immediately
+        if type(msg) = "roUniversalControlEvent" then
+            keyCode = msg.GetInt()
+            if (keyCode = m.kp_BK or keyCode - 100 = m.kp_BK) and Locks().IsLocked("BackButton") then
+                ' TODO(rob): AudioEvent?
+                Debug(KeyCodeToString(keyCode) + " is disabled")
+                return timeout
+            end if
+            AudioEvents().OnKeyPress(keyCode)
+        else if type(msg) <> "roSocketEvent" and type(msg) <> "roUrlEvent" and type(msg) <> "roTextureRequestEvent" then
             Debug("Processing " + type(msg))
         end if
 

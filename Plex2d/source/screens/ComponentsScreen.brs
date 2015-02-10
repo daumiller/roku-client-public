@@ -284,12 +284,6 @@ function compHandleMessage(msg as object) as boolean
         handled = true
         keyCode = msg.GetInt()
 
-        ' TODO(schuyler): Lock remote events? (moved todo in case we want to lock other buttons? -rob)
-        if (keyCode = m.kp_BK or keyCode - 100 = m.kp_BK) and Locks().IsLocked("BackButton") then
-            Info(KeyCodeToString(keyCode) + " is disabled")
-            return handled
-        end if
-
         ' We can always cancel our timer for held keys. Either this is
         ' a release event for that key and it's the perfect time to
         ' cancel the timer, or it's a press event for some other key.
