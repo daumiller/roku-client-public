@@ -1,16 +1,20 @@
 ' shifting animation used by Components screen, Grid screen, and VBox scrollable
 sub AnimateShift(shift as object, components as object, screen as object)
-    ' calculate the desired FPS ( use totalShift if the calulation fps > total )
-    minFps = 10
-    maxFps = 15
+    if appSettings().GetGlobal("animationSupport") = false then
+        fps = 1
+    else
+        ' calculate the desired FPS ( use totalShift if the calulation fps > total )
+        minFps = 10
+        maxFps = 15
 
-    totalShift = iif(abs(shift.x) > abs(shift.y), abs(shift.x), abs(shift.y))
-    fps = iif(totalShift / maxFps < minFps, minFps, maxFps)
-    if totalShift < fps then fps = totalShift
+        totalShift = iif(abs(shift.x) > abs(shift.y), abs(shift.x), abs(shift.y))
+        fps = iif(totalShift / maxFps < minFps, minFps, maxFps)
+        if totalShift < fps then fps = totalShift
 
-    ' just a quick hack for slower roku's
-    if appSettings().GetGlobal("animationFull") = false then fps = int(fps / 1.5)
-    if fps = 0 then fps = 1
+        ' just a quick hack for slower roku's
+        if appSettings().GetGlobal("animationFull") = false then fps = int(fps / 1.5)
+        if fps = 0 then fps = 1
+    end if
 
     Debug("total shift=" + tostr(totalShift) + " @ " + tostr(fps) + " fps")
 
