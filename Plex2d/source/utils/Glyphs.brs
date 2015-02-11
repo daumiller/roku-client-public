@@ -9,6 +9,7 @@ function Glyphs() as object
         obj.ELLIPSIS    = chr(&he188)
 
         obj.PLAY        = chr(&he174)
+        obj.PLAY_MORE   = chr(&he170)
         obj.PAUSE       = chr(&he175)
         obj.RESUME      = chr(&he17e)
         obj.STEP_FWD    = chr(&he179)
