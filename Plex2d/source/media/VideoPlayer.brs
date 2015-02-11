@@ -23,6 +23,7 @@ function VideoPlayer() as object
         obj.HandleMessage = vpHandleMessage
         obj.Init = vpInit
         obj.Cleanup = vpCleanup
+        obj.ClearMemory = vpClearMemory
 
         ' Required player methods
         obj.Stop = vpStop
@@ -147,7 +148,12 @@ sub vpShow()
         m.playbackTimer.Mark()
         m.bufferingTimer.Mark()
         AudioPlayer().Stop()
+
+        ' Workaround to clear memory before playback for Roku 2 XS, Roku HD(2500)
+        ' and other models possibly affected by this bug.
+        m.ClearMemory()
         m.screen.Show()
+
         NowPlayingManager().location = "fullScreenVideo"
         m.UpdateNowPlaying()
         m.Trigger("playing", [m, m.GetCurrentItem()])
@@ -441,4 +447,27 @@ sub vpOnTranscodeInfoResponse(request as object, response as object, context as 
             m.Screen.SetContent(videoItem)
         end if
     end if
+end sub
+
+sub vpClearMemory()
+    ' This seems to work better than creating an roGridScreen, as it doesn't cause any
+    ' screen flashing. If we need to go the roGridScreen route, then we'll probably
+    ' want to set the roAppManager bkg to black, to match the video loading screen.
+    m.facade = CreateObject("roScreen", false)
+
+    ' Just to be safe.
+    Application().CloseLoadingModal()
+
+    ' Deactivate all screens (clear 2d components)
+    for each deactScreen in Application().screens
+        deactScreen.Deactivate()
+    end for
+
+    ' roScreen and compositor must die
+    CompositorScreen().Destroy()
+
+    ' This doesn't seem needed for all platforms, but the Roku HD (2500) will randomly
+    ' fail without this. I can't even start to describe what you'll see on the screen
+    ' when it fails.
+    GetGlobalAA().delete("texturemanager")
 end sub

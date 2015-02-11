@@ -582,17 +582,10 @@ end sub
 
 function appCheckExclusions() as boolean
     ' basics we'll be verifying
-    modelCode = ucase(AppSettings().GetGlobal("roDeviceInfo").GetModel())
-    modelName = ucase(AppSettings().GetGlobal("rokumodel"))
     resolution = not AppSettings().GetGlobal("IsHD")
     firmware = not CheckMinimumVersion([5, 6])
 
-    excluded = false
-    if modelName = "ROKU 2 XS" or modelCode = "3100X" then
-        excluded = true
-        title =  AppSettings().GetGlobal("rokumodel") + " is not supported."
-        message = "We're sorry, this application is currently not supported on this Roku model."
-    else if resolution then
+    if resolution then
         excluded = true
         title =  "SD resolution is not supported."
         message = "We're sorry, this application is currently not supported on SD screens."
@@ -600,6 +593,8 @@ function appCheckExclusions() as boolean
         excluded = true
         title =  "Roku firmware version (" + appsettings().GetGlobal("rokuVersionStr") + ") is not supported."
         message = "We're sorry, this application is currently not supported on firmware versions less than 5.6."
+    else
+        excluded = false
     end if
 
     if excluded = true then

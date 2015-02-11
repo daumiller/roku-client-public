@@ -2,6 +2,7 @@ function CompositorScreen() as object
     if m.CompositorScreen = invalid then
         obj = CreateObject("roAssociativeArray")
 
+        obj.CreateRoScreen = compositorCreateRoScreen
         obj.Reset = compositorReset
         obj.DrawAll = compositorDrawAll
         obj.DrawComponent = compositorDrawComponent
@@ -18,9 +19,7 @@ function CompositorScreen() as object
         obj.OnComponentRedraw = compositorOnComponentRedraw
 
         ' Set up an roScreen one time, with double buffering and alpha enabled
-        obj.screen = CreateObject("roScreen", true)
-        obj.screen.SetAlphaEnable(true)
-        obj.screen.SetPort(Application().port)
+        obj.CreateRoScreen()
 
         ' Set up the compositor to draw to the screen
         obj.compositor = CreateObject("roCompositor")
@@ -32,11 +31,23 @@ function CompositorScreen() as object
         m.CompositorScreen = obj
     end if
 
+    ' Recreate the roScreen and compositor if invalid (we may destroy them for specific reasons)
+    if m.CompositorScreen.screen = invalid or m.CompositorScreen.compositor = invalid then
+        m.CompositorScreen.Reset()
+    end if
+
     return m.CompositorScreen
 end function
 
+sub compositorCreateRoScreen()
+    m.screen = CreateObject("roScreen", true)
+    m.screen.SetAlphaEnable(true)
+    m.screen.SetPort(Application().port)
+end sub
+
 ' we really shouldn't have to every call this if we destroy sprites correctly
 sub compositorReset()
+    if m.screen = invalid then m.CreateRoScreen()
     m.compositor = CreateObject("roCompositor")
     m.compositor.SetDrawTo(m.screen, Colors().Background)
 
@@ -79,6 +90,7 @@ sub compositorOnComponentRedraw(component as object)
 end sub
 
 sub compositorDestroy()
+    m.HideFocus(true)
     m.screen = invalid
     m.compositor = invalid
     GetGlobalAA().Delete("CompositorScreen")
