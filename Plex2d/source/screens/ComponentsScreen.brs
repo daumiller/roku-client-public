@@ -500,11 +500,8 @@ function compHandleCommand(command as string, item as dynamic) as boolean
         plexItem = firstOf(item.plexObject, m.item)
 
         if plexItem <> invalid then
-            options = {}
-
-            if command = "shuffle" then
-                options["shuffle"] = "1"
-            end if
+            options = createPlayOptions()
+            options.shuffle = (command = "shuffle")
 
             pq = createPlayQueueForItem(plexItem, options)
             player = GetPlayerForType(pq.type)
@@ -1048,12 +1045,12 @@ sub compCreatePlayerForItem(plexObject=invalid as dynamic)
     if type(plexObject) <> "roAssociativeArray" or type(plexObject.isLibraryItem) <> "roFunction" then return
 
     if plexObject.isLibraryItem() then
-        options = {}
+        options = createPlayOptions()
 
         ' See if we're playing from a continuous hub/container, but only use
         ' continuous play if the item itself is an episode.
         if plexObject.container.IsContinuous() and plexObject.type = "episode" then
-            options["continuous"] = "1"
+            options.continuous = true
         end if
 
         pq = createPlayQueueForItem(plexObject, options)

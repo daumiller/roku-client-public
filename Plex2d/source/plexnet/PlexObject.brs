@@ -56,6 +56,7 @@ function PlexObjectClass() as object
         obj.IsUnwatched = pnoIsUnwatched
         obj.InProgress = pnoInProgress
         obj.GetIdentifier = pnoGetIdentifier
+        obj.GetLibrarySectionId = pnoGetLibrarySectionId
         obj.GetLibrarySectionUuid = pnoGetLibrarySectionUuid
         obj.GetItemUri = pnoGetItemUri
 
@@ -346,6 +347,16 @@ function pnoGetIdentifier() as dynamic
     return identifier
 end function
 
+function pnoGetLibrarySectionId() as string
+    id = m.Get("librarySectionID")
+
+    if id = invalid then
+        id = m.container.Get("librarySectionID", "")
+    end if
+
+    return id
+end function
+
 function pnoGetLibrarySectionUuid() as string
     uuid = m.GetFirst(["uuid", "librarySectionUUID"]) 
 
@@ -356,7 +367,7 @@ function pnoGetLibrarySectionUuid() as string
     return uuid
 end function
 
-function pnoGetItemUri() as string
+function pnoGetItemUri(options as object) as string
     ' The item's URI is made up of the library section UUID, a descriptor of
     ' the item type (item or directory), and the item's path, URL-encoded.
 
@@ -371,8 +382,15 @@ function pnoGetItemUri() as string
         itemType = "item"
     end if
 
+    ' If we're asked to play unwatched, ignore the option unless we are unwatched.
+    options.unwatched = (options.unwatched = true) and m.IsUnwatched()
+
     if m.type = "track" then
         path = m.Get("parentKey", "") + "/children"
+    else if m.type = "season" and options.unwatched = true then
+        path = "/library/sections/" + m.GetLibrarySectionId() + "/all?show.id=" + m.Get("parentRatingKey", "") + "&type=4&unwatched=1&season.id=" + m.Get("ratingKey", "")
+    else if m.type = "show" and options.unwatched = true then
+        path = "/library/sections/" + m.GetLibrarySectionId() + "/all?show.id=" + m.Get("ratingKey", "") + "&type=4&unwatched=1"
     else if m.IsLibrarySection() then
         path = m.GetAbsolutePath("key") + "/all"
     else if m.type = "photo" then

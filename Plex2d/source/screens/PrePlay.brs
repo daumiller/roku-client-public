@@ -98,7 +98,8 @@ function preplayHandleCommand(command as string, item as dynamic) as boolean
     if command = "play" or command = "resume" then
         Application().ShowLoadingModal(m)
         player = VideoPlayer()
-        pq = createPlayQueueForItem(item.plexObject)
+        options = createPlayOptions()
+        pq = createPlayQueueForItem(item.plexObject, options)
         player.shouldResume = (command = "resume")
         player.SetPlayQueue(pq, true)
         Application().CloseLoadingModal()

@@ -377,11 +377,9 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
             Application().PushScreen(createNowPlayingScreen(m.player.GetCurrentItem()))
         else
             plexItem = trackContext[trackIndex]
-            options = {}
+            options = createPlayOptions()
 
-            if command = "shuffle" then
-                options["shuffle"] = "1"
-            end if
+            options.shuffle = (command = "shuffle")
 
             pq = createPlayQueueForItem(plexItem, options)
             m.player.SetPlayQueue(pq, true)

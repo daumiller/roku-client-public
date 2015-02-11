@@ -27,7 +27,7 @@ function PlayQueueClass() as object
     return m.PlayQueueClass
 end function
 
-function createPlayQueue(server as object, contentType as string, uri as string, options={} as object) as object
+function createPlayQueue(server as object, contentType as string, uri as string, options as object) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(PlayQueueClass())
 
@@ -39,9 +39,21 @@ function createPlayQueue(server as object, contentType as string, uri as string,
     request.AddParam("uri", uri)
     request.AddParam("type", contentType)
 
-    for each name in options
-        request.AddParam(name, options[name])
-    next
+    if options.continuous = true then
+        request.AddParam("continuous", "1")
+    end if
+
+    if options.key <> invalid then
+        request.AddParam("key", options.key)
+    end if
+
+    if options.shuffle = true then
+        request.AddParam("shuffle", "1")
+    end if
+
+    if options.extrasPrefixCount <> invalid then
+        request.AddParam("extrasPrefixCount", tostr(options.extrasPrefixCount))
+    end if
 
     context = request.CreateRequestContext("create", createCallable("OnResponse", obj))
     Application().StartRequest(request, context, "")
@@ -49,7 +61,7 @@ function createPlayQueue(server as object, contentType as string, uri as string,
     return obj
 end function
 
-function createPlayQueueForItem(item as object, options={} as object) as object
+function createPlayQueueForItem(item as object, options=invalid as dynamic) as object
     if item.IsMusicOrDirectoryItem() then
         contentType = "audio"
     else if item.IsVideoOrDirectoryItem() then
@@ -62,9 +74,11 @@ function createPlayQueueForItem(item as object, options={} as object) as object
         Fatal("Don't know how to create play queue for item")
     end if
 
+    if options = invalid then options = createPlayOptions()
+
     if options["key"] = invalid and not item.IsDirectory() then options["key"] = item.Get("key")
 
-    return createPlayQueue(item.GetServer(), contentType, item.GetItemUri(), options)
+    return createPlayQueue(item.GetServer(), contentType, item.GetItemUri(options), options)
 end function
 
 function createPlayQueueForId(server as object, contentType as string, id as integer) as object
