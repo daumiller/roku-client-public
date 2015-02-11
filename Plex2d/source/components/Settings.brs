@@ -59,6 +59,15 @@ sub settingsGetComponents()
     title.SetFrame(m.x, m.y, m.width, 70)
     m.components.push(title)
 
+    version = createLabel(AppSettings().GetGlobal("appVersionStr"), FontRegistry().font14)
+    version.halign = version.JUSTIFY_RIGHT
+    version.valign = version.ALIGN_MIDDLE
+    version.zOrder = m.zOrderOverlay
+    version.SetColor(Colors().TextDim)
+    xOffset = m.x + m.width - version.GetPreferredWidth()*2
+    version.SetFrame(xOffset, m.y, version.GetPreferredWidth(), 70)
+    m.components.push(version)
+
     border = { px: 1, color: m.colors.border }
     settingsBox = createHBox(true, true, true, border.px)
     settingsBox.SetFrame(m.x + border.px, m.y + title.height, m.width - border.px*2, m.height - title.height)
