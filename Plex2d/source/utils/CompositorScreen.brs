@@ -28,6 +28,11 @@ function CompositorScreen() as object
         ' TODO(schuyler): Initialize displayable width/height/offsets
         obj.focusPixels = iif(AppSettings().GetGlobal("IsHD") = true, 3, 2)
 
+        ' Device specific overrides
+        if AppSettings().GetGlobal("rokuModelCode") = "3100X" then
+            obj.DrawAll = compositorLegacyDrawAll
+        end if
+
         m.CompositorScreen = obj
     end if
 
@@ -54,9 +59,17 @@ sub compositorReset()
     m.HideFocus(true)
 end sub
 
-sub compositorDrawAll()
+sub compositorDrawAll(shift=false as boolean)
     m.compositor.DrawAll()
     m.screen.SwapBuffers()
+end sub
+
+' Older units (Roku 2 XS specifically) screen may flicker without a finish
+' call, which is not suppossed to be needed for double buffered screens.
+sub compositorLegacyDrawAll(shift=false as boolean)
+    m.compositor.DrawAll()
+    m.screen.SwapBuffers()
+    if shift then m.screen.finish()
 end sub
 
 sub compositorDrawComponent(component as object, screen=invalid as dynamic)

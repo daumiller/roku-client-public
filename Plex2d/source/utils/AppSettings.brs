@@ -374,6 +374,7 @@ sub settingsInitGlobals()
     m.globals["appName"] = appInfo.GetTitle()
     m.globals["appID"] = appInfo.GetID()
 
+    m.globals["rokuModelCode"] = device.GetModel()
     m.globals["rokuModel"] = device.GetModelDisplayName()
     m.globals["rokuUniqueID"] = device.GetDeviceUniqueId()
     m.globals["clientIdentifier"] = m.globals["appName"] + m.globals["rokuUniqueID"]

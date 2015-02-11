@@ -38,7 +38,7 @@ sub AnimateShift(shift as object, components as object, screen as object)
         end for
 
         ' draw each shift after all components are shifted
-        screen.DrawAll()
+        screen.DrawAll(true)
     end for
 end sub
 
