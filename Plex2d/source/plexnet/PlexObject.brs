@@ -58,7 +58,6 @@ function PlexObjectClass() as object
         obj.GetIdentifier = pnoGetIdentifier
         obj.GetLibrarySectionId = pnoGetLibrarySectionId
         obj.GetLibrarySectionUuid = pnoGetLibrarySectionUuid
-        obj.GetItemUri = pnoGetItemUri
 
         obj.GetAbsolutePath = pnoGetAbsolutePath
         obj.GetItemPath = pnoGetItemPath
@@ -365,47 +364,6 @@ function pnoGetLibrarySectionUuid() as string
     end if
 
     return uuid
-end function
-
-function pnoGetItemUri(options as object) as string
-    ' The item's URI is made up of the library section UUID, a descriptor of
-    ' the item type (item or directory), and the item's path, URL-encoded.
-
-    uri = "library://" + m.GetLibrarySectionUuid() + "/"
-
-    ' If it's a directory then we use "directory", but we also want to refer to
-    ' the enclosing album if it's a track or photo.
-    '
-    if m.IsDirectory() or m.type = "track" or m.type = "photo" then
-        itemType = "directory"
-    else
-        itemType = "item"
-    end if
-
-    ' If we're asked to play unwatched, ignore the option unless we are unwatched.
-    options.unwatched = (options.unwatched = true) and m.IsUnwatched()
-
-    if m.type = "track" then
-        path = m.Get("parentKey", "") + "/children"
-    else if m.type = "season" and options.unwatched = true then
-        path = "/library/sections/" + m.GetLibrarySectionId() + "/all?show.id=" + m.Get("parentRatingKey", "") + "&type=4&unwatched=1&season.id=" + m.Get("ratingKey", "")
-    else if m.type = "show" and options.unwatched = true then
-        path = "/library/sections/" + m.GetLibrarySectionId() + "/all?show.id=" + m.Get("ratingKey", "") + "&type=4&unwatched=1"
-    else if m.IsLibrarySection() then
-        path = m.GetAbsolutePath("key") + "/all"
-    else if m.type = "photo" then
-        path = "/library/sections/" + m.container.Get("librarySectionID", "") + "/all"
-        path = path + "?type=13&parent=" + UrlEscape(m.Get("parentRatingKey", "-1"))
-    else if m.type = "photoalbum" then
-        path = m.container.address
-        path = path + "?type=13&parent=" + UrlEscape(m.Get("ratingKey", ""))
-    else if m.IsDirectory() then
-        path = m.GetItemPath()
-    else
-        path = m.GetAbsolutePath("key")
-    end if
-
-    return uri + itemType + "/" + UrlEscape(path)
 end function
 
 function pnoGetUnwatchedCountString() as string

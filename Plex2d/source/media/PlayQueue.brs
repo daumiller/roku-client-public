@@ -39,10 +39,6 @@ function createPlayQueue(server as object, contentType as string, uri as string,
     request.AddParam("uri", uri)
     request.AddParam("type", contentType)
 
-    if options.continuous = true then
-        request.AddParam("continuous", "1")
-    end if
-
     if options.key <> invalid then
         request.AddParam("key", options.key)
     end if
@@ -76,9 +72,57 @@ function createPlayQueueForItem(item as object, options=invalid as dynamic) as o
 
     if options = invalid then options = createPlayOptions()
 
-    if options["key"] = invalid and not item.IsDirectory() then options["key"] = item.Get("key")
+    if options.key = invalid and not item.IsDirectory() then
+        options.key = item.Get("key")
+    end if
 
-    return createPlayQueue(item.GetServer(), contentType, item.GetItemUri(options), options)
+    ' If we're asked to play unwatched, ignore the option unless we are unwatched.
+    options.unwatched = (options.unwatched = true) and item.IsUnwatched()
+
+    ' The item's URI is made up of the library section UUID, a descriptor of
+    ' the item type (item or directory), and the item's path, URL-encoded.
+
+    uri = "library://" + item.GetLibrarySectionUuid() + "/"
+
+    ' TODO(schuyler): Until we build postplay, we're not allowed to queue containers for episodes.
+    if item.type = "episode" then
+        options.context = options.CONTEXT_SELF
+    end if
+
+    itemType = iif(item.IsDirectory(), "directory", "item")
+
+    ' How exactly to construct the item URI depends on the metadata type, though
+    ' whenever possible we simply use /library/metadata/:id.
+    '
+    if item.type = "track" then
+        path = "/library/metadata/" + item.Get("parentRatingKey", "")
+        itemType = "directory"
+    else if item.type = "photo" then
+        path = "/library/sections/" + item.GetLibrarySectionId() + "/all?type=13&parent=" + UrlEscape(item.Get("parentRatingKey", "-1"))
+    else if item.type = "photoalbum" then
+        path = "/library/sections/" + item.GetLibrarySectionId() + "/all?type=13&parent=" + UrlEscape(item.Get("ratingKey", "-1"))
+    else if item.type = "episode" and options.context <> options.CONTEXT_SELF then
+        path = "/library/metadata/" + item.Get("grandparentRatingKey", "")
+        itemType = "directory"
+        options.key = item.GetAbsolutePath("key")
+    else if item.type = "show" then
+        path = "/library/metadata/" + item.Get("ratingKey", "")
+
+        ' TODO(schuyler): We may need to fetch the show's metadata to determine
+        ' the on deck item. For example, shows that are returned inside hubs.
+        '
+        if item.onDeck <> invalid and item.onDeck.Count() > 0 then
+            options.key = item.onDeck[0].GetAbsolutePath("key")
+        end if
+    else if item.IsLibraryItem()
+        path = "/library/metadata/" + item.Get("ratingKey", "")
+    else
+        path = item.GetAbsolutePath("key")
+    end if
+
+    uri = uri + itemType + "/" + UrlEscape(path)
+
+    return createPlayQueue(item.GetServer(), contentType, uri, options)
 end function
 
 function createPlayQueueForId(server as object, contentType as string, id as integer) as object

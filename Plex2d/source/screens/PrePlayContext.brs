@@ -13,7 +13,6 @@ function PreplayContextScreen() as object
         obj.GetMainInfo = ppcGetMainInfo
         obj.GetImages = ppcGetImages
         obj.GetButtons = ppcGetButtons
-        obj.HandleCommand = ppcHandleCommand
 
         m.PreplayContextScreen = obj
     end if
@@ -240,14 +239,13 @@ function ppcGetButtons() as object
     components = createObject("roList")
 
     buttons = createObject("roList")
-    ' include a Play and Resume button if there is an OnDeck item
-    if m.item.onDeck <> invalid then
-        item = m.item.onDeck[0]
-        if item.InProgress() then
-            buttons.push({text: Glyphs().RESUME, command: "resume", item: item})
-        end if
-        buttons.push({text: Glyphs().PLAY, command: "play", item: item })
-    end if
+
+    ' Always include a Play button
+    ' TODO(schuyler): We may have secondary play actions as well. For example,
+    ' Play on a season starts with the on deck item, so we might also have
+    ' Play All to start at the beginning and Play Shuffled.
+    '
+    buttons.push({text: Glyphs().PLAY, command: "play_default" })
 
     ' TODO(rob): scrobble entire container - with warning?
     buttonHeight = 50
@@ -309,16 +307,4 @@ function ppcGetButtons() as object
     end if
 
     return components
-end function
-
-function ppcHandleCommand(command as string, item as dynamic) as boolean
-    handled = true
-
-    if command = "play_default" then
-        m.OnPlayButton()
-    else if not ApplyFunc(PreplayScreen().HandleCommand, m, [command, item])
-        handled = false
-    end if
-
-    return handled
 end function

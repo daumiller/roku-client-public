@@ -86,23 +86,46 @@ end sub
 
 sub preplayOnPlayButton(focusedItem=invalid as dynamic)
     if focusedItem <> invalid and focusedItem.plexObject <> invalid then
-        m.CreatePlayerForItem(focusedItem.plexObject)
+        plexObject = focusedItem.plexObject
     else
-        m.CreatePlayerForItem(m.item)
+        plexObject = m.item
     end if
+
+    options = createPlayOptions()
+
+    ' See if we should resume
+    if not plexObject.IsDirectory() then
+        onDeck = plexObject
+    else if plexObject.onDeck <> invalid and plexObject.onDeck.Count() > 0 then
+        onDeck = plexObject.onDeck[0]
+    else
+        onDeck = invalid
+    end if
+
+    if onDeck <> invalid and onDeck.IsVideoItem() and onDeck.GetInt("viewOffset") > 0 then
+        dialog = createDialog(onDeck.GetLongerTitle(), invalid, m)
+        dialog.AddButton("Resume from " + onDeck.GetViewOffset(), true)
+        dialog.AddButton("Play from beginning", false)
+        dialog.Show(true)
+        if dialog.result = invalid then return
+        options.resume = dialog.result
+    end if
+
+    m.CreatePlayerForItem(plexObject, options)
 end sub
 
 function preplayHandleCommand(command as string, item as dynamic) as boolean
     handled = true
 
     if command = "play" or command = "resume" then
-        Application().ShowLoadingModal(m)
-        player = VideoPlayer()
+        plexObject = firstOf(item.plexObject, m.item)
         options = createPlayOptions()
-        pq = createPlayQueueForItem(item.plexObject, options)
-        player.shouldResume = (command = "resume")
-        player.SetPlayQueue(pq, true)
-        Application().CloseLoadingModal()
+
+        options.resume = (command = "resume")
+
+        m.CreatePlayerForItem(plexObject, options)
+    else if command = "play_default" then
+        m.OnPlayButton()
     else if command = "scrobble" then
         m.item.Scrobble(createCallable("Refresh", m))
     else if command = "unscrobble" then
@@ -486,7 +509,6 @@ function preplayGetPrefs() as object
     playback.Push({command: "audio_stream", title: "Audio Stream", options: todo_options, prefType: "enum"})
     playback.Push({command: "subtitle_stream", title: "Subtitle Stream", options: todo_options, prefType: "enum"})
     playback.Push({command: "media", title: "Media", options: todo_options, prefType: "enum"})
-    playback.Push({command: "continuous", title: "Continuous Play", options: enadis_options, prefType: "enum"})
 
     return prefs
 end function

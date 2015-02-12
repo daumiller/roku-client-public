@@ -4,8 +4,14 @@ function PlayOptionsClass() as object
         obj.ClassName = "PlayOptions"
 
         ' At the moment, this is really just a glorified struct. But the
-        ' expected fields include continuous, key, shuffle, extraPrefixCount,
+        ' expected fields include key, shuffle, extraPrefixCount,
         ' and unwatched. We may give this more definition over time.
+
+        ' These aren't widely used yet, but half inspired by a PMS discussion...
+        obj.CONTEXT_AUTO = 0
+        obj.CONTEXT_SELF = 1
+        obj.CONTEXT_PARENT = 2
+        obj.CONTEXT_CONTAINER = 3
 
         m.PlayOptionsClass = obj
     end if
@@ -17,8 +23,7 @@ function createPlayOptions() as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(PlayOptionsClass())
 
-    ' Default to unwatched only. Playing all items is a secondary action.
-    obj.unwatched = true
+    obj.context = obj.CONTEXT_AUTO
 
     return obj
 end function

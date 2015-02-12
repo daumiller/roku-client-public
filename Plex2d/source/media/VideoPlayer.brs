@@ -345,7 +345,7 @@ function vpCreateContentMetadata(item as object, forceTranscode=false as boolean
     ' TODO(schuyler): Is this the best way to handle resuming?
     if resumeOffset <> invalid then
         m.seekValue = validint(resumeOffset)
-    else if m.shouldResume = true then
+    else if m.shouldResume = true and item.GetInt("playQueueItemID") = m.playQueue.selectedID then
         m.seekValue = item.GetInt("viewOffset")
         m.shouldResume = false
     else

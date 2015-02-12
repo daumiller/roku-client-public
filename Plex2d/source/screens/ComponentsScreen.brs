@@ -1041,30 +1041,27 @@ function compCalculateFirstOrLast(components as object, shift as object, skipIgn
     return shift.x
 end function
 
-sub compCreatePlayerForItem(plexObject=invalid as dynamic)
+sub compCreatePlayerForItem(plexObject=invalid as dynamic, options=invalid as dynamic)
     if type(plexObject) <> "roAssociativeArray" or type(plexObject.isLibraryItem) <> "roFunction" then return
+    if options = invalid then options = createPlayOptions()
 
     if plexObject.isLibraryItem() then
-        options = createPlayOptions()
-
-        ' See if we're playing from a continuous hub/container, but only use
-        ' continuous play if the item itself is an episode.
-        if plexObject.container.IsContinuous() and plexObject.type = "episode" then
-            options.continuous = true
-        end if
-
         pq = createPlayQueueForItem(plexObject, options)
         player = GetPlayerForType(pq.type)
 
         if player <> invalid then
             ' If this is a video item with a resume point, ask if we should resume
-            if plexObject.IsVideoItem() and plexObject.GetInt("viewOffset") > 0 then
-                dialog = createDialog(plexObject.GetLongerTitle(), invalid, m)
-                dialog.AddButton("Resume from " + plexObject.GetViewOffset(), true)
-                dialog.AddButton("Play from beginning", false)
-                dialog.Show(true)
-                if dialog.result = invalid then return
-                player.shouldResume = dialog.result
+            if pq.type = "video" then
+                if plexObject.GetInt("viewOffset") > 0 and options.resume = invalid then
+                    dialog = createDialog(plexObject.GetLongerTitle(), invalid, m)
+                    dialog.AddButton("Resume from " + plexObject.GetViewOffset(), true)
+                    dialog.AddButton("Play from beginning", false)
+                    dialog.Show(true)
+                    if dialog.result = invalid then return
+                    options.resume = dialog.result
+                end if
+
+                player.shouldResume = options.resume
             end if
 
             player.SetPlayQueue(pq, true)

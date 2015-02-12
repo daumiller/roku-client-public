@@ -6,11 +6,9 @@ function PlexContainerClass() as object
 
         obj.server = invalid
         obj.address = invalid
-        obj.continuous = false
 
         obj.SetAddress = pncSetAddress
         obj.GetAbsolutePath = pncGetAbsolutePath
-        obj.IsContinuous = pncIsContinuous
 
         m.PlexContainerClass = obj
     end if
@@ -48,8 +46,6 @@ function createPlexHubContainer(container as object, hub as object) as object
 
     obj.SetAddress(container.server, obj.Get("key", container.address))
 
-    obj.continuous = hub.IsContinuous()
-
     return obj
 end function
 
@@ -76,11 +72,4 @@ function pncGetAbsolutePath(path as string) as string
     else
         return m.address + "/" + path
     end if
-end function
-
-function pncIsContinuous() as boolean
-    ' Only relevant for containers that are also hubs, leave it up to them to
-    ' set continuous.
-
-    return m.continuous
 end function
