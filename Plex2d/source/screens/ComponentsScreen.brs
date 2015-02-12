@@ -204,6 +204,9 @@ sub compDeactivate(screen = invalid as dynamic)
         m.lazyLoadTimer = invalid
     end if
 
+    ' clear any preference overrides we may have set
+    AppSettings().PopPrefOverrides(m.screenID)
+
     TextureManager().RemoveTextureByScreenId(m.screenID)
     m.DestroyComponents()
     ' components we have created manually (AA of roList)
@@ -503,12 +506,7 @@ function compHandleCommand(command as string, item as dynamic) as boolean
             options = createPlayOptions()
             options.shuffle = (command = "shuffle")
 
-            pq = createPlayQueueForItem(plexItem, options)
-            player = GetPlayerForType(pq.type)
-
-            if player <> invalid then
-                player.SetPlayQueue(pq, true)
-            end if
+            m.CreatePlayerForItem(plexItem, options)
         end if
     else
         handled = false
@@ -1053,6 +1051,41 @@ sub compCreatePlayerForItem(plexObject=invalid as dynamic, options=invalid as dy
                 options.resume = VideoResumeDialog(plexObject, m)
                 if options.resume = invalid then return
             end if
+        end if
+
+        ' If we have any local playback options, evaluate them now.
+        if m.localPrefs <> invalid then
+            if m.localPrefs.media <> invalid then
+                for each media in plexObject.mediaItems
+                    media.selected = (m.localPrefs.media = media.Get("id"))
+                next
+            end if
+
+            if m.localPrefs.audio_stream <> invalid then
+                part = plexObject.mediaItems[0].parts[0]
+                path = "/library/parts/" + part.Get("id", "") + "?audioStreamID=" + m.localPrefs.audio_stream
+                request = createPlexRequest(plexObject.GetServer(), path, "PUT")
+                request.PostToStringWithTimeout()
+            end if
+
+            if m.localPrefs.subtitle_stream <> invalid then
+                part = plexObject.mediaItems[0].parts[0]
+                path = "/library/parts/" + part.Get("id", "") + "?subtitleStreamID=" + m.localPrefs.subtitle_stream
+                request = createPlexRequest(plexObject.GetServer(), path, "PUT")
+                request.PostToStringWithTimeout()
+            end if
+
+            if m.localPrefs.quality <> invalid then
+                AppSettings().SetPrefOverride("local_quality", m.localPrefs.quality, m.screenID)
+                AppSettings().SetPrefOverride("remote_quality", m.localPrefs.quality, m.screenID)
+            end if
+
+            possiblePrefs = ["playback_direct", "playback_remux", "playback_transcode"]
+            for each prefKey in possiblePrefs
+                if m.localPrefs[prefKey] <> invalid then
+                    AppSettings().SetPrefOverride(prefKey, m.localPrefs[prefKey], m.screenID)
+                end if
+            next
         end if
 
         pq = createPlayQueueForItem(plexObject, options)

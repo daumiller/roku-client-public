@@ -6,6 +6,7 @@ function AppSettings()
         obj.regCache = {}
         obj.globals = {}
         obj.prefs = {}
+        obj.overrides = []
 
         ' Methods
         obj.GetPreference = settingsGetPreference
@@ -32,6 +33,9 @@ function AppSettings()
         obj.SupportsSurroundSound = settingsSupportsSurroundSound
         obj.GetMaxResolution = settingsGetMaxResolution
 
+        obj.SetPrefOverride = settingsSetPrefOverride
+        obj.PopPrefOverrides = settingsPopPrefOverrides
+
         obj.reset()
 
         m.AppSettings = obj
@@ -52,14 +56,18 @@ function settingsGetPreference(name as string) as dynamic
         return obj.managedValue
     end if
 
+    overrides = m.overrides.Peek()
+    if overrides <> invalid and overrides.DoesExist(name) then
+        return overrides[name]
+    end if
+
     section = m.GetSectionKey(name)
     return m.GetRegistry(name, obj.default, section)
 end function
 
 function settingsGetIntPreference(name as string) as integer
-    if not m.prefs.DoesExist(name) then return 0
-    section = m.GetSectionKey(name)
-    return m.GetIntRegistry(name, m.prefs[name].default.toInt(), section)
+    value = m.GetPreference(name)
+    return firstOf(value, "0").toInt()
 end function
 
 function settingsGetBoolPreference(name as string) as boolean
@@ -583,3 +591,22 @@ function settingsGetMaxResolution(local as boolean) as integer
         return 0
     end if
 end function
+
+sub settingsSetPrefOverride(key as string, value as dynamic, screenID as integer)
+    overrides = m.overrides.Peek()
+
+    if overrides = invalid or overrides.id <> screenID then
+        overrides = {id: screenID}
+        m.overrides.Push(overrides)
+    end if
+
+    overrides[key] = value
+end sub
+
+sub settingsPopPrefOverrides(screenID as integer)
+    overrides = m.overrides.Peek()
+
+    if overrides <> invalid and overrides.id = screenID then
+        m.overrides.Pop()
+    end if
+end sub
