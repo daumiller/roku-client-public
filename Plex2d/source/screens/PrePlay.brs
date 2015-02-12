@@ -103,12 +103,8 @@ sub preplayOnPlayButton(focusedItem=invalid as dynamic)
     end if
 
     if onDeck <> invalid and onDeck.IsVideoItem() and onDeck.GetInt("viewOffset") > 0 then
-        dialog = createDialog(onDeck.GetLongerTitle(), invalid, m)
-        dialog.AddButton("Resume from " + onDeck.GetViewOffset(), true)
-        dialog.AddButton("Play from beginning", false)
-        dialog.Show(true)
-        if dialog.result = invalid then return
-        options.resume = dialog.result
+        options.resume = VideoResumeDialog(onDeck, m)
+        if options.resume = invalid then return
     end if
 
     m.CreatePlayerForItem(plexObject, options)
@@ -117,11 +113,12 @@ end sub
 function preplayHandleCommand(command as string, item as dynamic) as boolean
     handled = true
 
-    if command = "play" or command = "resume" then
+    if command = "play" or command = "resume" or command = "playWithoutTrailers" then
         plexObject = firstOf(item.plexObject, m.item)
-        options = createPlayOptions()
 
+        options = createPlayOptions()
         options.resume = (command = "resume")
+        options.extrasPrefixCount = iif(command = "playWithoutTrailers", 0, invalid)
 
         m.CreatePlayerForItem(plexObject, options)
     else if command = "play_default" then
@@ -359,21 +356,62 @@ end function
 
 function preplayGetButtons() as object
     components = createObject("roList")
-
     buttons = createObject("roList")
+
+    showPlayButton = true
     if m.item.InProgress() then
         buttons.push({text: Glyphs().RESUME, command: "resume", item: m.item})
+    else
+        buttons.push({text: Glyphs().PLAY, command: "play", item: m.item})
+        showPlayButton = false
     end if
-    buttons.push({text: Glyphs().PLAY, command: "play", item: m.item})
+
+    showSecondaryPlay = (m.item.Get("type", "") = "movie" and AppSettings().GetIntPreference("cinema_trailers") > 0)
+    if showSecondaryPlay then
+        button = {
+            type: "dropDown",
+            text: Glyphs().PLAY_MORE,
+            item: m.item,
+            position: "right"
+            options: createObject("roList")
+        }
+        if showPlayButton then
+            button.options.Push({text: "Play from beginning", command: "play"})
+        end if
+        button.options.Push({text: "Play without trailers", command: "playWithoutTrailers"})
+        buttons.push(button)
+    else if showPlayButton then
+        buttons.push({text: Glyphs().PLAY, command: "play", item: m.item})
+    end if
+
     if m.item.IsUnwatched() then
         buttons.push({text: Glyphs().SCROBBLE, command: "scrobble"})
     else
         buttons.push({text: Glyphs().UNSCROBBLE, command: "unscrobble"})
     end if
 
+    ' Shared prefs for any dropdown
     buttonHeight = 50
+    optionPrefs = {
+        halign: "JUSTIFY_LEFT",
+        height: buttonHeight
+        padding: { right: 10, left: 10, top: 0, bottom: 0 }
+        font: FontRegistry().font16,
+    }
+
     for each button in buttons
-        btn = createButton(button.text, m.customFonts.glyphs, button.command)
+        if button.type = "dropDown" then
+            btn = createDropDown(button.text, m.customFonts.glyphs, buttonHeight * 5, m)
+            btn.SetDropDownPosition("right")
+            for each option in button.options
+                option.Append(optionPrefs)
+                option.plexObject = button.item
+                btn.options.push(option)
+            end for
+        else
+            btn = createButton(button.text, m.customFonts.glyphs, button.command)
+        end if
+
         btn.SetColor(Colors().Text, Colors().Button)
         btn.width = 100
         btn.height = buttonHeight
@@ -381,13 +419,6 @@ function preplayGetButtons() as object
         if m.focusedItem = invalid then m.focusedItem = btn
         components.push(btn)
     end for
-
-    optionPrefs = {
-        halign: "JUSTIFY_LEFT",
-        height: buttonHeight
-        padding: { right: 10, left: 10, top: 0, bottom: 0 }
-        font: FontRegistry().font16,
-    }
 
     ' extras drop down
     if m.item.extraItems <> invalid and m.item.extraItems.count() > 0 then

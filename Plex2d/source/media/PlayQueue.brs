@@ -87,6 +87,10 @@ function createPlayQueueForItem(item as object, options=invalid as dynamic) as o
     ' TODO(schuyler): Until we build postplay, we're not allowed to queue containers for episodes.
     if item.type = "episode" then
         options.context = options.CONTEXT_SELF
+    else if item.type = "movie" then
+        if options.extrasPrefixCount = invalid and options.resume <> true then
+            options.extrasPrefixCount = AppSettings().GetIntPreference("cinema_trailers")
+        end if
     end if
 
     itemType = iif(item.IsDirectory(), "directory", "item")
@@ -150,7 +154,6 @@ sub pqRefresh(force=true as boolean)
     ' being played but we have the entire album loaded already.
     '
     if force or m.IsWindowed() then
-'        request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id) + "?center=" + tostr(m.selectedId))
         request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id))
         context = request.CreateRequestContext("refresh", createCallable("OnResponse", m))
         Application().StartRequest(request, context)

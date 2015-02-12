@@ -189,3 +189,12 @@ sub dialogHandleButton(button as object)
     end if
     m.Close()
 end sub
+
+' Common shared dialogs
+function VideoResumeDialog(item as object, screen as object) as dynamic
+    dialog = createDialog(item.GetLongerTitle(), invalid, screen)
+    dialog.AddButton("Resume from " + item.GetViewOffset(), true)
+    dialog.AddButton("Play from beginning", false)
+    dialog.Show(true)
+    return dialog.result
+end function

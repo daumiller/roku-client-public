@@ -140,6 +140,24 @@ sub settingsInitPrefs()
         options: options
     }
 
+    ' Cinema Trailers
+    options = [
+        {title: "Don't Play", value: "0" },
+        {title: "Play 1 Before Movie", value: "1" },
+        {title: "Play 2 Before Movie", value: "2" },
+        {title: "Play 3 Before Movie", value: "3" },
+        {title: "Play 4 Before Movie", value: "4" },
+        {title: "Play 5 Before Movie", value: "5" },
+    ]
+    m.prefs["cinema_trailers"] = {
+        key: "cinema_trailers",
+        title: "Cinema Trailers",
+        default: "0",
+        section: "preferences",
+        prefType: "enum",
+        options: options
+    }
+
     ' TODO(schuyler): How do we want to control these options now? An enum? Multiple bools?
     ' Direct Play
     m.prefs["playback_direct"] = {
@@ -476,6 +494,7 @@ function settingsGetGlobalSettings() as object
 
     video.Push(m.prefs["local_quality"])
     video.Push(m.prefs["remote_quality"])
+    video.Push(m.prefs["cinema_trailers"])
 
     groups.Push({
         title: "Video",

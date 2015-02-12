@@ -1042,28 +1042,23 @@ function compCalculateFirstOrLast(components as object, shift as object, skipIgn
 end function
 
 sub compCreatePlayerForItem(plexObject=invalid as dynamic, options=invalid as dynamic)
-    if type(plexObject) <> "roAssociativeArray" or type(plexObject.isLibraryItem) <> "roFunction" then return
+    if not IsAssociativeArray(plexObject) or not IsFunction(plexObject.isLibraryItem) then return
     if options = invalid then options = createPlayOptions()
 
     if plexObject.isLibraryItem() then
+        ' If this is a video item with a resume point, ask if we should resume. We also
+        ' need to obtain this prior to play queue creation for cinema trailers.
+        if plexObject.IsVideoOrDirectoryItem() then
+            if plexObject.GetInt("viewOffset") > 0 and options.resume = invalid then
+                options.resume = VideoResumeDialog(plexObject, m)
+                if options.resume = invalid then return
+            end if
+        end if
+
         pq = createPlayQueueForItem(plexObject, options)
         player = GetPlayerForType(pq.type)
-
         if player <> invalid then
-            ' If this is a video item with a resume point, ask if we should resume
-            if pq.type = "video" then
-                if plexObject.GetInt("viewOffset") > 0 and options.resume = invalid then
-                    dialog = createDialog(plexObject.GetLongerTitle(), invalid, m)
-                    dialog.AddButton("Resume from " + plexObject.GetViewOffset(), true)
-                    dialog.AddButton("Play from beginning", false)
-                    dialog.Show(true)
-                    if dialog.result = invalid then return
-                    options.resume = dialog.result
-                end if
-
-                player.shouldResume = options.resume
-            end if
-
+            player.shouldResume = options.resume
             player.SetPlayQueue(pq, true)
         end if
     end if
