@@ -128,9 +128,10 @@ function preplayHandleCommand(command as string, item as dynamic) as boolean
     else if command = "unscrobble" then
         m.item.Unscrobble(createCallable("Refresh", m))
     else if command = "settings" then
+        if m.localPrefs = invalid then m.localPrefs = {}
         settings = createSettings(m)
         settings.GetPrefs = preplayGetPrefs
-        settings.screenPref = true
+        settings.storage = m.localPrefs
         settings.Show()
     else if command = "show_grid" then
         Application().PushScreen(createGridScreen(item.plexObject))
@@ -399,13 +400,66 @@ function preplayGetButtons() as object
         font: FontRegistry().font16,
     }
 
+    ' extras drop down
+    if m.item.extraItems <> invalid and m.item.extraItems.count() > 0 then
+        button = {
+            type: "dropDown",
+            text: Glyphs().EXTRAS,
+            position: "right",
+            options: createObject("roList")
+        }
+
+        for each item in m.item.extraItems
+            option = {
+                text: item.GetLongerTitle(),
+                command: "play",
+                plexObject: item
+            }
+            button.options.Push(option)
+        end for
+
+        buttons.Push(button)
+    end if
+
+    ' more/pivots drop down
+    if m.item.extraItems <> invalid and m.item.extraItems.count() > 0 or m.item.Get("type", "") = "episode" then
+        button = {
+            type: "dropDown",
+            text: Glyphs().MORE,
+            position: "right",
+            options: createObject("roList")
+        }
+
+        ' manual pivots for an episode
+        if m.item.Get("type", "") = "episode" then
+            button.options.Push({command: "go_to_show", text: "Go to show"})
+            button.options.Push({command: "go_to_season", text: "Go to season " + m.item.Get("parentIndex", "")})
+        end if
+
+        for each item in m.item.relatedItems
+            option = {
+                text: item.GetSingleLineTitle(),
+                command: "show_grid",
+                plexObject: item,
+            }
+            button.options.push(option)
+        end for
+
+        buttons.Push(button)
+    end if
+
+    ' Settings
+    if m.item.IsVideoItem() and m.item.mediaItems <> invalid then
+        buttons.push({text: Glyphs().CONFIG, command: "settings"})
+    end if
+
     for each button in buttons
         if button.type = "dropDown" then
             btn = createDropDown(button.text, m.customFonts.glyphs, buttonHeight * 5, m)
-            btn.SetDropDownPosition("right")
+            btn.SetDropDownPosition(button.position)
             for each option in button.options
                 option.Append(optionPrefs)
-                option.plexObject = button.item
+                option.plexObject = firstOf(option.plexObject, button.item)
                 btn.options.push(option)
             end for
         else
@@ -419,70 +473,6 @@ function preplayGetButtons() as object
         if m.focusedItem = invalid then m.focusedItem = btn
         components.push(btn)
     end for
-
-    ' extras drop down
-    if m.item.extraItems <> invalid and m.item.extraItems.count() > 0 then
-        btn = createDropDown(Glyphs().EXTRAS, m.customFonts.glyphs, buttonHeight * 5, m)
-        btn.SetDropDownPosition("right")
-        btn.SetColor(Colors().Text, Colors().Button)
-        btn.width = 100
-        btn.height = buttonHeight
-        if m.focusedItem = invalid then m.focusedItem = btn
-        for each item in m.item.extraItems
-            option = {
-                text: item.GetLongerTitle(),
-                command: "play",
-                plexObject: item,
-            }
-            option.Append(optionPrefs)
-            btn.options.push(option)
-        end for
-        components.push(btn)
-    end if
-
-    ' more/pivots drop down
-    if m.item.extraItems <> invalid and m.item.extraItems.count() > 0 or m.item.Get("type", "") = "episode" then
-        btn = createDropDown(Glyphs().MORE, m.customFonts.glyphs, buttonHeight * 5, m)
-        btn.SetDropDownPosition("right")
-        btn.SetColor(Colors().Text, Colors().Button)
-        btn.width = 100
-        btn.height = buttonHeight
-        if m.focusedItem = invalid then m.focusedItem = btn
-
-        ' manual pivots for an episode
-        if m.item.Get("type", "") = "episode" then
-            episodePivots = [
-                {command: "go_to_show", text: "Go to show"},
-                {command: "go_to_season", text: "Go to season " + m.item.Get("parentIndex", "")},
-            ]
-            for each pivot in episodePivots
-                option = {}
-                option.Append(pivot)
-                option.Append(optionPrefs)
-                btn.options.push(option)
-            end for
-        end if
-
-        for each item in m.item.relatedItems
-            option = {
-                text: item.GetSingleLineTitle(),
-                command: "show_grid",
-                plexObject: item,
-            }
-            option.Append(optionPrefs)
-            btn.options.push(option)
-        end for
-
-        components.push(btn)
-    end if
-
-    ' settings
-    ' btn = createButton(Glyphs().CONFIG, m.customFonts.glyphs, "settings")
-    ' btn.SetColor(Colors().Text, Colors().Button)
-    ' btn.width = 100
-    ' btn.height = 50
-    ' if m.focusedItem = invalid then m.focusedItem = btn
-    ' components.push(btn)
 
     return components
 end function
@@ -500,48 +490,128 @@ sub preplayDialogHandleButton(button as object)
 end sub
 
 function preplayGetPrefs() as object
-    ' TODO(rob): set the default prefs
-    prefs = CreateObject("roAssociativeArray")
-    prefs.keys = CreateObject("roList")
-
+    groups = CreateObject("roList")
     playback = CreateObject("roList")
-    prefs.keys.push("Playback")
-    prefs.playback = playback
+    settings = AppSettings()
 
-    quality_options = [
-        {title: "20 Mbps",  value: "20"},
-        {title: "12 Mbps",  value: "12"},
-        {title: "10 Mbps",  value: "10"},
-        {title: "8 Mbps",   value: "8"},
-        {title: "4 Mbps",   value: "4"},
-        {title: "3 Mbps",   value: "3"},
-        {title: "2 Mbps",   value: "2"},
-        {title: "1.5 Mbps", value: "1.5"},
-        {title: "720 Kbps", value: "720"},
-        {title: "320 Kbps", value: "320"},
+    ' In order to show the currently selected media/streams we need to run the
+    ' MDE first.
+    item = m.screen.item
+    mediaChoice = MediaDecisionEngine().ChooseMedia(item)
+    part = mediaChoice.media.parts[0]
 
+    ' Media item selection, if we have more than one.
+    if item.mediaItems.Count() > 1 then
+        options = CreateObject("roList")
+        for each media in item.mediaItems
+            options.Push({title: media.ToString(), value: media.Get("id")})
+        next
+
+        playback.Push({
+            key: "media",
+            title: "Version",
+            default: mediaChoice.media.Get("id"),
+            prefType: "enum",
+            options: options
+        })
+    end if
+
+    ' Audio stream selection.
+    streams = part.GetStreamsOfType(PlexStreamClass().TYPE_AUDIO)
+    if streams.Count() > 0 then
+        options = CreateObject("roList")
+        for each stream in streams
+            options.Push({title: stream.GetTitle(), value: stream.Get("id")})
+        next
+
+        if mediaChoice.audioStream <> invalid then
+            selectedId = mediaChoice.audioStream.Get("id")
+        else
+            selectedId = "0"
+        end if
+
+        playback.Push({
+            key: "audio_stream",
+            title: "Audio",
+            default: selectedId,
+            prefType: "enum",
+            options: options
+        })
+    end if
+
+    ' Subtitle stream selection.
+    streams = part.GetStreamsOfType(PlexStreamClass().TYPE_SUBTITLE)
+    if streams.Count() > 0 then
+        options = CreateObject("roList")
+        for each stream in streams
+            options.Push({title: stream.GetTitle(), value: stream.Get("id")})
+        next
+
+        if mediaChoice.subtitleStream <> invalid then
+            selectedId = mediaChoice.subtitleStream.Get("id")
+        else
+            selectedId = "0"
+        end if
+
+        playback.Push({
+            key: "subtitle_stream",
+            title: "Subtitles",
+            default: selectedId,
+            prefType: "enum",
+            options: options
+        })
+    end if
+
+    ' Quality, capped at the current media's quality.
+    options = CreateObject("roList")
+
+    if item.GetServer().IsLocalConnection() then
+        defaultQuality = settings.GetIntPreference("local_quality")
+    else
+        defaultQuality = settings.GetIntPreference("remote_quality")
+    end if
+
+    height = mediaChoice.media.GetInt("height")
+    bitrate = mediaChoice.media.GetInt("bitrate")
+
+    qualities = settings.GetGlobal("qualities")
+    for each quality in qualities
+        if height >= quality.maxHeight and bitrate >= quality.maxBitrate then
+            options.Push({title: quality.title, value: tostr(quality.index), index: quality.index})
+        end if
+    next
+
+    if defaultQuality > options[0].index then
+        defaultQuality = options[0].index
+    end if
+
+    playback.Push({
+        key: "quality",
+        title: "Quality",
+        default: tostr(defaultQuality),
+        prefType: "enum",
+        options: options
+    })
+
+    ' Direct Play
+    options = [
+        {title: "Direct Play", key: "playback_direct", default: settings.GetPreference("playback_direct")},
+        {title: "Direct Stream", key: "playback_remux", default: settings.GetPreference("playback_remux")},
+        {title: "Transcode", key: "playback_transcode", default: settings.GetPreference("playback_transcode")}
     ]
+    playback.Push({
+        key: "direct_play",
+        title: "Direct Play",
+        prefType: "bool",
+        options: options
+    })
 
-    transcode_options = [
-        {title: "Direct Play",  value: "direct_play"},
-        {title: "Direct Stream",  value: "direct_stream"},
-        {title: "Transcode",  value: "transcode"},
-    ]
+    groups.Push({
+        title: "Playback",
+        settings: playback
+    })
 
-    enadis_options = [
-        {title: "Enabled",  value: "enabled"},
-        {title: "Disabled",  value: "disabled"},
-    ]
-
-    todo_options = [{title: "TODO", value: "TODO"}]
-
-    playback.Push({command: "transcoding", title: "Transcoding", options: transcode_options, prefType: "enum"})
-    playback.Push({command: "quality", title: "Streaming Quality", options: quality_options, prefType: "enum"})
-    playback.Push({command: "audio_stream", title: "Audio Stream", options: todo_options, prefType: "enum"})
-    playback.Push({command: "subtitle_stream", title: "Subtitle Stream", options: todo_options, prefType: "enum"})
-    playback.Push({command: "media", title: "Media", options: todo_options, prefType: "enum"})
-
-    return prefs
+    return groups
 end function
 
 ' TODO(rob): find a better way to refresh.. mainly to kill the image flashing

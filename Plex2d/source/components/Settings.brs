@@ -24,7 +24,7 @@ function createSettings(screen as object) as object
 
     obj.screen = screen
     obj.title = "Settings"
-    obj.screenPref = false
+    obj.storage = invalid
 
     obj.Init()
 
@@ -59,14 +59,16 @@ sub settingsGetComponents()
     title.SetFrame(m.x, m.y, m.width, 70)
     m.components.push(title)
 
-    version = createLabel(AppSettings().GetGlobal("appVersionStr"), FontRegistry().font14)
-    version.halign = version.JUSTIFY_RIGHT
-    version.valign = version.ALIGN_MIDDLE
-    version.zOrder = m.zOrderOverlay
-    version.SetColor(Colors().TextDim)
-    xOffset = m.x + m.width - version.GetPreferredWidth()*2
-    version.SetFrame(xOffset, m.y, version.GetPreferredWidth(), 70)
-    m.components.push(version)
+    if m.storage = invalid then
+        version = createLabel(AppSettings().GetGlobal("appVersionStr"), FontRegistry().font14)
+        version.halign = version.JUSTIFY_RIGHT
+        version.valign = version.ALIGN_MIDDLE
+        version.zOrder = m.zOrderOverlay
+        version.SetColor(Colors().TextDim)
+        xOffset = m.x + m.width - version.GetPreferredWidth()*2
+        version.SetFrame(xOffset, m.y, version.GetPreferredWidth(), 70)
+        m.components.push(version)
+    end if
 
     border = { px: 1, color: m.colors.border }
     settingsBox = createHBox(true, true, true, border.px)
@@ -147,9 +149,13 @@ function settingsCreateMenuButton(pref as object) as object
     btn.focusNonSiblings = false
     btn.options = pref.options
     btn.prefType = pref.prefType
+    btn.prefDefault = pref.default
+
     btn.OnSelected = settingsOnSelected
     btn.OnFocus = settingsOnFocus
     btn.OnBlur = settingsOnBlur
+    btn.GetEnumSettingValue = settingsGetEnumSettingValue
+    btn.GetBoolSettingValue = settingsGetBoolSettingValue
 
     if m.screen.focusedItem = invalid then m.screen.focusedItem = btn
 
@@ -157,7 +163,7 @@ function settingsCreateMenuButton(pref as object) as object
 end function
 
 function settingsCreatePrefButton(text as string, command as dynamic, value as string, prefType as string) as object
-    btn = createSettingsButton(text, FontRegistry().font16, command, value, prefType, m.screenPref)
+    btn = createSettingsButton(text, FontRegistry().font16, command, value, prefType, m.storage)
     btn.focusInside = true
     btn.fixed = false
     btn.halign = btn.JUSTIFY_LEFT
@@ -197,15 +203,14 @@ sub settingsOnFocus()
     m.listBox.DestroyComponents()
     m.listBox.lastFocusableItem = invalid
 
-    settings = AppSettings()
     if m.prefType = "enum" then
-        enumValue = settings.GetPreference(m.command)
+        enumValue = m.GetEnumSettingValue(m.command, m.prefDefault)
     end if
 
     for each option in m.options
         if m.prefType = "bool" then
             btn = m.overlay.createPrefButton(option.title, option.key, "", "bool")
-            btn.isSelected = settings.GetBoolPreference(option.key)
+            btn.isSelected = m.GetBoolSettingValue(option.key, option.default)
         else if m.prefType = "enum" then
             btn = m.overlay.createPrefButton(option.title, m.command, option.value, "enum")
             btn.isSelected = (option.value = enumValue)
@@ -232,3 +237,19 @@ sub settingsOnBlur(toFocus as object)
         m.draw(true)
     end if
 end sub
+
+function settingsGetEnumSettingValue(key as string, default as dynamic) as dynamic
+    if m.overlay.storage <> invalid then
+        return firstOf(m.overlay.storage[key], default)
+    else
+        return AppSettings().GetPreference(key)
+    end if
+end function
+
+function settingsGetBoolSettingValue(key as string, default as dynamic) as boolean
+    if m.overlay.storage <> invalid then
+        return (firstOf(m.overlay.storage[key], default) = "1")
+    else
+        return AppSettings().GetBoolPreference(key)
+    end if
+end function

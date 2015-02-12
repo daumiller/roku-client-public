@@ -33,9 +33,10 @@ function AppSettings()
         obj.GetMaxResolution = settingsGetMaxResolution
 
         obj.reset()
-        obj.InitPrefs()
+
         m.AppSettings = obj
 
+        obj.InitPrefs()
         obj.InitGlobals()
     end if
 
@@ -110,19 +111,27 @@ sub settingsInitPrefs()
     }
 
     ' TODO(schuyler): How many different quality settings do we want? Local vs. remote? Per-server?
+    ' TODO(schuyler): This is so wrong, but we want to stuff the qualities into
+    ' a global, but we can't InitGlobals before we InitPrefs.
     ' Quality
-    options = [
-        {title: "20 Mbps", value: "12"},
-        {title: "12 Mbps", value: "11"},
-        {title: "10 Mbps", value: "10"},
-        {title: "8 Mbps", value: "9"},
-        {title: "4 Mbps", value: "8"},
-        {title: "3 Mbps", value: "7"},
-        {title: "2 Mbps", value: "6"},
-        {title: "1.5 Mbps", value: "5"},
-        {title: "720 Kbps", value: "4"},
-        {title: "320 Kbps", value: "3"},
-    ]
+
+    qualities = CreateObject("roList")
+    qualities.Push({title: "20 Mbps", index: 12, maxBitrate: 20000, maxHeight: 1080})
+    qualities.Push({title: "12 Mbps", index: 11, maxBitrate: 12000, maxHeight: 1080})
+    qualities.Push({title: "10 Mbps", index: 10, maxBitrate: 10000, maxHeight: 1080})
+    qualities.Push({title: "8 Mbps", index: 9, maxBitrate: 8000, maxHeight: 1080})
+    qualities.Push({title: "4 Mbps", index: 8, maxBitrate: 4000, maxHeight: 720})
+    qualities.Push({title: "3 Mbps", index: 7, maxBitrate: 3000, maxHeight: 720})
+    qualities.Push({title: "2 Mbps", index: 6, maxBitrate: 2000, maxHeight: 720})
+    qualities.Push({title: "1.5 Mbps", index: 5, maxBitrate: 1500, maxHeight: 480})
+    qualities.Push({title: "720 Kbps", index: 4, maxBitrate: 720, maxHeight: 0})
+    qualities.Push({title: "320 Kbps", index: 3, maxBitrate: 320, maxHeight: 0})
+    m.globals["qualities"] = qualities
+
+    options = CreateObject("roList")
+    for each quality in qualities
+        options.Push({title: quality.title, value: tostr(quality.index)})
+    next
     m.prefs["local_quality"] = {
         key: "local_quality",
         title: "Local Streaming Quality",

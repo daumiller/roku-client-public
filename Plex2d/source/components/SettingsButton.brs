@@ -14,7 +14,7 @@ function SettingsButtonClass() as object
     return m.SettingsButtonClass
 end function
 
-function createSettingsButton(text as string, font as object, command as dynamic, value as string, prefType as string, screenPref=false as boolean) as object
+function createSettingsButton(text as string, font as object, command as dynamic, value as string, prefType as string, storage=invalid as dynamic) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(SettingsButtonClass())
 
@@ -23,7 +23,7 @@ function createSettingsButton(text as string, font as object, command as dynamic
     obj.command = command
     obj.value = value
     obj.prefType = prefType
-    obj.screenPref = screenPref
+    obj.storage = storage
     obj.isSelected = false
 
     return obj
@@ -119,8 +119,9 @@ sub settingsbuttonOnSelected()
     ' redraw the screen
     CompositorScreen().DrawAll()
 
-    if m.screenPref then
-        Debug("TODO: override pref for Screen: " + prefKey + "=" + prefValue + " (type: " + m.prefType + ")")
+    if m.storage <> invalid then
+        Debug("Set local preference:" + prefKey + "=" + prefValue + " (type: " + m.prefType + ")")
+        m.storage[prefKey] = prefValue
     else
         Debug("Set preference:" + prefKey + "=" + prefValue + " (type: " + m.prefType + ")")
         AppSettings().SetPreference(prefKey, prefValue)
