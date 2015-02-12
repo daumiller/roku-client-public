@@ -351,7 +351,7 @@ sub gsShiftComponents(shift as object)
         ' Pass 1
         onScreen = CreateObject("roList")
         for each comp in m.shiftableComponents
-            if comp.IsOnScreen(shift.x, shift.x) then
+            if comp.IsOnScreen(shift.x, shift.y) then
                 onScreen.push(comp)
             end if
         end for
@@ -398,11 +398,11 @@ sub gsShiftComponents(shift as object)
     ' this is quicker than using IsOnScreen() for each component
     triggerLazyLoad = false
     ' minX/maxX: are all components on screen during shift
-    minX = curWidth*-1 + abs(shift.x)*-1
-    maxX = (1280 + curWidth) + abs(shift.x)
-    ' llminX/llmaxX: lazy load any componenet within this range if not loaded
-    llminX = m.ll_trigger*-1 + abs(shift.x)*-1
-    llmaxX = (m.ll_trigger) + abs(shift.x)
+    minX = (curWidth * -1) + (abs(shift.x) * -1)
+    maxX = 1280 + curWidth + abs(shift.x)
+    ' llminX/llmaxX: lazy load any component within this range if not loaded
+    llminX = (m.ll_triggerX * -1) + (abs(shift.x) * -1)
+    llmaxX = m.ll_triggerX + abs(shift.x)
 
     chunksToLoad = CreateObject("roList")
     for each component in m.shiftableComponents
@@ -426,7 +426,7 @@ sub gsShiftComponents(shift as object)
     perfTimer().Log("Determined shiftable items: " + "onscreen=" + tostr(partShift.count()) + ", offScreen=" + tostr(fullShift.count()))
 
     ' set the onScreen components (helper for the manual Focus)
-    m.OnScreenComponents = partShift
+    m.onScreenComponents = partShift
 
     ' verify we are not shifting the components to far (first or last component). This
     ' will modify shift.x based on the first or last component viewable on screen. It
@@ -451,20 +451,20 @@ sub gsShiftComponents(shift as object)
     m.screen.DrawFocus(m.focusedItem, true)
 
     ' shift all off screen components. This will set the x,y postition and
-    ' unload the components if offscreen by enough pixels (ll_unload)
+    ' unload the components if offscreen by enough pixels (ll_unloadX)
     for each comp in fullShift
         comp.ShiftPosition(shift.x, shift.y, false)
     end for
     perfTimer().Log("Shifted OFF screen items (fullShift)")
 
-    ' lazy-load any components off screen, but within our range (ll_trigger)
+    ' lazy-load any components off screen, but within our range (ll_triggerX)
     ' create a timer to load when the user has stopped shifting (LazyLoadOnTimer)
     lazyLoad = CreateObject("roList")
     if triggerLazyLoad = true then
         perfTimer().Mark()
         ' add any off screen component withing range
         for each candidate in fullShift
-            if m.ChunkIsLoaded(candidate.parent) = true and candidate.SpriteIsLoaded() = false and candidate.IsOnScreen(0, 0, m.ll_load) then
+            if m.ChunkIsLoaded(candidate.parent) = true and candidate.SpriteIsLoaded() = false and candidate.IsOnScreen(0, 0, m.ll_loadX, m.ll_loadY) then
                 lazyLoad.Push(candidate)
             end if
         end for
@@ -520,8 +520,8 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
                 m.FocusItemManually(m.focusedItem)
             end if
 
-            ' redraw the component, only within the loading area (ll_load)
-            if gridItem.IsOnScreen(0, 0, m.ll_load) then
+            ' redraw the component, only within the loading area (ll_load*)
+            if gridItem.IsOnScreen(0, 0, m.ll_loadX, m.ll_loadY) then
                 gridItem.draw()
             end if
         end if

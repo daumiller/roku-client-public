@@ -117,10 +117,6 @@ sub compRedraw()
     ' that we don't have a sprite and simply do nothing.
 
     if m.sprite <> invalid then
-        ' remove lazy load status if applicable, and retain any other keys
-        if m.sprite.getData() <> invalid and m.sprite.getData().lazyLoad <> invalid then
-            m.sprite.getData().lazyLoad = invalid
-        end if
         m.sprite.SetRegion(m.region)
         CompositorScreen().DrawAll()
     end if
@@ -227,7 +223,7 @@ sub compShiftPosition(deltaX=0 as integer, deltaY=0 as integer, shiftSprite=true
 
     ' ignore shifting the sprite (normally off screen), and unload if applicable
     if shiftSprite = false then
-        if m.sprite <> invalid and NOT m.IsOnScreen(0, 0, ComponentsScreen().ll_unload) then
+        if m.sprite <> invalid and NOT m.IsOnScreen(0, 0, ComponentsScreen().ll_unloadX, ComponentsScreen().ll_unloadY) then
             m.unload()
         end if
         return
@@ -288,7 +284,7 @@ end sub
 
 sub compGetFocusableItems(arr as object)
     ' check if the component is focusable and on the screen (or off by a little)
-    if m.focusable and m.IsOnScreen(0, 0, int(1280/4)) then
+    if m.focusable and m.IsOnScreen(0, 0, int(AppSettings().GetWidth()/4)) then
         arr.Push(m)
     end if
 end sub
@@ -298,7 +294,7 @@ sub compGetShiftableItems(partShift as object, fullShift as object, lazyLoad=inv
     ' either the Components Class or directly on the component
     if NOT(m.fixed = false) then return
 
-    if lazyLoad <> invalid and lazyLoad.trigger = invalid and m.SpriteIsLoaded() = false and m.IsOnScreen(0, 0, ComponentsScreen().ll_trigger) then
+    if lazyLoad <> invalid and lazyLoad.trigger = invalid and m.SpriteIsLoaded() = false and m.IsOnScreen(0, 0, ComponentsScreen().ll_triggerX, ComponentsScreen().ll_triggerY) then
         lazyLoad.trigger = true
     end if
 
@@ -366,21 +362,24 @@ sub compDestroy()
     end if
 end sub
 
-' TODO(rob) vertical check + HD2SD
-function compIsOnScreen(deltaX=0 as integer, deltaY=0 as integer, safeOffset=0 as integer) as boolean
+function compIsOnScreen(deltaX=0 as integer, deltaY=0 as integer, safeXOffset=0 as integer, safeYOffset=0) as boolean
     rect = {
-        x: m.x+deltaX
-        y: m.y+deltaY
+        x: m.x + deltaX
+        y: m.y + deltaY
         width:  m.width
         height: m.height
     }
     rect = computeRect(rect)
 
     ' set the screens safe area (allow offset)
-    screenLeft = 0 - safeOffset
-    screenRight = 1280 + safeOffset
+    displaySize = AppSettings().GetGlobal("displaySize")
+    screenLeft = safeXOffset * -1
+    screenRight = displaySize.w + safeXOffset
+    screenUp = safeYOffset * -1
+    screenDown = displaySize.h + safeYOffset
 
-    if rect.right >= screenLeft and rect.left <= screenRight then
+    ' Verify the opposite side of the safe area is within range
+    if rect.right >= screenLeft and rect.left <= screenRight and rect.down >= screenUp and rect.up <= screenDown then
         return true
     else
         return false
@@ -395,9 +394,6 @@ function compSpriteIsLoaded() as boolean
 
     ' check if any child component is loading
     if m.IsPendingTexture() then return false
-
-    ' not loaded if sprites data contains a lazyLoad key
-    if m.sprite.getData() <> invalid and m.sprite.getData().lazyLoad = true then return false
 
     ' anything else we will consider loaded
     return true

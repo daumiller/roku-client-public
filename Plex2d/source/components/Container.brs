@@ -50,7 +50,7 @@ function contDraw() as object
 
     for each component in m.components
         ' only load/draw components on screen and in buffer area
-        if component.IsOnScreen(0, 0, ComponentsScreen().ll_load) then
+        if component.IsOnScreen(0, 0, ComponentsScreen().ll_loadX, ComponentsScreen().ll_loadY) then
             childRegions = component.Draw()
             for each region in childRegions
                 ' containers of containers! we'll need to check the vertical scrolling
@@ -134,7 +134,7 @@ end sub
 
 function contIsPendingTexture() as boolean
     for each component in m.components
-        if component.IsPendingTexture() = true then
+        if component.IsPendingTexture() then
             return true
         end if
     next

@@ -22,12 +22,21 @@ function ComponentsScreen() as object
         ' ll_trigger: when to trigger a lazy load (items within range not loaded). This should be > screen
         ' ll_load: how many to load when triggered (<= ll_unload, otherwise we'll load more than we allow)
         ' ll_timerDur: ms to wait before lazy loading the pending off screen components
+        displayHeight = AppSettings().GetHeight()
+        displayWidth = AppSettings().GetWidth()
         obj.LazyLoadOnTimer = compLazyLoadOnTimer
         obj.LazyLoadExec = compLazyLoadExec
-        obj.ll_unload = int(1280*1.5)
-        obj.ll_trigger = 1280
-        obj.ll_load = int(1280*1.5)
         obj.ll_timerDur = 1500
+
+        ' Horizontal settings
+        obj.ll_unloadX = int(displayWidth * 1.5)
+        obj.ll_triggerX = displayWidth
+        obj.ll_loadX = int(displayWidth * 1.5)
+
+        ' vertical settings. These are fairly conservative on purpose (memory constraints)
+        obj.ll_triggerY = displayHeight/4
+        obj.ll_unloadY = int(displayHeight/2)
+        obj.ll_loadY = int(displayHeight/2)
 
         ' Standard screen methods
         obj.Init = compInit
@@ -752,9 +761,9 @@ sub compCalculateShift(toFocus as object, refocus=invalid as dynamic)
     ' * shiftableParent for containers in containers (e.g. users screen: vbox -> hbox -> component)
     ' * continue with the standard container shift (horizontal scroll), after override
     if toFocus.shiftableParent <> invalid and type(toFocus.shiftableParent.CalculateShift) = "roFunction" then
-        toFocus.shiftableParent.CalculateShift(toFocus, refocus)
+        toFocus.shiftableParent.CalculateShift(toFocus, refocus, m)
     else if toFocus.parent <> invalid and type(toFocus.parent.CalculateShift) = "roFunction" then
-        toFocus.parent.CalculateShift(toFocus, refocus)
+        toFocus.parent.CalculateShift(toFocus, refocus, m)
     end if
 
     ' TODO(rob) handle vertical shifting. revisit safeLeft/safeRight - we can't
@@ -862,7 +871,7 @@ sub compShiftComponents(shift)
         ' Pass 1
         onScreen = CreateObject("roList")
         for each comp in m.shiftableComponents
-            if comp.IsOnScreen(shift.x, shift.x) then
+            if comp.IsOnScreen(shift.x, shift.y) then
                 onScreen.push(comp)
             end if
         end for
@@ -901,7 +910,7 @@ sub compShiftComponents(shift)
     perfTimer().Log("Determined shiftable items: " + "onscreen=" + tostr(partShift.count()) + ", offScreen=" + tostr(fullShift.count()))
 
     ' set the onScreen components (helper for the manual Focus)
-    m.OnScreenComponents = partShift
+    m.onScreenComponents = partShift
 
     ' verify we are not shifting the components to far (first or last component). This
     ' will modify shift.x based on the first or last component viewable on screen. It
@@ -928,14 +937,14 @@ sub compShiftComponents(shift)
     ' draw the focus before we lazy load
     m.screen.DrawFocus(m.focusedItem, true)
 
-    ' lazy-load any components off screen, but within our range (ll_trigger)
+    ' lazy-load any components off screen, but within our range (ll_triggerX)
     ' create a timer to load when the user has stopped shifting (LazyLoadOnTimer)
     if lazyLoad.trigger = true then
         lazyLoad.components = CreateObject("roList")
 
         ' add any off screen component withing range
         for each candidate in fullShift
-            if candidate.SpriteIsLoaded() = false and candidate.IsOnScreen(0, 0, m.ll_load) then
+            if candidate.SpriteIsLoaded() = false and candidate.IsOnScreen(0, 0, m.ll_loadX, m.ll_loadY) then
                 lazyLoad.components.Push(candidate)
             end if
         end for
@@ -994,8 +1003,6 @@ sub compLazyLoadExec(components as object, zOrder=1 as integer)
             if comp.sprite = invalid then
                 comp.sprite = m.screen.compositor.NewSprite(comp.x, comp.y, comp.region, zOrder)
             end if
-            ' set the sprites data to let all know it's NOT loaded yet
-            comp.sprite.setData({lazyLoad: true, retainThisKey: true})
             comp.On("redraw", createCallable("OnComponentRedraw", CompositorScreen(), "compositorRedraw"))
         end if
     end for

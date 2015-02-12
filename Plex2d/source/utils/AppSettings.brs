@@ -32,6 +32,8 @@ function AppSettings()
         obj.GetGlobalSettings = settingsGetGlobalSettings
         obj.SupportsSurroundSound = settingsSupportsSurroundSound
         obj.GetMaxResolution = settingsGetMaxResolution
+        obj.GetWidth = settingsGetWidth
+        obj.GetHeight = settingsGetHeight
 
         obj.SetPrefOverride = settingsSetPrefOverride
         obj.PopPrefOverrides = settingsPopPrefOverrides
@@ -610,3 +612,11 @@ sub settingsPopPrefOverrides(screenID as integer)
         m.overrides.Pop()
     end if
 end sub
+
+function settingsGetHeight() as integer
+    return m.globals.displaySize.h
+end function
+
+function settingsGetWidth() as integer
+    return m.globals.displaySize.w
+end function

@@ -189,8 +189,9 @@ function vboxGetPreferredHeight() as integer
     return totalHeight
 end function
 
-sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic)
+sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic, screen=invalid as object)
     if toFocus.fixed = true or m.scrolltriggerdown >= m.containerHeight then return
+    m.screen = screen
 
     shift = {
         x: 0
@@ -267,17 +268,75 @@ end sub
 sub vboxShiftComponents(shift)
     Debug("shift vbox by: " + tostr(shift.x) + "," + tostr(shift.y))
 
+    if m.screen.lazyLoadTimer <> invalid then
+        m.screen.lazyLoadTimer.active = false
+        m.screen.lazyLoadTimer.components = invalid
+    end if
+
+    partShift = CreateObject("roList")
+    fullShift = CreateObject("roList")
+    lazyLoad = CreateObject("roAssociativeArray")
+    for each component in m.components
+        component.GetShiftableItems(partShift, fullShift, lazyLoad, shift.x, shift.y)
+    next
+
+    ' lazy-load any components that will be on-screen after we shift
+    ' and cancel any pending texture requests
+    TextureManager().CancelAll(false)
+    m.screen.LazyLoadExec(partShift)
+
     ' Animation still needs some logic/2d code to make it work with any
     ' scrollable vbox, but this does work for the users selection screen.
     if m.scrollAnimate = true then
-        AnimateShift(shift, m.components, CompositorScreen())
+        AnimateShift(shift, partShift, CompositorScreen())
     else
-        for each component in m.components
+        for each component in partShift
             component.ShiftPosition(shift.x, shift.y, true)
         end for
     end if
 
+    ' Set the visibility after shifting (special case for vbox)
     m.SetVisible()
+
+    ' Normally we would just set onScreenComponents=partShift, however we are executing
+    ' this in the containers context, so we must make one more pass to get a list of all
+    ' the on screen components after the shift.
+    m.screen.onScreenComponents.Clear()
+    for each component in m.screen.components
+        component.GetShiftableItems(m.screen.onScreenComponents, [])
+    next
+
+    ' shift all the off screen components (ignore shifting the sprite)
+    for each comp in fullShift
+        comp.ShiftPosition(shift.x, shift.y, false)
+    end for
+
+    ' lazyload off screen components within our range. Remember we need to execute the
+    ' lazyload routines in the screens context.
+    if lazyLoad.trigger = true then
+        lazyLoad.components = CreateObject("roList")
+
+        ' add any off screen component within range
+        for each candidate in fullShift
+            if candidate.SpriteIsLoaded() = false and candidate.IsOnScreen(0, 0, 0, ComponentsScreen().ll_loadY) then
+                lazyLoad.components.Push(candidate)
+            end if
+        end for
+
+        Debug("Determined lazy load components (off screen): total=" + tostr(lazyLoad.components.count()))
+
+        if lazyLoad.components.count() > 0 then
+            m.screen.lazyLoadTimer.active = true
+            m.screen.lazyLoadTimer.components = lazyLoad.components
+            Application().AddTimer(m.screen.lazyLoadTimer, createCallable("LazyLoadOnTimer", m.screen))
+            m.screen.lazyLoadTimer.mark()
+        end if
+    end if
+
+    if lazyLoad.components = invalid then
+        m.screen.lazyLoadTimer.active = false
+        m.screen.lazyLoadTimer.components = invalid
+    end if
 end sub
 
 sub vboxSetScrollable(scrollTriggerHeight=invalid as dynamic, scrollAnimate=false as boolean, scrollVisible=false as boolean, scrollbarPos="right" as dynamic)
