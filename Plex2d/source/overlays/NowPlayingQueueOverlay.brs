@@ -85,6 +85,8 @@ sub npqoGetComponents()
     items = m.player.context
     trackCount = items.Count()
     isMixed = (m.player.playQueue.isMixed = true)
+    ' create a shared region for the separator
+    sepRegion = CreateRegion(trackPrefs.width, 1, Colors().OverlayDark)
     for index = 0 to trackCount - 1
         item = items.[index].item
         track = createTrack(item, FontRegistry().Font16, FontRegistry().Font12, m.customFonts.trackStatus, trackCount, isMixed)
@@ -102,6 +104,7 @@ sub npqoGetComponents()
 
         if index < trackCount - 1 then
             sep = createBlock(Colors().OverlayDark)
+            sep.region = sepRegion
             sep.height = 1
             sep.width = trackPrefs.width
             sep.fixed = trackPrefs.fixed

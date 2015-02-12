@@ -552,3 +552,10 @@ function GetFriendlyName() as string
 
     return device.GetModelDisplayName() + " - " + device.GetDeviceUniqueId()
 end function
+
+function CreateRegion(width as integer, height as integer, color as integer, alphaEnable=false as boolean) as object
+    bmp = CreateObject("roBitmap", {width: width, height: height, alphaEnable: alphaEnable})
+    bmp.Clear(color)
+    region = CreateObject("roRegion", bmp, 0, 0, bmp.GetWidth(), bmp.GetHeight())
+    return region
+end function
