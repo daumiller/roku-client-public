@@ -34,9 +34,7 @@ function Glyphs() as object
         obj.LOCK        = chr(&h1f512)
         obj.UNLOCK      = chr(&he205)
         obj.INFO        = chr(&he196)
-
-        ' TODO(rob): verify which one is correct for the now playing screen
-        obj.HAMBURGER   = chr(&he519)
+        obj.EQ          = chr(&hf10a)
         obj.LIST        = chr(&he159)
 
         ' Constants Aliases
