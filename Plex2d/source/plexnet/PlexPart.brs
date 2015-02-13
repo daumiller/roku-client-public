@@ -84,7 +84,7 @@ function pnpGetStreamsOfType(streamType as integer) as object
     if streamType = PlexStreamClass().TYPE_SUBTITLE then
         none = NoneStream()
         streams.AddHead(none)
-        ' none.SetSelected(not foundSelected)
+        none.SetSelected(not foundSelected)
     end if
 
     return streams
@@ -109,8 +109,16 @@ function pnpGetSelectedStreamOfType(streamType as integer) as dynamic
     return default
 end function
 
-sub pnpSetSelectedStream(streamType as string, streamId as string, async as boolean)
-    path = "/library/parts/" + m.Get("id", "") + "?" + streamType + "StreamID=" + streamId
+function pnpSetSelectedStream(streamType as integer, streamId as string, async as boolean) as dynamic
+    if streamType = PlexStreamClass().TYPE_AUDIO then
+        typeString = "audio"
+    else if streamType = PlexStreamClass().TYPE_SUBTITLE then
+        typeString = "subtitle"
+    else
+        return invalid
+    end if
+
+    path = "/library/parts/" + m.Get("id", "") + "?" + typeString + "StreamID=" + streamId
     request = createPlexRequest(m.GetServer(), path, "PUT")
 
     if async then
@@ -119,7 +127,23 @@ sub pnpSetSelectedStream(streamType as string, streamId as string, async as bool
     else
         request.PostToStringWithTimeout()
     end if
-end sub
+
+    matching = NoneStream()
+
+    ' Update any affected streams
+    for each stream in m.streams
+        if stream.GetInt("streamType") = streamType then
+            if stream.Get("id") = streamId then
+                stream.SetSelected(true)
+                matching = stream
+            else if stream.IsSelected() then
+                stream.SetSelected(false)
+            end if
+        end if
+    next
+
+    return matching
+end function
 
 function pnpIsIndexed() as boolean
     return m.Has("indexes")

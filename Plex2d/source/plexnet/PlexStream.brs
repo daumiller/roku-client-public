@@ -40,6 +40,7 @@ function PlexStreamClass() as object
         obj.GetLanguageName = pnstrGetLanguageName
         obj.GetSubtitlePath = pnstrGetSubtitlePath
         obj.IsSelected = pnstrIsSelected
+        obj.SetSelected = pnstrSetSelected
         obj.ToString = pnstrToString
         obj.Equals = pnstrEquals
 
@@ -123,6 +124,10 @@ end function
 function pnstrIsSelected() as boolean
     return (m.GetInt("selected") = 1)
 end function
+
+sub pnstrSetSelected(selected as boolean)
+    m.attrs["selected"] = iif(selected, "1", "0")
+end sub
 
 function pnstrToString() as string
     return m.GetTitle()

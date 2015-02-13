@@ -119,13 +119,14 @@ end function
 sub homeOnKeyRelease(keyCode as integer)
     if keyCode = m.kp_BK then
         dialog = createDialog("Are you ready to exit Plex?", invalid, m)
-        dialog.exitDialog = true
         dialog.enableBackButton = true
         dialog.buttonsSingleLine = true
         dialog.AddButton("Yes", "exit")
         dialog.AddButton("No", "no_exit")
         dialog.HandleButton = homeDialogHandleButton
         dialog.Show()
+
+        dialog.On("close", createCallable("OnOverlayClose", m))
     else
         ApplyFunc(ComponentsScreen().OnKeyRelease, m, [keyCode])
     end if
@@ -141,7 +142,7 @@ sub homeDialogHandleButton(button as object)
 end sub
 
 sub homeOnOverlayClose(overlay as object, backButton as boolean)
-    if backButton and overlay.exitDialog = true then
+    if backButton then
         Application().popScreen(m)
     end if
 end sub

@@ -20,6 +20,8 @@ function PreplayScreen() as object
         obj.GetSideInfo = preplayGetSideInfo
         obj.GetMainInfo = preplayGetMainInfo
 
+        obj.OnSettingsClosed = preplayOnSettingsClosed
+
         m.PreplayScreen = obj
     end if
 
@@ -133,6 +135,7 @@ function preplayHandleCommand(command as string, item as dynamic) as boolean
         settings.GetPrefs = preplayGetPrefs
         settings.storage = m.localPrefs
         settings.Show()
+        settings.On("close", createCallable("OnSettingsClosed", m))
     else if command = "show_grid" then
         Application().PushScreen(createGridScreen(item.plexObject))
     else if command = "go_to_show" then
@@ -297,8 +300,10 @@ function preplayGetMainInfo() as object
         subStream = mediaItems[0].parts[0].GetSelectedStreamOfType(3)
         if subStream <> invalid then subText = subStream.GetTitle()
     end if
-    components.push(createLabel("AUDIO" + spacer + audioText, normalFont))
-    components.push(createLabel("SUBTITLES" + spacer + subText, normalFont))
+    m.audioLabel = createLabel("AUDIO" + spacer + audioText, normalFont)
+    m.subtitleLabel = createLabel("SUBTITLES" + spacer + subText, normalFont)
+    components.push(m.audioLabel)
+    components.push(m.subtitleLabel)
 
     return components
 end function
@@ -625,4 +630,52 @@ sub preplayRefresh(request=invalid as dynamic, response=invalid as dynamic, cont
     m.refocus.id = m.focusedItem.id
 
     m.Show()
+end sub
+
+sub preplayOnSettingsClosed(overlay as object, backButton as boolean)
+    ' If we have any local playback options, evaluate them now.
+    if m.localPrefs <> invalid then
+        plexObject = m.item
+
+        if m.localPrefs.media <> invalid then
+            for each media in plexObject.mediaItems
+                media.selected = (m.localPrefs.media = media.Get("id"))
+            next
+        end if
+
+        spacer = "   "
+        redraw = false
+
+        if m.localPrefs.audio_stream <> invalid then
+            part = plexObject.mediaItems[0].parts[0]
+            stream = part.SetSelectedStream(PlexStreamClass().TYPE_AUDIO, m.localPrefs.audio_stream, false)
+            if stream <> invalid then
+                m.audioLabel.SetText("AUDIO" + spacer + stream.GetTitle(), true, true)
+                redraw = true
+            end if
+        end if
+
+        if m.localPrefs.subtitle_stream <> invalid then
+            part = plexObject.mediaItems[0].parts[0]
+            stream = part.SetSelectedStream(PlexStreamClass().TYPE_SUBTITLE, m.localPrefs.subtitle_stream, false)
+            if stream <> invalid then
+                m.subtitleLabel.SetText("SUBTITLES" + spacer + stream.GetTitle(), true, true)
+                redraw = true
+            end if
+        end if
+
+        if m.localPrefs.quality <> invalid then
+            AppSettings().SetPrefOverride("local_quality", m.localPrefs.quality, m.screenID)
+            AppSettings().SetPrefOverride("remote_quality", m.localPrefs.quality, m.screenID)
+        end if
+
+        possiblePrefs = ["playback_direct", "playback_remux", "playback_transcode"]
+        for each prefKey in possiblePrefs
+            if m.localPrefs[prefKey] <> invalid then
+                AppSettings().SetPrefOverride(prefKey, m.localPrefs[prefKey], m.screenID)
+            end if
+        next
+
+        if redraw then m.screen.DrawAll()
+    end if
 end sub

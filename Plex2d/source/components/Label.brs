@@ -13,6 +13,7 @@ function LabelClass() as object
         obj.SetColor = labelSetColor
         obj.SetBorder = labelSetBorder
         obj.DrawIndicator = labelDrawIndicator
+        obj.SetText = labelSetText
 
         obj.WrapText = labelWrapText
         obj.TruncateText = labelTruncateText
@@ -264,5 +265,32 @@ sub labelDrawIndicator(valign=invalid as dynamic, halign=invalid as dynamic)
         end if
 
         m.region.DrawObject(xOffset, yOffset, indicator.region)
+    end if
+end sub
+
+sub labelSetText(text as string, redraw=false as boolean, resize=false as boolean)
+    if m.text = text then return
+
+    m.text = text
+
+    if resize then
+        m.width = 0
+        if m.parent <> invalid then
+            maxWidth = iif(m.parent.width > 0, m.parent.width, 1280)
+        else
+            maxWidth = 1280
+        end if
+
+        preferred = m.GetPreferredWidth()
+        m.width = iif(preferred < maxWidth, preferred, maxWidth)
+
+        ' Make sure the new width is actually used
+        m.contentArea = invalid
+        m.region = invalid
+    end if
+
+    if redraw then
+        m.Draw(true)
+        if m.sprite <> invalid then m.sprite.SetRegion(m.region)
     end if
 end sub

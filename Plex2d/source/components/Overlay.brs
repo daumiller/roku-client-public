@@ -84,7 +84,7 @@ sub overlayClose(backButton=false as boolean)
     end if
 
     ' Let the parent screen know we closed
-    m.screen.OnOverlayClose(m, backButton)
+    m.Trigger("close", [m, backButton])
 end sub
 
 sub overlayShow(blocking=false as boolean)

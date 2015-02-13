@@ -67,7 +67,6 @@ function ComponentsScreen() as object
         obj.OnKeyRelease = compOnKeyRelease
         obj.OnInfoButton = compOnInfoButton
         obj.OnPlayButton = compOnPlayButton
-        obj.OnOverlayClose = compOnOverlayClose
 
         ' Focus handling
         obj.OnFocus = compOnFocus
@@ -1055,37 +1054,6 @@ sub compCreatePlayerForItem(plexObject=invalid as dynamic, options=invalid as dy
             end if
         end if
 
-        ' If we have any local playback options, evaluate them now.
-        if m.localPrefs <> invalid then
-            if m.localPrefs.media <> invalid then
-                for each media in plexObject.mediaItems
-                    media.selected = (m.localPrefs.media = media.Get("id"))
-                next
-            end if
-
-            if m.localPrefs.audio_stream <> invalid then
-                part = plexObject.mediaItems[0].parts[0]
-                part.SetSelectedStream("audio", m.localPrefs.audio_stream, false)
-            end if
-
-            if m.localPrefs.subtitle_stream <> invalid then
-                part = plexObject.mediaItems[0].parts[0]
-                part.SetSelectedStream("subtitle", m.localPrefs.subtitle_stream, false)
-            end if
-
-            if m.localPrefs.quality <> invalid then
-                AppSettings().SetPrefOverride("local_quality", m.localPrefs.quality, m.screenID)
-                AppSettings().SetPrefOverride("remote_quality", m.localPrefs.quality, m.screenID)
-            end if
-
-            possiblePrefs = ["playback_direct", "playback_remux", "playback_transcode"]
-            for each prefKey in possiblePrefs
-                if m.localPrefs[prefKey] <> invalid then
-                    AppSettings().SetPrefOverride(prefKey, m.localPrefs[prefKey], m.screenID)
-                end if
-            next
-        end if
-
         pq = createPlayQueueForItem(plexObject, options)
         player = GetPlayerForType(pq.type)
         if player <> invalid then
@@ -1175,8 +1143,4 @@ sub compOnFocusOut(lastFocus=invalid as dynamic, toFocus=invalid as dynamic)
     end if
 
     m.ToggleScrollbar(false, toFocus, lastFocus)
-end sub
-
-sub compOnOverlayClose(overlay=invalid as dynamic, backButton=false as boolean)
-    ' no-op
 end sub
