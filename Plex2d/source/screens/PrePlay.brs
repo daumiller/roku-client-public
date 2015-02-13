@@ -385,6 +385,11 @@ function preplayGetButtons() as object
         buttons.push({text: Glyphs().PLAY, command: "play", item: m.item})
     end if
 
+    ' Settings
+    if m.item.IsVideoItem() and m.item.mediaItems <> invalid then
+        buttons.push({text: Glyphs().EQ, command: "settings"})
+    end if
+
     if m.item.IsUnwatched() then
         buttons.push({text: Glyphs().SCROBBLE, command: "scrobble"})
     else
@@ -446,11 +451,6 @@ function preplayGetButtons() as object
         end for
 
         buttons.Push(button)
-    end if
-
-    ' Settings
-    if m.item.IsVideoItem() and m.item.mediaItems <> invalid then
-        buttons.push({text: Glyphs().CONFIG, command: "settings"})
     end if
 
     for each button in buttons
