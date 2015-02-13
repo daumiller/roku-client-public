@@ -4,6 +4,7 @@ function Colors() as object
 
         ' Methods
         obj.ToHexString = colorsToHexString
+        obj.GetAlpha = colorsGetAlpha
 
         ' Constants
         obj.Background = &h111111ff
@@ -41,4 +42,11 @@ end function
 
 function colorsToHexString(key as string, alpha=false as boolean)
     return IntToHex(m[key], alpha)
+end function
+
+function colorsGetAlpha(color as string, percent as integer) as integer
+    if m[color] = invalid then
+        Fatal(color + " is not found in object")
+    end if
+    return m[color] and int(percent/100 * 255) - 255
 end function
