@@ -11,6 +11,7 @@ function LabelClass() as object
         obj.GetPreferredWidth = labelGetPreferredWidth
         obj.GetPreferredHeight = labelGetPreferredHeight
         obj.SetColor = labelSetColor
+        obj.SetBorder = labelSetBorder
 
         obj.WrapText = labelWrapText
         obj.TruncateText = labelTruncateText
@@ -53,6 +54,10 @@ function labelGetPreferredWidth() as integer
             paddingSize = 0
         end if
 
+        if m.borderSize <> invalid then
+            paddingSize = paddingSize + m.border.left + m.border.right
+        end if
+
         return m.font.GetOneLineWidth(m.text, 1280) + paddingSize
     end if
 end function
@@ -66,6 +71,10 @@ function labelGetPreferredHeight() as integer
             paddingSize = m.padding.top + m.padding.bottom
         else
             paddingSize = 0
+        end if
+
+        if m.borderSize <> invalid then
+            paddingSize = paddingSize + m.border.top + m.border.bottom
         end if
 
         return m.font.GetOneLineHeight() + paddingSize
@@ -100,6 +109,13 @@ function labelDraw(redraw=false as boolean) as object
 
         m.region.DrawText(line, xOffset, yOffset, m.fgColor, m.font)
         yOffset = yOffset + lineHeight
+
+        if m.border <> invalid then
+            m.region.DrawRect(0, 0, m.width, m.border.top, m.border.color)
+            m.region.DrawRect(m.width - m.border.right, 0, m.border.right, m.height, m.border.color)
+            m.region.DrawRect(0, m.height - m.border.bottom, m.width, m.border.bottom, m.border.color)
+            m.region.DrawRect(0, 0, m.border.left, m.height, m.border.color)
+        end if
     next
 
     return [m]
@@ -118,6 +134,21 @@ sub labelSetColor(fgColor as integer, bgColor=invalid as dynamic)
     else
         m.bgColor = bgColor
     end if
+end sub
+
+sub labelSetBorder(color as integer, bTop as integer, bRight=invalid as dynamic, bBottom=invalid as dynamic, bLeft=invalid as dynamic)
+    ' Order of parameters and default values is borrowed from CSS.
+    bRight = firstOf(bRight, bTop)
+    bBottom = firstOf(bBottom, bTop)
+    bLeft = firstOf(bLeft, bRight)
+
+    m.border = {
+        left: bLeft,
+        right: bRight,
+        top: bTop,
+        bottom: bBottom
+        color: color
+    }
 end sub
 
 function labelWrapText(includeAllLines=false as boolean) as object
