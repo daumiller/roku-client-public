@@ -63,10 +63,14 @@ sub managerFetchProducts()
     ' purchase on the older firmware.
 
     if CheckMinimumVersion([5, 1]) then
-        ' TODO(rob): maybe we should ignore adding the initializer if the current
-        ' state is not limited? This would improve startup time.. basically:
-        ' if not m.IsPlaybackAllowed() then Application().AddInitializer("channelstore")
-        Application().AddInitializer("channelstore")
+        ' We'll check the store regardless, but if the user isn't limited (e.g.
+        ' we've cached that the user has a Plex Pass) then we don't register
+        ' an initializer so that startup isn't blocked while we wait on the
+        ' store.
+        '
+        if not m.IsPlaybackAllowed() then
+            Application().AddInitializer("channelstore")
+        end if
 
         ' The docs suggest we can make two requests at the same time by using the
         ' source identity, but it doesn't actually work. So we have to get the
