@@ -24,6 +24,7 @@ function createIndicator(color as integer, height as integer, padding=0 as integ
     obj.bgColor = (color and &hffffff00)
     obj.fgColor = color
     obj.halign = obj.JUSTIFY_RIGHT
+    obj.valign = obj.ALIGN_BOTTOM
 
     return obj
 end function
@@ -34,13 +35,25 @@ function indiDraw(redraw=false as boolean) as object
     m.InitRegion()
 
     if m.halign = m.JUSTIFY_LEFT then
-        for line = 0 to m.height
-            m.region.DrawLine(0, line, line, line, m.fgColor)
-        end for
+        if m.valign = m.ALIGN_TOP then
+            for line = 0 to m.height
+                m.region.DrawLine(0, line, m.height - line, line, m.fgColor)
+            end for
+        else
+            for line = 0 to m.height
+                m.region.DrawLine(0, line, line, line, m.fgColor)
+            end for
+        end if
     else
-        for line = 0 to m.height
-            m.region.DrawLine(m.width-line, line, m.width, line, m.fgColor)
-        end for
+        if m.valign = m.ALIGN_TOP then
+            for line = 0 to m.height
+                m.region.DrawLine(m.width - (m.height - line), line, m.width, line, m.fgColor)
+            end for
+        else
+            for line = 0 to m.height
+                m.region.DrawLine(m.width - line, line, m.width, line, m.fgColor)
+            end for
+        end if
     end if
 
     return [m]
