@@ -231,8 +231,8 @@ function voBuildDirectPlay(obj as object, partIndex as integer) as dynamic
         obj.StreamFormat = "mp4"
     end if
 
-    if m.audioStream <> invalid then
-        obj.AudioLanguageSelected = m.audioStream.Get("languageCode")
+    if m.choice.audioStream <> invalid then
+        obj.AudioLanguageSelected = m.choice.audioStream.Get("languageCode")
     end if
 
     return obj
