@@ -71,11 +71,11 @@ sub cardPerformLayout()
     end if
 
     if m.unwatched <> invalid then
-        m.unwatched.SetFrame(0, m.height - m.unwatched.GetPreferredHeight(), m.width, m.unwatched.GetPreferredHeight())
+        m.unwatched.SetFrame(0, 0, m.width, m.unwatched.GetPreferredHeight())
     end if
 
     if m.unwatchedCount <> invalid then
-        m.unwatchedCount.SetFrame(m.width - m.unwatchedCount.GetPreferredWidth(), m.height - m.unwatchedCount.GetPreferredHeight(), m.unwatchedCount.GetPreferredWidth(), m.unwatchedCount.GetPreferredHeight())
+        m.unwatchedCount.SetFrame(m.width - m.unwatchedCount.GetPreferredWidth(), 0, m.unwatchedCount.GetPreferredWidth(), m.unwatchedCount.GetPreferredHeight())
     end if
 
     if m.progress <> invalid and m.progress.percent > 0 then
@@ -118,10 +118,12 @@ sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, 
         label = iif(unwatchedCount < 10, " " + tostr(unwatchedCount) + " ", tostr(unwatchedCount))
         m.unwatchedCount = createLabel(label, FontRegistry().font16)
         m.unwatchedCount.SetPadding(m.overlayPadding.top)
-        m.unwatchedCount.SetColor(Colors().Text, (Colors().Orange and &hffffffc0))
+        m.unwatchedCount.SetColor(Colors().Text, Colors().Orange)
         m.AddComponent(m.unwatchedCount)
     else if unwatched then
         m.unwatched = createIndicator(Colors().Orange, FontRegistry().font16.GetOneLineHeight(), 10)
+        m.unwatched.valign = m.unwatched.ALIGN_TOP
+        m.unwatched.halign = m.unwatched.JUSTIFY_RIGHT
         m.AddComponent(m.unwatched)
     end if
 
