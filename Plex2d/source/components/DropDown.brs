@@ -217,4 +217,10 @@ sub dropdownCalculatePosition(vbox as object)
     end if
 
     vbox.SetFrame(ddProp.x, ddProp.y, ddProp.width, ddProp.height)
+
+    ' make sure that our scrolling starts within the safe area
+    maxScrollHeight = ddProp.height - m.height
+    if maxScrollHeight < m.maxHeight then
+        vbox.SetScrollable(maxScrollHeight)
+    end if
 end sub
