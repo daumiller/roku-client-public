@@ -371,7 +371,7 @@ function preplayGetButtons() as object
     if showSecondaryPlay then
         button = {
             type: "dropDown",
-            text: Glyphs().PLAY_MORE,
+            text: Glyphs().PLAY,
             item: m.item,
             position: "right"
             options: createObject("roList")
@@ -387,7 +387,7 @@ function preplayGetButtons() as object
 
     ' Settings
     if m.item.IsVideoItem() and m.item.mediaItems <> invalid then
-        buttons.push({text: Glyphs().EQ, command: "settings"})
+        buttons.push({text: Glyphs().EQ, command: "settings", useIndicator: true})
     end if
 
     if m.item.IsUnwatched() then
@@ -463,7 +463,7 @@ function preplayGetButtons() as object
                 btn.options.push(option)
             end for
         else
-            btn = createButton(button.text, m.customFonts.glyphs, button.command)
+            btn = createButton(button.text, m.customFonts.glyphs, button.command, (button.useIndicator = true))
         end if
 
         btn.SetColor(Colors().Text, Colors().Button)
