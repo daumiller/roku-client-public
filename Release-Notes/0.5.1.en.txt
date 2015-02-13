@@ -1,0 +1,15 @@
+NEW:
+ - Cinema Trailers
+ - Preplay settings: version, audio, subs, quality, and transcode options before playback.
+ - Lots of play queue updates and tweaks
+
+FIXES:
+ - Fix playback for Roku 2 XS, Roku HD (2500) and other Gen 2 models.
+ - Play button on remote works on more items (and fixed for some).
+ - Better memory handling while vertically scrolling (fix possible crash).
+ - Other misc. bug fixes.
+
+UI:
+ - Indicators for dropdown and flyouts (bottom right).
+ - Move unwatched overlays to the top right.
+ - Add a border to the unwatched count overlay.
