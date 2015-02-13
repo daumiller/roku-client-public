@@ -60,7 +60,7 @@ sub dropdownInit(text as string, font as object, maxHeight as integer)
 end sub
 
 function dropdownDraw(redraw=false as boolean) as object
-    ApplyFunc(LabelClass().Draw, m)
+    ApplyFunc(LabelClass().Draw, m, [redraw])
     m.DrawIndicator(m.ALIGN_BOTTOM, m.JUSTIFY_RIGHT)
 
     return [m]
