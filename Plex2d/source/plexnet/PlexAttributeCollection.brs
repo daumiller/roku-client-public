@@ -29,9 +29,6 @@ end function
 ' This is an abstract class, no need for createPlexAttributeCollection
 
 sub pnacInit(xml)
-    ' TODO(schuyler): Is there any value in something more complicated than
-    ' this? Like whitelisted keys? This is almost too easy.
-
     m.name = xml.GetName()
     m.attrs = xml.GetAttributes()
 end sub

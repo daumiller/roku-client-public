@@ -8,6 +8,7 @@ function PlexPartClass() as object
         obj.IsAccessible = pnpIsAccessible
         obj.GetStreamsOfType = pnpGetStreamsOfType
         obj.GetSelectedStreamOfType = pnpGetSelectedStreamOfType
+        obj.SetSelectedStream = pnpSetSelectedStream
         obj.IsIndexed = pnpIsIndexed
         obj.GetIndexUrl = pnpGetIndexUrl
         obj.HasStreams = pnpHasStreams
@@ -107,6 +108,18 @@ function pnpGetSelectedStreamOfType(streamType as integer) as dynamic
 
     return default
 end function
+
+sub pnpSetSelectedStream(streamType as string, streamId as string, async as boolean)
+    path = "/library/parts/" + m.Get("id", "") + "?" + streamType + "StreamID=" + streamId
+    request = createPlexRequest(m.GetServer(), path, "PUT")
+
+    if async then
+        context = request.CreateRequestContext("ignored")
+        Application().StartRequest(request, context, "")
+    else
+        request.PostToStringWithTimeout()
+    end if
+end sub
 
 function pnpIsIndexed() as boolean
     return m.Has("indexes")

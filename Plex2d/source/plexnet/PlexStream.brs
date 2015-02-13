@@ -152,5 +152,3 @@ function NoneStream() as object
 
     return m.NoneStream
 end function
-
-' TODO(schuyler): setSelected

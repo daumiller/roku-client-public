@@ -375,8 +375,6 @@ function ProcessPlaybackStepBack() as boolean
 
     player = GetPlayerForType(m.request.query["type"])
 
-    ' TODO(schuyler): Should we respect the platform convention for video?
-
     ' Try to deal with the command directly, falling back to ECP.
     if player <> invalid then
         player.Seek(-15000, true)

@@ -1,5 +1,4 @@
 ' Mostly standard helpers borrowed from SDK examples
-' TODO(schuyler): Clean up some of these functions
 
 function tostr(any as dynamic, aaDepth=0 as integer) as string
     ret = AnyToString(any)
@@ -551,11 +550,4 @@ function GetFriendlyName() as string
     end if
 
     return device.GetModelDisplayName() + " - " + device.GetDeviceUniqueId()
-end function
-
-function CreateRegion(width as integer, height as integer, color as integer, alphaEnable=false as boolean) as object
-    bmp = CreateObject("roBitmap", {width: width, height: height, alphaEnable: alphaEnable})
-    bmp.Clear(color)
-    region = CreateObject("roRegion", bmp, 0, 0, bmp.GetWidth(), bmp.GetHeight())
-    return region
 end function

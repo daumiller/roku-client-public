@@ -9,8 +9,6 @@ function HubClass() as object
         obj.ORIENTATION_PORTRAIT = ComponentClass().ORIENTATION_PORTRAIT
         obj.ORIENTATION_LANDSCAPE = ComponentClass().ORIENTATION_LANDSCAPE
 
-        ' TODO(schuyler): Kind of making these up
-
         ' Hero (grid optional) start at int:0
         obj.LAYOUT_HERO_2 = 2
         obj.LAYOUT_HERO_3 = 3
@@ -103,16 +101,6 @@ sub hubPerformLayout()
     if m.layout = m.LAYOUT_HERO_2 or m.layout = m.LAYOUT_HERO_3 or m.layout = m.LAYOUT_HERO_5 or m.layout = m.LAYOUT_LANDSCAPE_1 or m.layout = m.LAYOUT_SQUARE_1 then
         component = m.components.Next()
         component.fixed = false
-
-        ' TODO(schuyler): Fast forward to the future and suppose that our
-        ' components are cards with artwork based on metadata items. We'll
-        ' want to tweak what we request based on the orientation and size,
-        ' so how does that work? Is it just a matter of creating an Image
-        ' subclass that knows to tweak the URL based on the SetFrame call
-        ' (which should always happen before Draw anyway)?
-
-        ' TODO(rob): ^^ SetOrientation() implements choosing image based on
-        ' the orientation.
 
         if m.layout = m.LAYOUT_HERO_3 and (m.ORIENTATION = m.ORIENTATION_LANDSCAPE or m.ORIENTATION = m.ORIENTATION_SQUARE) then
             availableHeight = int(availableHeight/3) * 3
@@ -292,9 +280,6 @@ sub hubPerformLayout()
     if m.moreButton <> invalid then
         m.moreButton.x = rightX - m.moreButton.width
         m.moreButton.y = m.y + contentArea.y + contentArea.height - m.moreButton.height
-        ' TODO(rob) any reason we used AddTail intead of AddComponent? changed this to utilized some extra
-        ' logic in AddComponent (adding the parent to the component)
-        ' m.components.AddTail(m.moreButton)
         m.AddComponent(m.moreButton)
     end if
 end sub
@@ -326,9 +311,6 @@ sub hubShowMoreButton(moreCommand as dynamic)
         m.moreButton.fixed = false
         m.moreButton.setMetadata(m.container.attrs)
         m.moreButton.plexObject = m.container
-        ' TODO(rob) any reason we used AddTail intead of AddComponent? changed this to utilized some extra
-        ' logic in AddComponent (adding the parent to the component)
-        ' m.components.AddTail(m.moreButton)
         m.AddComponent(m.moreButton)
     end if
 end sub

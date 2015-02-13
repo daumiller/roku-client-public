@@ -125,12 +125,6 @@ function headerGetOptions() as object
     if mpa.IsSignedIn then
         connect = {text: "Sign Out", command: "sign_out"}
         m.options.push({text: "Switch User", command: "show_users", font: font, height: 66, width: 128 })
-        ' TODO(rob): should we use a full user switch page (above) or quick switch list of users (below)
-        ' mpa.UpdateHomeUsers()
-        ' for each user in mpa.homeUsers
-        '     ' TODO(rob): custom button: crown, selected checkmark, pin, avatar
-        '     m.options.push({text: user.title, command: "switch_user", metadata: user, font: font, height: 66, width: 128 })
-        ' end for
     else if mpa.IsOffline then
         connect = {text: "Offline Mode" }
     else

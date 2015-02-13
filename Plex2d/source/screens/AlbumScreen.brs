@@ -359,11 +359,7 @@ end function
 function albumHandleCommand(command as string, item as dynamic) as boolean
     handled = true
 
-    ' TODO(schuyler): The shuffle support here is just a PoC. It's not clever
-    ' about focusing the component that is actually chosen first.
     if command = "play" or command = "shuffle" then
-        ' TODO(rob): create now playing screen
-
         ' start content from requested index, or from the beginning.
         trackContext = m.children
         if item <> invalid and item.trackIndex <> invalid then

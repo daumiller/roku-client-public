@@ -3,9 +3,6 @@
 '* to that information, and sending timeline information to subscribers.
 '*
 
-' TODO(rob): mainly a stub for now, partially converted to work with Plex2d. Its
-' current known working state is for video timelines (PlayingSendTimelineToServer)
-
 function NowPlayingManager()
     if m.NowPlayingManager = invalid then
         obj = CreateObject("roAssociativeArray")

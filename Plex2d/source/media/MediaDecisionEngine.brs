@@ -40,7 +40,6 @@ function mdeChooseMedia(item as object) as object
     maxResolution = AppSettings().GetMaxResolution(item.GetServer().IsLocalConnection())
 
     for each media in item.mediaItems
-        ' TODO(schuyler): Allow media items to be marked as selected/forced
         if media.selected = true then
             candidates.Clear()
             candidates.AddTail(media)

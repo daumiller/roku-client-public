@@ -69,8 +69,6 @@ function aoBuildTranscode(obj as object) as dynamic
 end function
 
 function aoBuildDirectPlay(obj as object) as dynamic
-    ' TODO(schuyler): Try a bit harder to be accurate?
-
     if m.media.parts <> invalid and m.media.parts[0] <> invalid then
         part = m.media.parts[0]
         obj.StreamFormat = m.media.Get("container", "mp3")

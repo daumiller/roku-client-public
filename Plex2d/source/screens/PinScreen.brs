@@ -145,11 +145,6 @@ sub pinOnItemSelected(item as object)
 end sub
 
 sub pinGetComponents()
-    ' TODO(schuyler): Can we avoid clearing and recreating all components?
-    ' Not everything changes once it's created.
-
-    ' TODO(schuyler): Make this pretty again. Rob's version was pretty.
-
     m.DestroyComponents()
 
     mainBox = createHBox(false, false, false, 50)

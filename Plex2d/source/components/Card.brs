@@ -25,10 +25,6 @@ function createCard(imageSource as dynamic, text=invalid as dynamic, watchedPerc
 
     obj.Init(imageSource, text, watchedPercentage, unwatchedCount, unwatched)
 
-    ' TODO(schuyler): Lots, presumably. We need to expose some of the options
-    ' of our children. Does the overlay have multiple lines of text? Does the
-    ' image have a placeholder?
-
     return obj
 end function
 

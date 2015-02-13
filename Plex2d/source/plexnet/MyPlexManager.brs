@@ -1,7 +1,3 @@
-' TODO(schuyler): There's much still to do here, but this may end
-' up inheriting from a Server object that doesn't exist yet. So
-' things are generally a bit hardcoded.
-
 function MyPlexManager()
     if m.MyPlexManager = invalid then
         obj = CreateObject("roAssociativeArray")

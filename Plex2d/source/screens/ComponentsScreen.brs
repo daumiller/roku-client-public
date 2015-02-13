@@ -403,9 +403,6 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
 end sub
 
 sub compOnKeyRelease(keyCode as integer)
-    ' TODO(schuyler): What keys can we handle generically in this base screen?
-    ' OK and Back for sure. Maybe play and info as well?
-
     if keyCode = m.kp_OK then
         if m.focusedItem <> invalid and m.focusedItem.selectable = true then
             m.OnItemSelected(m.focusedItem)
@@ -434,8 +431,6 @@ end sub
 
 sub compOnItemSelected(item as object)
     Debug("component item selected with command: " + tostr(item.command))
-    ' TODO(schuyler): What makes sense here? Maybe generic command processing?
-    ' TODO(rob): Here is some generic processing :)
 
     if item.OnSelected <> invalid then
         item.OnSelected()
@@ -1070,16 +1065,12 @@ sub compCreatePlayerForItem(plexObject=invalid as dynamic, options=invalid as dy
 
             if m.localPrefs.audio_stream <> invalid then
                 part = plexObject.mediaItems[0].parts[0]
-                path = "/library/parts/" + part.Get("id", "") + "?audioStreamID=" + m.localPrefs.audio_stream
-                request = createPlexRequest(plexObject.GetServer(), path, "PUT")
-                request.PostToStringWithTimeout()
+                part.SetSelectedStream("audio", m.localPrefs.audio_stream, false)
             end if
 
             if m.localPrefs.subtitle_stream <> invalid then
                 part = plexObject.mediaItems[0].parts[0]
-                path = "/library/parts/" + part.Get("id", "") + "?subtitleStreamID=" + m.localPrefs.subtitle_stream
-                request = createPlexRequest(plexObject.GetServer(), path, "PUT")
-                request.PostToStringWithTimeout()
+                part.SetSelectedStream("subtitle", m.localPrefs.subtitle_stream, false)
             end if
 
             if m.localPrefs.quality <> invalid then
