@@ -118,7 +118,11 @@ sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, 
         label = iif(unwatchedCount < 10, " " + tostr(unwatchedCount) + " ", tostr(unwatchedCount))
         m.unwatchedCount = createLabel(label, FontRegistry().font16)
         m.unwatchedCount.SetPadding(m.overlayPadding.top)
+        border = cint(m.unwatchedCount.GetPreferredHeight() * .02)
+        m.unwatchedCount.SetBorder(Colors().GetAlpha("Black", 50), 0, 0, border, border)
         m.unwatchedCount.SetColor(Colors().Text, Colors().Orange)
+        m.unwatchedCount.valign = m.unwatchedCount.ALIGN_MIDDLE
+        m.unwatchedCount.halign = m.unwatchedCount.JUSTIFY_CENTER
         m.AddComponent(m.unwatchedCount)
     else if unwatched then
         m.unwatched = createIndicator(Colors().Orange, FontRegistry().font16.GetOneLineHeight(), 10)
