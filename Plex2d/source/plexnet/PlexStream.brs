@@ -62,8 +62,9 @@ end function
 
 function pnstrGetTitle() as string
     title = m.GetLanguageName()
+    streamType = m.GetInt("streamType")
 
-    if m.GetInt("streamType") = m.TYPE_AUDIO then
+    if streamType = m.TYPE_AUDIO then
         codec = m.GetCodec()
         channels = m.GetChannels()
 
@@ -71,6 +72,13 @@ function pnstrGetTitle() as string
             title = title + " (" + codec + " " + channels + ")"
         else if codec <> "" or channels <> "" then
             title = title + " (" + codec + channels + ")"
+        end if
+    else if streamType = m.TYPE_SUBTITLE then
+        codec = m.GetCodec()
+        suffix = iif(m.GetBool("forced"), " Forced)", ")")
+
+        if codec <> "" then
+            title = title + " (" + codec + suffix
         end if
     end if
 
