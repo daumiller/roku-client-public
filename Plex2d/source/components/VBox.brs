@@ -280,9 +280,15 @@ sub vboxShiftComponents(shift)
         component.GetShiftableItems(partShift, fullShift, lazyLoad, shift.x, shift.y)
     next
 
-    ' lazy-load any components that will be on-screen after we shift
-    ' and cancel any pending texture requests
-    TextureManager().CancelAll(false)
+    ' lazy-load any components that will be on-screen after we shift and cancel
+    ' any pending texture requests. We have to only cancel only our textures and
+    ' not any we have pending on the screens context. i.e. do not use the
+    ' TextureManager().CancelAll(false) to cancel these.
+    for each comp in m.components
+        if comp.TextureRequest <> invalid then
+            TextureManager().CancelTexture(comp.TextureRequest)
+        end if
+    end for
     m.screen.LazyLoadExec(partShift)
 
     ' Animation still needs some logic/2d code to make it work with any
