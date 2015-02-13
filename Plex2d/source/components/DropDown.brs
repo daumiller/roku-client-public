@@ -5,6 +5,7 @@ function DropDownClass() as object
         obj.ClassName = "DropDown"
 
         obj.Init = dropdownInit
+        obj.Draw = dropdownDraw
         obj.Hide = dropdownHide
         obj.Show = dropdownShow
         obj.Toggle = dropdownToggle
@@ -21,11 +22,13 @@ function DropDownClass() as object
     return m.DropDownClass
 end function
 
-function createDropDown(text as string, font as object, maxHeight as integer, screen as object) as object
+function createDropDown(text as string, font as object, maxHeight as integer, screen as object, useIndicator=true as boolean) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(DropDownClass())
 
     obj.screen = screen
+    obj.useIndicator = useIndicator
+
     obj.Init(text, font, maxHeight)
 
     return obj
@@ -55,6 +58,13 @@ sub dropdownInit(text as string, font as object, maxHeight as integer)
 
     m.SetDropDownPosition("down")
 end sub
+
+function dropdownDraw(redraw=false as boolean) as object
+    ApplyFunc(LabelClass().Draw, m)
+    m.DrawIndicator(m.ALIGN_BOTTOM, m.JUSTIFY_RIGHT)
+
+    return [m]
+end function
 
 sub dropdownHide()
     m.expanded = false

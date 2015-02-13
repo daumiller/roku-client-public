@@ -83,7 +83,7 @@ sub headerPerformLayout()
         buttons.push(button)
 
         ' Options Drop Down: Settings, Sign Out/In
-        button = createDropDown(firstOf(MyPlexAccount().title, "Options"), m.buttons.font, int(720 / 2), m.screen)
+        button = createDropDown(firstOf(MyPlexAccount().title, "Options"), m.buttons.font, int(720 / 2), m.screen, false)
         button.width = m.buttons.width
         button.pvalign = button[m.buttons.valign]
         button.GetOptions = headerGetOptions
