@@ -12,6 +12,7 @@ function LabelClass() as object
         obj.GetPreferredHeight = labelGetPreferredHeight
         obj.SetColor = labelSetColor
         obj.SetBorder = labelSetBorder
+        obj.DrawIndicator = labelDrawIndicator
 
         obj.WrapText = labelWrapText
         obj.TruncateText = labelTruncateText
@@ -241,3 +242,27 @@ function labelMaxLineLength(text as string, startPos=0 as integer) as integer
 
     return startPos + 1
 end function
+
+sub labelDrawIndicator(valign=invalid as dynamic, halign=invalid as dynamic)
+    if m.useIndicator = true then
+        indicator = createIndicator(Colors().Indicator, int(m.height * 0.4), true)
+        indicator.bgColor = m.bgColor
+        indicator.valign = firstOf(valign, indicator.ALIGN_BOTTOM)
+        indicator.halign = firstOf(halign, indicator.JUSTIFY_RIGHT)
+        indicator.Draw()
+
+        if indicator.halign = indicator.JUSTIFY_RIGHT then
+            xOffset = m.width - indicator.region.GetWidth()
+        else
+            xOffset = 0
+        end if
+
+        if indicator.valign = indicator.ALIGN_BOTTOM then
+            yOffset = m.height - indicator.region.GetHeight()
+        else
+            yOffset = 0
+        end if
+
+        m.region.DrawObject(xOffset, yOffset, indicator.region)
+    end if
+end sub
