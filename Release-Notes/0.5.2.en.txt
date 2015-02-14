@@ -1,0 +1,14 @@
+NEW:
+ - Make a long press of Back, Go Home.
+ - Update preplay screen with selected stream (subtitles and audio)
+ - Add subtitle format on the preplay screen.
+ - Add remote logging toggle to the settings.
+
+FIXES:
+ - Do not crash on empty library sections.
+ - Use the selected audio track (direct play / remux / transcode).
+ - Fix unwatched indicator overlay size.
+ - Fix dropdown scrolling when the items extend off the screen.
+ - Don't block startup on the channel store if we have a Plex Pass.
+ - Fix redrawing of focused buttons (now playing screen)
+ - Fix missing posters when shifting vertically.
