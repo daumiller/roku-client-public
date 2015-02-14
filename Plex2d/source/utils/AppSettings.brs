@@ -218,6 +218,20 @@ sub settingsInitPrefs()
         options: options
     }
 
+    ' Log Remote
+    options = [
+        {title: "Disabled", value: "0"},
+        {title: "Enabled", value: "20"},
+    ]
+    m.prefs["log_remote"] = {
+        key: "log_remote",
+        title: "Remote Logging",
+        default: "0",
+        section: "preferences",
+        prefType: "enum",
+        options: options
+    }
+
     ' Remote Control
     m.prefs["remotecontrol"] = {
         key: "remotecontrol",
@@ -533,6 +547,7 @@ function settingsGetGlobalSettings() as object
 
     ' Log level
     advanced.Push(m.prefs["log_level"])
+    advanced.Push(m.prefs["log_remote"])
 
     ' TODO(schuyler): Grouping these together is at least half joke.
     options = [

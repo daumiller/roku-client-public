@@ -25,6 +25,7 @@ function Logger()
         obj.Log = loggerLog
         obj.LogToPapertrail = loggerLogToPapertrail
         obj.EnablePapertrail = loggerEnablePapertrail
+        obj.DisablePapertrail = loggerDisablePapertrail
         obj.Flush = loggerFlush
         obj.UpdateSyslogHeader = loggerUpdateSyslogHeader
 
@@ -40,6 +41,7 @@ function Logger()
 
         ' Listen for log level preference changes
         Application().On("change:log_level", createCallable("SetLevel", obj))
+        Application().On("change:log_remote", createCallable("EnablePapertrail", obj))
     end if
 
     return m.Logger
@@ -133,10 +135,8 @@ sub loggerLog(level, msg)
 
     if m.remoteLoggingTimer <> invalid then
         if m.remoteLoggingTimer.IsExpired() then
-            m.syslogSocket.Close()
-            m.syslogSocket = invalid
-            m.syslogPackets = invalid
-            m.remoteLoggingTimer = invalid
+            Info("Remote logging expired")
+            AppSettings().SetPreference("log_remote", "0")
         else
             m.LogToPapertrail(levelPrefix + msg)
         end if
@@ -167,7 +167,18 @@ sub loggerLogToPapertrail(msg)
     end while
 end sub
 
-sub loggerEnablePapertrail(minutes=20)
+sub loggerEnablePapertrail(minutes=invalid as dynamic)
+    if minutes = invalid then
+        minutes = 20
+    else if not isint(minutes) then
+        minutes = minutes.toint()
+    end if
+
+    if minutes = 0 then
+        m.DisablePaperTrail()
+        return
+    end if
+
     ' Create the remote syslog socket
     addr = CreateObject("roSocketAddress")
     udp = CreateObject("roDatagramSocket")
@@ -187,7 +198,18 @@ sub loggerEnablePapertrail(minutes=20)
     m.remoteLoggingTimer = createTimer("logger")
     m.remoteLoggingTimer.SetDuration(minutes * 60 * 1000)
 
+    Info("Remote logging enabled")
     ' TODO(schuyler): Enable papertrail logging for PMS, potentially
+end sub
+
+sub loggerDisablePapertrail()
+    if m.syslogSocket <> invalid then
+        Info("Remote logging disabled")
+        m.syslogSocket.Close()
+        m.syslogSocket = invalid
+        m.syslogPackets = invalid
+    end if
+    m.remoteLoggingTimer = invalid
 end sub
 
 sub loggerUpdateSyslogHeader()
