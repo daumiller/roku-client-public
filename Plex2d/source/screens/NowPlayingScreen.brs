@@ -464,15 +464,14 @@ sub nowplayingToggleQueue()
             m.focusTimer.active = false
             m.focusTimer = invalid
         end if
-        m.queueOverlay = createNowPlayingQueueOverlay(m)
-        m.queueOverlay.Show()
+        queueOverlay = createNowPlayingQueueOverlay(m)
+        queueOverlay.Show()
+        queueOverlay.On("close", createCallable("OnOverlayClose", m))
     else
         m.screen.DrawAll()
     end if
 end sub
 
-sub nowplayingOnOverlayClose(overlay=invalid as dynamic, backButton=false as boolean)
-    if m.queueOverlay.Equals(overlay) then
-        m.ToggleQueue()
-    end if
+sub nowplayingOnOverlayClose(overlay as object, backButton as boolean)
+    m.ToggleQueue()
 end sub
