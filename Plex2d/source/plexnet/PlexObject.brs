@@ -291,7 +291,7 @@ function createPlexObjectFromElement(container as object, xml as object) as obje
         return createPlexItem(container, xml)
     end if
 
-    Info("Don't know what to do with " + xml.GetName() + ", creating generic PlexObject")
+    Debug("Don't know what to do with " + xml.GetName() + ", creating generic PlexObject")
 
     obj = CreateObject("roAssociativeArray")
     obj.Append(PlexObjectClass())
