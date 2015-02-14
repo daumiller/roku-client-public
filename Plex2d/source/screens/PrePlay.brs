@@ -576,13 +576,20 @@ function preplayGetPrefs() as object
         defaultQuality = settings.GetIntPreference("remote_quality")
     end if
 
-    height = mediaChoice.media.GetInt("height")
+    height = mediaChoice.media.GetVideoResolution()
     bitrate = mediaChoice.media.GetInt("bitrate")
 
     qualities = settings.GetGlobal("qualities")
+    prevQuality = invalid
     for each quality in qualities
         if height >= quality.maxHeight and bitrate >= quality.maxBitrate then
+            ' add previous (higher) quality if the media bitrate > pref quality
+            if bitrate > quality.maxBitrate and options.Count() = 0 and prevQuality <> invalid then
+                options.Push({title: prevQuality.title, value: tostr(prevQuality.index), index: prevQuality.index})
+            end if
             options.Push({title: quality.title, value: tostr(quality.index), index: quality.index})
+        else if options.Count() = 0 then
+            prevQuality = quality
         end if
     next
 
