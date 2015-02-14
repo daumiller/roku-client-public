@@ -8,8 +8,10 @@ function Locks() as object
         obj = CreateObject("roAssociativeArray")
 
         obj.locks = CreateObject("roAssociativeArray")
+        obj.oneTimeLocks = CreateObject("roAssociativeArray")
 
         obj.Lock = locksLock
+        obj.LockOnce = locksLockOnce
         obj.Unlock = locksUnlock
         obj.IsLocked = locksIsLocked
 
@@ -24,13 +26,22 @@ sub locksLock(name as string)
     m.locks[name] = true
 end sub
 
+sub locksLockOnce(name as string)
+    Debug("Locking once " + name)
+    m.oneTimeLocks[name] = true
+end sub
+
 function locksUnlock(name as string) as boolean
     Debug("Unlock " + name)
-    return m.locks.Delete(name)
+
+    normal = m.locks.Delete(name)
+    oneTime = m.oneTimeLocks.Delete(name)
+
+    return (normal or oneTime)
 end function
 
 function locksIsLocked(name as string) as boolean
-    return m.locks.DoesExist(name)
+    return (m.oneTimeLocks.Delete(name) or m.locks.DoesExist(name))
 end function
 
 ' lock helpers

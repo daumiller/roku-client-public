@@ -398,6 +398,11 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
         else
             m.OnRevButton(m.focusedItem)
         end if
+    else if keyCode = m.kp_BK and repeat then
+        m.keyPressTimer.active = false
+        m.keyPressTimer = invalid
+        Application().GoHome()
+        Locks().LockOnce("BackButton")
     end if
 end sub
 

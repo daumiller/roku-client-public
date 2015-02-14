@@ -246,6 +246,8 @@ function GetFirstIPAddress() as dynamic
 end function
 
 function KeyCodeToString(keyCode as integer) as string
+    if keyCode >= 100 then keyCode = keyCode - 100
+
     if keyCode = 0 then
         return "back"
     else if keyCode = 2 then
