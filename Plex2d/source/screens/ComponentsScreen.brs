@@ -47,6 +47,7 @@ function ComponentsScreen() as object
         obj.GetComponents = compGetComponents
         obj.GetManualComponents = compGetManualComponents
         obj.DestroyComponents = compDestroyComponents
+        obj.CloseOverlays = compCloseOverlays
 
         ' Manual focus methods
         obj.GetFocusManual = compGetFocusManual
@@ -1148,4 +1149,10 @@ sub compOnFocusOut(lastFocus=invalid as dynamic, toFocus=invalid as dynamic)
     end if
 
     m.ToggleScrollbar(false, toFocus, lastFocus)
+end sub
+
+sub compCloseOverlays()
+    for each overlay in m.overlayScreen
+        overlay.Close()
+    end for
 end sub

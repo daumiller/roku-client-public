@@ -88,8 +88,8 @@ sub appPushScreen(screen)
         oldScreen = m.screens.Peek()
 
         ' close any overlay screen (resets focusedItem)
-        if oldScreen.overlayScreen <> invalid and oldScreen.overlayScreen.Count() > 0 then
-            oldScreen.overlayScreen.Peek().Close()
+        if IsFunction(oldScreen.closeOverlays) then
+            oldScreen.closeOverlays()
         end if
 
         ' Remember the last focus ID and position to refocus
@@ -158,6 +158,11 @@ sub appPopScreen(screen as object, callActivate=true as boolean)
 
     ' Set the remote back to navigation (default for all screens)
     NowPlayingManager().location = "navigation"
+
+    ' close any overlay screen (resets focusedItem)
+    if IsFunction(screen.closeOverlays) then
+        screen.closeOverlays()
+    end if
 
     if m.screens.Count() > 0 and callActivate then
         newScreen = m.screens.Peek()
