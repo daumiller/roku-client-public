@@ -126,7 +126,15 @@ sub gsShow()
     end if
 
     if m.gridContainer.response <> invalid and m.jumpContainer.response <> invalid then
-        ApplyFunc(ComponentsScreen().Show, m)
+        if m.gridContainer.response.container.GetInt("totalSize") = 0 then
+            title = "No content available in this library"
+            text = "Please add content and/or check that " + chr(34) + "Include in dashboard" + chr(34) + " is enabled.".
+            dialog = createDialog(title, text, m)
+            dialog.Show(true)
+            Application().popScreen(m)
+        else
+            ApplyFunc(ComponentsScreen().Show, m)
+        end if
     end if
 end sub
 
