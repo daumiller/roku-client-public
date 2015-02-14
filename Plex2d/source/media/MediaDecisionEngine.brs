@@ -94,6 +94,7 @@ end function
 
 function mdeEvaluateMediaVideo(item as object, media as object) as object
     choice = createMediaChoice(media)
+    settings = AppSettings()
 
     ' Resolve indirects before doing anything else.
     if media.IsIndirect() then
@@ -120,7 +121,7 @@ function mdeEvaluateMediaVideo(item as object, media as object) as object
         choice.score = choice.score + 5000
     end if
 
-    maxResolution = AppSettings().GetMaxResolution(item.GetServer().IsLocalConnection())
+    maxResolution = settings.GetMaxResolution(item.GetServer().IsLocalConnection())
     height = media.GetInt("height")
     if height <= maxResolution then
         choice.score = choice.score + height
@@ -147,13 +148,18 @@ function mdeEvaluateMediaVideo(item as object, media as object) as object
     stereoCodec = invalid
     surroundCodec = invalid
     surroundStreamFirst = false
-    audioLanguagesSeen = {}
-    audioLanguageForceable = true
+    audioLanguageForceable = false
+
+    if choice.audioStream <> invalid then
+        audioLanguage = choice.audioStream.Get("languageCode", "unk")
+        audioLanguageSeen = false
+        maxChannels = iif(settings.SupportsSurroundSound(), 8, 2)
+    end if
 
     if part.GetBool("hasChapterVideoStream") then numVideoStreams = 1
 
     for each stream in part.streams
-        streamType = stream.GetInt("type")
+        streamType = stream.GetInt("streamType")
         if streamType = stream.TYPE_VIDEO then
             numVideoStreams = numVideoStreams + 1
 
@@ -167,18 +173,17 @@ function mdeEvaluateMediaVideo(item as object, media as object) as object
                     stereoCodec = stream.Get("codec")
                     surroundStreamFirst = (surroundCodec <> invalid)
                 end if
-                languageKey = stream.Get("languageCode", "") + "_stereo"
-            else
-                if surroundCodec = invalid then
-                    surroundCodec = stream.Get("codec")
-                end if
-                languageKey = stream.Get("languageCode", "") + "_surround"
+            else if surroundCodec = invalid then
+                surroundCodec = stream.Get("codec")
             end if
 
-            if stream.IsSelected() and audioLanguagesSeen.DoesExist(languageKey) then
-                audioLanguageForceable = false
+            if audioLanguage = stream.Get("languageCode", "unk") and numChannels <= maxChannels then
+                if stream.IsSelected() and not audioLanguageSeen then
+                    audioLanguageForceable = true
+                end if
+
+                audioLanguageSeen = true
             end if
-            audioLanguagesSeen[languageKey] = true
 
             if stream.Get("codec") = "aac" then
                 choice.score = choice.score + 10
