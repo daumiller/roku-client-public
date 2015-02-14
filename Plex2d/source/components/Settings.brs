@@ -23,7 +23,7 @@ function createSettings(screen as object) as object
     obj.Append(SettingsClass())
 
     obj.screen = screen
-    obj.title = "Settings"
+    obj.titleText = "Settings"
     obj.storage = invalid
 
     obj.Init()
@@ -35,9 +35,9 @@ sub settingsInit()
     ApplyFunc(OverlayClass().Init, m)
 
     m.width = 660
-    m.height = 560
-    m.x = int(1280/2 - m.width/2)
-    m.y = int(720/2 - m.height/2)
+    m.height = 200
+    m.maxHeight = 560
+    m.x = int(AppSettings().GetWidth()/2 - m.width/2)
 
     m.colors = {
         category: Colors().Button and &hffffff90,
@@ -51,14 +51,64 @@ sub settingsInit()
 end sub
 
 sub settingsGetComponents()
-    title = createLabel(m.title, FontRegistry().font18)
-    title.halign = title.JUSTIFY_CENTER
-    title.valign = title.ALIGN_MIDDLE
-    title.zOrder = m.zOrderOverlay
-    title.SetColor(Colors().Text, m.colors.title)
-    title.SetFrame(m.x, m.y, m.width, 70)
-    m.components.push(title)
+    m.title = createLabel(m.titleText, FontRegistry().font18)
+    m.title.halign = m.title.JUSTIFY_CENTER
+    m.title.valign = m.title.ALIGN_MIDDLE
+    m.title.zOrder = m.zOrderOverlay
+    m.title.SetColor(Colors().Text, m.colors.title)
+    m.title.height = 70
+    m.components.push(m.title)
 
+    border = { px: 1, color: m.colors.border }
+    settingsBox = createHBox(true, true, true, border.px)
+    menuBox = createVBox(false, false, false, 0)
+    listBox = createVBox(false, false, false, 0)
+    settingsBox.AddComponent(menuBox)
+    settingsBox.AddComponent(listBox)
+
+    prefs = m.GetPrefs()
+    for each group in prefs
+        label = createLabel(group.title, FontRegistry().font18)
+        label.fixed = false
+        label.SetColor(Colors().Text, m.colors.category)
+        label.SetDimensions(m.width, 60)
+        label.SetPadding(0, 0, 0, m.padding)
+        label.valign = label.ALIGN_MIDDLE
+        label.zOrder = m.zOrderOverlay
+        menuBox.AddComponent(label)
+        first = true
+        for each pref in group.settings
+            ' hide restricted prefs from managed users
+            if not (pref.isRestricted = true and MyPlexAccount().isManaged) then
+                btn = m.createMenuButton(pref)
+                btn.scrollGroupTop = label
+                btn.SetDimensions(m.width, 60)
+                btn.SetPadding(0, 0, 0, m.padding*2)
+                btn.listBox = listBox
+                menuBox.AddComponent(btn)
+            end if
+        end for
+    end for
+    m.components.push(settingsBox)
+
+    ' Resize height and position based on the menu box (width is hard coded)
+    height = m.title.height
+    for each comp in menuBox.components
+        height = height + comp.GetPreferredHeight()
+    end for
+    height = height + (menuBox.spacing * (menuBox.components.count()-1))
+    if height > m.height then
+        m.height = iif(height < m.maxHeight, height, m.maxHeight)
+    end if
+
+    ' Set the positions after resizing
+    m.y = int(AppSettings().GetHeight()/2 - m.height/2)
+    m.title.SetFrame(m.x, m.y, m.width, m.title.height)
+    settingsBox.SetFrame(m.x + border.px, m.y + m.title.height, m.width - border.px*2, m.height - m.title.height)
+    menuBox.SetScrollable(settingsBox.height, false, false, "left")
+    listBox.SetScrollable(settingsBox.height)
+
+    ' Version string
     if m.storage = invalid then
         version = createLabel(AppSettings().GetGlobal("appVersionStr"), FontRegistry().font14)
         version.halign = version.JUSTIFY_RIGHT
@@ -70,49 +120,13 @@ sub settingsGetComponents()
         m.components.push(version)
     end if
 
-    border = { px: 1, color: m.colors.border }
-    settingsBox = createHBox(true, true, true, border.px)
-    settingsBox.SetFrame(m.x + border.px, m.y + title.height, m.width - border.px*2, m.height - title.height)
-    menuBox = createVBox(false, false, false, 0)
-    listBox = createVBox(false, false, false, 0)
-    settingsBox.AddComponent(menuBox)
-    settingsBox.AddComponent(listBox)
-
-    menuBox.SetScrollable(settingsBox.height, false, false, "left")
-    listBox.SetScrollable(settingsBox.height)
-
-    prefs = m.GetPrefs()
-    for each group in prefs
-        title = createLabel(group.title, FontRegistry().font18)
-        title.fixed = false
-        title.SetColor(Colors().Text, m.colors.category)
-        title.SetDimensions(m.width, 60)
-        title.SetPadding(0, 0, 0, m.padding)
-        title.valign = title.ALIGN_MIDDLE
-        title.zOrder = m.zOrderOverlay
-        menuBox.AddComponent(title)
-        first = true
-        for each pref in group.settings
-            ' hide restricted prefs from managed users
-            if not (pref.isRestricted = true and MyPlexAccount().isManaged) then
-                btn = m.createMenuButton(pref)
-                btn.scrollGroupTop = title
-                btn.SetDimensions(m.width, 60)
-                btn.SetPadding(0, 0, 0, m.padding*2)
-                btn.listBox = listBox
-                menuBox.AddComponent(btn)
-            end if
-        end for
-    end for
-    m.components.push(settingsBox)
-
-    ' settings background
+    ' Settings background
     bkg = createBlock(m.colors.background)
     bkg.SetFrame(m.x, m.y, m.width, m.height)
     bkg.zOrder = m.zOrderOverlay - 1
     m.components.push(bkg)
 
-    ' settings box border
+    ' Settings box border
     rect = computeRect(settingsBox)
 
     borderLeft = createBlock(border.color)
