@@ -7,6 +7,7 @@ function PlexMediaClass() as object
         obj.HasStreams = pnmHasStreams
         obj.IsIndirect = pnmIsIndirect
         obj.IsAccessible = pnmIsAccessible
+        obj.GetVideoResolution = pnmGetVideoResolution
 
         obj.ResolveIndirect = pnmResolveIndirect
 
@@ -79,4 +80,18 @@ function pnmEquals(other as dynamic) as boolean
     return (m.Get("id") = other.Get("id"))
 end function
 
-' TODO(schuyler): getParts, getVideoResolution
+function pnmGetVideoResolution() as integer
+    videoResolution = m.Get("videoResolution")
+    if videoResolution <> invalid then
+        StandardDefinitionHeight = 480
+        if(ucase(videoResolution) = "SD") then
+            return iif(m.GetInt("height") > StandardDefinitionHeight, m.GetInt("height"), StandardDefinitionHeight)
+        else
+            return m.GetInt("videoResolution", StandardDefinitionHeight)
+        end if
+    end if
+
+    return m.GetInt("height")
+end function
+
+' TODO(schuyler): getParts
