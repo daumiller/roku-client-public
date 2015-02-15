@@ -160,6 +160,7 @@ sub preplayGetComponents()
     if m.item.Get("art") <> invalid then
         background = createImage(m.item, 1280, 720, { blur: 4 })
         background.SetOrientation(background.ORIENTATION_LANDSCAPE)
+        background.cache = true
         m.components.Push(background)
 
         background = createBlock(Colors().OverlayDark)
@@ -348,12 +349,14 @@ function preplayGetImages() as object
 
     posterThumb = createImage(m.item, posterSize.width, posterSize.height)
     posterThumb.thumbAttr = posterAttr
+    posterThumb.cache = true
     components.push(posterThumb)
 
     if mediaSize <> invalid then
         ' We need to force this one to use the thumb attr
         mediaThumb = createImage(m.item, mediaSize.width, mediaSize.height)
         mediaThumb.thumbAttr = "thumb"
+        mediaThumb.cache = true
         components.push(mediaThumb)
     end if
 

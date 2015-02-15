@@ -38,6 +38,12 @@ function TextureManager() as object
         obj.ReceiveTexture = tmReceiveTexture
         obj.RemoveTexture = tmRemoveTexture
 
+        ' Image cache (regions by sourceUrl)
+        obj.cacheList = createObject("roAssociativeArray")
+        obj.SetCache = tmSetCache
+        obj.GetCache = tmGetCache
+        obj.ClearCache = tmClearCache
+
         obj.Reset()
         m.TextureManager = obj
     end if
@@ -65,8 +71,11 @@ sub tmTrackByScreenID(url as string, screenIdInt as integer)
 end sub
 
 ' remove all textures used by the screen id (exclude texture in use by multiple)
+' including any cached images (regardless of the screen)
 sub tmRemoveTextureByScreenId(screenIdInt as integer)
     screenID = tostr(screenIdInt)
+    m.ClearCache()
+
     unloadCount = 0
     if m.ScreenList[screenID] <> invalid then
         for each url in m.ScreenList[screenID]
@@ -315,3 +324,19 @@ function tmReceiveTexture(tmsg as object, screenID as integer) as boolean
     ' Otherwise it is some other code such as downloading if it even exists.  Never seen it
     return false
 end function
+
+sub tmSetCache(region as object, sourceUrl as string)
+    m.cacheList[sourceUrl] = region
+end sub
+
+function tmGetCache(sourceUrl as string, width as integer, height as integer) as dynamic
+    cache = m.cacheList[sourceUrl]
+    if type(cache) <> "roRegion" or width <> cache.GetWidth() or height <> cache.GetHeight() then
+        cache = invalid
+    end if
+    return cache
+end function
+
+sub tmClearCache()
+    m.cacheList.clear()
+end sub

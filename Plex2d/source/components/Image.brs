@@ -83,7 +83,14 @@ function imageDraw() as object
             ' scaleSize: m.scaleSize,
             ' scaleMode: 1
         }
-        TextureManager().RequestTexture(m, context)
+
+        ' Use a cached image if applicable or send or create a request
+        imageCache = TextureManager().GetCache(m.source, width, height)
+        if imageCache <> invalid then
+            m.region = imageCache
+        else
+            TextureManager().RequestTexture(m, context)
+        end if
 
         ' memory cleanup: unload any existing source url and set our new source if different
         if IsString(m.oldSource) and m.oldSource <> m.source then
@@ -216,6 +223,11 @@ sub imageSetBitmap(bmp=invalid as dynamic, makeCopy=false as boolean)
 
     ' Let whoever cares know that we should be redrawn.
     m.Trigger("redraw", [m])
+
+    ' Cache the region if applicable
+    if m.cache = true then
+        TextureManager().SetCache(m.region, m.source)
+    end if
 end sub
 
 sub imageSetPlaceholder(source as string)
