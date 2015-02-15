@@ -24,6 +24,7 @@ function VideoPlayer() as object
         obj.Init = vpInit
         obj.Cleanup = vpCleanup
         obj.ClearMemory = vpClearMemory
+        obj.ShowPlaybackError = vpShowPlaybackError
 
         ' Required player methods
         obj.Stop = vpStop
@@ -207,6 +208,7 @@ function vpHandleMessage(msg) as boolean
                 m.UpdateNowPlaying()
                 m.Trigger("stopped", [m, item])
                 Application().PopScreen(m)
+                if m.playbackError then m.ShowPlaybackError()
                 m.Cleanup()
             end if
         else if msg.isPlaybackPosition() then
@@ -470,4 +472,49 @@ sub vpClearMemory()
     ' fail without this. I can't even start to describe what you'll see on the screen
     ' when it fails.
     GetGlobalAA().delete("texturemanager")
+end sub
+
+sub vpShowPlaybackError()
+    video = m.context[m.curIndex]
+    server = video.item.GetServer()
+
+    ' HACK to get accessible/available as blocking request. The playQueue
+    ' doesn't support checkFiles, so we'll need to add the correct support
+    ' for that.
+    ' TODO(rob): update this when we handle multiple parts. The first part may
+    ' be accessible, but next part(s) may not. For now we'll just check the
+    ' item as a whole.. which will fail once we support multi-parts because
+    ' all checks will succeed if any part is accessible or available.
+    request = createPlexRequest(server, video.item.GetItemPath())
+    response = request.GetResponse(10)
+    if response.items[0] <> invalid then
+        curPart = response.items[0]
+    else
+        curPart = video.media.parts[0]
+    end if
+    ' End Hack
+
+    if video.media.IsIndirect() then
+        title = "Video Unavailable"
+        text = "Sorry, but we can't play this video. The original video may no longer be available, or it may be in a format that isn't supported."
+    else if curPart <> invalid and curPart.IsAvailable() = false then
+        title = "Video Unavailable"
+        text = "Please check that this file exists and the necessary drive is mounted."
+    else if curPart <> invalid and curPart.IsAccessible() = false then
+        title = "Video Unavailable"
+        text = "Please check that this file exists and has appropriate permissions."
+    else if m.IsTranscoded = false then
+        title = "Direct Play Unavailable"
+        text = "This video isn't supported for Direct Play."
+    else if server <> invalid and server.supportsVideoTranscoding = false then
+        title = "Transcoding Unavailable"
+        text = "Your Plex Media Server doesn't support video transcoding."
+    else
+        title = "Video Unavailable"
+        text = "We're unable to play this video, make sure the server is running and has access to this video."
+    end if
+
+    ' we have to create a dialog screen until we have a custom video player.
+    dialogScreen = createDialogScreen(title, text, video.item)
+    Application().PushScreen(dialogScreen)
 end sub

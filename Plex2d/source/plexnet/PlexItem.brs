@@ -7,6 +7,7 @@ function PlexItemClass() as object
         obj.isMediaSynthesized = false
 
         obj.IsAccessible = pniIsAccessible
+        obj.IsAvailable = pniIsAvailable
         obj.GetSeasonString = pniGetSeasonString
         obj.GetEpisodeString = pniGetEpisodeString
         obj.GetMediaFlagTranscodeURL = pniGetMediaFlagTranscodeURL
@@ -156,6 +157,18 @@ function pniIsAccessible() as boolean
     next
 
     ' If we have no media items, consider ourselves accessible
+    return (m.mediaItems.Count() = 0)
+end function
+
+function pniIsAvailable() as boolean
+    if not m.IsLibraryItem() then return true
+
+    for each item in m.mediaItems
+        ' As long as we have one available item, we're available
+        if item.IsAvailable() then return true
+    next
+
+    ' If we have no media items, consider ourselves available
     return (m.mediaItems.Count() = 0)
 end function
 

@@ -7,6 +7,7 @@ function PlexMediaClass() as object
         obj.HasStreams = pnmHasStreams
         obj.IsIndirect = pnmIsIndirect
         obj.IsAccessible = pnmIsAccessible
+        obj.IsAvailable= pnmIsAvailable
         obj.GetVideoResolution = pnmGetVideoResolution
 
         obj.ResolveIndirect = pnmResolveIndirect
@@ -52,6 +53,14 @@ end function
 function pnmIsAccessible() as boolean
     for each part in m.parts
         if not part.IsAccessible() then return false
+    next
+
+    return true
+end function
+
+function pnmIsAvailable() as boolean
+    for each part in m.parts
+        if not part.IsAvailable() then return false
     next
 
     return true

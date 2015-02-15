@@ -6,6 +6,7 @@ function PlexPartClass() as object
 
         obj.GetAddress = pnpGetAddress
         obj.IsAccessible = pnpIsAccessible
+        obj.IsAvailable= pnpIsAvailable
         obj.GetStreamsOfType = pnpGetStreamsOfType
         obj.GetSelectedStreamOfType = pnpGetSelectedStreamOfType
         obj.SetSelectedStream = pnpSetSelectedStream
@@ -65,6 +66,11 @@ end function
 function pnpIsAccessible() as boolean
     ' If we haven't fetched accessibility info, assume it's accessible.
     return (not m.Has("accessible")) or (m.Get("accessible") = "1")
+end function
+
+function pnpIsAvailable() as boolean
+    ' If we haven't fetched availability info, assume it's available
+    return (not m.Has("exists")) or (m.Get("exists") = "1")
 end function
 
 function pnpGetStreamsOfType(streamType as integer) as object
