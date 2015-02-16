@@ -161,17 +161,19 @@ sub artistGetComponents()
 
     ' TODO(rob): lazy load placeholders
     ' *** Albums *** '
-    grid = createGrid(ComponentClass().ORIENTATION_SQUARE, 2, childSpacing, "Albums")
-    grid.Append(gridPrefs)
-    for each item in m.children
-        card = createCard(item, item.GetOverlayTitle(false, true))
-        card.plexObject = item
-        card.fixed = false
-        card.SetFocusable("show_item")
-        if m.focusedItem = invalid then m.focusedItem = card
-        grid.AddComponent(card)
-    end for
-    m.hbGrid.AddComponent(grid)
+    if m.children.Count() > 0 then
+        grid = createGrid(ComponentClass().ORIENTATION_SQUARE, 2, childSpacing, "Albums")
+        grid.Append(gridPrefs)
+        for each item in m.children
+            card = createCard(item, item.GetOverlayTitle(false, true))
+            card.plexObject = item
+            card.fixed = false
+            card.SetFocusable("show_item")
+            if m.focusedItem = invalid then m.focusedItem = card
+            grid.AddComponent(card)
+        end for
+        m.hbGrid.AddComponent(grid)
+    end if
 
     ' TODO(rob): lazy load placeholders
     ' *** Extras ***

@@ -372,6 +372,9 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
             component = m.trackList.components[0]
         end if
 
+        ' ignore commands if we don't have a valid component
+        if component = invalid then return true
+
         if component.Equals(m.paused) or component.Equals(m.playing) then
             Application().PushScreen(createNowPlayingScreen(m.player.GetCurrentItem()))
         else
