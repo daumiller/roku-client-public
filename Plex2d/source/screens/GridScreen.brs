@@ -319,7 +319,7 @@ sub gsCalculateShift(toFocus as object, refocus=invalid as dynamic)
         m.shift = {
             safeRight: 1230
             safeLeft: 50
-            demandX: int( (1280/toFocus.width)/2) * toFocus.width
+            demandX: int(AppSettings().GetWidth()/2 - toFocus.width/2)
         }
     end if
     shift = { x: 0, y:0 }
