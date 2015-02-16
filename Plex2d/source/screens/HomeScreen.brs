@@ -7,6 +7,7 @@ function HomeScreen() as object
         obj.HandleCommand = homeHandleCommand
         obj.OnKeyRelease = homeOnKeyRelease
         obj.OnOverlayClose = homeOnOverlayClose
+        obj.GetEmptyMessage = homeGetEmptyMessage
 
         ' TODO(rob): remove/modify to allow non-video sections
         ' temporary override to exclude non-video sections
@@ -146,3 +147,10 @@ sub homeOnOverlayClose(overlay as object, backButton as boolean)
         Application().popScreen(m)
     end if
 end sub
+
+function homeGetEmptyMessage() as object
+    obj = createObject("roAssociativeArray")
+    obj.title = "No content available on this server"
+    obj.subtitle = "Please add content and/or check that " + chr(34) + "Include in dashboard" + chr(34) + " is enabled in your library sections."
+    return obj
+end function

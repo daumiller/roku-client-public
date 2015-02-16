@@ -59,6 +59,17 @@ sub sectionsShow()
     end if
 
     if m.hubsContainer.response <> invalid and m.buttonsContainer.response <> invalid then
+        ' switch into browse mode if the section hubs are empty. By default out first
+        ' button on the section screen is the browse by all
+        if m.hubsContainer.items.Count() = 0 then
+            browseItem = m.GetButtons()[0]
+            if browseItem <> invalid and browseItem.plexObject <> invalid then
+                Debug("Section Hub are empty, switching to browse mode")
+                Application().PopScreen(m, false)
+                Application().PushScreen(createGridScreen(browseItem.plexObject))
+                return
+            end if
+        end if
         ApplyFunc(ComponentsScreen().Show, m)
     else
         Debug("HubsShow:: waiting for all requests to be completed")

@@ -11,6 +11,7 @@ function HubsScreen() as object
         obj.ClearCache = hubsClearCache
         obj.GetComponents = hubsGetComponents
         obj.HandleCommand = hubsHandleCommand
+        obj.GetEmptyMessage = hubsGetEmptyMessage
 
         ' Hubs and Buttons
         obj.GetHubs = hubsGetHubs
@@ -36,10 +37,6 @@ function hubsOnResponse(request as object, response as object, context as object
     response.ParseResponse()
     context.response = response
     context.items = response.items
-
-    ' TODO(rob): the hubs screen is safe to contain zero items. Instead of checking if the
-    ' response is a success, like we do for grid screens, we should just show an error
-    ' message on the screen.
 
     m.show()
 end function
@@ -71,7 +68,6 @@ sub hubsGetComponents()
 
     ' ** BUTTONS ** '
     buttons = m.GetButtons()
-
     if buttons.count() > 0 then
         ' Calculate how many columns we need and allow
         vbox = createVBox(false, false, false, 10)
@@ -97,7 +93,37 @@ sub hubsGetComponents()
             hubs[index].demandLeft = 300
             hbox.AddComponent(hubs[index])
         end for
+    else
+        ' Display a helpful messae if the hubs are empty.
+        m.customFonts.title = FontRegistry().GetTextFont(30, true)
+        rect = { x: iif(buttons.count() > 0, 300, 219), y: 200, w: 1000, h: 320 }
+        HDtoSD(rect)
+
+        chevron = createImage("pkg:/images/plex-chevron.png", HDtoSDWidth(195), HDtoSDHeight(320), invalid, "scale-to-fit")
+        chevron.SetFrame(rect.x, rect.y, chevron.width, chevron.height)
+        m.components.Push(chevron)
+
+        ' title and subtitle
+        message = m.GetEmptyMessage()
+        width = HDtoSDWidth(600)
+        vb = createVBox(false, false, false, HDtoSDWidth(10))
+        m.components.Push(vb)
+
+        titleLabel = createLabel(message.title, m.customFonts.title)
+        titleLabel.width = width
+        vb.AddComponent(titleLabel)
+
+        subtitleLabel = createLabel(message.subtitle, FontRegistry().font18)
+        subtitleLabel.wrap = true
+        subtitleLabel.SetFrame(0, 0, width, FontRegistry().font18.getOneLineHeight() * 2)
+        vb.AddComponent(subtitleLabel)
+
+        ' Set the text in the middle of the chevron
+        yOffset = chevron.y + chevron.height/2 - vb.GetPreferredHeight()/2
+        xOffset = chevron.x + chevron.width + HDtoSDWidth(30)
+        vb.SetFrame(xoffset, yOffset, width, chevron.height)
     end if
+
     m.components.Push(hbox)
 
     ' set the placement of the description box (manualComponent)
@@ -195,3 +221,10 @@ sub hubsClearCache()
     if m.hubsContainer <> invalid then m.hubsContainer.clear()
     if m.buttonsContainer <> invalid then m.buttonsContainer.clear()
 end sub
+
+function hubsGetEmptyMessage() as object
+    obj = createObject("roAssociativeArray")
+    obj.title = "No content available in this library"
+    obj.subtitle = "Please add content and/or check that " + chr(34) + "Include in dashboard" + chr(34) + " is enabled.".
+    return obj
+end function
