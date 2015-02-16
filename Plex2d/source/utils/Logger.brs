@@ -32,9 +32,9 @@ function Logger()
         obj.reset()
         m.Logger = obj
 
-        ' TODO(schuyler): Always enable papertrail?
         obj.SetLevel(AppSettings().GetIntPreference("log_level"))
-        obj.EnablePapertrail(5)
+        ' Allow papertrail to be enabled on startup.
+        obj.EnablePapertrail(AppSettings().GetIntPreference("log_remote"))
 
         ' Register with the web server
         WebServer().AddHandler("/logs", ProcessLogsRequest)
