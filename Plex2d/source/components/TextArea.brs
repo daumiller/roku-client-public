@@ -7,6 +7,7 @@ function TextAreaClass() as object
 
         ' Methods
         obj.Init = textareaInit
+        obj.SetFrame = textareaSetFrame
         obj.PerformLayout = textareaPerformLayout
         obj.SetVisible = textareaSetVisible
         obj.SetPadding = textareaSetPadding
@@ -32,6 +33,12 @@ function createTextArea(text as string, font as object, spacing=0 as integer, sc
 
     return obj
 end function
+
+sub textareaSetFrame(x as integer, y as integer, width as integer, height as integer)
+    ApplyFunc(VBoxClass().SetFrame, m, [x, y, width, height])
+    m.origY = y
+    m.origHeight = height
+end sub
 
 sub textareaInit()
     ApplyFunc(VBoxClass().Init, m)
@@ -63,8 +70,8 @@ sub textareaPerformLayout()
     zOrder = iif(m.zOrder <> invalid and m.zOrder > 1, m.zOrder, 2)
 
     ' Reset the yOffset and Height based on the padding prefs (margins)
-    m.y = m.y + m.textPadding.marginTop
-    m.height = m.height - m.textPadding.marginBottom
+    m.y = m.origY + m.textPadding.marginTop
+    m.height = m.origHeight - m.textPadding.marginBottom
 
     for each line in createLabel(m.text, m.font).GetAllLines(m.width - m.textPadding.width)
         label = createLabel(line, m.font)
