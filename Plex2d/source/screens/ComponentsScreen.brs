@@ -43,6 +43,7 @@ function ComponentsScreen() as object
         obj.Show = compShow
         obj.Deactivate = compDeactivate
         obj.Activate = compActivate
+        obj.ShowFailure = compShowFailure
 
         obj.GetComponents = compGetComponents
         obj.GetManualComponents = compGetManualComponents
@@ -1155,4 +1156,19 @@ sub compCloseOverlays()
     for each overlay in m.overlayScreen
         overlay.Close()
     end for
+end sub
+
+sub compShowFailure(title=invalid as dynamic, text=invalid as dynamic, popScreen=true as boolean)
+    ' Since we process messages while we are "blocking", it's possible we may recieve
+    ' a another failure while we are currently displaying one. We can either close the
+    ' errorDialog, and display the new one, or ignore it. I choose the first.
+    if m.errorDialog <> invalid then return
+
+    ' Use a default error message if we haven't set one
+    if title = invalid then title = "Content Unavailable"
+    if text = invalid then text = "An error occurred while trying to load this content, make sure the server is running."
+    m.errorDialog = createDialog(title, text, m)
+    m.errorDialog.Show(true)
+    m.errorDialog = invalid
+    if popScreen then Application().popScreen(m)
 end sub

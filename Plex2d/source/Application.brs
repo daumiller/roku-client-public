@@ -125,7 +125,7 @@ sub appPopScreen(screen as object, callActivate=true as boolean)
 
     screenID = screen.ScreenID.toStr()
 
-    if screen.screenID <> m.screens.Peek().screenID then
+    if m.screens.Count() > 0 and screen.screenID <> m.screens.Peek().screenID then
         ' TODO(schuyler): Is this much of a concern now that we're not using
         ' standard dialogs? Presumably not...
         callActivate = false

@@ -37,6 +37,10 @@ function hubsOnResponse(request as object, response as object, context as object
     context.response = response
     context.items = response.items
 
+    ' TODO(rob): the hubs screen is safe to contain zero items. Instead of checking if the
+    ' response is a success, like we do for grid screens, we should just show an error
+    ' message on the screen.
+
     m.show()
 end function
 

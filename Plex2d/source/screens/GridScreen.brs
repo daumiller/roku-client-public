@@ -126,12 +126,10 @@ sub gsShow()
     end if
 
     if m.gridContainer.response <> invalid and m.jumpContainer.response <> invalid then
-        if m.gridContainer.response.container.GetInt("totalSize") = 0 then
+        if m.gridContainer.response.container.GetFirst(["totalSize", "size", "0"]).toInt() = 0 then
             title = "No content available in this library"
             text = "Please add content and/or check that " + chr(34) + "Include in dashboard" + chr(34) + " is enabled.".
-            dialog = createDialog(title, text, m)
-            dialog.Show(true)
-            Application().popScreen(m)
+            m.ShowFailure(title, text)
         else
             ApplyFunc(ComponentsScreen().Show, m)
         end if
@@ -160,6 +158,12 @@ end function
 
 ' Handle initial response from the endpoint request
 function gsOnGridResponse(request as object, response as object, context as object) as object
+    ' Show a failure and pop the screen if the request failed.
+    if not response.isSuccess() then
+        m.ShowFailure()
+        return invalid
+    end if
+
     response.ParseResponse()
     context.response = response
     m.container = response.container
