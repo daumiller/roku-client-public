@@ -496,7 +496,11 @@ function pnoGetAbsolutePath(attr) as dynamic
     end if
 end function
 
-function pnoGetItemPath() as string
+' TODO(rob): checkFiles is now disabled by default. We should be deferring
+' this call even if we need to checkFiles. e.g. on the preplay screen we
+' should display it first, then make a call to checkFiles and update when
+' we receive the response.
+function pnoGetItemPath(checkFiles=false as boolean) as string
     if m.IsLibrarySection() then
         return "/library/sections/" + m.Get("key")
     else if m.IsITunes() then
@@ -515,13 +519,19 @@ function pnoGetItemPath() as string
             end if
         end for
     else if m.IsLibraryItem() then
-        ' If we're going to request this item specifically, then we might as
-        ' well get all the info.
-        key = key + iif(instr(1, key, "?") = 0, "?", "&") + "checkFiles=1"
+        ' TODO(rob): checkFiles disabled by default. We should specifically
+        ' request this because it can delay the UI, and it's not always
+        ' required. i.e. it's normally not required for navigation, probably
+        ' excluding the preplay settings screen.
+        if checkFiles = true then
+            hasParams = (instr(1, key, "?") > 0)
+            key = key + iif(hasParams, "&", "?") + "checkFiles=1"
+        end if
 
         if m.type = "movie" or m.type = "episode" then
-            if m.type = "movie" then key = key + "&includeExtras=1"
-            key = key + "&includeRelated=1&includeRelatedCount=0"
+            hasParams = (instr(1, key, "?") > 0)
+            key = key + iif(hasParams, "&", "?") + "includeRelated=1&includeRelatedCount=0"
+            key = key + "&includeExtras=1"
         end if
     end if
 

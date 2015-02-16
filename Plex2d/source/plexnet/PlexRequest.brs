@@ -4,7 +4,7 @@ function PlexRequestClass() as object
         obj.ClassName = "PlexRequest"
 
         obj.OnResponse = pnrOnResponse
-        obj.GetResponse = pnrGetResponse
+        obj.DoRequestWithTimeout = pnrDoRequestWithTimeout
 
         m.PlexRequestClass = obj
     end if
@@ -68,7 +68,7 @@ sub AddAccountHeaders(transferObj, token=invalid)
     ' TODO(schuyler): Add username?
 end sub
 
-function pnrGetResponse(timeout=10 as integer) as object
+function pnrDoRequestWithTimeout(timeout=10 as integer) as object
     ' non async request/response
     xml = CreateObject("roXMLElement")
     xml.Parse(m.GetToStringWithTimeout(timeout))

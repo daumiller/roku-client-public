@@ -20,6 +20,9 @@ function createVideoObject(item as object, seekValue=0 as integer) as object
 
     obj.item = item
     obj.seekValue = seekValue
+    ' TODO(rob): `checkFiles` here? It's probable that we are playing an item
+    ' from a play queue, and play queues do not support checkFiles. This means
+    ' everything will be accessible and available when it may not be.
     obj.choice = MediaDecisionEngine().ChooseMedia(item)
     obj.media = obj.choice.media
 

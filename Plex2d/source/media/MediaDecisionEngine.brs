@@ -104,7 +104,7 @@ function mdeEvaluateMediaVideo(item as object, media as object) as object
     ' Assign a score to this media item. Items can earn points as follows:
     '
     ' 10000 - For being manually selected by the user
-    '  5000 - For being accessible/playable
+    '  5000 - For being accessible and available
     '  2000 - For being direct playable
     '  1080 - A point per vertical pixel, within our current limits
     '    20 - For potentially remuxable video streams
@@ -116,7 +116,7 @@ function mdeEvaluateMediaVideo(item as object, media as object) as object
         choice.score = choice.score + 10000
     end if
 
-    if media.IsAccessible() then
+    if media.IsAccessible() and media.IsAvailable() then
         choice.isPlayable = true
         choice.score = choice.score + 5000
     end if
@@ -363,7 +363,7 @@ function mdeEvaluateMediaMusic(item as object, media as object) as object
     ' Assign a score to this media item. Items can earn points as follows:
     '
     ' 10000 - For being manually selected by the user
-    '  5000 - For being accessible/playable
+    '  5000 - For being accessible and available
     '  2000 - For being direct playable
     '
     choice.score = 0
@@ -372,7 +372,7 @@ function mdeEvaluateMediaMusic(item as object, media as object) as object
         choice.score = choice.score + 10000
     end if
 
-    if media.IsAccessible() then
+    if media.IsAccessible() and media.IsAvailable() then
         choice.isPlayable = true
         choice.score = choice.score + 5000
     end if

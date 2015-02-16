@@ -485,8 +485,8 @@ sub vpShowPlaybackError()
     ' be accessible, but next part(s) may not. For now we'll just check the
     ' item as a whole.. which will fail once we support multi-parts because
     ' all checks will succeed if any part is accessible or available.
-    request = createPlexRequest(server, video.item.GetItemPath())
-    response = request.GetResponse(10)
+    request = createPlexRequest(server, video.item.GetItemPath(true))
+    response = request.DoRequestWithTimeout(10)
     if response.items[0] <> invalid then
         curPart = response.items[0]
     else
