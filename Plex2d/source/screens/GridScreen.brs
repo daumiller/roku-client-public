@@ -93,7 +93,7 @@ function createGridScreen(item as object, path=invalid as dynamic, rows=2 as int
     ' how should we handle these variables?
     obj.rows = rows
     obj.spacing = 10
-    obj.height = 450
+    obj.height = 445
 
     return obj
 end function
@@ -397,7 +397,6 @@ sub gsShiftComponents(shift as object)
     end if
 
     ' TODO(rob) the logic below has only been testing shifting the x axis.
-    Debug("shift components by: " + tostr(shift.x) + "," + tostr(shift.y))
     perfTimer().mark()
 
     ' partShift: on screen or will be after shift (animate/scroll, partial shifting)
@@ -445,8 +444,9 @@ sub gsShiftComponents(shift as object)
     ' should be quick to iterate partShift (on screen components after shifting).
     shift.x = m.CalculateFirstOrLast(partShift, shift)
 
-    ' return if we calculated zero shift
-    if shift.x = 0 and shift.y = 0 then return
+    ' return if we calculated zero shift, or a very minimal shift
+    if abs(shift.x) < 5 and abs(shift.y) < 5 then return
+    Debug("shift components by: " + tostr(shift.x) + "," + tostr(shift.y))
 
     ' hide the focus box before we shift
     m.screen.hideFocus()
