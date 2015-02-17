@@ -136,6 +136,7 @@ function preplayHandleCommand(command as string, item as dynamic) as boolean
         settings.storage = m.localPrefs
         settings.Show()
         settings.On("close", createCallable("OnSettingsClosed", m))
+        settings.AddListener(m, "OnFailedFocus", CreateCallable("OnFailedFocus", settings))
     else if command = "show_grid" then
         Application().PushScreen(createGridScreen(item.plexObject))
     else if command = "go_to_show" then

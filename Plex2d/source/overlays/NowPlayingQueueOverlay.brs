@@ -18,6 +18,7 @@ function NowPlayingQueueOverlayClass() as object
         obj.OnPause = npqoOnPause
         obj.OnResume = npqoOnResume
         obj.OnChange = npqoOnChange
+        obj.OnFailedFocus = npqoOnFailedFocus
 
         m.NowPlayingQueueOverlayClass = obj
     end if
@@ -53,6 +54,9 @@ sub npqoInit()
     m.AddListener(m.player, "paused", CreateCallable("OnPause", m))
     m.AddListener(m.player, "resumed", CreateCallable("OnResume", m))
     m.AddListener(m.player, "change", CreateCallable("OnChange", m))
+
+    ' Setup the screen listener
+    m.AddListener(m.screen, "OnFailedFocus", CreateCallable("OnFailedFocus", m))
 end sub
 
 sub npqoGetComponents()
@@ -215,4 +219,10 @@ end sub
 sub npqoRefresh()
     m.DestroyComponents()
     m.Show()
+end sub
+
+sub npqoOnFailedFocus(direction as string, focusedItem=invalid as dynamic)
+    if direction = "right" or direction = "left" then
+        m.Close(true)
+    end if
 end sub

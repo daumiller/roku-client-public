@@ -12,6 +12,9 @@ function SettingsClass() as object
         obj.CreatePrefButton = settingsCreatePrefButton
         obj.GetPrefs = settingsGetPrefs
 
+        ' Listener Methods
+        obj.OnFailedFocus = settingsOnFailedFocus
+
         m.SettingsClass = obj
     end if
 
@@ -263,3 +266,10 @@ function settingsGetBoolSettingValue(key as string, default as dynamic) as boole
         return AppSettings().GetBoolPreference(key)
     end if
 end function
+
+sub settingsOnFailedFocus(direction as string, focusedItem=invalid as dynamic)
+    ' close the settings overlay if this is a storage pref
+    if m.storage <> invalid and direction = "left" then
+        m.Close(true)
+    end if
+end sub

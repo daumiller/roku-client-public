@@ -3,6 +3,7 @@ function ComponentsScreen() as object
         obj = CreateObject("roAssociativeArray")
         obj.Append(BaseScreen())
         obj.Append(ListenersMixin())
+        obj.Append(EventsMixin())
 
         ' Key code constants
         obj.kp_BK   = 0
@@ -389,6 +390,8 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
             perfTimer().Log("Determined next focus")
             m.lastDirection = direction
             m.OnFocus(toFocus, m.focusedItem, direction)
+        else
+            m.Trigger("OnFailedFocus", [direction, m.focusedItem])
         end if
     else if keyCode = m.kp_REV or keyCode = m.kp_FWD then
         ' TODO(schuyler): Handle focus (big) shift
