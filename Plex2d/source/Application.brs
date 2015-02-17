@@ -89,7 +89,7 @@ sub appPushScreen(screen)
 
         ' close any overlay screen (resets focusedItem)
         if IsFunction(oldScreen.closeOverlays) then
-            oldScreen.closeOverlays()
+            oldScreen.closeOverlays(false)
         end if
 
         ' Remember the last focus ID and position to refocus
@@ -157,7 +157,7 @@ sub appPopScreen(screen as object, callActivate=true as boolean)
 
     ' close any overlay screen (resets focusedItem)
     if IsFunction(screen.closeOverlays) then
-        screen.closeOverlays()
+        screen.closeOverlays(false)
     end if
 
     if m.screens.Count() > 0 and callActivate then

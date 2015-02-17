@@ -62,7 +62,7 @@ sub overlayOnKeyRelease(keyCode as integer)
     end if
 end sub
 
-sub overlayClose(backButton=false as boolean)
+sub overlayClose(backButton=false as boolean, redraw=true as boolean)
     if m.enableBackButton = false then EnableBackButton()
     m.blocking = false
 
@@ -77,10 +77,18 @@ sub overlayClose(backButton=false as boolean)
 
     ' refocus on the item we initially came from
     m.screen.lastFocusedItem = invalid
-    if m.fromFocusedItem <> invalid then
-        m.screen.OnFocus(m.fromFocusedItem)
+
+    ' normally we want to redraw the screen if an overlay is closed
+    ' however we don't want to redraw if we are pushing or popping
+    ' a new screen.
+    if redraw then
+        if m.fromFocusedItem <> invalid then
+            m.screen.OnFocus(m.fromFocusedItem)
+        else
+            m.screen.screen.HideFocus(true, true)
+        end if
     else
-        m.screen.screen.HideFocus(true, true)
+        m.screen.focusedItem = m.fromFocusedItem
     end if
 
     ' Let the parent screen know we closed

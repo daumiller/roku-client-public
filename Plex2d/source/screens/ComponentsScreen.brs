@@ -1145,9 +1145,9 @@ sub compOnFocusOut(lastFocus=invalid as dynamic, toFocus=invalid as dynamic)
     m.ToggleScrollbar(false, toFocus, lastFocus)
 end sub
 
-sub compCloseOverlays()
+sub compCloseOverlays(redraw=true as boolean)
     for each overlay in m.overlayScreen
-        overlay.Close()
+        overlay.Close(false, redraw)
     end for
 end sub
 
