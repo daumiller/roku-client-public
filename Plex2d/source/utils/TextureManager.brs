@@ -329,7 +329,8 @@ sub tmSetCache(region as object, sourceUrl as string)
     m.cacheList[sourceUrl] = region
 end sub
 
-function tmGetCache(sourceUrl as string, width as integer, height as integer) as dynamic
+function tmGetCache(sourceUrl as dynamic, width as integer, height as integer) as dynamic
+    if sourceUrl = invalid then return invalid
     cache = m.cacheList[sourceUrl]
     if type(cache) <> "roRegion" or width <> cache.GetWidth() or height <> cache.GetHeight() then
         cache = invalid
