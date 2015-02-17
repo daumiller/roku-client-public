@@ -165,7 +165,6 @@ function dialogCreateButton(text as string, command=invalid as dynamic) as objec
     btn.fixed = m.buttonPrefs.fixed
     btn.zOrder = m.zOrderOverlay
     btn.SetPadding(m.buttonPrefs.padding)
-    btn.focusNonSiblings = false
     btn.dialog = m
     btn.OnSelected = dialogButtonOnSelected
 

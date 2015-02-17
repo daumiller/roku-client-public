@@ -160,7 +160,6 @@ function settingsCreateMenuButton(pref as object) as object
     ' special properties for the menu buttons
     btn.overlay = m
     btn.screen = m.screen
-    btn.focusNonSiblings = false
     btn.options = pref.options
     btn.prefType = pref.prefType
     btn.prefDefault = pref.default
@@ -182,10 +181,7 @@ function settingsCreatePrefButton(text as string, command as dynamic, value as s
     btn.fixed = false
     btn.halign = btn.JUSTIFY_LEFT
     btn.zOrder = m.zOrderOverlay
-
-    ' special properties for the settings buttons
     btn.overlay = m
-    btn.focusNonSiblings = false
 
     if m.screen.focusedItem = invalid then m.screen.focusedItem = btn
 

@@ -106,7 +106,6 @@ function sddCreateButton(server as object, command as dynamic, width as integer,
     obj.height = height
     obj.padding = padding
     obj.focusInside = true
-    obj.focusNonSiblings = false
     obj.zOrder = ZOrders().DROPDOWN
     obj.dropDown = m
     obj.focusParent = m

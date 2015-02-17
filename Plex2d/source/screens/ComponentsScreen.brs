@@ -341,13 +341,11 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
 
             ' Check if we allow manual focus (dialogs/dropdown/etc)
             if toFocus = invalid then
-                if m.focusedItem.FocusNonSiblings = false then
-                    ' DropDowns: we need to close (hide) the drop down in a specified direction
-                    if m.focusedItem.dropDown <> invalid then
-                        if instr(1, m.focusedItem.dropDown.closeDirection, direction) = 0 then return
+                ' DropDowns: we need to close (hide) the drop down in a specified direction
+                if m.focusedItem.dropDown <> invalid then
+                    if instr(1, m.focusedItem.dropDown.closeDirection, direction) > 0 then
                         m.focusedItem.dropDown.Hide()
                     end if
-
                     return
                 else
                     ' check if we disallow manual focus in specific directions (component or parent)

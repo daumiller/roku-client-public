@@ -106,7 +106,6 @@ sub dropdownGetComponents()
         else
             comp = createButton(option.text, option.font, option.command)
             comp.focusInside = true
-            comp.focusNonSiblings = false
             if option.padding <> invalid then
                 comp.setPadding(option.padding.top, option.padding.right, option.padding.bottom, option.padding.left)
             else
