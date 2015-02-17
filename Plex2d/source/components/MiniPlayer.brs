@@ -51,10 +51,15 @@ function createMiniPlayer(screen as object) as object
     return obj
 end function
 
-sub miniplayerDestroy()
-    ' Hide the mini player instead of destroying it.
-    m.isEnabled = false
-    m.Hide()
+sub miniplayerDestroy(delete=false as boolean)
+    if delete then
+        m.DisableListeners()
+        GetGlobalAA().Delete("MiniPlayer")
+    else
+        ' Hide the mini player instead of destroying it.
+        m.isEnabled = false
+        m.Hide()
+    end if
 end sub
 
 sub miniplayerInit()

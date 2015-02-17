@@ -107,6 +107,7 @@ sub compositorDestroy()
     m.screen = invalid
     m.compositor = invalid
     GetGlobalAA().Delete("CompositorScreen")
+    MiniPlayer().Destroy(true)
 end sub
 
 sub compositorHideFocus(unload=false as boolean, drawAllNow=false as boolean)
