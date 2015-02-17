@@ -583,7 +583,9 @@ function compGetFocusManual(direction as string, focusableComponenents=invalid a
     end if
 
     ' Add the mini player to the candidates if focusable
-    if MiniPlayer().focusable then candidates.push(MiniPlayer())
+    if m.overlayScreen.Count() = 0 and MiniPlayer().focusable then
+        candidates.push(MiniPlayer())
+    end if
 
     ' fall back if we do not have any valid candidates (slower check)
     if candidates.count() = 0 and focusableComponenents = invalid then
