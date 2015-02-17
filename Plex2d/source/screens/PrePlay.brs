@@ -644,6 +644,7 @@ sub preplayRefresh(request=invalid as dynamic, response=invalid as dynamic, cont
     m.item = invalid
 
     ' sticky buttons
+    GetGlobalAA().AddReplace("nextComponentId", 1)
     m.refocus = computeRect(m.focusedItem)
     m.refocus.id = m.focusedItem.id
 
