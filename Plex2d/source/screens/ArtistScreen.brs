@@ -235,7 +235,7 @@ function artistGetButtons() as object
 
     ' more/pivots drop down
     if m.item.relatedItems <> invalid and m.item.relatedItems.count() > 0 then
-        btn = createDropDown(Glyphs().MORE, m.customFonts.glyphs, buttonHeight * 5, m)
+        btn = createDropDownButton(Glyphs().MORE, m.customFonts.glyphs, buttonHeight * 5, m)
         btn.SetDropDownPosition("right")
         btn.SetColor(Colors().Text, Colors().Button)
         btn.width = 100

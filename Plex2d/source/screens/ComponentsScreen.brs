@@ -340,26 +340,16 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
             ' If the component knows its sibling, always use that.
             toFocus = m.focusedItem.GetFocusSibling(KeyCodeToString(keyCode))
 
-            ' Check if we allow manual focus (dialogs/dropdown/etc)
+            ' Check if we allow disallow manual focus
             if toFocus = invalid then
-                ' DropDowns: we need to close (hide) the drop down in a specified direction
-                if m.focusedItem.dropDown <> invalid then
-                    if instr(1, m.focusedItem.dropDown.closeDirection, direction) > 0 then
-                        m.focusedItem.dropDown.Hide()
-                    end if
+                parent = m.focusedItem.parent
+                if m.focusedItem.disallowExit <> invalid and m.focusedItem.disallowExit[direction] = true then
+                    Debug("manually focus not allowed component: direction=" + tostr(direction))
                     return
-                else
-                    ' check if we disallow manual focus in specific directions (component or parent)
-                    parent = m.focusedItem.parent
-                    if m.focusedItem.disallowExit <> invalid and m.focusedItem.disallowExit[direction] = true then
-                        Debug("manually focus not allowed component: direction=" + tostr(direction))
-                        return
-                    else if parent <> invalid and parent.disallowExit <> invalid and parent.disallowExit[direction] = true then
-                        Debug("manually focus not allowed by parent: direction=" + tostr(direction) )
-                        return
-                    end if
+                else if parent <> invalid and parent.disallowExit <> invalid and parent.disallowExit[direction] = true then
+                    Debug("manually focus not allowed by parent: direction=" + tostr(direction) )
+                    return
                 end if
-
             end if
 
             ' If we're doing the opposite of our last direction, go back to
@@ -458,8 +448,8 @@ function compHandleCommand(command as string, item as dynamic) as boolean
 
     if command = "go_home" then
         Application().GoHome()
-    else if command = "toggle_control" then
-        item.Toggle()
+    else if command = "show_dropdown" then
+        item.show()
     else if command = "show_item" and item.plexObject <> invalid then
         ' We want to show a screen for a PlexObject of some sort. Look at the
         ' type and try to choose the best screen type.

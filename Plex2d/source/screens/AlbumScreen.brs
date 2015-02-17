@@ -322,7 +322,7 @@ function albumGetButtons() as object
         font: FontRegistry().font16,
     }
 
-    btn = createDropDown(Glyphs().MORE, m.customFonts.glyphs, buttonHeight * 5, m)
+    btn = createDropDownButton(Glyphs().MORE, m.customFonts.glyphs, buttonHeight * 5, m)
     btn.SetDropDownPosition("right")
     btn.SetColor(Colors().Text, Colors().Button)
     btn.width = 100

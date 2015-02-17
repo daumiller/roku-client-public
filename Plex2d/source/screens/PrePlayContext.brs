@@ -268,7 +268,7 @@ function ppcGetButtons() as object
 
     ' extras drop down
     if m.item.extraItems <> invalid and m.item.extraItems.count() > 0 then
-        btn = createDropDown(Glyphs().EXTRAS, m.customFonts.glyphs, buttonHeight * 5, m)
+        btn = createDropDownButton(Glyphs().EXTRAS, m.customFonts.glyphs, buttonHeight * 5, m)
         btn.SetDropDownPosition("right")
         btn.SetColor(Colors().Text, Colors().Button)
         btn.width = 100
@@ -288,7 +288,7 @@ function ppcGetButtons() as object
 
     ' more/pivots drop down
     if m.item.relatedItems <> invalid and m.item.relatedItems.count() > 0 then
-        btn = createDropDown(Glyphs().MORE, m.customFonts.glyphs, buttonHeight * 5, m)
+        btn = createDropDownButton(Glyphs().MORE, m.customFonts.glyphs, buttonHeight * 5, m)
         btn.SetDropDownPosition("right")
         btn.SetColor(Colors().Text, Colors().Button)
         btn.width = 100
