@@ -597,8 +597,15 @@ function preplayGetPrefs() as object
         end if
     next
 
-    if defaultQuality > options[0].index then
-        defaultQuality = options[0].index
+    ' lets add all qualities if nothing matches the video
+    if options.Count() = 0 then
+        for each quality in qualities
+            options.Push({title: quality.title, value: tostr(quality.index), index: quality.index})
+        end for
+    else
+        if defaultQuality > options[0].index then
+            defaultQuality = options[0].index
+        end if
     end if
 
     playback.Push({
