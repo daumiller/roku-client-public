@@ -157,7 +157,7 @@ function hubsCreateHub(container) as dynamic
 end function
 
 function hubsCreateButton(container as object) as object
-    button = createButton(container.GetSingleLineTitle(), FontRegistry().font16, "show_section")
+    button = createButton(container.GetSingleLineTitle(), FontRegistry().font18, "show_section")
     button.setMetadata(container.attrs)
     button.plexObject = container
     button.width = 200

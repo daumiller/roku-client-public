@@ -21,6 +21,10 @@ end function
 sub headerInit()
     ApplyFunc(ContainerClass().Init, m)
 
+    m.customFonts = {
+        buttons: FontRegistry().font18
+    }
+
     m.logo = {
         image: "pkg:/images/plex_logo_HD_62x20.png",
         width: 62,
@@ -30,12 +34,13 @@ sub headerInit()
     }
 
     m.buttons = {
-        width: 128,
+        maxWidth: 250,
+        minWidth: 128,
         height: 40,
         valign: "ALIGN_MIDDLE",
         spacing: 10,
+        padding: 10,
         yOffset: 5,
-        font: FontRegistry().font16
     }
 end sub
 
@@ -76,22 +81,22 @@ sub headerPerformLayout()
     buttons = createObject("roList")
     if tostr(m.screen.screenName) = "Home Screen" then
         ' Server List Drop Down
-        button = createServerDropDown(m.screen.server.name, m.buttons.font, int(720 / 2), m.screen)
-        button.width = m.buttons.width
+        button = createServerDropDown(m.screen.server.name, m.customFonts.buttons, int(720 / 2), m.screen)
+        button.SetPadding(0, m.buttons.padding, 0, m.buttons.padding)
         button.pvalign = button[m.buttons.valign]
         button.zOrder = m.zOrder
         buttons.push(button)
 
         ' Options Drop Down: Settings, Sign Out/In
-        button = createDropDown(firstOf(MyPlexAccount().title, "Options"), m.buttons.font, int(720 / 2), m.screen, false)
-        button.width = m.buttons.width
+        button = createDropDown(firstOf(MyPlexAccount().title, "Options"), m.customFonts.buttons, int(720 / 2), m.screen, false)
+        button.SetPadding(0, m.buttons.padding, 0, m.buttons.padding)
         button.pvalign = button[m.buttons.valign]
         button.GetOptions = headerGetOptions
         button.zOrder = m.zOrder
         buttons.push(button)
     else
-        button = createButton("Go Home", m.buttons.font, "go_home")
-        button.width = m.buttons.width
+        button = createButton("Go Home", m.customFonts.buttons, "go_home")
+        button.SetPadding(0, m.buttons.padding, 0, m.buttons.padding)
         button.pvalign = button[m.buttons.valign]
         button.zOrder = m.zOrder
         buttons.push(button)
@@ -100,21 +105,26 @@ sub headerPerformLayout()
     ' *** Calculate the layout for the buttons *** '
     if buttons.Count() > 0 then
         hbox = createHBox(false, false, false, m.buttons.spacing)
+        buttonContWidth = 0
         for each button in buttons
+            buttonWidth = button.GetPreferredWidth()
+            if buttonWidth > m.buttons.maxWidth then
+                button.width = m.buttons.maxWidth
+            else if buttonWidth < m.buttons.minWidth then
+                button.width = m.buttons.minWidth
+            end if
+            buttonContWidth = buttonContWidth + button.GetPreferredWidth() + hbox.spacing
             hbox.addComponent(button)
         end for
         numButtons = buttons.Count()
 
-        buttonsWidth = (m.buttons.width * numButtons) + (m.buttons.spacing * (numButtons - 1))
-        hbox.setFrame(m.right - buttonsWidth, m.buttons.yOffset, buttonsWidth, m.height)
+        hbox.setFrame(m.right - buttonContWidth, m.buttons.yOffset, buttonContWidth, m.height)
         m.AddComponent(hbox)
 
         ' set the focus siblings for the mini player
         buttons[0].SetFocusSibling("left", MiniPlayer())
         MiniPlayer().SetFocusSibling("right", buttons[0])
     end if
-
-    m.buttons.font = invalid
 end sub
 
 function headerGetOptions() as object
