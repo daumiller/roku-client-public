@@ -325,8 +325,10 @@ function tmReceiveTexture(tmsg as object, screenID as integer) as boolean
     return false
 end function
 
-sub tmSetCache(region as object, sourceUrl as string)
-    m.cacheList[sourceUrl] = region
+sub tmSetCache(region as object, sourceUrl as dynamic)
+    if sourceUrl <> invalid then
+        m.cacheList[sourceUrl] = region
+    end if
 end sub
 
 function tmGetCache(sourceUrl as dynamic, width as integer, height as integer) as dynamic
