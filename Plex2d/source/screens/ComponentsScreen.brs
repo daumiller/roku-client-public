@@ -342,14 +342,23 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
 
             ' Check if we allow disallow manual focus
             if toFocus = invalid then
-                if m.focusedItem.allowManualFocus = false then return
-
+                continue = true
                 parent = m.focusedItem.parent
-                if m.focusedItem.disallowExit <> invalid and m.focusedItem.disallowExit[direction] = true then
-                    Debug("manually focus not allowed component: direction=" + tostr(direction))
-                    return
+                if m.focusedItem.allowManualFocus = false then
+                    Debug("manual focus not allowed from component")
+                    continue = false
+                else if m.focusedItem.disallowExit <> invalid and m.focusedItem.disallowExit[direction] = true then
+                    Debug("manual focus not allowed from component: direction=" + tostr(direction))
+                    continue = false
                 else if parent <> invalid and parent.disallowExit <> invalid and parent.disallowExit[direction] = true then
-                    Debug("manually focus not allowed by parent: direction=" + tostr(direction) )
+                    Debug("manual focus not allowed by parent: direction=" + tostr(direction) )
+                    continue = false
+                end if
+
+                ' I do not think we need to have a distinction when we disallow
+                ' manual focus vs failing to a focusable component.
+                if continue = false then
+                    m.Trigger("OnFailedFocus", [direction, m.focusedItem])
                     return
                 end if
             end if
