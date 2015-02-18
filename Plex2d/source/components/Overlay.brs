@@ -88,6 +88,7 @@ sub overlayClose(backButton=false as boolean, redraw=true as boolean)
             m.screen.screen.HideFocus(true, true)
         end if
     else
+        m.screen.screen.HideFocus(true, false)
         m.screen.focusedItem = m.fromFocusedItem
     end if
 
