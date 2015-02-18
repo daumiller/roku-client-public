@@ -37,7 +37,7 @@ to set an environment variable with the IP address of your Roku. Assuming
 you're in a unix-like environment:
 
 1. `export ROKU_DEV_TARGET=192.168.1.2` (substituting your IP address...)
-2. `cd Plex`
+2. `cd Plex2d`
 3. `make dev install`
 
 There are some additional targets in the Makefile, like `make rel install` to
