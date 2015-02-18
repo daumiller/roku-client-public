@@ -19,16 +19,16 @@ APPDEPS = manifest count_functions
 ZIP_EXCLUDE = -x .git\* -x manifest.template -x \*.swp -x \*.DS_Store -x \*.py -x roku_screenshot.jpg
 include ../app.mk
 
-APPTITLE = $(APPNAME)\ Pass
+APPTITLE = $(APPNAME)Pass
 
 num_functions := $(shell grep -ri --include=*.brs 'end \(function\|sub\)' . | wc -l | tr -d ' ')
 
 .PHONY: manifest count_functions test ninja
 
-test: APPTITLE = $(APPNAME)\ Pass
+test: APPTITLE = $(APPNAME)Pass
 test: $(APPNAME)
 
-ninja: APPTITLE = $(APPNAME)\ Ninja
+ninja: APPTITLE = $(APPNAME)Ninja
 ninja: $(APPNAME)
 
 manifest:

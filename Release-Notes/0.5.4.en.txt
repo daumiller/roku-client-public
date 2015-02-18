@@ -1,0 +1,26 @@
+NEW:
+ - Load preplay screen quicker (and others that used checkFiles=1)
+ - Tune grid screens to handle (ignore) very small shifts.
+ - Better handling of screens with empty hubs.
+ - Add error handling while processing a response (error dialog).
+ - Add playback failure dialog screen.
+ - Autosize the settings overlay (preplay screen).
+ - Now Playing queue overlay can be closed with left/right key press.
+ - Preplay settings can be close with left key press.
+
+FIXES:
+ - Fix quality selection on the prelay screen.
+ - Do not show the MiniPlayer when audio is inactive.
+ - Fix possible crash setting/retrieving cached images.
+ - Fix sticky button focus preplay screen refresh.
+ - Do not allow focus to the MiniPlayer on overlay screens.
+ - Fix crash when we cannot match qualities in preplay settings.
+ - Fix shifting items off grid screen, to the center.
+ - Fix possible crash on for artist/album screen from failed request.
+ - Allow the username in the header more space if needed.
+ - Fix missing MiniPlayer and crash after video playback.
+
+OTHERS:
+ - Refactor dropdowns: use button and overlay classes.
+ - Disable papertail on startup (unless preferred).
+ - Add cache support to the TextureManager. #178
