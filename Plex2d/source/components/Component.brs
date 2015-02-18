@@ -428,9 +428,9 @@ end function
 
 sub compToggleFocusable(visible=true as boolean)
     if not visible and m.focusable = true then
-        m.SetFocusable(invalid, visible)
+        m.SetFocusable(m.command, visible)
         m.wasFocusable = true
     else if visible and m.wasFocusable = true then
-        m.SetFocusable(invalid, visible)
+        m.SetFocusable(m.command, visible)
     end if
 end sub
