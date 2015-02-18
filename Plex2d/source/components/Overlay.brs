@@ -8,6 +8,7 @@ function OverlayClass() as object
         obj.Init = overlayInit
         obj.OnKeyRelease = overlayOnKeyRelease
         obj.Close = overlayClose
+        obj.IsActive = overlayIsActive
 
         m.OverlayClass = obj
     end if
@@ -127,3 +128,7 @@ sub overlayShow(blocking=false as boolean)
         end while
     end if
 end sub
+
+function overlayIsActive() as boolean
+    return m.Equals(m.screen.overlayScreen.Peek())
+end function

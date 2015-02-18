@@ -39,6 +39,7 @@ sub ddoverlayInit()
 end sub
 
 sub ddoverlayOnFailedFocus(direction as string, focusedItem=invalid as dynamic)
+    if not m.IsActive() then return
     allowed = [OppositeDirection(m.button.dropDownPosition)]
     if m.button.dropDownPosition = "down" then
         allowed.append(["left", "right"])

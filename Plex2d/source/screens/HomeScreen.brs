@@ -92,7 +92,6 @@ function homeHandleCommand(command as string, item as dynamic) as boolean
             Application().PushScreen(createHomeScreen(item.metadata))
         end if
     else if command = "settings" then
-        ' TODO(rob): temporary placement and code
         settings = createSettings(m)
         settings.Show()
     else if not ApplyFunc(HubsScreen().HandleCommand, m, [command, item])

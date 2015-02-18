@@ -268,7 +268,7 @@ function settingsGetBoolSettingValue(key as string, default as dynamic) as boole
 end function
 
 sub settingsOnFailedFocus(direction as string, focusedItem=invalid as dynamic)
-    ' close the settings overlay if this is a storage pref
+    if not m.IsActive() then return
     if m.storage <> invalid and direction = "left" then
         m.Close(true)
     end if

@@ -222,6 +222,7 @@ sub npqoRefresh()
 end sub
 
 sub npqoOnFailedFocus(direction as string, focusedItem=invalid as dynamic)
+    if not m.IsActive() then return
     if direction = "right" or direction = "left" then
         m.Close(true)
     end if
