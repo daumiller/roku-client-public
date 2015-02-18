@@ -342,6 +342,8 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
 
             ' Check if we allow disallow manual focus
             if toFocus = invalid then
+                if m.focusedItem.allowManualFocus = false then return
+
                 parent = m.focusedItem.parent
                 if m.focusedItem.disallowExit <> invalid and m.focusedItem.disallowExit[direction] = true then
                     Debug("manually focus not allowed component: direction=" + tostr(direction))
