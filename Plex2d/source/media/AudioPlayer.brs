@@ -101,6 +101,14 @@ function apHandleMessage(msg as object) as boolean
     handled = false
 
     if type(msg) = "roAudioPlayerEvent" then
+        ' Do not process audio events if the VideoPlayer is active, just force a stop.
+        ' For some reason, the audioplayer will try to startup, if it has context,
+        ' while we start a video. #267
+        if VideoPlayer().IsActive() then
+            m.Stop()
+            return true
+        end if
+
         handled = true
         forceTimeline = false
         refreshQueue = false
