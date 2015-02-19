@@ -17,6 +17,7 @@ function VideoPlayer() as object
         obj.timelineTimer.SetDuration(15000, true)
 
         obj.Append(BaseScreen())
+        obj.screenName = "Video Player"
 
         ' Screen functions
         obj.Show = vpShow
@@ -25,6 +26,7 @@ function VideoPlayer() as object
         obj.Cleanup = vpCleanup
         obj.ClearMemory = vpClearMemory
         obj.ShowPlaybackError = vpShowPlaybackError
+        obj.Activate = vpActivate
 
         ' Required player methods
         obj.Stop = vpStop
@@ -517,4 +519,9 @@ sub vpShowPlaybackError()
     ' we have to create a dialog screen until we have a custom video player.
     dialogScreen = createDialogScreen(title, text, video.item)
     Application().PushScreen(dialogScreen)
+end sub
+
+sub vpActivate()
+    ' We cannot allow activation (at least not with the roVideoScreen)
+    Application().PopScreen(m)
 end sub
