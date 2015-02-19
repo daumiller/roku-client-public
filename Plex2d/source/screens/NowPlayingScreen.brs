@@ -245,7 +245,9 @@ function nowplayingGetButtons() as object
     buttons = createObject("roAssociativeArray")
 
     buttons["left"] = createObject("roList")
-    buttons["left"].push({text: Glyphs().SHUFFLE, command: "shuffle", componentKey: "shuffleButton", statusColor: iif(m.player.isShuffled, Colors().Orange, invalid) })
+    if m.player.playQueue <> invalid and m.player.playQueue.supportsShuffle = true then
+        buttons["left"].push({text: Glyphs().SHUFFLE, command: "shuffle", componentKey: "shuffleButton", statusColor: iif(m.player.isShuffled, Colors().Orange, invalid) })
+    end if
     buttons["left"].push({text: Glyphs().REPEAT, command: "repeat", componentKey: "repeatButton", statusColor: iif(m.player.repeat <> m.player.REPEAT_NONE, Colors().Orange, invalid) })
 
     buttons["middle"] = createObject("roList")
@@ -414,6 +416,8 @@ sub nowplayingOnProgress(player as object, item as object, time as integer, forc
 end sub
 
 sub nowplayingOnShuffle(player as object, item as object, shuffle as boolean)
+    if m.shuffleButton = invalid then return
+
     if shuffle then
         m.shuffleButton.statusColor = Colors().Orange
     else

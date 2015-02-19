@@ -9,6 +9,7 @@ function PlayQueueClass() as object
         obj.version = -1
         obj.isShuffled = false
         obj.isRepeat = false
+        obj.supportsShuffle = false
         obj.totalSize = 0
         obj.windowSize = 0
 
@@ -188,6 +189,7 @@ sub pqOnResponse(request as object, response as object, context as object)
     if response.ParseResponse() then
         m.id = response.container.GetInt("playQueueID")
         m.isShuffled = response.container.GetBool("playQueueShuffled")
+        m.supportsShuffle = not response.container.Has("playQueueLastAddedItemID")
         m.totalSize = response.container.GetInt("playQueueTotalCount")
         m.windowSize = response.items.Count()
         m.items = response.items
