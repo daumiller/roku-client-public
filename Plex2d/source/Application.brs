@@ -116,17 +116,23 @@ sub appPushScreen(screen)
 end sub
 
 sub appPopScreen(screen as object, callActivate=true as boolean)
-    ' TODO(schuyler): There's much more logic and paranoia in the old version of
-    ' this method. Is any warranted here?
-
+    m.ShowLoadingModal(screen, screen.Destroy)
     screenID = screen.ScreenID.toStr()
 
+    ' It's possible we may push a screen before we have successfully popped it, or in
+    ' reality, it's possible the roku may close a screen from underneath us. The
+    ' latter is real as VideoPlayer will be closed if we show a screen over the top
+    ' (lock screen). In this case, lets just delete the screen and cleanup.
     if m.screens.Count() > 0 and screen.screenID <> m.screens.Peek().screenID then
-        ' TODO(schuyler): Is this much of a concern now that we're not using
-        ' standard dialogs? Presumably not...
+        for index = 0 to m.screens.count() - 1
+            if screen.screenID = m.screens[index].screenID then
+                m.screens.Delete(index)
+                exit for
+            end if
+        end for
+        ' Do not activate current screen since we are not the current one
         callActivate = false
     else
-        m.ShowLoadingModal(screen, screen.Destroy)
         m.screens.Pop()
     end if
 
