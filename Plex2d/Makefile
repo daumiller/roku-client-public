@@ -23,7 +23,7 @@ APPTITLE = $(APPNAME)Pass
 
 num_functions := $(shell grep -ri --include=*.brs 'end \(function\|sub\)' . | wc -l | tr -d ' ')
 
-.PHONY: manifest count_functions test ninja
+.PHONY: manifest count_functions test ninja rel
 
 test: APPTITLE = $(APPNAME)Pass
 test: $(APPNAME)
@@ -31,9 +31,14 @@ test: $(APPNAME)
 ninja: APPTITLE = $(APPNAME)Ninja
 ninja: $(APPNAME)
 
+rel: APPTITLE = $(APPNAME)
+rel: $(APPNAME)
+
+
 manifest:
+	$(eval LC_APPTITLE := $(shell tr '[A-Z]' '[a-z]' <<< $(APPTITLE)))
 	echo "Creating manifest for $(APPTITLE)"
-	sed s/APPTITLE/$(APPTITLE)/ < manifest.template > manifest
+	sed 's/LC_APPTITLE/$(LC_APPTITLE)/;s/APPTITLE/$(APPTITLE)/' < manifest.template > manifest
 
 count_functions:
 	echo "Counting functions for $(APPTITLE), some Rokus limit to 65536"
