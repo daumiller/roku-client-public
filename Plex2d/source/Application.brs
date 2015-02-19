@@ -302,7 +302,12 @@ sub appOnAccountChange(account as dynamic)
 end sub
 
 sub appShowInitialScreen()
-    m.ClearScreens()
+    if m.screens.Count() = 0 then
+        m.PushScreen(createSplashScreen())
+    else
+        m.ClearScreens()
+    end if
+
     if MyPlexAccount().isEntitled = false then
         m.pushScreen(createPinScreen())
     else if MyPlexAccount().isAuthenticated = true then
