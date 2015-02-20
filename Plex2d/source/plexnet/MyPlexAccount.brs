@@ -246,9 +246,9 @@ sub mpaUpdateHomeUsers()
     if firstOf(xml@size, "0").toInt() and xml.user <> invalid then
         m.homeUsers.clear()
         for each user in xml.user
-            ' Roku doesn't handle 302... so we'll have to resolve the redirect manually.
+            ' Roku doesn't handle 302 (on firmware < 6.1) so we'll have to resolve the redirect manually.
             ' TODO(rob): we should cache this and only update on change or when stale.
-            if user@thumb <> invalid and instr(1, user@thumb, "http://www.gravatar.com") > 0 then
+            if user@thumb <> invalid and not CheckMinimumVersion([6, 1]) and instr(1, user@thumb, "http://www.gravatar.com") > 0 then
                 user.AddAttribute("thumb", ResolveRedirect(user@thumb))
             end if
             homeUser = user.GetAttributes()
