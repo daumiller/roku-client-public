@@ -67,6 +67,11 @@ sub overlayClose(backButton=false as boolean, redraw=true as boolean)
     if m.enableBackButton = false then EnableBackButton()
     m.blocking = false
 
+    ' deactivate the lazy load timer (do not invalidate)
+    if m.screen.lazyLoadTimer <> invalid then
+        m.screen.lazyLoadTimer.active = false
+    end if
+
     ' reset screen OnKeyRelease to original
     m.screen.Append(m.OrigScreenFunctions)
 
