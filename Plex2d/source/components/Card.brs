@@ -108,9 +108,7 @@ sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, 
     if watchedPercentage <> invalid and watchedPercentage > 0 then
         m.progress = createProgressBar(watchedPercentage, Colors().OverlayVeryDark , Colors().Orange)
         m.AddComponent(m.progress)
-    end if
-
-    if unwatchedCount <> invalid and unwatchedCount > 0 then
+    else if unwatchedCount <> invalid and unwatchedCount > 0 then
         label = iif(unwatchedCount < 10, " " + tostr(unwatchedCount) + " ", tostr(unwatchedCount))
         m.unwatchedCount = createLabel(label, FontRegistry().font16)
         m.unwatchedCount.SetPadding(m.overlayPadding.top)
