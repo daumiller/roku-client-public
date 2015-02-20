@@ -194,16 +194,30 @@ sub pqOnResponse(request as object, response as object, context as object)
         m.windowSize = response.items.Count()
         m.items = response.items
 
+        ' Calculate the current track index
+        m.playQueueItemOffset = response.container.GetInt("playQueueSelectedItemOffset")
+        m.playQueueSelectedMetadataItemID = response.container.Get("playQueueSelectedMetadataItemID", "")
+        playQueueOffset = 0
+        for index = 0 to m.items.Count() - 1
+            if m.items[index].Get("ratingKey", "") = m.playQueueSelectedMetadataItemID then
+                playQueueOffset = m.playQueueItemOffset - index + 1
+                exit for
+            end if
+        end for
+
         ' Determine if we have mixed parents
         lastItem = invalid
         m.isMixed = false
-        for each i in m.items
-            if m.IsMixed = true then exit for
+        for index = 0 to m.items.Count() - 1
+            i = m.items[index]
+            i.Set("playQueueIndex", tostr(playQueueOffset + index))
 
-            if i.Get("parentKey") = invalid then
-                m.isMixed = true
-            else if lastItem <> invalid and i.Get("parentKey") <> lastItem.Get("parentKey") then
-                m.isMixed = true
+            if m.IsMixed <> true then
+                if i.Get("parentKey") = invalid then
+                    m.isMixed = true
+                else if lastItem <> invalid and i.Get("parentKey") <> lastItem.Get("parentKey") then
+                    m.isMixed = true
+                end if
             end if
             lastItem = i
         end for
