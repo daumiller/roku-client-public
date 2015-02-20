@@ -5,13 +5,16 @@ function TextureManager() as object
         obj.TManager = CreateObject("roTextureManager")
         obj.TManager.SetMessagePort(Application().port)
 
-        obj.RequestList = {}
+        obj.requestList = {}
 
         ' track by screen (clear by screen)
-        obj.ScreenList = {}
-        obj.UsageList = {}
-        obj.TrackByScreenID = tmTrackByScreenID
+        obj.screenList = {}
+        obj.overlayList = {}
+        obj.usageList = {}
+        obj.TrackByScreen = tmTrackByScreen
         obj.RemoveTextureByScreenID = tmRemoveTextureByScreenID
+        obj.RemoveTextureByOverlayID = tmRemoveTextureByOverlayID
+        obj.RemoveTextureByListID = tmRemoveTextureByListID
 
         obj.SendCount = 0
         obj.ReceiveCount = 0
@@ -52,47 +55,60 @@ function TextureManager() as object
 end function
 
 ' track texture usage by screen id and total screens
-sub tmTrackByScreenID(url as string, screenIdInt as integer)
-    screenID = tostr(screenIdInt)
+sub tmTrackByScreen(url as string, screen as object)
+    screenID = tostr(screen.screenID)
 
-    ' initiate the list for the URL if empty
-    if m.ScreenList[screenID] = invalid then m.ScreenList[screenID] = {}
+    ' initiate and set the screens URL list
+    if m.screenList[screenID] = invalid then m.screenList[screenID] = {}
+    m.screenList[screenID][url] = true
 
-    ' set the url in use by X screen
-    m.ScreenList[screenID][url] = true
+    ' initiate and set the overlays URL list
+    if screen.overlayScreen.Count() > 0 then
+        overlayID = tostr(screen.overlayScreen.Peek().uniqID)
+        if m.overlayList[overlayID] = invalid then m.overlayList[overlayID] = {}
+        m.overlayList[overlayID][url] = true
+    end if
 
     ' set the usage count by screens for the url
-    m.UsageList[url] = 0
-    for each id in m.ScreenList
-        if m.ScreenList[id][url] = true then
-            m.UsageList[url] = m.UsageList[url]+1
+    m.usageList[url] = 0
+    for each id in m.screenList
+        if m.screenList[id][url] = true then
+            m.usageList[url] = m.usageList[url]+1
         end if
     end for
 end sub
 
-' remove all textures used by the screen id (exclude texture in use by multiple)
-' including any cached images (regardless of the screen)
-sub tmRemoveTextureByScreenId(screenIdInt as integer)
-    screenID = tostr(screenIdInt)
-    m.ClearCache()
+sub tmRemoveTextureByScreenId(screenID as integer)
+    removeCount = m.RemoveTextureByListID(tostr(screenID), m.screenList)
+    Debug("Texture Manager: cleared " + tostr(removeCount) + " textures from screenID:" + tostr(screenID))
+end sub
 
-    unloadCount = 0
-    if m.ScreenList[screenID] <> invalid then
-        for each url in m.ScreenList[screenID]
+sub tmRemoveTextureByOverlayId(overlayID as integer)
+    removeCount = m.RemoveTextureByListID(tostr(overlayID), m.overlayList)
+    Debug("Texture Manager: cleared " + tostr(removeCount) + " textures from overlayID:" + tostr(overlayID))
+end sub
+
+' remove all textures used by this list id (exclude texture in use by multiple screens)
+function tmRemoveTextureByListId(listId as string, list as object) as integer
+    removeCount = 0
+    if list[listID] <> invalid then
+        for each url in list[listID]
             ' other screens are using this bitmap (not probable yet)
-            if m.UsageList[url] <> invalid and m.UsageList[url] > 1 then
-                m.UsageList[url] = m.UsageList[url] - 1
+            if m.usageList[url] <> invalid and m.usageList[url] > 1 then
+                m.usageList[url] = m.usageList[url] - 1
             else
-                unloadCount = unloadCount + 1
+                removeCount = removeCount + 1
                 m.TManager.UnloadBitmap(url)
+                m.ClearCache(url)
             end if
         end for
-        ' consider this screen empty
-        m.ScreenList[screenID].clear()
+        ' consider this list empty
+        list[listID].clear()
     end if
 
-    Debug("Texture Manager: cleared " + tostr(unloadCount) + " textures from screenID:" + screenID)
-end sub
+    Debug("Texture Manager: " + tostr(m.cacheList.Count()) + " cached manually")
+    return removeCount
+end function
 
 ' remove a texture from the texture manager
 sub tmRemoveTexture(url as dynamic, doLog = false as boolean)
@@ -103,25 +119,25 @@ end sub
 
 ' Adds an item to the list and increments the list count. The key is the textures id
 sub tmAddItem(id as integer, value as dynamic)
-    m.RequestList.AddReplace(id.toStr(), value)
+    m.requestList.AddReplace(id.toStr(), value)
     m.ListCount = m.ListCount + 1
 end sub
 
 ' Removes an item from the list, decrements the count
 function tmRemoveItem(id as integer) as dynamic
     key   = id.toStr()
-    value = m.RequestList.LookUp(key)
+    value = m.requestList.LookUp(key)
 
     if value = invalid then return invalid
 
-    m.RequestList.Delete(key)
+    m.requestList.Delete(key)
     m.ListCount = m.ListCount - 1
 
     return value
 end function
 
 function tmGetItem(id as integer) as dynamic
-    return m.RequestList[id.toStr()]
+    return m.requestList[id.toStr()]
 end function
 
 ' excludeFixed = do not cancel textures that do not shift. It's possible,
@@ -130,13 +146,13 @@ end function
 sub tmCancelAll(excludeFixed=true as boolean)
     Debug("cancel pending textures")
     if m.ListCount <> invalid and m.ListCount > 0 then
-        for each key in m.RequestList
-            if excludeFixed or m.RequestList[key].component.fixed = false then
-                m.CancelTexture(m.RequestList[key])
+        for each key in m.requestList
+            if excludeFixed or m.requestList[key].component.fixed = false then
+                m.CancelTexture(m.requestList[key])
             end if
         end for
     end if
-    ' TODO(rob) should we clear the RequestList and counts? The question is,
+    ' TODO(rob) should we clear the requestList and counts? The question is,
     ' do we want requests we couldn't cancel to be processed or not?
 end sub
 
@@ -148,7 +164,7 @@ sub tmReset()
     m.CancelAll()
 
     m.TManager.CleanUp()
-    m.RequestList.Clear()
+    m.requestList.Clear()
 
     m.ListCount = 0
     m.SendCount = 0
@@ -221,7 +237,7 @@ function tmCreateTextureRequest(context as object) as object
 end function
 
 ' This function receives the texture and processes it, if successful it increments the receive count
-function tmReceiveTexture(tmsg as object, screenID as integer) as boolean
+function tmReceiveTexture(tmsg as object, screen as object) as boolean
     Debug("Received texture event")
     ' Get the returned state
     state = tmsg.GetState()
@@ -259,7 +275,7 @@ function tmReceiveTexture(tmsg as object, screenID as integer) as boolean
             ' Debug("texture request recv: " + tostr(m.ReceiveCount) + "; " + context.Url)
 
             ' track the used bitmap by screenId
-            m.TrackByScreenID(tmsg.GetURI(), screenID)
+            m.TrackByScreen(tmsg.GetURI(), screen)
 
             context.component.pendingTexture = false
             context.component.SetBitmap(bitmap)
@@ -340,6 +356,10 @@ function tmGetCache(sourceUrl as dynamic, width as integer, height as integer) a
     return cache
 end function
 
-sub tmClearCache()
-    m.cacheList.clear()
+sub tmClearCache(sourceUrl=invalid as dynamic)
+    if IsString(sourceUrl) then
+        m.cacheList.Delete(sourceUrl)
+    else
+        m.cacheList.clear()
+    end if
 end sub

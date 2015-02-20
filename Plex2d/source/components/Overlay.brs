@@ -70,6 +70,7 @@ sub overlayClose(backButton=false as boolean, redraw=true as boolean)
     ' reset screen OnKeyRelease to original
     m.screen.Append(m.OrigScreenFunctions)
 
+    TextureManager().RemoveTextureByOverlayId(m.uniqID)
     m.DisableListeners()
     m.DestroyComponents()
     m.customFonts.clear()

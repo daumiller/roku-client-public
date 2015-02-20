@@ -517,7 +517,7 @@ sub appProcessTextureEvent(msg as object)
     ' Only one roScreen is available at a time, but we want to ignore
     ' any requests that might come in for a prevoius screen. The logic
     ' to handle that should just be added to the TextureManager
-     TextureManager().ReceiveTexture(msg, m.screens.peek().screenID)
+     TextureManager().ReceiveTexture(msg, m.screens.peek())
 end sub
 
 sub appProcessNonBlocking()
