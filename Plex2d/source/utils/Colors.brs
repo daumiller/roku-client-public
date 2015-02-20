@@ -20,6 +20,9 @@ function Colors() as object
         obj.Indicator = &h999999ff
         obj.ButtonDark = &h171717ff
         obj.Text = &hffffffff
+        obj.Subtitle = &h999999ff
+
+        ' These are based on the background
         obj.TextLight = &hffffffe0
         obj.TextDim = &hffffff60
 

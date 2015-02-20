@@ -84,6 +84,7 @@ sub headerPerformLayout()
         button = createServerDropDownButton(m.screen.server.name, m.customFonts.buttons, int(720 / 2), m.screen)
         button.SetPadding(0, m.buttons.padding, 0, m.buttons.padding)
         button.pvalign = button[m.buttons.valign]
+        button.SetColor(Colors().Subtitle)
         button.zOrder = m.zOrder
         buttons.push(button)
 
@@ -92,6 +93,7 @@ sub headerPerformLayout()
         button.SetPadding(0, m.buttons.padding, 0, m.buttons.padding)
         button.pvalign = button[m.buttons.valign]
         button.GetOptions = headerGetOptions
+        button.SetColor(Colors().Subtitle)
         button.zOrder = m.zOrder
         buttons.push(button)
     else
