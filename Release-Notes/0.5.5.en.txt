@@ -1,0 +1,18 @@
+NEW:
+ - Rework the Now Playing Queue list. 142% more awesome.
+ - Include different channel icons for Plex Ninja and Plex Pass releases.
+
+FIXES:
+ - Do not include unwatched indicator for content in progress.
+ - Fix the size of the unwatched indicator.
+ - Fix possible crashes when closing the now playing queue.
+ - Clear more memory.
+ - Fix User Card flicker on the User Selection screen.
+ - Don't show shuffle button for PQs that can't be shuffled.
+ - Fix unlocking lock screen when video was paused.
+ - Fix selecting an album after toggling artist info.
+
+UI:
+ - Update the global blur/opacity/background for artwork.
+ - Use #999999 for the for the header buttons text.
+
