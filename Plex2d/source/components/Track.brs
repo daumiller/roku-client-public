@@ -4,7 +4,7 @@ function TrackClass() as object
         obj.Append(CompositeClass())
         obj.ClassName = "Track"
 
-        obj.alphaEnable = true
+        obj.alphaEnable = false
 
         ' Methods
         obj.Init = trackInit
