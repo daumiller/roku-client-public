@@ -51,7 +51,9 @@ function compositeDraw() as object
         ' performance vs memory: keep all regions, except for a URL source. Optional key `multiBitmap`
         ' is needed if we are compositing multiple downloaded textures, otherwise we keep redrawing.
         if m.multiBitmap = false then
-            if comp.source <> invalid and left(comp.source, 4) = "http" then comp.region = invalid
+            if comp.source <> invalid and left(comp.source, 4) = "http" and m.cache = false then
+                comp.region = invalid
+            end if
             ' do not keep any bitmaps ( we already have the region )
             if comp.bitmap <> invalid then comp.bitmap = invalid
         end if

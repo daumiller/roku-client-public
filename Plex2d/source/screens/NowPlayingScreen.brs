@@ -84,6 +84,7 @@ sub nowplayingInit()
 
     ' Container to toggle
     m.nowPlayingView = CreateObject("roList")
+    m.queueView = CreateObject("roList")
 end sub
 
 sub nowplayingGetComponents()
@@ -92,11 +93,14 @@ sub nowplayingGetComponents()
 
     yOffset = 50
     xOffset = 50
+
     parentSpacing = 30
-    parentHeight = 504
     childSpacing = 10
     buttonSpacing = 100
+
     progressHeight = 6
+    albumLarge = 504
+    albumSmall = 400
 
     ' *** Background Artwork *** '
     m.background = createImage(m.item, 1280, 720, { blur: 15, opacity: 70, background: Colors().ToHexString("Black") })
@@ -106,18 +110,33 @@ sub nowplayingGetComponents()
     m.components.Push(m.background)
 
     ' *** image *** '
-    border = cint(parentHeight * .02)
-    nowplayingBg = createBlock(&hffffff60)
-    nowplayingBg.SetFrame(xOffset - border, yOffset - border, parentHeight + border*2, parentHeight + border*2)
-    m.image = createImage(m.item, parentHeight, parentHeight)
-    m.image.SetFrame(xOffset, yOffset, parentHeight, parentHeight)
-    m.components.push(nowplayingBg)
+    border = cint(albumLarge * .02)
+    imageBorder = createBlock(&hffffff60)
+    imageBorder.SetFrame(xOffset - border, yOffset - border, albumLarge + border*2, albumLarge + border*2)
+    m.image = createImage(m.item, albumLarge, albumLarge)
+    m.image.SetFrame(xOffset, yOffset, albumLarge, albumLarge)
+    m.components.push(imageBorder)
     m.components.push(m.image)
+    m.nowplayingView.Push(imageBorder)
+    m.nowplayingView.Push(m.image)
+
+    ' *** image *** '
+    border = cint(albumSmall * .02)
+    queueImageBorder = createBlock(&hffffff60)
+    queueImageBorder.SetFrame(xOffset - border, yOffset - border, albumSmall + border*2, albumSmall + border*2)
+    queueImageBorder.zOrderInit = -1
+    m.queueImage = createImage(m.item, albumSmall, albumSmall)
+    m.queueImage.SetFrame(xOffset, yOffset, albumSmall, albumSmall)
+    m.queueImage.zOrderInit = -1
+    m.components.push(queueImageBorder)
+    m.components.push(m.queueImage)
+    m.queueView.Push(queueImageBorder)
+    m.queueView.Push(m.QueueImage)
 
     ' *** Current track info: grandparentTitle/parentTitle/Title and track progress/duration *** '
-    xOffset = xOffset + parentHeight + parentSpacing
+    xOffset = xOffset + albumLarge + parentSpacing
     vbox = createVBox(false, false, false, 0)
-    vbox.SetFrame(xOffset, yOffset, 1230 - xOffset, parentHeight)
+    vbox.SetFrame(xOffset, yOffset, 1230 - xOffset, albumLarge)
 
     m.grandparentTitle = createLabel(m.item.Get("grandparentTitle"), m.customFonts.title)
     m.grandparentTitle.width = vbox.width
@@ -148,7 +167,7 @@ sub nowplayingGetComponents()
     height = m.customFonts.title.GetOneLineHeight()*2
 
     vbox = createVBox(false, false, false, 0)
-    vbox.SetFrame(xOffset, yOffset + parentHeight - height, 1230 - xOffset, height)
+    vbox.SetFrame(xOffset, yOffset + albumLarge - height, 1230 - xOffset, height)
 
     nextTrack = m.GetNextTrack()
     m.nextGrandparentTitle = createLabel(firstOf(nextTrack.grandparentTitle, ""), m.customFonts.title)
@@ -169,7 +188,7 @@ sub nowplayingGetComponents()
     m.nowplayingView.Push(vbox)
 
     ' *** Progress bar ****
-    yOffset = yOffset + parentHeight + border*2 + parentSpacing
+    yOffset = yOffset + albumLarge + border*2 + parentSpacing
     m.Progress = createBlock(Colors().OverlayDark)
     m.Progress.SetFrame(0, yOffset, 1280, progressHeight)
     m.components.push(m.Progress)
@@ -380,6 +399,7 @@ end function
 
 sub nowplayingOnPlay(player as object, item as object)
     m.SetImage(item, m.image)
+    m.SetImage(item, m.queueImage)
     m.SetImage(item, m.background)
 
     m.OnRepeat(player, item, player.repeat)
@@ -460,6 +480,11 @@ sub nowplayingToggleQueue()
     for each component in m.nowplayingView
         component.focusable = showNowPlaying
         component.SetVisible(showNowPlaying)
+    end for
+
+    for each component in m.queueView
+        component.focusable = m.showQueue
+        component.SetVisible(m.showQueue)
     end for
 
     if m.showQueue then

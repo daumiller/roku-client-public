@@ -22,7 +22,7 @@ function Colors() as object
         obj.Text = &hffffffff
         obj.Subtitle = &h999999ff
 
-        ' These are based on the background
+        ' These are dependent on the regions background color
         obj.TextLight = &hffffffe0
         obj.TextDim = &hffffff60
 
@@ -48,8 +48,10 @@ function colorsToHexString(key as string, alpha=false as boolean)
     return IntToHex(m[key], alpha)
 end function
 
-function colorsGetAlpha(color as string, percent as integer) as integer
-    if m[color] = invalid then
+function colorsGetAlpha(color as dynamic, percent as integer) as integer
+    if IsInteger(color) then
+        return color and int(percent/100 * 255) - 255
+    else if m[color] = invalid then
         Fatal(color + " is not found in object")
     end if
     return m[color] and int(percent/100 * 255) - 255

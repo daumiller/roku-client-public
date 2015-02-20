@@ -944,6 +944,8 @@ sub compShiftComponents(shift)
 
     ' lazy-load any components off screen, but within our range (ll_triggerX)
     ' create a timer to load when the user has stopped shifting (LazyLoadOnTimer)
+    ' TODO(rob): we should attach the screen or screen ID just to be verify
+    ' when we execute the lazy load, that we're still in the same context.
     if lazyLoad.trigger = true then
         lazyLoad.components = CreateObject("roList")
 

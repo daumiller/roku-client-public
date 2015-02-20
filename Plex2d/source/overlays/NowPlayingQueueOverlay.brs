@@ -40,6 +40,7 @@ end function
 sub npqoInit()
     ApplyFunc(OverlayClass().Init, m)
     m.screen.OnFocusIn = npqoOnFocusIn
+    m.enableOverlay = true
 
     m.customFonts = {
         glyphs: FontRegistry().GetIconFont(32)
@@ -60,15 +61,16 @@ sub npqoInit()
 end sub
 
 sub npqoGetComponents()
-    yOffset = 0
-    xOffset = m.screen.grandparentTitle.x
-    height = m.screen.progress.y
     padding = 20
+    spacing = 50
+    yOffset = 0
+    xOffset = computeRect(m.screen.queueImage).right + spacing
+    height = m.screen.progress.y
 
     trackPrefs = {
         background: Colors().GetAlpha(&hffffffff, 10)
-        width: 1230 - xOffset - padding,
-        height: 50,
+        width: 1230 - xOffset - spacing,
+        height: 60,
         fixed: false,
         focusBG: true,
         disallowExit: { down: true },
@@ -89,11 +91,11 @@ sub npqoGetComponents()
     items = m.player.context
     trackCount = items.Count()
     isMixed = (m.player.playQueue.isMixed = true)
-    ' create a shared region for the separator
+    ' create a shared region for the separator (conserve memory)
     sepRegion = CreateRegion(trackPrefs.width, 1, Colors().OverlayDark)
     for index = 0 to trackCount - 1
         item = items.[index].item
-        track = createTrack(item, FontRegistry().Font16, FontRegistry().Font12, m.customFonts.trackStatus, trackCount, isMixed)
+        track = createTrack(item, FontRegistry().Font16, FontRegistry().Font12, m.customFonts.trackStatus, m.player.playQueue.totalSize, isMixed)
         track.Append(trackPrefs)
         track.plexObject = item
         track.trackIndex = index

@@ -27,14 +27,6 @@ function imageDraw() as object
         m.bgColor = Colors().Transparent
         m.InitRegion()
     else if type(m.sourceOrig) = "roAssociativeArray" or left(m.source, 4) = "http" then
-        if m.placeholder <> invalid then
-            ' Draw the placeholder for now, but don't keep a reference to the bitmap.
-            m.FromLocal(m.placeholder)
-        else
-            ' Just do the basic region initialization until we get a real bitmap.
-            m.InitRegion()
-        end if
-
         ' case sensitive AA only works by setting with aa["caseSensitive"]
         transcodeOpts = createObject("roAssociativeArray")
         transcodeOpts["minSize"] = 1
@@ -42,6 +34,21 @@ function imageDraw() as object
         if m.transcodeOpts <> invalid then transcodeOpts.Append(m.transcodeOpts)
         width = firstOf(m.preferredWidth, m.width)
         height = firstOf(m.preferredHeight, m.height)
+
+        ' If a cache for the current source exists, lets use it for the initial region.
+        if m.cache = true and IsString(m.source) then
+            m.region = TextureManager().GetCache(m.source, width, height)
+        end if
+
+        if m.region = invalid then
+            if m.placeholder <> invalid then
+                ' Draw the placeholder for now, but don't keep a reference to the bitmap.
+                m.FromLocal(m.placeholder)
+            else
+                ' Just do the basic region initialization until we get a real bitmap.
+                m.InitRegion()
+            end if
+        end if
 
         ' images look a lot better resized from a larger source.
         if m.useLargerSource and width < 1280 and height < 720 then
