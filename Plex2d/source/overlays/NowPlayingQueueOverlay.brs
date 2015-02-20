@@ -40,7 +40,7 @@ end function
 sub npqoInit()
     ApplyFunc(OverlayClass().Init, m)
     m.screen.OnFocusIn = npqoOnFocusIn
-    m.enableOverlay = true
+    m.enableOverlay = false
 
     m.customFonts = {
         glyphs: FontRegistry().GetIconFont(32)
@@ -68,7 +68,7 @@ sub npqoGetComponents()
     height = m.screen.progress.y
 
     trackPrefs = {
-        background: Colors().GetAlpha(&hffffffff, 10)
+        background: Colors().GetAlpha(&h000000ff, 30)
         width: 1230 - xOffset - spacing,
         height: 60,
         fixed: false,
