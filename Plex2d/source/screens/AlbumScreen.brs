@@ -122,15 +122,10 @@ sub albumGetComponents()
     end if
 
     ' *** Background Artwork *** '
-    background = createImage(m.item, 1280, 720, { blur: 15, opacity: 60, background: Colors().ToHexString("Background") })
+    background = createImage(m.item, 1280, 720, { blur: 20, opacity: 70, background: Colors().ToHexString("Black") })
     background.zOrderInit = 0
     background.thumbAttr = ["art", "parentThumb", "thumb"]
     background.SetOrientation(background.ORIENTATION_LANDSCAPE)
-    m.components.Push(background)
-
-    background = createBlock(Colors().OverlayDark)
-    background.zOrderInit = 0
-    background.setFrame(0, 72, 1280, 720)
     m.components.Push(background)
 
     ' *** HEADER *** '

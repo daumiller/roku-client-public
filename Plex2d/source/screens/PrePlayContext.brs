@@ -98,12 +98,8 @@ sub ppcGetComponents()
 
     ' *** Background Artwork *** '
     if m.item.Get("art") <> invalid then
-        background = createImage(m.item, 1280, 720, { blur: 4 })
+        background = createImage(m.item, 1280, 720, { blur: 20, opacity: 70, background: Colors().ToHexString("Black") })
         background.SetOrientation(background.ORIENTATION_LANDSCAPE)
-        m.components.Push(background)
-
-        background = createBlock(Colors().OverlayDark)
-        background.setFrame(0, 72, 1280, 720)
         m.components.Push(background)
     end if
 

@@ -60,7 +60,7 @@ sub headerPerformLayout()
     m.needsLayout = false
 
     ' *** Background *** '
-    background = createBlock(Colors().OverlayVeryDark)
+    background = createBlock(Colors().OverlayDark)
     background.SetFrame(0, 0, m.width, m.height)
     background.zOrder = m.zOrder
     m.AddComponent(background)

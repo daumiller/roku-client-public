@@ -66,7 +66,7 @@ sub npqoGetComponents()
     padding = 20
 
     trackPrefs = {
-        background: &hffffff10,
+        background: Colors().GetAlpha(&hffffffff, 10)
         width: 1230 - xOffset - padding,
         height: 50,
         fixed: false,

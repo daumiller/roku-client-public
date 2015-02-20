@@ -99,8 +99,7 @@ sub nowplayingGetComponents()
     progressHeight = 6
 
     ' *** Background Artwork *** '
-    ' TODO(rob): do we add a dimmer to the background artwork, or opacity/background options right?
-    m.background = createImage(m.item, 1280, 720, { blur: 15, opacity: 60, background: Colors().ToHexString("Background") })
+    m.background = createImage(m.item, 1280, 720, { blur: 15, opacity: 70, background: Colors().ToHexString("Black") })
     m.background.zOrderInit = 0
     m.background.thumbAttr = ["art", "parentThumb", "grandparentThumb", "thumb"]
     m.background.SetOrientation(m.background.ORIENTATION_LANDSCAPE)
