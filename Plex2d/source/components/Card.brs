@@ -121,7 +121,7 @@ sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, 
         m.unwatchedCount.halign = m.unwatchedCount.JUSTIFY_CENTER
         m.AddComponent(m.unwatchedCount)
     else if unwatched then
-        m.unwatched = createIndicator(Colors().Orange, int(FontRegistry().font16.GetOneLineHeight()/2))
+        m.unwatched = createIndicator(Colors().Orange, FontRegistry().font16.GetOneLineHeight())
         m.unwatched.valign = m.unwatched.ALIGN_TOP
         m.unwatched.halign = m.unwatched.JUSTIFY_RIGHT
         m.AddComponent(m.unwatched)
