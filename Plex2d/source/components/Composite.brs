@@ -50,7 +50,7 @@ function compositeDraw() as object
         comp.On("redraw", createCallable("OnComponentRedraw", m, "comp" + tostr(m.id) + "_redraw"))
         ' performance vs memory: keep all regions, except for a URL source. Optional key `multiBitmap`
         ' is needed if we are compositing multiple downloaded textures, otherwise we keep redrawing.
-        if m.multiBitmaps = false then
+        if m.multiBitmap = false then
             if comp.source <> invalid and left(comp.source, 4) = "http" then comp.region = invalid
             ' do not keep any bitmaps ( we already have the region )
             if comp.bitmap <> invalid then comp.bitmap = invalid
