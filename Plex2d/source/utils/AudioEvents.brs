@@ -39,7 +39,7 @@ function AudioEvents() as object
         ' roku "Menu Volume" setting, which is lame because we don't know if
         ' we should even play them, regardless of the expected volume. Does
         ' that me we need a custom pref?
-        obj.volume = 100
+        obj.volume = 90
 
         m.AudioEvents = obj
     end if
@@ -56,12 +56,16 @@ sub audioeventsOnKeyPress(keyCode as integer)
 end sub
 
 sub audioeventsOnPress(key as string)
+    if key = "back" and Locks().IsLocked("BackButton") then return
+
     if type(m.keyPress[key]) = "roAudioResource" then
         m.keyPress[key].Trigger(m.volume)
     end if
 end sub
 
 sub audioeventsOnRelease(key as string)
+    if key = "back" and Locks().IsLocked("BackButton") then return
+
     if type(m.keyRelease[key]) = "roAudioResource" then
         m.keyRelease[key].Trigger(m.volume)
     end if

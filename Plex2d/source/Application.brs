@@ -204,7 +204,16 @@ sub appRun()
 
     timeout = 1000
     while m.screens.Count() > 0 or not m.IsInitialized()
-        timeout = m.ProcessOneMessage(timeout)
+        ' process any audio request immediately
+        msg = m.port.PeekMessage()
+        if type(msg) = "roUniversalControlEvent" then
+            keyCode = msg.GetInt()
+            AudioEvents().OnKeyPress(keyCode)
+            ignoreAudio = true
+        else
+            ignoreAudio = false
+        end if
+        timeout = m.ProcessOneMessage(timeout, ignoreAudio)
     end while
 
     ' Clean up
@@ -219,7 +228,7 @@ sub appRun()
     Info("Finished global message loop")
 end sub
 
-function appProcessOneMessage(timeout as integer) as integer
+function appProcessOneMessage(timeout as integer, ignoreAudio=false as boolean)
     if AppSettings().GetGlobal("roDeviceInfo").TimeSinceLastKeyPress() > AppSettings().GetGlobal("idleLockTimeout") then
          m.CreateLockScreen()
     end if
@@ -240,11 +249,10 @@ function appProcessOneMessage(timeout as integer) as integer
         if type(msg) = "roUniversalControlEvent" then
             keyCode = msg.GetInt()
             if (keyCode = m.kp_BK or keyCode - 100 = m.kp_BK) and Locks().IsLocked("BackButton") then
-                ' TODO(rob): AudioEvent?
                 Debug(KeyCodeToString(keyCode) + " is disabled")
                 return timeout
             end if
-            AudioEvents().OnKeyPress(keyCode)
+            if not ignoreAudio then AudioEvents().OnKeyPress(keyCode)
         else if type(msg) <> "roSocketEvent" and type(msg) <> "roUrlEvent" and type(msg) <> "roTextureRequestEvent" then
             Debug("Processing " + type(msg))
         end if
