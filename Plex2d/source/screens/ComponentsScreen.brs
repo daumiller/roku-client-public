@@ -847,11 +847,11 @@ sub compCalculateShift(toFocus as object, refocus=invalid as dynamic)
 
     if (shift.x <> 0 or shift.y <> 0) then
         m.screen.hideFocus()
-        m.shiftComponents(shift)
+        m.shiftComponents(shift, refocus)
     end if
 end sub
 
-sub compShiftComponents(shift)
+sub compShiftComponents(shift as object, refocus=invalid as dynamic)
     ' disable any lazyLoad timer
     ' TODO(schuyler): I added this check to avoid a crash, but it just meant we
     ' crashed somewhere else. We'll need to figure this out.
@@ -931,7 +931,13 @@ sub compShiftComponents(shift)
     TextureManager().CancelAll(false)
     m.LazyLoadExec(partShift)
 
-    AnimateShift(shift, partShift, m.screen)
+    if refocus = invalid then
+        AnimateShift(shift, partShift, m.screen)
+    else
+        for each component in partShift
+            component.ShiftPosition(shift.x, shift.y, true)
+        end for
+    end if
     perfTimer().Log("Shifted ON screen items, expect *high* ms  (partShift)")
 
     for each comp in fullShift

@@ -337,11 +337,11 @@ sub gsCalculateShift(toFocus as object, refocus=invalid as dynamic)
     end if
 
     if (shift.x <> 0 or shift.y <> 0) then
-        m.shiftComponents(shift)
+        m.shiftComponents(shift, refocus)
     end if
 end sub
 
-sub gsShiftComponents(shift as object)
+sub gsShiftComponents(shift as object, refocus=invalid as dynamic)
     ' disable any lazyLoad timer
     m.lazyLoadTimer.active = false
     m.lazyLoadTimer.components = invalid
@@ -456,7 +456,13 @@ sub gsShiftComponents(shift as object)
     TextureManager().CancelAll(false)
     m.LazyLoadExec(partShift)
 
-    AnimateShift(shift, partShift, m.screen)
+    if refocus = invalid then
+        AnimateShift(shift, partShift, m.screen)
+    else
+        for each component in partShift
+            component.ShiftPosition(shift.x, shift.y, true)
+        end for
+    end if
     perfTimer().Log("Shifted ON screen items, expect *high* ms  (partShift)")
 
     ' draw the focus directly after shifting all on screen components
