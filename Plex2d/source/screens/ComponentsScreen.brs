@@ -539,6 +539,8 @@ function computeRect(component as object) as object
 end function
 
 function compCalculateFocusPoint(component as object, direction as string) as object
+    ' Shortcut until we rework the focus point logic (roku-client/issues/282).
+    if component.Equals(MiniPlayer()) then return component
     point = {}
     rect = computeRect(component)
     oppositeDir = OppositeDirection(direction)
