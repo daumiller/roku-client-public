@@ -261,44 +261,24 @@ sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic, screen=inv
     end if
 
     if shift.y <> 0 then
-        m.shiftComponents(shift)
+        m.shiftComponents(shift, refocus)
     end if
 end sub
 
-sub vboxShiftComponents(shift)
+sub vboxShiftComponents(shift as object, refocus=invalid as dynamic)
     Debug("shift vbox by: " + tostr(shift.x) + "," + tostr(shift.y))
+
+    ' Disable animation on refocus or if the shift is greater than the vbox height.
+    ' This fixes any possible memory issue and unnecessary scrolling animation.
+    if refocus <> invalid or abs(shift.y) > m.height then
+        disableAnimation = true
+    else
+        disableAnimation = false
+    end if
 
     if m.screen.lazyLoadTimer <> invalid then
         m.screen.lazyLoadTimer.active = false
         m.screen.lazyLoadTimer.components = invalid
-    end if
-
-    ' Handle a shift greater than the height of the vbox. This will fix any
-    ' possible memory issue and unnecessary scrolling animation.
-    if abs(shift.y) > m.height then
-        lazyLoad = CreateObject("roList")
-        for each comp in m.components
-            TextureManager().CancelTexture(comp.TextureRequest)
-            comp.ShiftPosition(shift.x, shift.y, false)
-            if comp.IsOnScreen() then
-                comp.ShiftPosition(0, 0)
-                lazyLoad.Push(comp)
-            else if comp.sprite <> invalid or comp.region <> invalid then
-                comp.Unload()
-            end if
-        end for
-
-        ' Set the visibility after shifting (special case for vbox)
-        m.SetVisible()
-
-        ' update the screens onScreenComponents after shifting
-        m.screen.onScreenComponents.Clear()
-        for each component in m.screen.components
-            component.GetShiftableItems(m.screen.onScreenComponents, [])
-        next
-
-        m.screen.LazyLoadExec(lazyLoad)
-        return
     end if
 
     partShift = CreateObject("roList")
@@ -319,8 +299,8 @@ sub vboxShiftComponents(shift)
 
     ' Animation still needs some logic/2d code to make it work with any
     ' scrollable vbox, but this does work for the users selection screen.
-    if m.scrollAnimate = true then
-        AnimateShift(shift, partShift, CompositorScreen())
+    if not disableAnimation and m.scrollAnimate = true then
+        AnimateShift(shift, partShift, m.screen.screen)
     else
         for each component in partShift
             component.ShiftPosition(shift.x, shift.y, true)
