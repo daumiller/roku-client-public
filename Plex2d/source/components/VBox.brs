@@ -211,7 +211,7 @@ sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic, screen=inv
 
     focusRect = computeRect(toFocus)
     ' reuse the last position on refocus
-    if refocus <> invalid and focusRect.up <> refocus.up then
+    if refocus <> invalid and focusRect.up > refocus.up then
         shift.y = refocus.up - focusRect.up
     ' locate the last item to fit, and shift based on it.
     else if focusRect.down > shift.triggerDown
