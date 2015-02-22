@@ -189,6 +189,7 @@ sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
 end sub
 
 sub compositorClearDebugSprites()
+    if m.debugSprites.Count() = 0 then return
     for each sprite in m.debugSprites
         sprite.Remove()
     next

@@ -1109,9 +1109,15 @@ sub compOnFocus(toFocus as object, lastFocus=invalid as dynamic, direction=inval
 
     ' set focus and last focused item
     m.focusedItem = toFocus
-    if lastFocus <> invalid then m.lastFocusedItem = lastFocus
+    m.lastFocusedItem = lastFocus
 
-    ' reset the focus point
+    ' let the current focus know it's now blurred before shifting
+    m.OnFocusOut(lastFocus, toFocus)
+
+    m.CalculateShift(toFocus, m.refocus)
+    m.refocus = invalid
+
+    ' reset the focus point after shifting
     if direction <> invalid then
         focusPoint = m.CalculateFocusPoint(toFocus, direction)
         m.focusX = focusPoint.x
@@ -1120,16 +1126,9 @@ sub compOnFocus(toFocus as object, lastFocus=invalid as dynamic, direction=inval
         m.focusX = toFocus.x
         m.focusY = toFocus.y
     end if
+    m.screen.DrawDebugRect(m.focusX, m.focusY, 15, 15, &hffffff80, true)
 
-    m.screen.DrawDebugRect(m.focusX, m.focusY, 15, 15, &h00ff00ff, true)
-
-    ' inform the component with the blure state, before shifing
-    m.OnFocusOut(lastFocus, toFocus)
-
-    m.CalculateShift(toFocus, m.refocus)
-    m.refocus = invalid
-
-    ' inform the component with the focus state, after shifting
+    ' let the new focus know it's now focused after shifting
     m.OnFocusIn(toFocus, lastFocus)
 
     m.screen.DrawFocus(toFocus, true)
