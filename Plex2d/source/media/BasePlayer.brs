@@ -157,6 +157,7 @@ sub bpSetPlayQueue(playQueue as object, startPlayer=true as boolean)
     ' TODO(schuyler): If we have an old PQ, clean things up
     m.metadataById = {}
     m.playQueue = playQueue
+    m.repeat = m.REPEAT_NONE
 
     m.OnPlayQueueUpdate(playQueue)
 
