@@ -806,7 +806,7 @@ sub compCalculateShift(toFocus as object, refocus=invalid as dynamic)
         ' adhere to the parents wanted left position
         if toFocus.parent <> invalid and toFocus.parent.first = true then
             shift.demandLeft = shift.safeLeft
-            shift.forceShift = true
+            shift.forceShift = (m.lastDirection <> "left")
         else if toFocus.parent.demandLeft <> invalid then
             shift.demandLeft = toFocus.parent.demandLeft
         end if
