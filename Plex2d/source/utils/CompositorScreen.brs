@@ -26,7 +26,7 @@ function CompositorScreen() as object
         obj.compositor.SetDrawTo(obj.screen, Colors().Background)
 
         ' TODO(schuyler): Initialize displayable width/height/offsets
-        obj.focusPixels = iif(AppSettings().GetGlobal("IsHD") = true, 3, 2)
+        obj.focusPixels = iif(AppSettings().GetGlobal("IsHD") = true, 4, 2)
 
         ' Device specific overrides
         if AppSettings().GetGlobal("rokuModelCode") = "3100X" then
@@ -132,13 +132,7 @@ sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
     end if
 
     numPixels = m.focusPixels
-
-    ' pad the cards focus border for cards (watched status visibility)
-    if tostr(component.ClassName) = "Card" then
-        padding = 1
-    else
-        padding = 0
-    end if
+    innerBorder = invalid
 
     if component.focusInside = true then
         focus = {
@@ -148,12 +142,27 @@ sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
             h: component.height
         }
     else
+        ' Cards focus box includes 1px black inner border
+        if tostr(component.ClassName) = "Card" then
+            innerPixels = 1
+        else
+            innerPixels = 0
+        end if
+
         focus = {
-            x: component.x - numPixels - padding,
-            y: component.y - numPixels - padding,
-            w: component.width + (numPixels * 2) + (padding * 2),
-            h: component.height + (numPixels * 2) + (padding * 2),
+            x: component.x - numPixels - innerPixels,
+            y: component.y - numPixels - innerPixels,
+            w: component.width + (numPixels * 2) + (innerPixels * 2),
+            h: component.height + (numPixels * 2) + (innerPixels * 2),
         }
+        if innerPixels > 0 then
+            innerBorder = {
+                x: numPixels
+                y: numPixels
+                w: component.width + innerPixels
+                h: component.height + innerPixels*2
+            }
+        end if
     end if
     focus.append({
         color: Colors().OrangeLight,
@@ -175,11 +184,19 @@ sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
     else
         m.HideFocus(true)
 
+        ' Borders drawn in order: top, right, bottom, left
         bmp = CreateObject("roBitmap", {width: focus.w, height: focus.h, alphaEnable: false})
         bmp.DrawRect(0, 0, focus.w, numPixels, focus.color)
-        bmp.DrawRect(0, 0, numPixels, focus.h, focus.color)
         bmp.DrawRect(focus.w - numPixels, 0, numPixels, focus.h, focus.color)
         bmp.DrawRect(0, focus.h - numPixels, focus.w, numPixels, focus.color)
+        bmp.DrawRect(0, 0, numPixels, focus.h, focus.color)
+
+        if innerBorder <> invalid then
+            bmp.DrawRect(innerBorder.x, innerBorder.y, innerBorder.w, innerPixels, Colors().Black)
+            bmp.DrawRect(innerBorder.x + innerBorder.w, innerBorder.y, innerPixels, innerBorder.h, Colors().Black)
+            bmp.DrawRect(innerBorder.x, innerBorder.y + innerBorder.h - innerPixels, innerBorder.w, innerPixels, Colors().Black)
+            bmp.DrawRect(innerBorder.x, innerBorder.x, innerPixels, innerBorder.h, Colors().Orange and Colors().Black)
+        end if
 
         region = CreateObject("roRegion", bmp, 0, 0, focus.w, focus.h)
         m.focusSprite = m.compositor.NewSprite(focus.x, focus.y, region, focus.zOrder)
