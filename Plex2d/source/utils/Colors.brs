@@ -37,6 +37,7 @@ function Colors() as object
         ' Component specific
         obj.ScrollbarBg = &hffffff10
         obj.ScrollbarFg = obj.Orange and &hffffff60
+        obj.IndicatorBorder = obj.Black
 
         m.Colors = obj
     end if
