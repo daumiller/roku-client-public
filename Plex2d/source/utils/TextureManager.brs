@@ -111,8 +111,8 @@ function tmRemoveTextureByListId(listId as string, list as object) as integer
 end function
 
 ' remove a texture from the texture manager
-sub tmRemoveTexture(url as dynamic, doLog = false as boolean)
-    if url = invalid then return
+sub tmRemoveTexture(url=invalid as dynamic, doLog=false as boolean)
+    if not IsString(url) then return
     if doLog = true then Debug("unloading bitmap url from texture manager: " + tostr(url))
     m.TManager.UnloadBitmap(url)
 end sub

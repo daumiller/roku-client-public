@@ -327,7 +327,7 @@ sub compUnload(nest=0 as integer)
     ' cancel any pending request
     TextureManager().CancelTexture(m.TextureRequest)
     ' remove any associated texture
-    if m.source <> invalid then TextureManager().RemoveTexture(m.source)
+    TextureManager().RemoveTexture(m.source)
 
     ' iterate through any children
     if m.components <> invalid then
