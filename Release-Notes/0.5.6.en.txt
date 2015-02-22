@@ -1,0 +1,11 @@
+NEW:
+ - Add 1px black inner border to the focus border.
+ - Add 1px black border on the unwatched indicator (long side)
+
+FIXES:
+ - Reset repeat flag when creating a new PQ.
+ - Fix action bard focus when MiniPlayer is visisble (TV show preplay)
+ - Fix unnecessary scrolling animation on refocus.
+ - Fix possible crash unloading texture.
+ - Better handle canceling texture requests when scrolling.
+ - Fix focus issue when entering/returning from more button on hubs.
