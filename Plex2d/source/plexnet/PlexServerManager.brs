@@ -266,8 +266,6 @@ sub psmLoadState()
         return
     end if
 
-    m.searchContext.preferredServer = obj.lastServerId
-
     for each serverObj in obj.servers
         server = createPlexServerForName(serverObj.uuid, serverObj.name)
         server.owned = serverObj.owned
@@ -314,9 +312,7 @@ sub psmSaveState()
     next
 
     if m.selectedServer <> invalid then
-        obj.lastServerId = m.selectedServer.uuid
-    else
-        obj.lastServerId = invalid
+        AppSettings().SetPreference("lastServerId", m.selectedServer.uuid)
     end if
 
     AppSettings().SetRegistry("PlexServerManager", FormatJson(obj))
@@ -339,7 +335,7 @@ sub psmStartSelectedServerSearch(reset=false as boolean)
     ' Keep track of some information during our search
     m.searchContext = {
         bestServer: invalid,
-        preferredServer: invalid,
+        preferredServer: AppSettings().GetPreference("lastServerId"),
         waitingForResources: true
     }
 end sub

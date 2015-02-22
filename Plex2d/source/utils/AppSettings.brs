@@ -295,6 +295,9 @@ sub settingsInitPrefs()
         section: "preferences",
         prefType: "bool"
     }
+
+    ' Non user facing per-user preferences
+    m.prefs["lastServerId"] = { section: "user" }
 end sub
 
 function settingsGetSectionKey(pref as string) as string
