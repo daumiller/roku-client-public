@@ -285,9 +285,7 @@ sub vboxShiftComponents(shift)
     ' not any we have pending on the screens context. i.e. do not use the
     ' TextureManager().CancelAll(false) to cancel these.
     for each comp in m.components
-        if comp.TextureRequest <> invalid then
-            TextureManager().CancelTexture(comp.TextureRequest)
-        end if
+        TextureManager().CancelTexture(comp.TextureRequest)
     end for
     m.screen.LazyLoadExec(partShift)
 

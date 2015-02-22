@@ -140,14 +140,14 @@ function tmGetItem(id as integer) as dynamic
     return m.requestList[id.toStr()]
 end function
 
-' excludeFixed = do not cancel textures that do not shift. It's possible,
+' includeFixed=false: do not cancel textures that do not shift. It's possible,
 ' we may want to cancel all textures due to a shift, so we'll need to keep
 ' any request not shifting.
-sub tmCancelAll(excludeFixed=true as boolean)
+sub tmCancelAll(includeFixed=true as boolean)
     Debug("cancel pending textures")
     if m.ListCount <> invalid and m.ListCount > 0 then
         for each key in m.requestList
-            if excludeFixed or m.requestList[key].component.fixed = false then
+            if includeFixed or m.requestList[key].component.fixed = false then
                 m.CancelTexture(m.requestList[key])
             end if
         end for
@@ -171,7 +171,7 @@ sub tmReset()
     m.ReceiveCount = 0
 end sub
 
-sub tmCancelTexture(context as object)
+sub tmCancelTexture(context=invalid as dynamic)
     if context <> invalid and context.textureRequest <> invalid then
         ' increment the count before canceling.
         m.ReceiveCount = m.ReceiveCount + 1
@@ -187,6 +187,12 @@ sub tmRequestTexture(component as object, context as object)
         component.SetBitmap(invalid)
         return
     end if
+
+    ' cancel any pending texture for this component
+    if component.textureRequest <> invalid then
+        m.CancelTexture(component.textureRequest)
+    end if
+
     component.pendingTexture = true
 
     if m.timerTextureManger = invalid then m.timerTextureManger = createtimer("textureManagerRequest")
@@ -217,6 +223,7 @@ sub tmRequestTexture(component as object, context as object)
     ' Stash some references
     context.textureRequest = request
     context.component = component
+    component.textureRequest = context
 end sub
 
 function tmCreateTextureRequest(context as object) as object

@@ -325,7 +325,7 @@ sub compUnload(nest=0 as integer)
     m.sprite = invalid
 
     ' cancel any pending request
-    if m.TextureRequest <> invalid then TextureManager().CancelTexture(m.TextureRequest)
+    TextureManager().CancelTexture(m.TextureRequest)
     ' remove any associated texture
     if m.source <> invalid then TextureManager().RemoveTexture(m.source)
 
