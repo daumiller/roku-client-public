@@ -273,6 +273,34 @@ sub vboxShiftComponents(shift)
         m.screen.lazyLoadTimer.components = invalid
     end if
 
+    ' Handle a shift greater than the height of the vbox. This will fix any
+    ' possible memory issue and unnecessary scrolling animation.
+    if abs(shift.y) > m.height then
+        lazyLoad = CreateObject("roList")
+        for each comp in m.components
+            TextureManager().CancelTexture(comp.TextureRequest)
+            comp.ShiftPosition(shift.x, shift.y, false)
+            if comp.IsOnScreen() then
+                comp.ShiftPosition(0, 0)
+                lazyLoad.Push(comp)
+            else if comp.sprite <> invalid or comp.region <> invalid then
+                comp.Unload()
+            end if
+        end for
+
+        ' Set the visibility after shifting (special case for vbox)
+        m.SetVisible()
+
+        ' update the screens onScreenComponents after shifting
+        m.screen.onScreenComponents.Clear()
+        for each component in m.screen.components
+            component.GetShiftableItems(m.screen.onScreenComponents, [])
+        next
+
+        m.screen.LazyLoadExec(lazyLoad)
+        return
+    end if
+
     partShift = CreateObject("roList")
     fullShift = CreateObject("roList")
     lazyLoad = CreateObject("roAssociativeArray")
