@@ -1,0 +1,9 @@
+NEW:
+ - Background artwork fade-in transition.
+ - Do not spoil trailers (hide trailer title on loading screen).
+
+FIXES:
+ - Fix remembering server selection per-user.
+ - Always obey the preplay settings.
+ - Fix broken images on the Now Playing screen (music).
+
