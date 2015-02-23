@@ -80,28 +80,39 @@ function imageDraw() as object
             end if
         end if
 
-        ' Request texture through the TextureManager
-        context = {
-            url: m.source,
-            width: width,
-            height: height,
-            ' Do not scale size within the texture manager. We need the true dimensions to
-            ' use our own scaling methods (zoom-to-fill).
-            ' scaleSize: m.scaleSize,
-            ' scaleMode: 1
-        }
-
-        ' Use a cached image if applicable or send or create a request
-        imageCache = TextureManager().GetCache(m.source, width, height)
-        if imageCache <> invalid then
-            m.region = imageCache
-        else
-            TextureManager().RequestTexture(m, context)
+        doRequest = true
+        ' Lets verify if our oldSource is a url, and either unload it from the texture manager
+        ' if the new request differs, or ignore the request if it's the same source.
+        if IsString(m.oldSource) then
+            if m.oldSource <> tostr(m.source) then
+                TextureManager().RemoveTexture(m.oldSource, true)
+            else
+                doRequest = not (m.isReplacement = true)
+            end if
         end if
+        m.isReplacement = invalid
 
-        ' memory cleanup: unload any existing source url and set our new source if different
-        if IsString(m.oldSource) and m.oldSource <> tostr(m.source) then
-            TextureManager().RemoveTexture(m.oldSource, true)
+        ' Request texture through the TextureManager
+        if doRequest then
+            context = {
+                url: m.source,
+                width: width,
+                height: height,
+                ' Do not scale size within the texture manager. We need the true dimensions to
+                ' use our own scaling methods (zoom-to-fill).
+                ' scaleSize: m.scaleSize,
+                ' scaleMode: 1
+            }
+
+            ' Use a cached image if applicable or send or create a request
+            imageCache = TextureManager().GetCache(m.source, width, height)
+            if imageCache <> invalid then
+                m.region = imageCache
+            else
+                TextureManager().RequestTexture(m, context)
+            end if
+        else
+            Debug("Ignore request for unmodified image replacement")
         end if
     else
         m.bitmap = m.FromLocal(m.source)
@@ -313,8 +324,8 @@ sub imageReplace(item as object)
         Fatal("Replace only handles plex objects")
     end if
 
+    m.isReplacement = true
     m.bitmap = invalid
-    m.region = invalid
     m.sourceOrig = item
     m.Draw()
 end sub
