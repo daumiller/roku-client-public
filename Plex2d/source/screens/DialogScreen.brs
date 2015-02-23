@@ -50,6 +50,7 @@ sub dialogscreenGetComponents()
     if m.item <> invalid then
         background = createImage(m.item, 1280, 720, { blur: 4 })
         background.SetOrientation(background.ORIENTATION_LANDSCAPE)
+        background.fade = true
         m.components.Push(background)
     end if
 end sub

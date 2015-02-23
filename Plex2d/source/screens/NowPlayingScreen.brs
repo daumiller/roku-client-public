@@ -107,6 +107,7 @@ sub nowplayingGetComponents()
     m.background.zOrderInit = 0
     m.background.thumbAttr = ["art", "parentThumb", "grandparentThumb", "thumb"]
     m.background.SetOrientation(m.background.ORIENTATION_LANDSCAPE)
+    m.background.fade = true
     m.components.Push(m.background)
 
     ' *** image *** '

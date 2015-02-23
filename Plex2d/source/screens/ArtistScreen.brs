@@ -95,6 +95,7 @@ sub artistGetComponents()
     if m.item.Get("art") <> invalid then
         background = createImage(m.item, 1280, 720, { blur: 20, opacity: 70, background: Colors().ToHexString("Black") })
         background.SetOrientation(background.ORIENTATION_LANDSCAPE)
+        background.fade = true
         m.components.Push(background)
     end if
 

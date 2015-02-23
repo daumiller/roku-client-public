@@ -126,6 +126,7 @@ sub albumGetComponents()
     background.zOrderInit = 0
     background.thumbAttr = ["art", "parentThumb", "thumb"]
     background.SetOrientation(background.ORIENTATION_LANDSCAPE)
+    background.fade = true
     m.components.Push(background)
 
     ' *** HEADER *** '

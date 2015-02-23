@@ -100,7 +100,7 @@ function imageDraw() as object
         end if
 
         ' memory cleanup: unload any existing source url and set our new source if different
-        if IsString(m.oldSource) and m.oldSource <> m.source then
+        if IsString(m.oldSource) and m.oldSource <> tostr(m.source) then
             TextureManager().RemoveTexture(m.oldSource, true)
         end if
     else
@@ -182,6 +182,7 @@ sub imageSetBitmap(bmp=invalid as dynamic, makeCopy=false as boolean)
         Debug("Invalid bitmap: set empty")
         bmp = CreateObject("roBitmap", {width: m.GetPreferredWidth(), height: m.GetPreferredHeight(), alphaEnable: false})
         bmp.Clear(Colors().Empty)
+        if m.fade = true then m.ignoreFade = true
     end if
 
     if makeCopy then
@@ -228,12 +229,31 @@ sub imageSetBitmap(bmp=invalid as dynamic, makeCopy=false as boolean)
     ' Let whoever cares layout the component again.
     m.Trigger("performParentLayout", [m])
 
-    ' Let whoever cares know that we should be redrawn.
-    m.Trigger("redraw", [m])
-
     ' Cache the region if applicable
     if m.cache = true then
         TextureManager().SetCache(m.region, m.source)
+    end if
+
+    ' Let whoever cares know that we should be redrawn.
+    if m.fade = true then
+        ' Ignore any fad-in if the source has already been transitioned
+        if m.ignoreFade = true or (m.lastFadeSource <> invalid and m.lastFadeSource = m.source) then
+            m.ignoreFade = invalid
+            m.Trigger("redraw", [m])
+        else
+            m.lastFadeSource = m.source
+            orig = createobject("roBitmap", {width: m.region.GetWidth(), height: m.region.GetHeight(), AlphaEnable: false})
+            orig.DrawObject(0, 0, m.region)
+            m.region.DrawObject(0, 0, orig, -256)
+            incr = 20
+            for fade = -256 to 0 step incr
+                if abs(fade) < incr then fade = -1
+                m.region.DrawObject(0, 0, orig, fade)
+                m.Trigger("redraw", [m])
+            end for
+        end if
+    else
+        m.Trigger("redraw", [m])
     end if
 end sub
 
