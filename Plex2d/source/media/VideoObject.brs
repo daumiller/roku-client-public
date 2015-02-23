@@ -38,7 +38,12 @@ function voBuild(directPlay=invalid as dynamic, directStream=true as boolean) as
 
     obj = CreateObject("roAssociativeArray")
     obj.PlayStart = int(m.seekValue/1000)
-    obj.Title = m.item.GetLongerTitle()
+    if m.item.Get("extraTitle") <> invalid then
+        obj.Title = m.item.Get("extraTitle")
+        obj.hudTitle = m.item.GetLongerTitle()
+    else
+        obj.Title = m.item.GetLongerTitle()
+    end if
     obj.ReleaseDate = m.item.Get("originallyAvailableAt", "")
     obj.OrigReleaseDate = obj.ReleaseDate
     obj.duration = m.media.GetInt("duration")

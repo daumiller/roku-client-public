@@ -262,6 +262,14 @@ function vpHandleMessage(msg) as boolean
 
             m.RequestTranscodeSessionInfo()
 
+            ' Don't spoil trailers (plexinc/roku-client-issues#10)
+            videoItem = m.GetCurrentMetadata()
+            if videoItem.hudTitle <> invalid then
+                videoItem.title = videoItem.hudTitle
+                videoItem.hudTitle = invalid
+                m.Screen.SetContent(videoItem)
+            end if
+
             ' TODO(rob): handle underrun warning
             'if msg.GetInfo().IsUnderrun = true then
             '    m.underrunCount = m.underrunCount + 1
