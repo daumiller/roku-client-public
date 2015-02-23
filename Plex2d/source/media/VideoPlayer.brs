@@ -194,11 +194,18 @@ function vpHandleMessage(msg) as boolean
             ' Fallback transcode with resume support
             if m.playbackError and m.IsTranscoded = false then
                 Debug("Direct Play failed: falling back to transcode")
-                m.context[m.curIndex] = m.CreateContentMetadata(m.GetCurrentItem(), true, m.GetPlaybackPosition(true))
-                m.player = invalid
-                m.screen = invalid
-                m.Play()
-            else if m.isPlayed and (m.curIndex < m.context.Count() - 1 or m.repeat <> m.REPEAT_NONE) then
+                lastPosition = m.GetPlaybackPosition(true)
+                videoItem = m.CreateContentMetadata(m.GetCurrentItem(), true, iif(lastPosition > m.seekValue, lastPosition, m.seekValue))
+                if videoItem.playbackSupported <> false then
+                    m.context[m.curIndex] = videoItem
+                    m.player = invalid
+                    m.screen = invalid
+                    m.Play()
+                    return handled
+                end if
+            end if
+
+            if m.playbackError <> true and m.isPlayed and (m.curIndex < m.context.Count() - 1 or m.repeat <> m.REPEAT_NONE) then
                 Debug("Going to try to play the next item")
                 m.player = invalid
                 m.screen = invalid
@@ -381,7 +388,7 @@ function vpCreateContentMetadata(item as object, forceTranscode=false as boolean
         directPlay = false
         if allowDirectStream = false and allowTranscode = false then
             Debug("Forced transcode requested: allowDirectStream and allowTranscode not enabled")
-            m.screenError = "Transcode required: not enabled"
+            obj.playbackSupported = false
             return obj
         end if
     else

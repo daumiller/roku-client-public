@@ -7,6 +7,7 @@ function PreplayScreen() as object
         obj.screenName = "Preplay Screen"
 
         ' Methods
+        obj.Activate = preplayActivate
         obj.Show = preplayShow
         obj.Refresh = preplayRefresh
         obj.Init = preplayInit
@@ -27,6 +28,13 @@ function PreplayScreen() as object
 
     return m.PreplayScreen
 end function
+
+sub preplayActivate()
+    ApplyFunc(ComponentsScreen().Activate, m)
+
+    ' set any temporary preplay setting overrides
+    m.OnSettingsClosed({}, false)
+end sub
 
 sub preplayInit()
     ApplyFunc(ComponentsScreen().Init, m)

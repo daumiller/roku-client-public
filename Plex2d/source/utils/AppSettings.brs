@@ -626,6 +626,8 @@ end sub
 sub settingsPopPrefOverrides(screenID as integer)
     overrides = m.overrides.Peek()
 
+    if Application().IsActiveScreen(VideoPlayer()) then return
+
     if overrides <> invalid and overrides.id = screenID then
         m.overrides.Pop()
     end if
