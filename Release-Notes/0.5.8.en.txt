@@ -1,0 +1,13 @@
+NEW:
+ - Nothing!
+
+FIXES:
+ - Fix remembering server selection per-user (GDM non-auth fix).
+ - Fix server search after switching users.
+ - Remove GDM connections when switching to a managed user.
+ - Only repeat reachability tests if the user really changed.
+ - Handle media with multiple versions (preplay and preplay settings).
+ - Improve offline loading time.
+ - Always play/shuffle from albums action bar.
+
+
