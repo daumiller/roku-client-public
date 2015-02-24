@@ -191,7 +191,7 @@ sub appRun()
     InitRemoteControlHandlers()
     m.ClearInitializer("application")
 
-    timeout = 0
+    timeout = 1000
     while m.screens.Count() > 0 or not m.IsInitialized()
         timeout = m.ProcessOneMessage(timeout)
     end while
