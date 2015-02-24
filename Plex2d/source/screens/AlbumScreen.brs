@@ -357,28 +357,16 @@ function albumHandleCommand(command as string, item as dynamic) as boolean
 
     if command = "play" or command = "shuffle" then
         ' start content from requested index, or from the beginning.
-        trackContext = m.children
-        if item <> invalid and item.trackIndex <> invalid then
-            component = item
-            trackIndex = item.trackIndex
-            key = item.plexObject.Get("key")
+        if item <> invalid then
+            trackIndex = validint(item.trackIndex)
         else
             trackIndex = 0
-            key = invalid
-            component = m.trackList.components[0]
         end if
 
-        ' ignore commands if we don't have a valid component
-        if component = invalid then return true
-
-        if component.Equals(m.paused) or component.Equals(m.playing) then
-            Application().PushScreen(createNowPlayingScreen(m.player.GetCurrentItem()))
-        else
-            plexItem = trackContext[trackIndex]
+        plexItem = m.children[trackIndex]
+        if plexItem <> invalid then
             options = createPlayOptions()
-
             options.shuffle = (command = "shuffle")
-
             pq = createPlayQueueForItem(plexItem, options)
             m.player.SetPlayQueue(pq, true)
         end if
