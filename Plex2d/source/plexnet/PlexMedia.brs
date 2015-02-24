@@ -9,6 +9,7 @@ function PlexMediaClass() as object
         obj.IsAccessible = pnmIsAccessible
         obj.IsAvailable= pnmIsAvailable
         obj.GetVideoResolution = pnmGetVideoResolution
+        obj.IsSelected = pnmIsSelected
 
         obj.ResolveIndirect = pnmResolveIndirect
 
@@ -101,6 +102,10 @@ function pnmGetVideoResolution() as integer
     end if
 
     return m.GetInt("height")
+end function
+
+function pnmIsSelected() as boolean
+    return (m.selected = true or m.Get("id") = AppSettings().GetPreference("local_mediaId"))
 end function
 
 ' TODO(schuyler): getParts

@@ -20,6 +20,7 @@ function PreplayScreen() as object
         obj.GetImages = preplayGetImages
         obj.GetSideInfo = preplayGetSideInfo
         obj.GetMainInfo = preplayGetMainInfo
+        obj.UpdatePrefOptions = preplayUpdatePrefOptions
 
         obj.OnSettingsClosed = preplayOnSettingsClosed
 
@@ -143,6 +144,7 @@ function preplayHandleCommand(command as string, item as dynamic) as boolean
         settings.GetPrefs = preplayGetPrefs
         settings.storage = m.localPrefs
         settings.Show()
+        settings.On("selected", createCallable("UpdatePrefOptions", m))
         settings.On("close", createCallable("OnSettingsClosed", m))
         settings.AddListener(m, "OnFailedFocus", CreateCallable("OnFailedFocus", settings))
     else if command = "show_grid" then
@@ -297,15 +299,16 @@ function preplayGetMainInfo() as object
     end if
 
     ' Audio and Subtitles
-    audioText = "None"
-    subText = "None"
-    mediaItems = m.item.mediaitems
-    if mediaItems <> invalid and mediaItems.count() > 0 and mediaItems[0].HasStreams() then
-        audioStream = mediaItems[0].parts[0].GetSelectedStreamOfType(2)
-        if audioStream <> invalid then audioText = audioStream.GetTitle()
-
-        subStream = mediaItems[0].parts[0].GetSelectedStreamOfType(3)
-        if subStream <> invalid then subText = subStream.GetTitle()
+    mediaChoice = MediaDecisionEngine().ChooseMedia(m.item)
+    if mediaChoice.audioStream <> invalid then
+        audioText = mediaChoice.audioStream.GetTitle()
+    else
+        audioText = "None"
+    end if
+    if mediaChoice.subtitleStream <> invalid then
+        subText = mediaChoice.subtitleStream.GetTitle()
+    else
+        subText = "None"
     end if
     m.audioLabel = createLabel("AUDIO" + spacer + audioText, normalFont)
     m.subtitleLabel = createLabel("SUBTITLES" + spacer + subText, normalFont)
@@ -660,32 +663,56 @@ sub preplayOnSettingsClosed(overlay as object, backButton as boolean)
     ' If we have any local playback options, evaluate them now.
     if m.localPrefs <> invalid then
         plexObject = m.item
-
-        if m.localPrefs.media <> invalid then
-            for each media in plexObject.mediaItems
-                media.selected = (m.localPrefs.media = media.Get("id"))
-            next
-        end if
-
         spacer = "   "
         redraw = false
 
+        selectedMedia = invalid
+        selectedAudio = invalid
+        selectedSubtitle = invalid
+
+        if m.localPrefs.media <> invalid then
+            AppSettings().SetPrefOverride("local_mediaId", m.localPrefs.media, m.screenID)
+            for each media in plexObject.mediaItems
+                media.selected = (m.localPrefs.media = media.Get("id"))
+                if media.selected then
+                    selectedMedia = media
+                    selectedAudio = selectedMedia.parts[0].GetSelectedStreamOfType(PlexStreamClass().TYPE_AUDIO)
+                    selectedSubtitle = selectedMedia.parts[0].GetSelectedStreamOfType(PlexStreamClass().TYPE_SUBTITLE)
+                end if
+            next
+
+            ' Media selection changed, let's invalidate it.
+            m.item.mediaChoice = invalid
+        end if
+
+        ' Determine the selected media item to update audio and subtitle prefs
+        if selectedMedia = invalid and m.item.mediaChoice <> invalid then
+            selectedMedia = plexObject.mediaItems[0]
+        else if m.item.mediaChoice <> invalid then
+            selectedMedia = m.item.mediaChoice.media
+        end if
+
         if m.localPrefs.audio_stream <> invalid then
-            part = plexObject.mediaItems[0].parts[0]
-            stream = part.SetSelectedStream(PlexStreamClass().TYPE_AUDIO, m.localPrefs.audio_stream, false)
-            if stream <> invalid then
-                m.audioLabel.SetText("AUDIO" + spacer + stream.GetTitle(), true, true)
-                redraw = true
-            end if
+            selectedAudio = selectedMedia.parts[0].SetSelectedStream(PlexStreamClass().TYPE_AUDIO, m.localPrefs.audio_stream, false)
         end if
 
         if m.localPrefs.subtitle_stream <> invalid then
-            part = plexObject.mediaItems[0].parts[0]
-            stream = part.SetSelectedStream(PlexStreamClass().TYPE_SUBTITLE, m.localPrefs.subtitle_stream, false)
-            if stream <> invalid then
-                m.subtitleLabel.SetText("SUBTITLES" + spacer + stream.GetTitle(), true, true)
-                redraw = true
+            selectedSubtitle = selectedMedia.parts[0].SetSelectedStream(PlexStreamClass().TYPE_SUBTITLE, m.localPrefs.subtitle_stream, false)
+        end if
+
+        if selectedAudio <> invalid then
+            m.audioLabel.SetText("AUDIO" + spacer + selectedAudio.GetTitle(), true, true)
+            redraw = true
+        end if
+
+        if selectedSubtitle <> invalid or m.localPrefs.media <> invalid then
+            if selectedSubtitle <> invalid then
+                subtitleText = selectedSubtitle.GetTitle()
+            else
+                subtitleText = "None"
             end if
+            m.subtitleLabel.SetText("SUBTITLES" + spacer + subtitleText, true, true)
+            redraw = true
         end if
 
         if m.localPrefs.quality <> invalid then
@@ -701,5 +728,53 @@ sub preplayOnSettingsClosed(overlay as object, backButton as boolean)
         next
 
         if redraw then m.screen.DrawAll()
+    end if
+end sub
+
+sub preplayUpdatePrefOptions(settings as object, prefKey as string, prefValue=invalid as dynamic)
+    ' Update the audio/subtitle options based on the media selection
+    if prefKey = "media" and prefValue <> invalid then
+        ' Invalidate a few dependent settings
+        m.localPrefs.audio_stream = invalid
+        m.localPrefs.subtitle_stream = invalid
+        selectedMedia = invalid
+
+        for each media in m.item.mediaItems
+            if prefValue = media.Get("id") then
+                selectedMedia = media
+                exit for
+            end if
+        end for
+
+        ' iterate through the prefs reference to update the audio streams, as of now
+        ' we only have one groups to work with.
+        for each pref in settings.prefs[0].settings
+            ' Update available audio options
+            if pref.key = "audio_stream" then
+                pref.options.Clear()
+                if selectedMedia <> invalid then
+                    streams = selectedMedia.parts[0].GetStreamsOfType(PlexStreamClass().TYPE_AUDIO)
+                    if streams.Count() > 0 then
+                        for each stream in streams
+                            pref.options.Push({title: stream.GetTitle(), value: stream.Get("id")})
+                        next
+                    end if
+                end if
+            end if
+
+            ' Update available subtitle options
+            if pref.key = "subtitle_stream" then
+                pref.options.Clear()
+                if selectedMedia <> invalid then
+                    streams = selectedMedia.parts[0].GetStreamsOfType(PlexStreamClass().TYPE_SUBTITLE)
+                    if streams.Count() > 0 then
+                        for each stream in streams
+                            pref.options.Push({title: stream.GetTitle(), value: stream.Get("id")})
+                        next
+                    end if
+                end if
+            end if
+        end for
+
     end if
 end sub

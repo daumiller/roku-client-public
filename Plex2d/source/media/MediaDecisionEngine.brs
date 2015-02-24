@@ -40,7 +40,7 @@ function mdeChooseMedia(item as object) as object
     maxResolution = AppSettings().GetMaxResolution(item.GetServer().IsLocalConnection())
 
     for each media in item.mediaItems
-        if media.selected = true then
+        if media.IsSelected() then
             candidates.Clear()
             candidates.AddTail(media)
             exit for
@@ -112,7 +112,7 @@ function mdeEvaluateMediaVideo(item as object, media as object) as object
     '
     choice.score = 0
 
-    if media.selected = true then
+    if media.IsSelected()
         choice.score = choice.score + 10000
     end if
 

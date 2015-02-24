@@ -69,8 +69,8 @@ sub settingsGetComponents()
     settingsBox.AddComponent(menuBox)
     settingsBox.AddComponent(listBox)
 
-    prefs = m.GetPrefs()
-    for each group in prefs
+    m.prefs = m.GetPrefs()
+    for each group in m.prefs
         label = createLabel(group.title, FontRegistry().font18)
         label.fixed = false
         label.SetColor(Colors().Text, m.colors.category)

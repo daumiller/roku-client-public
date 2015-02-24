@@ -122,6 +122,7 @@ sub settingsbuttonOnSelected()
     if m.storage <> invalid then
         Debug("Set local preference:" + prefKey + "=" + prefValue + " (type: " + m.prefType + ")")
         m.storage[prefKey] = prefValue
+        m.overlay.Trigger("selected", [m.overlay, prefKey, prefValue])
     else
         Debug("Set preference:" + prefKey + "=" + prefValue + " (type: " + m.prefType + ")")
         AppSettings().SetPreference(prefKey, prefValue)

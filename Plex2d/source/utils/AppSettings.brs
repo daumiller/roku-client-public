@@ -298,6 +298,7 @@ sub settingsInitPrefs()
 
     ' Non user facing per-user preferences
     m.prefs["lastServerId"] = { section: "user" }
+    m.prefs["local_mediaId"] = { section: "Transient" }
 end sub
 
 function settingsGetSectionKey(pref as string) as string
