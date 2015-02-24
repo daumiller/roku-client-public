@@ -31,6 +31,7 @@ function Application()
         obj.GoHome = appGoHome
         obj.CreateLockScreen = appCreateLockScreen
         obj.CheckExclusions = appCheckExclusions
+        obj.ShowSplash = appShowSplash
 
         obj.AddTimer = appAddTimer
 
@@ -175,11 +176,13 @@ sub appPopScreen(screen as object, callActivate=true as boolean)
 end sub
 
 function appIsActiveScreen(screen as object) as boolean
-    return (screen.screenID = m.screens.Peek().screenID)
+    return (m.screens.Peek() <> invalid and screen.screenID = m.screens.Peek().screenID)
 end function
 
 sub appRun()
     Info("Starting global message loop")
+    ' Show the splash screen immediately
+    m.ShowSplash()
 
     ' Make sure we initialize anything that needs to run in the background
     Analytics()
@@ -302,8 +305,6 @@ sub appOnAccountChange(account as dynamic)
 end sub
 
 sub appShowInitialScreen()
-    if m.screens.Count() = 0 then m.PushScreen(createSplashScreen())
-
     m.ClearScreens()
     if MyPlexAccount().isEntitled = false then
         m.pushScreen(createPinScreen())
@@ -528,7 +529,7 @@ sub appProcessNonBlocking()
     end if
 end sub
 
-sub appClearScreens(keep = 0 as integer, activateLastScreen=false as boolean)
+sub appClearScreens(keep=0 as integer, activateLastScreen=false as boolean)
     if m.screens.count() > keep then
         Debug("appClearScreens:: keep " + tostr(keep) + ", have:" + tostr(m.screens.count()))
         pushScreens = []
@@ -616,3 +617,8 @@ function appCheckExclusions() as boolean
 
     return excluded
 end function
+
+sub appShowSplash()
+    m.PushScreen(createSplashScreen())
+    m.ClearScreens()
+end sub
