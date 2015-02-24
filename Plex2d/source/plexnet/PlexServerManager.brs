@@ -358,6 +358,13 @@ sub psmOnAccountChange(account)
         ' start our selected server search.
 
         m.UpdateFromConnectionType([], PlexConnectionClass().SOURCE_MYPLEX)
+
+        ' If the new user is restricted, then we also clear discovered connections
+        if account.isManaged then
+            m.UpdateFromConnectionType([], PlexConnectionClass().SOURCE_DISCOVERED)
+            m.UpdateFromConnectionType([], PlexConnectionClass().SOURCE_MANUAL)
+        end if
+
         m.StartSelectedServerSearch(true)
     else
         ' Clear servers/connections from plex.tv
