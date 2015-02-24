@@ -297,7 +297,7 @@ sub appOnInitialized()
     end if
 end sub
 
-sub appOnAccountChange(account as dynamic)
+sub appOnAccountChange(account as dynamic, reallyChanged as boolean)
     Debug("Account changed to " + tostr(account.title))
     ' Clear any AudioPlayer data
     AudioPlayer().Cleanup()

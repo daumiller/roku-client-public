@@ -195,7 +195,7 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
 
     if oldId <> m.id or m.switchUser = true then
         m.switchUser = invalid
-        Application().Trigger("change:user", [m])
+        Application().Trigger("change:user", [m, (oldId <> m.id)])
     end if
 end sub
 
@@ -215,7 +215,7 @@ sub mpaSignOut(expired=false as boolean)
     m.isManaged = false
     m.isExpired = expired
 
-    Application().Trigger("change:user", [m])
+    Application().Trigger("change:user", [m, true])
 
     m.SaveState()
 end sub

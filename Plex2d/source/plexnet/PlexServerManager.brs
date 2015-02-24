@@ -351,8 +351,14 @@ sub psmStartSelectedServerSearch(reset=false as boolean)
     Debug("Starting selected server search, hoping for " + tostr(m.searchContext.preferredServer))
 end sub
 
-sub psmOnAccountChange(account)
+sub psmOnAccountChange(account as dynamic, reallyChanged as boolean)
     if account.isSignedIn then
+        ' If the user didn't really change, such as selecting the previous user
+        ' on the lock screen, then we don't need to clear anything. We can
+        ' avoid a costly round of reachability checks.
+
+        if not reallyChanged then return
+
         ' A request to refresh resources has already been kicked off. We need
         ' to clear out any MYPLEX connections for the previous user and then
         ' start our selected server search.
