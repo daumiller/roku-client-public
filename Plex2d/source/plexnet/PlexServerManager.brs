@@ -211,9 +211,17 @@ end sub
 
 sub psmCheckSelectedServerSearch()
     if m.selectedServer = invalid and m.searchContext <> invalid then
+        ' If we're still waiting on the resources response then there's no
+        ' reason to settle, so don't even iterate over our servers.
+        '
+        if m.searchContext.waitingForResources then
+            Debug("Still waiting for plex.tv resources")
+            return
+        end if
+
         waitingForPreferred = false
         waitingForOwned = false
-        waitingForAnything = (m.searchContext.waitingForResources and MyPlexAccount().isSignedIn)
+        waitingForAnything = false
 
         ' Iterate over all our servers and see if we're waiting on any results
         servers = m.GetServers()
@@ -237,6 +245,7 @@ sub psmCheckSelectedServerSearch()
             Debug("Still waiting for any server")
         else
             ' No hope for anything better, let's select what we found
+            Debug("Settling for the best server we found")
             m.SetSelectedServer(m.searchContext.bestServer, true)
         end if
     end if
@@ -336,8 +345,10 @@ sub psmStartSelectedServerSearch(reset=false as boolean)
     m.searchContext = {
         bestServer: invalid,
         preferredServer: AppSettings().GetPreference("lastServerId"),
-        waitingForResources: true
+        waitingForResources: MyPlexAccount().isSignedIn
     }
+
+    Debug("Starting selected server search, hoping for " + tostr(m.searchContext.preferredServer))
 end sub
 
 sub psmOnAccountChange(account)
