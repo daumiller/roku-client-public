@@ -44,12 +44,13 @@ sub sddoverlayGetComponents()
         bottom: 5 + focusPx,
         left: 10 + focusPx
     }
+    buttonHeight = m.button.customFonts.title.GetOneLineHeight() + m.button.customFonts.subtitle.GetOneLineHeight() + padding.top*2 + padding.bottom*2
     statusWidth = m.button.createButton(servers[0], "", 0, 0, padding).statusWidth
     buttonWidth = buttonWidth + statusWidth + padding.left + padding.right
     if buttonWidth > m.button.maxWidth then buttonWidth = m.button.maxWidth
 
     for each server in servers
-        comp = m.button.createButton(server, "selected_server", buttonWidth, 66, padding)
+        comp = m.button.createButton(server, "selected_server", buttonWidth, buttonHeight, padding)
         vbox.AddComponent(comp)
     end for
 
