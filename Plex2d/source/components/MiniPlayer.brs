@@ -84,11 +84,11 @@ sub miniplayerInit()
     ' TODO(rob): HD/SD nightmare and lame hardcoded positioning. We
     ' probably need to refactor the header, to have the ability to
     ' know the positioning. (other screens will beneifit too).
-    m.padding = 5
-    m.width = 160
+    m.padding = 2
+    m.width = 180
     m.height = 50
     m.x = 150
-    m.y = 20
+    m.y = 15
 
     vbMain = createVBox(false, false, false, m.padding)
     vbMain.SetFrame(m.x + m.padding, m.y + m.padding, m.width - m.padding*2, m.height - m.padding)
@@ -113,7 +113,7 @@ sub miniplayerInit()
     ' Progress bar placeholder
     m.Progress = createBlock(&hffffff60)
     m.Progress.width = m.width
-    m.Progress.height = 1
+    m.Progress.height = 2
     m.Progress.zOrderInit = m.ZOrderInit
 
     vbTrack.AddComponent(m.Title)
