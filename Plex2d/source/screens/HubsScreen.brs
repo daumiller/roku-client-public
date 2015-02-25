@@ -113,9 +113,9 @@ sub hubsGetComponents()
         titleLabel.width = width
         vb.AddComponent(titleLabel)
 
-        subtitleLabel = createLabel(message.subtitle, FontRegistry().font18)
+        subtitleLabel = createLabel(message.subtitle, FontRegistry().LARGE)
         subtitleLabel.wrap = true
-        subtitleLabel.SetFrame(0, 0, width, FontRegistry().font18.getOneLineHeight() * 2)
+        subtitleLabel.SetFrame(0, 0, width, FontRegistry().LARGE.getOneLineHeight() * 2)
         vb.AddComponent(subtitleLabel)
 
         ' Set the text in the middle of the chevron
@@ -187,7 +187,7 @@ function hubsCreateHub(container) as dynamic
 end function
 
 function hubsCreateButton(container as object) as object
-    button = createButton(container.GetSingleLineTitle(), FontRegistry().font18, "show_section")
+    button = createButton(container.GetSingleLineTitle(), FontRegistry().LARGE, "show_section")
     button.setMetadata(container.attrs)
     button.plexObject = container
     button.width = 200

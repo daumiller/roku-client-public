@@ -151,13 +151,13 @@ sub albumGetComponents()
     xOffset = xOffset + parentSpacing + vbButtons.width
 
     ' *** Artist title ***
-    lineHeight = FontRegistry().Font16.GetOneLineHeight()
-    artistTitle = createLabel(ucase(m.item.Get("parentTitle")), FontRegistry().Font16)
+    lineHeight = FontRegistry().NORMAL.GetOneLineHeight()
+    artistTitle = createLabel(ucase(m.item.Get("parentTitle")), FontRegistry().NORMAL)
     artistTitle.SetFrame(xOffset, yOffset - childSpacing - (lineHeight*2), parentWidth, lineHeight)
     m.components.push(artistTitle)
 
     ' *** Album title ***
-    albumTitle = createLabel(ucase(m.item.Get("title")), FontRegistry().Font16)
+    albumTitle = createLabel(ucase(m.item.Get("title")), FontRegistry().NORMAL)
     albumTitle.SetFrame(xOffset, yOffset - childSpacing - lineHeight, parentWidth, lineHeight)
     albumTitle.SetColor(Colors().TextDim)
     m.components.push(albumTitle)
@@ -173,13 +173,13 @@ sub albumGetComponents()
     width = 1230 - xOffset
 
     ' *** REVIEW: title and summary *** '
-    m.summaryTitle = createLabel("REVIEW", FontRegistry().Font16)
+    m.summaryTitle = createLabel("REVIEW", FontRegistry().NORMAL)
     height = m.summaryTitle.font.GetOneLineHeight()
     m.summaryTitle.SetFrame(xOffset, yOffset - childSpacing - height, m.summaryTitle.GetPreferredWidth(), height)
     m.summaryTitle.zOrderInit = -1
     m.components.push(m.summaryTitle)
 
-    m.summary = createTextArea(m.item.Get("summary", ""), FontRegistry().Font16, 0)
+    m.summary = createTextArea(m.item.Get("summary", ""), FontRegistry().NORMAL, 0)
     m.summary.SetFrame(xOffset, yOffset, width, parentHeight)
     m.summary.SetColor(Colors().Text, Colors().OverlayDark, Colors().OverlayMed)
     m.summary.SetPadding(10, 10, 10, 15)
@@ -222,7 +222,7 @@ sub albumGetComponents()
     sepRegion = CreateRegion(trackPrefs.width, 1, Colors().OverlayDark)
     for index = 0 to trackCount - 1
         item = m.children[index]
-        track = createTrack(item, FontRegistry().Font16, FontRegistry().Font12, m.customFonts.trackStatus, trackCount)
+        track = createTrack(item, FontRegistry().NORMAL, FontRegistry().SMALL, m.customFonts.trackStatus, trackCount)
         track.Append(trackPrefs)
         track.plexObject = item
         track.trackIndex = index
@@ -315,7 +315,7 @@ function albumGetButtons() as object
         halign: "JUSTIFY_LEFT",
         height: buttonHeight
         padding: { right: 10, left: 10, top: 0, bottom: 0 }
-        font: FontRegistry().font16,
+        font: FontRegistry().NORMAL,
     }
 
     btn = createDropDownButton(Glyphs().MORE, m.customFonts.glyphs, buttonHeight * 5, m)

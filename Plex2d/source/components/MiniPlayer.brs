@@ -101,12 +101,12 @@ sub miniplayerInit()
     m.Image.zOrderInit = m.zOrderInit
 
     ' Title placeholder
-    m.Title = createLabel(firstOf(labels.title, ""), FontRegistry().Font12)
+    m.Title = createLabel(firstOf(labels.title, ""), FontRegistry().SMALL)
     m.Title.width = m.width
     m.Title.zOrderInit = m.zOrderInit
 
     ' Subtitle placeholder
-    m.Subtitle = createLabel(firstOf(labels.subtitle, ""), FontRegistry().Font12)
+    m.Subtitle = createLabel(firstOf(labels.subtitle, ""), FontRegistry().SMALL)
     m.Subtitle.width = m.width
     m.Subtitle.zOrderInit = m.zOrderInit
 

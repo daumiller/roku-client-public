@@ -56,9 +56,9 @@ sub dialogInit(title as string, text=invalid as dynamic)
     m.buttonPrefs.maxWidth = m.width - m.buttonPrefs.padding*2
 
     m.customFonts = {
-        buttonFont: FontRegistry().font16
-        titleFont:  FontRegistry().font18b
-        textFont:  FontRegistry().font18
+        buttonFont: FontRegistry().NORMAL
+        titleFont:  FontRegistry().LARGE_BOLD
+        textFont:  FontRegistry().LARGE
     }
 
     m.buttonsSingleLine = false

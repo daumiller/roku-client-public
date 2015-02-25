@@ -99,7 +99,7 @@ sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, 
     end if
 
     if text <> invalid then
-        m.overlay = createLabel(text, FontRegistry().font16)
+        m.overlay = createLabel(text, FontRegistry().NORMAL)
         m.overlay.SetPadding(m.overlayPadding.top, m.overlayPadding.right, m.overlayPadding.bottom, m.overlayPadding.left)
         m.overlay.SetColor(Colors().Text, Colors().OverlayDark)
         m.AddComponent(m.overlay)
@@ -110,7 +110,7 @@ sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, 
         m.AddComponent(m.progress)
     else if unwatchedCount <> invalid and unwatchedCount > 0 then
         label = iif(unwatchedCount < 10, " " + tostr(unwatchedCount) + " ", tostr(unwatchedCount))
-        m.unwatchedCount = createLabel(label, FontRegistry().font16)
+        m.unwatchedCount = createLabel(label, FontRegistry().NORMAL)
         m.unwatchedCount.SetPadding(m.overlayPadding.top)
         border = cint(m.unwatchedCount.GetPreferredHeight() * .02)
         m.unwatchedCount.SetBorder(Colors().IndicatorBorder, 0, 0, border, border)
@@ -119,7 +119,7 @@ sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, 
         m.unwatchedCount.halign = m.unwatchedCount.JUSTIFY_CENTER
         m.AddComponent(m.unwatchedCount)
     else if unwatched then
-        m.unwatched = createIndicator(Colors().Orange, FontRegistry().font16.GetOneLineHeight())
+        m.unwatched = createIndicator(Colors().Orange, FontRegistry().NORMAL.GetOneLineHeight())
         m.unwatched.valign = m.unwatched.ALIGN_TOP
         m.unwatched.halign = m.unwatched.JUSTIFY_RIGHT
         m.AddComponent(m.unwatched)

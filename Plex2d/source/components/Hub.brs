@@ -52,7 +52,7 @@ function createHub(title as string, orientation as integer, layout as integer, s
     obj.Init()
 
     ' add a label component for the hubs title
-    obj.title = createLabel(ucase(title), FontRegistry().font16)
+    obj.title = createLabel(ucase(title), FontRegistry().NORMAL)
     obj.AddComponent(obj.title)
 
     obj.orientation = orientation
@@ -304,7 +304,7 @@ sub hubShowMoreButton(moreCommand as dynamic)
             m.moreButton.command = moreCommand
         end if
     else if moreCommand <> invalid then
-        m.moreButton = createButton("More", FontRegistry().font16, moreCommand)
+        m.moreButton = createButton("More", FontRegistry().NORMAL, moreCommand)
         m.moreButton.SetColor(Colors().Text, Colors().Button)
         m.moreButton.width = 72
         m.moreButton.height = 44

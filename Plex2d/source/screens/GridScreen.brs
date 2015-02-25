@@ -231,9 +231,9 @@ sub gsGetComponents()
     else
         title = m.item.GetSingleLineTitle()
     end if
-    label = createLabel(ucase(title), FontRegistry().font16)
-    label.height = FontRegistry().font16.getOneLineHeight()
-    label.width = FontRegistry().font16.getOneLineWidth(label.text, 1280)
+    label = createLabel(ucase(title), FontRegistry().NORMAL)
+    label.height = FontRegistry().NORMAL.getOneLineHeight()
+    label.width = FontRegistry().NORMAL.getOneLineWidth(label.text, 1280)
     label.SetFrame(50, 125 - m.spacing - label.height, label.width, label.height)
     m.components.Push(label)
 
@@ -258,7 +258,7 @@ sub gsGetComponents()
     end if
 
     ' *** Jump Box *** '
-    m.jumpBox = createJumpBox(m.jumpItems, FontRegistry().font14, hbox.y + m.height, m.spacing)
+    m.jumpBox = createJumpBox(m.jumpItems, FontRegistry().MEDIUM, hbox.y + m.height, m.spacing)
     m.components.Push(m.jumpBox)
 
     ' set the placement of the description box (manualComponent)

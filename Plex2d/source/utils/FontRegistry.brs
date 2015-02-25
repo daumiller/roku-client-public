@@ -20,11 +20,11 @@ function FontRegistry() as object
         ' that needs it so that the font isn't kept in memory longer than
         ' necessary.
 
-        obj.font12 = obj.GetTextFont(12)
-        obj.font14 = obj.GetTextFont(14)
-        obj.font16 = obj.GetTextFont(16)
-        obj.font18 = obj.GetTextFont(18)
-        obj.font18b = obj.GetTextFont(18, true)
+        obj.SMALL  = obj.GetTextFont(14)
+        obj.MEDIUM = obj.GetTextFont(16)
+        obj.NORMAL = obj.GetTextFont(18)
+        obj.LARGE  = obj.GetTextFont(20)
+        obj.LARGE_BOLD = obj.GetTextFont(20, true)
 
         m.FontRegistry = obj
     end if

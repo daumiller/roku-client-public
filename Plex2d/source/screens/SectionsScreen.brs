@@ -77,7 +77,7 @@ sub sectionsShow()
 end sub
 
 function sectionsCreateButton(container as object) as object
-    button = createButton(container.GetSingleLineTitle(), FontRegistry().font18, "show_grid")
+    button = createButton(container.GetSingleLineTitle(), FontRegistry().LARGE, "show_grid")
     button.setMetadata(container.attrs)
     button.plexObject = container
     button.width = 200

@@ -34,7 +34,7 @@ sub redirectInit()
 
     ' Intialize custom fonts for this screen
     m.customFonts.welcome = FontRegistry().GetTextFont(32)
-    m.customFonts.info = FontRegistry().font16
+    m.customFonts.info = FontRegistry().NORMAL
 end sub
 
 sub redirectOnItemSelected(item as object)
@@ -75,9 +75,9 @@ sub redirectGetComponents()
     vb.AddSpacer(HDtoSDHeight(10))
 
     ' Text info
-    textLabel = createLabel(m.text, FontRegistry().font16)
+    textLabel = createLabel(m.text, FontRegistry().NORMAL)
     textLabel.wrap = true
-    textLabel.SetFrame(0, 0, width, FontRegistry().font16.getOneLineHeight() * 6)
+    textLabel.SetFrame(0, 0, width, FontRegistry().NORMAL.getOneLineHeight() * 6)
     vb.AddComponent(textLabel)
     vb.AddSpacer(HDtoSDHeight(10))
 
@@ -86,7 +86,7 @@ sub redirectGetComponents()
     buttons.halign = buttons.JUSTIFY_RIGHT
     vb.AddComponent(buttons)
 
-    button = createButton("Launch Offical channel", FontRegistry().font16, "redirect")
+    button = createButton("Launch Offical channel", FontRegistry().NORMAL, "redirect")
     button.SetColor(Colors().Text, Colors().Button)
     button.SetPadding(HDtoSDWidth(10))
     m.focusedItem = button

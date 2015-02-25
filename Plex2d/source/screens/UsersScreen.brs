@@ -47,7 +47,7 @@ sub usersGetComponents()
     m.DestroyComponents()
 
     ' User list container
-    m.buttons = { width: 200, height: 200 + FontRegistry().font16.GetOneLineHeight(), maxCols: 3, rows: 2, spacing: 10 }
+    m.buttons = { width: 200, height: 200 + FontRegistry().NORMAL.GetOneLineHeight(), maxCols: 3, rows: 2, spacing: 10 }
 
     ' Obtain use count to determine max columns for positioning
     MyPlexAccount().UpdateHomeUsers()
@@ -91,7 +91,7 @@ sub usersGetComponents()
     msgBox = createVBox(true, true, true, 0)
     msgBox.SetFrame(xOffset, logo.y + logo.height, logo.width, height)
 
-    lockLabel = createLabel("Lock Screen", FontRegistry().font18b)
+    lockLabel = createLabel("Lock Screen", FontRegistry().LARGE_BOLD)
     lockLabel.SetPadding(10)
     lockLabel.SetColor(Colors().Transparent)
     lockLabel.zOrder = ZOrders().HEADER
@@ -99,7 +99,7 @@ sub usersGetComponents()
     msgBox.AddComponent(lockLabel)
 
     if MyPlexAccount().isOffline then
-        offlineLabel = createLabel("Offline Mode", FontRegistry().font18b)
+        offlineLabel = createLabel("Offline Mode", FontRegistry().LARGE_BOLD)
         offlineLabel.zOrder = ZOrders().HEADER
         offlineLabel.SetColor(Colors().Red)
         offlineLabel.halign = offlineLabel.JUSTIFY_CENTER
@@ -122,7 +122,7 @@ function usersCreateCard(user as object) as object
     ' assign key to selected user (checkmark/focus)
     if user.id = MyPlexAccount().id then user.isSelected = true
 
-    button = createUserCard(user, FontRegistry().font16, "switch_user")
+    button = createUserCard(user, FontRegistry().NORMAL, "switch_user")
     button.width = m.buttons.width
     button.height = m.buttons.height
     button.fixed = false

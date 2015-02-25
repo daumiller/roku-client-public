@@ -242,7 +242,7 @@ sub preplayGetComponents()
     vbInfo.SetFrame(xOffset, 125, 1130-xOffset, 239)
     m.components.Push(vbInfo)
 
-    summary = createTextArea(m.item.Get("summary", ""), FontRegistry().Font16, 0)
+    summary = createTextArea(m.item.Get("summary", ""), FontRegistry().NORMAL, 0)
     summary.SetPadding(10)
     summary.SetFrame(xOffset, 364, 1230-xOffset, 239)
     summary.SetColor(Colors().Text, &h00000000, Colors().OverlayLht)
@@ -262,7 +262,7 @@ function preplayGetMainInfo() as object
     components = createObject("roList")
 
     spacer = "   "
-    normalFont = FontRegistry().font16
+    normalFont = FontRegistry().NORMAL
     if m.item.Get("type", "") = "episode" then
         components.push(createLabel(m.item.Get("grandparentTitle", ""), m.customFonts.large))
         components.push(createLabel(m.item.Get("title", ""), m.customFonts.large))
@@ -328,7 +328,7 @@ function preplayGetSideInfo() as object
     else
         components.push(createLabel(m.item.Get("year", ""), m.customFonts.large))
         components.push(createStars(m.item.GetInt("rating"), 16))
-        components.push(createLabel(m.item.Get("contentRating", ""), FontRegistry().font16))
+        components.push(createLabel(m.item.Get("contentRating", ""), FontRegistry().NORMAL))
     end if
 
     for each comp in components
@@ -419,7 +419,7 @@ function preplayGetButtons() as object
         halign: "JUSTIFY_LEFT",
         height: buttonHeight
         padding: { right: 10, left: 10, top: 0, bottom: 0 }
-        font: FontRegistry().font16,
+        font: FontRegistry().NORMAL,
     }
 
     ' extras drop down

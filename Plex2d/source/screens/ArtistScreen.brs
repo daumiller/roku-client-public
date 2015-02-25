@@ -121,7 +121,7 @@ sub artistGetComponents()
     xOffset = xOffset + parentSpacing + vbButtons.width
 
     ' *** Artist title ***
-    artistTitle = createLabel(ucase(m.item.GetLongerTitle()), FontRegistry().Font16)
+    artistTitle = createLabel(ucase(m.item.GetLongerTitle()), FontRegistry().NORMAL)
     artistTitle.fixed = false
     artistHeight = artistTitle.font.GetOneLineHeight()
     artistTitle.SetFrame(xOffset, yOffset - childSpacing - artistHeight, parentWidth, artistHeight)
@@ -137,13 +137,13 @@ sub artistGetComponents()
     xOffset = xOffset + parentSpacing + parentWidth
     width = 1230 - xOffset
 
-    m.summaryTitle = createLabel("BIOGRAPHY", FontRegistry().Font16)
+    m.summaryTitle = createLabel("BIOGRAPHY", FontRegistry().NORMAL)
     m.summaryHeight = m.summaryTitle.font.GetOneLineHeight()
     m.summaryTitle.SetFrame(xOffset, yOffset - childSpacing - m.summaryHeight, m.summaryTitle.GetPreferredWidth(), m.summaryHeight)
     m.summaryTitle.zOrderInit = -1
     m.components.push(m.summaryTitle)
 
-    m.summary = createTextArea(m.item.Get("summary", ""), FontRegistry().Font16, 0)
+    m.summary = createTextArea(m.item.Get("summary", ""), FontRegistry().NORMAL, 0)
     m.summary.SetFrame(xOffset, yOffset, width, parentHeight)
     m.summary.SetColor(Colors().Text, Colors().OverlayDark, Colors().OverlayMed)
     m.summary.SetPadding(10, 10, 10, 15)

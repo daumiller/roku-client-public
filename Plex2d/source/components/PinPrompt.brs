@@ -56,10 +56,10 @@ sub pinpromptInit()
     }
 
     m.customFonts = {
-        title: FontRegistry().font18,
+        title: FontRegistry().LARGE,
         pin: FontRegistry().GetTextFont(28)
         glyph: FontRegistry().GetIconFont(24)
-        text: FontRegistry().font16
+        text: FontRegistry().NORMAL
     }
 
     m.spacing = 5

@@ -54,7 +54,7 @@ sub settingsInit()
 end sub
 
 sub settingsGetComponents()
-    m.title = createLabel(m.titleText, FontRegistry().font18)
+    m.title = createLabel(m.titleText, FontRegistry().LARGE)
     m.title.halign = m.title.JUSTIFY_CENTER
     m.title.valign = m.title.ALIGN_MIDDLE
     m.title.zOrder = m.zOrderOverlay
@@ -71,7 +71,7 @@ sub settingsGetComponents()
 
     m.prefs = m.GetPrefs()
     for each group in m.prefs
-        label = createLabel(group.title, FontRegistry().font18)
+        label = createLabel(group.title, FontRegistry().LARGE)
         label.fixed = false
         label.SetColor(Colors().Text, m.colors.category)
         label.SetDimensions(m.width, 60)
@@ -114,7 +114,7 @@ sub settingsGetComponents()
 
     ' Version string
     if m.storage = invalid then
-        version = createLabel(AppSettings().GetGlobal("appVersionStr"), FontRegistry().font14)
+        version = createLabel(AppSettings().GetGlobal("appVersionStr"), FontRegistry().MEDIUM)
         version.halign = version.JUSTIFY_RIGHT
         version.valign = version.ALIGN_MIDDLE
         version.zOrder = m.zOrderOverlay
@@ -155,7 +155,7 @@ sub settingsGetComponents()
 end sub
 
 function settingsCreateMenuButton(pref as object) as object
-    btn = createButton(pref.title, FontRegistry().font16, pref.key)
+    btn = createButton(pref.title, FontRegistry().NORMAL, pref.key)
     btn.focusInside = true
     btn.fixed = false
     btn.halign = btn.JUSTIFY_LEFT
@@ -180,7 +180,7 @@ function settingsCreateMenuButton(pref as object) as object
 end function
 
 function settingsCreatePrefButton(text as string, command as dynamic, value as string, prefType as string) as object
-    btn = createSettingsButton(text, FontRegistry().font16, command, value, prefType, m.storage)
+    btn = createSettingsButton(text, FontRegistry().NORMAL, command, value, prefType, m.storage)
     btn.focusInside = true
     btn.fixed = false
     btn.halign = btn.JUSTIFY_LEFT

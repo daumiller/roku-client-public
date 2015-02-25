@@ -26,7 +26,7 @@ function createGrid(orientation as integer, rows as integer, spacing=0 as intege
     obj.Init()
 
     if title <> invalid then
-        obj.title = createLabel(ucase(title), FontRegistry().font16)
+        obj.title = createLabel(ucase(title), FontRegistry().NORMAL)
         obj.AddComponent(obj.title)
     end if
 

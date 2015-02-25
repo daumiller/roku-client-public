@@ -59,7 +59,7 @@ sub usercardInitComponents()
     m.AddComponent(m.thumb)
 
     ' user title
-    m.title = createLabel(firstOf(m.user.title, ""), FontRegistry().font16)
+    m.title = createLabel(firstOf(m.user.title, ""), FontRegistry().NORMAL)
     m.title.SetPadding(5, 0, 5, 0)
     m.title.SetColor(Colors().Text, &h00000070)
     m.title.halign = m.title.JUSTIFY_CENTER

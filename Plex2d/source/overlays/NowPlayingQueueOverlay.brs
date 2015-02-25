@@ -95,7 +95,7 @@ sub npqoGetComponents()
     sepRegion = CreateRegion(trackPrefs.width, 1, Colors().OverlayDark)
     for index = 0 to trackCount - 1
         item = items.[index].item
-        track = createTrack(item, FontRegistry().Font16, FontRegistry().Font14, m.customFonts.trackStatus, m.player.playQueue.totalSize, isMixed)
+        track = createTrack(item, FontRegistry().NORMAL, FontRegistry().MEDIUM, m.customFonts.trackStatus, m.player.playQueue.totalSize, isMixed)
         track.Append(trackPrefs)
         track.plexObject = item
         track.trackIndex = index

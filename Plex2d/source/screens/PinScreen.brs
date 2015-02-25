@@ -32,7 +32,7 @@ sub pinInit()
     ' Intialize custom fonts for this screen
     m.customFonts.pin = FontRegistry().GetTextFont(150, true)
     m.customFonts.welcome = FontRegistry().GetTextFont(32)
-    m.customFonts.info = FontRegistry().font16
+    m.customFonts.info = FontRegistry().NORMAL
 end sub
 
 function createPinScreen(clearScreens=true as boolean) as object
@@ -203,21 +203,21 @@ sub pinGetComponents()
         message = "We're sorry, this application is currently only available for Plex "
         message = message + "Pass subscribers. Don't worry though, we're working hard to have it "
         message = message + "ready for everyone very soon. Can't wait? Buy a Plex Pass now."
-        msgLabel = createLabel(message, FontRegistry().font16)
+        msgLabel = createLabel(message, FontRegistry().NORMAL)
         msgLabel.wrap = true
-        msgLabel.SetFrame(0, 0, vbWidth, FontRegistry().font16.getOneLineHeight() * 4)
+        msgLabel.SetFrame(0, 0, vbWidth, FontRegistry().NORMAL.getOneLineHeight() * 4)
         vb.AddComponent(msgLabel)
         vb.AddSpacer(10)
-        urlLabel = createLabel("http://plex.tv/plexpass", FontRegistry().font16)
+        urlLabel = createLabel("http://plex.tv/plexpass", FontRegistry().NORMAL)
         urlLabel.SetColor(Colors().Orange)
         vb.AddComponent(urlLabel)
     ' Expired token error message
     else if m.HasError("expiredToken") then
         message = "Your credentials have expired. Please sign in again."
-        msgLabel = createLabel(message, FontRegistry().font16)
+        msgLabel = createLabel(message, FontRegistry().NORMAL)
         msgLabel.wrap = true
         msgLabel.halign = msgLabel.JUSTIFY_CENTER
-        msgLabel.SetFrame(0, 0, vbWidth, FontRegistry().font16.getOneLineHeight())
+        msgLabel.SetFrame(0, 0, vbWidth, FontRegistry().NORMAL.getOneLineHeight())
         vb.AddComponent(msgLabel)
         vb.AddSpacer(10)
     ' PIN code display
@@ -252,7 +252,7 @@ sub pinGetComponents()
         else
             buttonText = "Refresh"
         end if
-        refreshButton = createButton(buttonText, FontRegistry().font16, "refresh")
+        refreshButton = createButton(buttonText, FontRegistry().NORMAL, "refresh")
         refreshButton.SetColor(Colors().Text, Colors().Button)
         refreshButton.width = 72
         refreshButton.height = 44

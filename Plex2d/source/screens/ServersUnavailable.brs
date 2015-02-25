@@ -32,9 +32,9 @@ sub serverunavailInit()
     ' Intialize custom fonts for this screen
     m.customFonts = {
         title: FontRegistry().GetTextFont(32),
-        subtitle: FontRegistry().font16,
-        text: FontRegistry().font16,
-        buttons: FontRegistry().font16,
+        subtitle: FontRegistry().NORMAL,
+        text: FontRegistry().NORMAL,
+        buttons: FontRegistry().NORMAL,
     }
 end sub
 

@@ -22,7 +22,7 @@ sub headerInit()
     ApplyFunc(ContainerClass().Init, m)
 
     m.customFonts = {
-        buttons: FontRegistry().font18
+        buttons: FontRegistry().NORMAL
     }
 
     m.logo = {
@@ -132,7 +132,7 @@ end sub
 
 function headerGetOptions() as object
     m.options.clear()
-    font = FontRegistry().font16
+    font = FontRegistry().NORMAL
 
     mpa = MyPlexAccount()
     if mpa.IsSignedIn then

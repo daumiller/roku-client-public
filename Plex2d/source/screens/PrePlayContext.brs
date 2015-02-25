@@ -156,7 +156,7 @@ sub ppcGetComponents()
     m.components.Push(hbGrid)
 
     ' *** Sumary (dependent on child placement)
-    summary = createTextArea(m.item.Get("summary", ""), FontRegistry().Font16, 0)
+    summary = createTextArea(m.item.Get("summary", ""), FontRegistry().NORMAL, 0)
     summary.SetPadding(10)
     summary.SetFrame(xOffset, prop.yOffsetOverlay, 1230 - xOffset, hbGrid.y - prop.yOffsetOverlay)
     summary.SetColor(Colors().Text, &h00000000, Colors().OverlayLht)
@@ -186,10 +186,10 @@ function ppcGetMainInfo() as object
 
     ' TODO(rob): change the info based on content type
     components.push(createLabel(m.item.Get("title", ""), m.customFonts.Large))
-    components.push(createLabel(ucase(m.item.GetLimitedTagValues("Genre", 3)), FontRegistry().font16))
+    components.push(createLabel(ucase(m.item.GetLimitedTagValues("Genre", 3)), FontRegistry().NORMAL))
 
     text = joinArray([m.item.GetUnwatchedCountString(), m.item.GetDuration()], " / ")
-    components.push(createLabel(text, FontRegistry().font16))
+    components.push(createLabel(text, FontRegistry().NORMAL))
 
     return components
 end function
@@ -260,7 +260,7 @@ function ppcGetButtons() as object
         halign: "JUSTIFY_LEFT",
         height: buttonHeight
         padding: { right: 10, left: 10, top: 0, bottom: 0 }
-        font: FontRegistry().font16,
+        font: FontRegistry().NORMAL,
     }
 
     ' extras drop down

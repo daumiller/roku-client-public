@@ -5,8 +5,8 @@ function DescriptionBoxClass() as object
 
         ' Default settings
         obj.spacing = 0
-        obj.titlePrefs = { font: FontRegistry().font18b, color: Colors().Text}
-        obj.subtitlePrefs = { font: FontRegistry().font18, color: Colors().TextDim}
+        obj.titlePrefs = { font: FontRegistry().LARGE_BOLD, color: Colors().Text}
+        obj.subtitlePrefs = { font: FontRegistry().LARGE, color: Colors().TextDim}
         obj.zOrder = ZOrders().DESCBOX
 
         ' Methods

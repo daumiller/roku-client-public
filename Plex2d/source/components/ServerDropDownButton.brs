@@ -33,8 +33,8 @@ sub sddbuttonInit(text as string, font as object,  maxHeight as integer)
     ' Custom fonts for the drop down options. These need to be references at this
     ' this level to conserve memory. Each drop down item will have a reference.
     m.customFonts = {
-        title: FontRegistry().font16,
-        subtitle: FontRegistry().font12,
+        title: FontRegistry().NORMAL,
+        subtitle: FontRegistry().SMALL,
         glyph: FontRegistry().GetIconFont(12),
         status: FontRegistry().GetTextFont(20),
     }
