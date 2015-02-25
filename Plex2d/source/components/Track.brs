@@ -154,11 +154,6 @@ sub trackPerformLayout()
     yOffset = middle - m.time.GetPreferredHeight()/2
     m.time.SetFrame(xOffsetTime, yOffset, m.time.GetPreferredWidth(), m.time.GetPreferredHeight())
 
-    ' change track title/subtitle offset if track index exists
-    if m.index <> invalid then
-        xOffsetTime = xOffsetTime - xOffset
-    end if
-
     ' subtitle (artist / album)
     if m.subtitle <> invalid then
         height = m.title.GetPreferredHeight() + m.subtitle.GetPreferredHeight()
