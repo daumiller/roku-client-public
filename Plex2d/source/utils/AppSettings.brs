@@ -209,6 +209,11 @@ sub settingsInitPrefs()
         {title: "Info", value: "2"},
         {title: "Debug", value: "1"},
     ]
+    appInfo = CreateObject("roAppInfo")
+    if appInfo.IsDev() then
+        options.Push({title: "Verbose", value: "0"})
+    end if
+
     m.prefs["log_level"] = {
         key: "log_level",
         title: "Logging",

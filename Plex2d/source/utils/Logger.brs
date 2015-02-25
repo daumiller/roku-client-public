@@ -3,12 +3,13 @@ function Logger()
         obj = CreateObject("roAssociativeArray")
 
         ' Constants
+        obj.LEVEL_VERBOSE = 0
         obj.LEVEL_DEBUG = 1
         obj.LEVEL_INFO = 2
         obj.LEVEL_WARN = 3
         obj.LEVEL_ERROR = 4
         obj.LEVEL_OFF = 10
-        obj.LABELS = ["", "DEBUG ", "INFO ", "WARN ", "ERROR "]
+        obj.LABELS = ["VERBOSE ", "DEBUG ", "INFO ", "WARN ", "ERROR "]
 
         ' Properties
         obj.level = obj.LEVEL_OFF
@@ -269,6 +270,11 @@ function ProcessLogsRequest()
 end function
 
 ' Shortcut functions for log levels
+
+sub Verbose(msg)
+    log = Logger()
+    log.Log(log.LEVEL_VERBOSE, msg)
+end sub
 
 sub Debug(msg)
     log = Logger()
