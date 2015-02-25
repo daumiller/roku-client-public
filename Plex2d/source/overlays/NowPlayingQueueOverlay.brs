@@ -44,7 +44,7 @@ sub npqoInit()
 
     m.customFonts = {
         glyphs: FontRegistry().GetIconFont(32)
-        trackStatus: FontRegistry().GetIconFont(16)
+        trackStatus: FontRegistry().GetIconFont(18)
     }
 
     ' Set up audio player listeners
@@ -61,6 +61,7 @@ sub npqoInit()
 end sub
 
 sub npqoGetComponents()
+    isMixed = (m.player.playQueue.isMixed = true)
     padding = 20
     spacing = 50
     yOffset = 0
@@ -70,7 +71,7 @@ sub npqoGetComponents()
     trackPrefs = {
         background: Colors().GetAlpha(&h000000ff, 30)
         width: 1230 - xOffset - spacing,
-        height: 60,
+        height: iif(isMixed, 80, 60),
         fixed: false,
         focusBG: true,
         disallowExit: { down: true },
@@ -90,12 +91,11 @@ sub npqoGetComponents()
     ' *** Tracks *** '
     items = m.player.context
     trackCount = items.Count()
-    isMixed = (m.player.playQueue.isMixed = true)
     ' create a shared region for the separator (conserve memory)
     sepRegion = CreateRegion(trackPrefs.width, 1, Colors().OverlayDark)
     for index = 0 to trackCount - 1
         item = items.[index].item
-        track = createTrack(item, FontRegistry().Font16, FontRegistry().Font12, m.customFonts.trackStatus, m.player.playQueue.totalSize, isMixed)
+        track = createTrack(item, FontRegistry().Font16, FontRegistry().Font14, m.customFonts.trackStatus, m.player.playQueue.totalSize, isMixed)
         track.Append(trackPrefs)
         track.plexObject = item
         track.trackIndex = index
