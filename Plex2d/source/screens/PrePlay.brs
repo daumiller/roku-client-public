@@ -41,7 +41,7 @@ sub preplayInit()
     ApplyFunc(ComponentsScreen().Init, m)
 
     ' Intialize custom fonts for this screen
-    m.customFonts.large = FontRegistry().GetTextFont(28)
+    m.customFonts.large = FontRegistry().GetTextFont(30)
     m.customFonts.glyphs = FontRegistry().GetIconFont(32)
 
     m.requestContext = invalid

@@ -38,7 +38,7 @@ end function
 sub modalInit(title as string)
     m.title = "Loading..."
     m.padding = 25
-    m.font = FontRegistry().GetTextFont(18, false)
+    m.font = FontRegistry().Font18
 
     m.components = createObject("roList")
 end sub

@@ -234,12 +234,12 @@ sub gsGetComponents()
     label = createLabel(ucase(title), FontRegistry().font16)
     label.height = FontRegistry().font16.getOneLineHeight()
     label.width = FontRegistry().font16.getOneLineWidth(label.text, 1280)
-    label.SetFrame(50, 120 - m.spacing - label.height, label.width, label.height)
+    label.SetFrame(50, 125 - m.spacing - label.height, label.width, label.height)
     m.components.Push(label)
 
     ' *** Grid *** '
     hbox = createHBox(false, false, false, 10)
-    hbox.SetFrame(50, 120, 2000*2000, m.height)
+    hbox.SetFrame(50, 125, 2000*2000, m.height)
 
     ' Grid Chunks / Placeholders
     chunks = m.GetGridChunks()
@@ -258,7 +258,7 @@ sub gsGetComponents()
     end if
 
     ' *** Jump Box *** '
-    m.jumpBox = createJumpBox(m.jumpItems, FontRegistry().font14, 120 + m.height, 5)
+    m.jumpBox = createJumpBox(m.jumpItems, FontRegistry().font14, hbox.y + m.height, m.spacing)
     m.components.Push(m.jumpBox)
 
     ' set the placement of the description box (manualComponent)

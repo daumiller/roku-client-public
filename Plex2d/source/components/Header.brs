@@ -100,6 +100,7 @@ sub headerPerformLayout()
         button = createButton("Go Home", m.customFonts.buttons, "go_home")
         button.SetPadding(0, m.buttons.padding, 0, m.buttons.padding)
         button.pvalign = button[m.buttons.valign]
+        button.SetColor(Colors().Subtitle)
         button.zOrder = m.zOrder
         buttons.push(button)
     end if
