@@ -284,7 +284,12 @@ function preplayGetMainInfo() as object
         components.push(createLabel(text, normalFont))
 
         if m.item.IsUnwatched() then
-            components.push(createLabel("Unwatched", normalFont))
+            label = createLabel("Unwatched", normalFont)
+            label.SetColor(Colors().Text, Colors().Orange)
+            label.roundedCorners = true
+            components.push(label)
+        else
+            components.push(createSpacer(0, normalFont.getOneLineHeight()))
         end if
 
         components.push(createSpacer(0, normalFont.getOneLineHeight()))
@@ -292,11 +297,16 @@ function preplayGetMainInfo() as object
         components.push(createLabel(m.item.Get("title", ""), m.customFonts.large))
         components.push(createLabel(ucase(m.item.GetLimitedTagValues("Genre", 3)), normalFont))
 
-        text = m.item.GetDuration()
+        statusBox = createHBox(false, false, false, normalFont.GetOneLineWidth(" ", 20))
+        durationLabel = createLabel(m.item.GetDuration(), normalFont)
+        statusBox.AddComponent(durationLabel)
         if m.item.IsUnwatched() then
-            text = text + " / Unwatched"
+            label = createLabel("Unwatched", normalFont)
+            label.SetColor(Colors().Text, Colors().Orange)
+            label.roundedCorners = true
+            statusBox.AddComponent(label)
         end if
-        components.push(createLabel(text, normalFont))
+        components.push(statusBox)
 
         components.push(createSpacer(0, normalFont.getOneLineHeight()))
         if m.item.IsHomeVideo() then
