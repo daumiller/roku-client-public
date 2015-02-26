@@ -253,7 +253,7 @@ sub preplayGetComponents()
     m.components.Push(vbInfo)
 
     summary = createTextArea(m.item.Get("summary", ""), FontRegistry().NORMAL, 0)
-    summary.SetPadding(10)
+    summary.SetPadding(10, 10, 10, 0)
     summary.SetFrame(xOffset, 364, 1230-xOffset, 239)
     summary.SetColor(Colors().Text, &h00000000, Colors().OverlayLht)
     m.components.push(summary)
