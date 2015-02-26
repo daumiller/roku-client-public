@@ -30,6 +30,7 @@ function Colors() as object
         obj.Black = &h000000ff
         obj.Blue = &h0033CCff
         obj.Red = &hc23529ff
+        obj.RedAlt = &hd9534fff
         obj.Green = &h5cb85cff
         obj.Orange = &hcc7b19ff
         obj.OrangeLight = &hf9be03ff

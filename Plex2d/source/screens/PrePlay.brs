@@ -12,6 +12,7 @@ function PreplayScreen() as object
         obj.Refresh = preplayRefresh
         obj.Init = preplayInit
         obj.OnResponse = preplayOnResponse
+        obj.OnDetailsResponse = preplayOnDetailsResponse
         obj.HandleCommand = preplayHandleCommand
         obj.GetComponents = preplayGetComponents
         obj.OnPlayButton = preplayOnPlayButton
@@ -70,6 +71,10 @@ sub preplayShow()
         m.requestContext = context
     else if m.item <> invalid then
         ApplyFunc(ComponentsScreen().Show, m)
+        ' re-request the item to verify it's accessible
+        request = createPlexRequest(m.server, m.requestItem.GetItemPath(true))
+        context = request.CreateRequestContext("preplay_item", createCallable("OnDetailsResponse", m))
+        Application().StartRequest(request, context)
     else
         dialog = createDialog("Unable to load", "Sorry, we couldn't load the requested item.", m)
         dialog.AddButton("OK", "close_screen")
@@ -87,13 +92,33 @@ sub preplayOnResponse(request as object, response as object, context as object)
     if context.items.count() = 1 then
         m.item = context.items[0]
     else
-        ' Context - Playlist or other context?
+        ' TODO(rob) we probably need to clean this up. A preplay screen should
+        ' only be for one item. We will probably deal with this when we have
+        ' implemented << >> to switch preplays with context.
         m.curIndex = 0
         m.items = context.items
         m.item = m.items[0]
     end if
 
     m.Show()
+end sub
+
+sub preplayOnDetailsResponse(request as object, response as object, context as object)
+    response.ParseResponse()
+    context.response = response
+    item = response.items[0]
+    if item = invalid then return
+
+    ' Reset/Choose media now that we have all the details
+    m.item = item
+    MediaDecisionEngine().ChooseMedia(m.item)
+
+    if item.IsAccessible() or m.accessibleLabel.sprite = invalid then return
+    m.accessibleLabel.sprite.SetZ(1)
+    m.accessibleLabel.roundedCorners = true
+    m.accessibleLabel.SetColor(Colors().Text, Colors().RedAlt)
+    m.accessibleLabel.SetText("Unavailable", true, true)
+    m.screen.DrawAll()
 end sub
 
 sub preplayOnPlayButton(focusedItem=invalid as dynamic)
@@ -244,13 +269,13 @@ sub preplayGetComponents()
     end if
 
     ' *** Title, Media Info ***
-    vbInfo = createVBox(false, false, false, 0)
+    m.vbInfo = createVBox(false, false, false, 0)
+    m.vbInfo.SetFrame(xOffset, 125, 1130-xOffset, 239)
     components = m.GetMainInfo()
     for each comp in components
-        vbInfo.AddComponent(comp)
+        m.vbInfo.AddComponent(comp)
     end for
-    vbInfo.SetFrame(xOffset, 125, 1130-xOffset, 239)
-    m.components.Push(vbInfo)
+    m.components.Push(m.vbInfo)
 
     summary = createTextArea(m.item.Get("summary", ""), FontRegistry().NORMAL, 0)
     summary.SetPadding(10, 10, 10, 0)
@@ -283,14 +308,20 @@ function preplayGetMainInfo() as object
         end if
         components.push(createLabel(text, normalFont))
 
+        statusBox = createHBox(false, false, false, normalFont.GetOneLineWidth(" ", 20))
+        statusBox.width = m.vbInfo.width
         if m.item.IsUnwatched() then
             label = createLabel("Unwatched", normalFont)
             label.SetColor(Colors().Text, Colors().Orange)
             label.roundedCorners = true
-            components.push(label)
-        else
-            components.push(createSpacer(0, normalFont.getOneLineHeight()))
+            statusBox.AddComponent(label)
         end if
+
+        ' always add the accessible label (hidden) for reference
+        m.accessibleLabel = createLabel(" ", normalFont)
+        m.accessibleLabel.zOrderInit = -1
+        statusBox.AddComponent(m.accessibleLabel)
+        components.push(statusBox)
 
         components.push(createSpacer(0, normalFont.getOneLineHeight()))
     else
@@ -298,6 +329,7 @@ function preplayGetMainInfo() as object
         components.push(createLabel(ucase(m.item.GetLimitedTagValues("Genre", 3)), normalFont))
 
         statusBox = createHBox(false, false, false, normalFont.GetOneLineWidth(" ", 20))
+        statusBox.width = m.vbInfo.width
         durationLabel = createLabel(m.item.GetDuration(), normalFont)
         statusBox.AddComponent(durationLabel)
         if m.item.IsUnwatched() then
@@ -306,6 +338,11 @@ function preplayGetMainInfo() as object
             label.roundedCorners = true
             statusBox.AddComponent(label)
         end if
+
+        ' always add the accessible label (hidden) for reference
+        m.accessibleLabel = createLabel(" ", normalFont)
+        m.accessibleLabel.zOrderInit = -1
+        statusBox.AddComponent(m.accessibleLabel)
         components.push(statusBox)
 
         components.push(createSpacer(0, normalFont.getOneLineHeight()))
