@@ -60,6 +60,10 @@ function labelGetPreferredWidth() as integer
             paddingSize = paddingSize + m.border.left + m.border.right
         end if
 
+        if m.roundedCorners = true then
+            paddingSize = 16
+        end if
+
         return m.font.GetOneLineWidth(m.text, 1280) + paddingSize
     end if
 end function
@@ -104,7 +108,7 @@ function labelDraw(redraw=false as boolean) as object
     for each line in lines
         ' If we're left justifying, don't bother with the expensive width calculation.
         if m.halign = m.JUSTIFY_LEFT then
-            xOffset = m.GetContentArea().x
+            xOffset = m.GetContentArea().x + iif(m.roundedCorners = true, 8, 0)
         else
             xOffset = m.GetXOffsetAlignment(m.font.GetOneLineWidth(line, 1280))
         end if

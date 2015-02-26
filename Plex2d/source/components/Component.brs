@@ -101,6 +101,37 @@ sub compInitRegion()
         m.region = CreateObject("roRegion", bmp, 0, 0, bmp.GetWidth(), bmp.GetHeight())
         msg = "new bitmap/region"
     end if
+
+    if m.roundedCorners = true then
+        ' Create the rounded corner bitmap (only one is required)
+        cbmp = CreateObject("roBitmap", { width: 8, height: 8, alphaEnable: false})
+        cbmp.Clear(m.bgColor)
+        cbmp.DrawRect(0, 0, 6, 1, Colors().Transparent)
+        cbmp.DrawRect(0, 1, 4, 1, Colors().Transparent)
+        cbmp.DrawRect(0, 2, 3, 1, Colors().Transparent)
+        cbmp.DrawRect(0, 3, 2, 1, Colors().Transparent)
+        cbmp.DrawRect(0, 4, 1, 1, Colors().Transparent)
+        cbmp.DrawRect(0, 5, 1, 1, Colors().Transparent)
+        cbmp.DrawRect(6, 0, 1, 1, Colors().GetAlpha(m.bgColor, 50))
+        cbmp.DrawRect(7, 0, 1, 1, Colors().GetAlpha(m.bgColor, 70))
+        cbmp.DrawRect(8, 0, 1, 1, Colors().GetAlpha(m.bgColor, 90))
+        cbmp.DrawRect(4, 1, 1, 1, Colors().GetAlpha(m.bgColor, 40))
+        cbmp.DrawRect(5, 1, 1, 1, Colors().GetAlpha(m.bgColor, 90))
+        cbmp.DrawRect(3, 2, 1, 1, Colors().GetAlpha(m.bgColor, 70))
+        cbmp.DrawRect(2, 3, 1, 1, Colors().GetAlpha(m.bgColor, 70))
+        cbmp.DrawRect(1, 4, 1, 1, Colors().GetAlpha(m.bgColor, 50))
+        cbmp.DrawRect(1, 5, 1, 1, Colors().GetAlpha(m.bgColor, 95))
+        cbmp.DrawRect(0, 6, 1, 1, Colors().GetAlpha(m.bgColor, 50))
+        cbmp.DrawRect(0, 7, 1, 1, Colors().GetAlpha(m.bgColor, 70))
+        cbmp.DrawRect(0, 8, 1, 1, Colors().GetAlpha(m.bgColor, 90))
+
+        ' Draw the rounded bitmap to each corner or the region (rotate on the fly)
+        m.region.DrawRotatedObject(0, 0, 0, cbmp)
+        m.region.DrawRotatedObject(m.region.GetWidth(), 0, 270, cbmp)
+        m.region.DrawRotatedObject(m.region.GetWidth(), m.region.GetHeight(), 180, cbmp)
+        m.region.DrawRotatedObject(0, m.region.GetHeight(), 90, cbmp)
+    end if
+
     PerfTimer().Log("compInitRegion:: " + msg + " " + tostr(m.region.getWidth()) + "x" + tostr(m.region.getHeight()))
 end sub
 

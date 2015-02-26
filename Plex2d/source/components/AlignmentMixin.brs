@@ -29,10 +29,12 @@ function alignGetXOffsetAlignment(displayWidth as integer) as integer
 
     if m.halign = m.JUSTIFY_CENTER then
         return int((m.width - displayWidth) / 2)
-    else if m.halign = m.JUSTIFY_RIGHT then
-        return contentArea.width - displayWidth + contentArea.x
     else
-        return contentArea.x
+        roundedPadding = iif(m.roundedCorners = true, 8, 0)
+        if m.halign = m.JUSTIFY_RIGHT then
+            return contentArea.width - displayWidth + contentArea.x - roundedPadding
+        end if
+        return contentArea.x + roundedPadding
     end if
 end function
 
