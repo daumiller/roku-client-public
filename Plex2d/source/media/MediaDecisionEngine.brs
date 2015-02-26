@@ -116,7 +116,7 @@ function mdeEvaluateMediaVideo(item as object, media as object) as object
         choice.score = choice.score + 10000
     end if
 
-    if media.IsAccessible() and media.IsAvailable() then
+    if media.IsAccessible() then
         choice.isPlayable = true
         choice.score = choice.score + 5000
     end if
@@ -372,7 +372,7 @@ function mdeEvaluateMediaMusic(item as object, media as object) as object
         choice.score = choice.score + 10000
     end if
 
-    if media.IsAccessible() and media.IsAvailable() then
+    if media.IsAccessible() then
         choice.isPlayable = true
         choice.score = choice.score + 5000
     end if
