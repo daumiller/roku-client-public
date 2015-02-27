@@ -85,6 +85,11 @@ sub appAssignScreenID(screen)
 end sub
 
 sub appPushScreen(screen)
+    if Application().IsActiveScreen(VideoPlayer()) then
+        Warn("Cannot push a new screen while video is active.")
+        return
+    end if
+
     if m.screens.Count() > 0 then
         oldScreen = m.screens.Peek()
 

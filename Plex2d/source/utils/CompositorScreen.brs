@@ -2,7 +2,6 @@ function CompositorScreen() as object
     if m.CompositorScreen = invalid then
         obj = CreateObject("roAssociativeArray")
 
-        obj.CreateRoScreen = compositorCreateRoScreen
         obj.Reset = compositorReset
         obj.DrawAll = compositorDrawAll
         obj.DrawComponent = compositorDrawComponent
@@ -19,11 +18,7 @@ function CompositorScreen() as object
         obj.OnComponentRedraw = compositorOnComponentRedraw
 
         ' Set up an roScreen one time, with double buffering and alpha enabled
-        obj.CreateRoScreen()
-
-        ' Set up the compositor to draw to the screen
-        obj.compositor = CreateObject("roCompositor")
-        obj.compositor.SetDrawTo(obj.screen, Colors().Background)
+        obj.Reset()
 
         ' TODO(schuyler): Initialize displayable width/height/offsets
         obj.focusPixels = iif(AppSettings().GetGlobal("IsHD") = true, 4, 2)
@@ -44,19 +39,19 @@ function CompositorScreen() as object
     return m.CompositorScreen
 end function
 
-sub compositorCreateRoScreen()
-    m.screen = CreateObject("roScreen", true)
-    m.screen.SetAlphaEnable(true)
-    m.screen.SetPort(Application().port)
-end sub
-
-' we really shouldn't have to every call this if we destroy sprites correctly
 sub compositorReset()
-    if m.screen = invalid then m.CreateRoScreen()
-    m.compositor = CreateObject("roCompositor")
-    m.compositor.SetDrawTo(m.screen, Colors().Background)
-
-    m.HideFocus(true)
+    ' we cannot create/reset an roScreen if a standard screen is active
+    if Application().IsActiveScreen(VideoPlayer()) then
+        Warn("Cannot create an roScreen while video is active.")
+    else
+        m.screen = CreateObject("roScreen", true)
+        m.screen.SetAlphaEnable(true)
+        m.screen.SetPort(Application().port)
+        ' Set up the compositor to draw to the screen
+        m.compositor = CreateObject("roCompositor")
+        m.compositor.SetDrawTo(m.screen, Colors().Background)
+        m.HideFocus(true)
+    end if
 end sub
 
 sub compositorDrawAll(shift=false as boolean)
