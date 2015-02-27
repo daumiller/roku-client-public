@@ -12,6 +12,8 @@ function PinPromptClass() as object
         obj.DelDigit = pinpromptDelDigit
         obj.AddDigit = pinpromptAddDigit
         obj.UpdateTitle = pinpromptUpdateTitle
+        obj.ResetPinEntry = pinpromptResetPinEntry
+        obj.OnKeyboardRelease = pinpromptOnKeyboardRelease
 
         m.PinPromptClass = obj
     end if
@@ -226,20 +228,15 @@ sub pinpromptHandleButton(button as object)
                 end if
             else
                 m.hasError = true
-
                 ' reset title and clear pincode
                 m.UpdateTitle("Try again...")
-                for i = 0 to m.pinCode.Count() - 1
-                    m.DelDigit(i)
-                end for
-
-                m.screen.screen.DrawAll()
+                m.ResetPinEntry()
             end if
         else
             m.Close()
         end if
-    else if button.command = "backspace"
-        m.DelDigit(m.pinCode.Count() - 1)
+    else if button.command = "backspace" then
+        m.DelDigit()
     else if button.command = "close" then
         m.Close()
     else
@@ -247,11 +244,11 @@ sub pinpromptHandleButton(button as object)
     end if
 end sub
 
-sub pinpromptDelDigit(digit as integer, drawAll=true as boolean)
-    if digit < 0 then return
+sub pinpromptDelDigit(drawAll=true as boolean)
+    if m.pinCode.Count() = 0 then return
     m.pinCode.Pop()
 
-    comp = m["compPin_" + tostr(digit)]
+    comp = m["compPin_" + tostr(m.pinCode.Count())]
     comp.SetColor(m.colors.text)
     comp.Draw(true)
 
@@ -259,8 +256,9 @@ sub pinpromptDelDigit(digit as integer, drawAll=true as boolean)
 end sub
 
 sub pinpromptAddDigit(value as string)
-    count = m.pinCode.Count()
+    if tostr(value.toInt()) <> value then return
 
+    count = m.pinCode.Count()
     if count < 4 then
         comp = m["compPin_" + tostr(count)]
         comp.SetColor(m.colors.textFocus)
@@ -287,4 +285,25 @@ sub pinpromptUpdateTitle(title=invalid as dynamic)
     end if
 
     comp.Draw(true)
+end sub
+
+sub pinpromptResetPinEntry()
+    for i = 0 to m.pinCode.Count() - 1
+        m.DelDigit(false)
+    end for
+
+    m.screen.screen.DrawAll()
+end sub
+
+sub pinpromptOnKeyboardRelease(keyCode as integer, value as string)
+    Debug("keyboard release: keyCode=" + tostr(keyCode) + ", value=" + value)
+
+    overlay = m.overlayScreen.Peek()
+    if keyCode = 23 then
+        overlay.ResetPinEntry()
+    else if keyCode = 11 then
+        overlay.DelDigit()
+    else if tostr(value.toInt()) = value then
+        overlay.AddDigit(value)
+    end if
 end sub

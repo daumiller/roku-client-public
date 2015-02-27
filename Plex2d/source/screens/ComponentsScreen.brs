@@ -65,6 +65,7 @@ function ComponentsScreen() as object
         obj.HandleMessage = compHandleMessage
         obj.HandleCommand = compHandleCommand
         obj.OnItemSelected = compOnItemSelected
+        obj.OnKeyboardRelease = compOnKeyboardRelease
         obj.OnKeyPress = compOnKeyPress
         obj.OnKeyHeld = compOnKeyHeld
         obj.OnKeyRelease = compOnKeyRelease
@@ -423,6 +424,8 @@ sub compOnKeyRelease(keyCode as integer)
         m.OnInfoButton()
     else if keyCode = m.kp_PLAY then
         m.OnPlayButton(m.focusedItem)
+    else if keyCode > 13 or (keyCode = 1 or keyCode = 11 or keyCode = 12) then
+        m.OnKeyboardRelease(keyCode, chr(keyCode))
     end if
 end sub
 
@@ -1184,4 +1187,8 @@ sub compShowFailure(title=invalid as dynamic, text=invalid as dynamic, popScreen
     m.errorDialog.Show(true)
     m.errorDialog = invalid
     if popScreen then Application().popScreen(m)
+end sub
+
+sub compOnKeyboardRelease(keyCode as integer, value as string)
+    Debug("no-op keyboard release: keyCode=" + tostr(keyCode) + ", value=" + value)
 end sub

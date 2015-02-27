@@ -35,6 +35,8 @@ sub overlayInit()
     m.OrigScreenFunctions = {
         OnKeyRelease: m.screen.OnKeyRelease,
         OrigOnKeyRelease: m.screen.OrigOnKeyRelease
+        OnKeyboardRelease: m.screen.OnKeyboardRelease,
+        OrigOnKeyboardRelease: m.screen.OrigOnKeyboardRelease
         OnFocusIn: m.screen.OnFocusIn,
         OrigOnFocusIn: m.screen.OrigOnFocusIn
         OnFocusOut: m.screen.OnFocusOut,
@@ -42,6 +44,8 @@ sub overlayInit()
     }
     m.screen.OrigOnKeyRelease = firstOf(m.screen.OrigOnKeyRelease, m.screen.OnKeyRelease)
     m.screen.OnKeyRelease = m.OnKeyRelease
+    m.screen.OrigOnKeyboardRelease = firstOf(m.screen.OrigOnKeyboardRelease, m.screen.OnKeyboardRelease)
+    m.screen.OnKeyboardRelease = m.OnKeyboardRelease
     m.screen.OrigOnFocusIn = firstOf(m.screen.OrigOnFocusIn, m.screen.OnFocusIn)
     m.screen.OnFocusIn = compOnFocusIn
     m.screen.OrigOnFocusOut = firstOf(m.screen.OrigOnFocusOut, m.screen.OnFocusOut)
@@ -61,6 +65,10 @@ sub overlayOnKeyRelease(keyCode as integer)
     else
         m.OrigOnKeyRelease(keyCode)
     end if
+end sub
+
+sub overlayOnKeyboardRelease(keyCode as integer, value as string)
+    m.OrigOnKeyboardRelease(keyCode, value)
 end sub
 
 sub overlayClose(backButton=false as boolean, redraw=true as boolean)
