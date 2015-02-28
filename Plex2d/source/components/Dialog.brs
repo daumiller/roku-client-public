@@ -121,8 +121,9 @@ sub dialogGetComponents()
         if m.buttonPrefs.width > m.buttonPrefs.maxWidth then m.buttonPrefs.width = m.buttonPrefs.maxWidth
 
         for each button in m.buttons
-            button = m.createButton(button.text, button.command)
-            btnCont.AddComponent(button)
+            btn = m.createButton(button.text, button.command)
+            if button.bgColor <> invalid then btn.SetColor(Colors().Text, button.bgColor)
+            btnCont.AddComponent(btn)
         end for
         dialogBox.AddComponent(btnCont)
     end if
@@ -173,8 +174,8 @@ function dialogCreateButton(text as string, command=invalid as dynamic) as objec
     return btn
 end function
 
-sub dialogAddButton(text as string, command=invalid as dynamic) as object
-    m.buttons.push({text: text, command: command})
+sub dialogAddButton(text as string, command=invalid as dynamic, bgColor=invalid as dynamic) as object
+    m.buttons.push({text: text, command: command, bgColor: bgColor})
 end sub
 
 sub dialogButtonOnSelected()

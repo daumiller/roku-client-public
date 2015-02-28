@@ -65,6 +65,7 @@ function PlexObjectClass() as object
         obj.GetPosterTranscodeURL = pnoGetPosterTranscodeURL
         obj.GetImageTranscodeURL = pnoGetImageTranscodeURL
         obj.GetTranscodeServer = pnoGetTranscodeServer
+        obj.DeleteItem = pnoDeleteItem
         obj.Scrobble = pnoScrobble
         obj.Unscrobble = pnoUnscrobble
 
@@ -464,6 +465,14 @@ function pnoGetTranscodeServer(localServerRequired as boolean) as dynamic
 
     return server
 end function
+
+sub pnoDeleteItem(callback=invalid as dynamic)
+    if m.GetServer() <> invalid and not m.IsContainer() and m.IsLibraryItem() then
+        request = createPlexRequest(m.GetServer(), m.GetAbsolutePath("key"), "DELETE")
+        context = request.CreateRequestContext("delete", callback)
+        Application().StartRequest(request, context)
+    end if
+end sub
 
 sub pnoScrobble(callback=invalid as dynamic)
     server = m.GetServer()

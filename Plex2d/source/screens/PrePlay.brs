@@ -15,6 +15,7 @@ function PreplayScreen() as object
         obj.HandleCommand = preplayHandleCommand
         obj.GetComponents = preplayGetComponents
         obj.OnPlayButton = preplayOnPlayButton
+        obj.OnDelete = preplayOnDelete
 
         obj.GetButtons = preplayGetButtons
         obj.GetImages = preplayGetImages
@@ -134,6 +135,15 @@ function preplayHandleCommand(command as string, item as dynamic) as boolean
         m.CreatePlayerForItem(plexObject, options)
     else if command = "play_default" then
         m.OnPlayButton()
+    else if command = "delete" then
+        dialog = createDialog("Delete Item", "Are you sure you want to permanently delete this item from disk?", m)
+        dialog.buttonsSingleLine = true
+        dialog.AddButton("YES", true, Colors().GetAlpha("Red", 50))
+        dialog.AddButton("NO", false)
+        dialog.Show(true)
+        if dialog.result = true then
+            m.item.DeleteItem(createCallable("OnDelete", m))
+        end if
     else if command = "scrobble" then
         m.item.Scrobble(createCallable("Refresh", m))
     else if command = "unscrobble" then
@@ -470,6 +480,10 @@ function preplayGetButtons() as object
         buttons.Push(button)
     end if
 
+    if m.server.allowsMediaDeletion then
+        buttons.push({text: Glyphs().DELETE, command: "delete"})
+    end if
+
     for each button in buttons
         if button.type = "dropDown" then
             btn = createDropDownButton(button.text, m.customFonts.glyphs, buttonHeight * 5, m)
@@ -645,7 +659,6 @@ function preplayGetPrefs() as object
     return groups
 end function
 
-' TODO(rob): find a better way to refresh.. mainly to kill the image flashing
 sub preplayRefresh(request=invalid as dynamic, response=invalid as dynamic, context=invalid as dynamic)
     ' clear a few items to fully refresh the screen (without destorying the screen)
     m.requestContext = invalid
@@ -657,6 +670,16 @@ sub preplayRefresh(request=invalid as dynamic, response=invalid as dynamic, cont
     m.refocus.id = m.focusedItem.id
 
     m.Show()
+end sub
+
+sub preplayOnDelete(request as object, response as object, context as object)
+    if response.IsSuccess() then
+        Application().popScreen(m)
+    else
+        dialog = createDialog("Unable to delete media", "Please check your file permissions.", m)
+        dialog.AddButton("OK", "close_screen")
+        dialog.Show(true)
+    end if
 end sub
 
 sub preplayOnSettingsClosed(overlay as object, backButton as boolean)

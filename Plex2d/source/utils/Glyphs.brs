@@ -25,6 +25,7 @@ function Glyphs() as object
         obj.STAR_HALF   = chr(&he04f)
         obj.STAR_EMPTY  = chr(&he049)
         obj.DEL_LABEL   = chr(&he257)
+        obj.DELETE      = chr(&he017)
         obj.CONFIG      = chr(&he281)
         obj.HOME        = chr(&he029)
         obj.SEARCH      = chr(&he058)

@@ -50,10 +50,10 @@ function colorsToHexString(key as string, alpha=false as boolean)
 end function
 
 function colorsGetAlpha(color as dynamic, percent as integer) as integer
-    if IsInteger(color) then
-        return color and int(percent/100 * 255) - 255
-    else if m[color] = invalid then
-        Fatal(color + " is not found in object")
+    if IsString(color) then color = m[color]
+    if not IsInteger(color) then
+        Fatal(tostr(color) + " is not found in object")
     end if
-    return m[color] and int(percent/100 * 255) - 255
+
+    return color and int((percent/100 * 255) - 256)
 end function
