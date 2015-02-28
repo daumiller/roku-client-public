@@ -37,6 +37,7 @@ function Glyphs() as object
         obj.INFO        = chr(&he196)
         obj.EQ          = chr(&hf10a)
         obj.LIST        = chr(&he159)
+        obj.D_TRIANGLE  = chr(&h1f450)
 
         ' Constants Aliases
         obj.SCROBBLE    = obj.CIR_CHECK
