@@ -48,6 +48,12 @@ sub cardInit(imageSource=invalid as dynamic, text=invalid as dynamic, watchedPer
         bottom: 5,
         left: 10,
     }
+    m.unwatchedPadding = {
+        top: 0,
+        right: 6,
+        bottom: 0,
+        left: 6,
+    }
 
     m.InitComponents(imageSource, text, watchedPercentage, unwatchedCount, unwatched)
 end sub
@@ -111,7 +117,7 @@ sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, 
     else if unwatchedCount <> invalid and unwatchedCount > 0 then
         label = iif(unwatchedCount < 10, " " + tostr(unwatchedCount) + " ", tostr(unwatchedCount))
         m.unwatchedCount = createLabel(label, FontRegistry().NORMAL)
-        m.unwatchedCount.SetPadding(m.overlayPadding.top)
+        m.unwatchedCount.SetPadding(m.unwatchedPadding.top, m.unwatchedPadding.right, m.unwatchedPadding.bottom, m.unwatchedPadding.left)
         border = cint(m.unwatchedCount.GetPreferredHeight() * .02)
         m.unwatchedCount.SetBorder(Colors().IndicatorBorder, 0, 0, border, border)
         m.unwatchedCount.SetColor(Colors().Text, Colors().Orange)
