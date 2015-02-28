@@ -444,7 +444,7 @@ function preplayGetButtons() as object
     end if
 
     ' more/pivots drop down
-    if m.item.extraItems <> invalid and m.item.extraItems.count() > 0 or m.item.Get("type", "") = "episode" then
+    if m.item.relatedItems <> invalid and m.item.relatedItems.count() > 0 or m.item.Get("type", "") = "episode" then
         button = {
             type: "dropDown",
             text: Glyphs().MORE,
