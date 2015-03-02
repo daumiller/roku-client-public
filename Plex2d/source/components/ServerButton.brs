@@ -71,20 +71,19 @@ function serverbuttonDraw(redraw=false as boolean) as object
         subtitleText = tostr(m.server.name)
     end if
 
-    ' Not supported - blue dot (upgraded required)
-    if m.server.IsSupported = false then
-        yOffset = m.GetYOffsetAlignment(m.customFonts.status.GetOneLineHeight())
-        m.region.DrawText("•", xOffset, yOffset, Colors().Blue, m.customFonts.status)
-        subtitleText = "Upgrade Required"
-    ' Unreachable - red dot (offline)
-    else if m.server.isReachable() = false then
-        yOffset = m.GetYOffsetAlignment(m.customFonts.status.GetOneLineHeight())
-        m.region.DrawText("•", xOffset, yOffset, Colors().Red, m.customFonts.status)
-        subtitleText = "Offline"
-    ' Check mark for selected server
-    else if m.server.Equals(PlexServerManager().GetSelectedServer())
+    ' Status indicators
+    if m.server.IsSupported = false or m.server.isReachable() = false or m.server.Equals(PlexServerManager().GetSelectedServer()) then
+        if m.server.Equals(PlexServerManager().GetSelectedServer()) then
+            glyphText = Glyphs().CHECK
+            glyphColor = Colors().Green
+        else
+            subtitleText = iif(m.server.isSupported = false, "Upgrade Required", "Offline")
+            glyphText = Glyphs().ERROR
+            glyphColor = Colors().Red
+        end if
+
         yOffset = m.GetYOffsetAlignment(m.customFonts.glyph.GetOneLineHeight())
-        m.region.DrawText(Glyphs().CHECK, xOffset, yOffset, Colors().Green, m.customFonts.glyph)
+        m.region.DrawText(glyphText, xOffset, yOffset, glyphColor, m.customFonts.glyph)
     end if
     xOffset = xOffset + m.statusWidth
 
