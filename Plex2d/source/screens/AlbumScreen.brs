@@ -167,7 +167,7 @@ sub albumGetComponents()
     album = createImage(m.item, parentWidth, parentHeight)
     album.fade = true
     album.cache = true
-    album.thumbAttr = ["thumb", "art", "parentThumb"]
+    album.SetOrientation(album.ORIENTATION_SQUARE)
     album.SetFrame(xOffset, yOffset, parentWidth, parentHeight)
     m.components.push(album)
 

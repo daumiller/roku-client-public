@@ -132,6 +132,7 @@ sub artistGetComponents()
     artist.fade = true
     artist.cache = true
     artist.fixed = false
+    artist.SetOrientation(artist.ORIENTATION_SQUARE)
     artist.SetFrame(xOffset, yOffset, parentWidth, parentHeight)
     m.components.push(artistTitle)
     m.components.push(artist)

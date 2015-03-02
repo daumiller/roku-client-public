@@ -65,7 +65,7 @@ function imageDraw() as object
             if m.thumbAttr = invalid then
                 ' Choose an attribute based on orientation
                 if m.orientation = m.ORIENTATION_SQUARE then
-                    m.thumbAttr = ["composite", "thumb", "art"]
+                    m.thumbAttr = ["composite", "thumb", "parentThumb", "grandparentThumb", "art"]
                 else if m.orientation = m.ORIENTATION_LANDSCAPE then
                     m.thumbAttr = ["art", "thumb"]
                 end if
