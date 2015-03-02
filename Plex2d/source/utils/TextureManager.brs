@@ -10,7 +10,6 @@ function TextureManager() as object
         ' track by screen (clear by screen)
         obj.screenList = {}
         obj.overlayList = {}
-        obj.usageList = {}
         obj.TrackByScreen = tmTrackByScreen
         obj.RemoveTextureByScreenID = tmRemoveTextureByScreenID
         obj.RemoveTextureByOverlayID = tmRemoveTextureByOverlayID
@@ -43,9 +42,13 @@ function TextureManager() as object
 
         ' Image cache (regions by sourceUrl)
         obj.cacheList = createObject("roAssociativeArray")
+        obj.cacheDelList = createObject("roAssociativeArray")
+        obj.cacheMapList = createObject("roAssociativeArray")
         obj.SetCache = tmSetCache
         obj.GetCache = tmGetCache
         obj.ClearCache = tmClearCache
+        obj.DeleteCache = tmDeleteCache
+        obj.UseCache = tmUseCache
 
         obj.Reset()
         m.TextureManager = obj
@@ -68,14 +71,6 @@ sub tmTrackByScreen(url as string, screen as object)
         if m.overlayList[overlayID] = invalid then m.overlayList[overlayID] = {}
         m.overlayList[overlayID][url] = true
     end if
-
-    ' set the usage count by screens for the url
-    m.usageList[url] = 0
-    for each id in m.screenList
-        if m.screenList[id][url] = true then
-            m.usageList[url] = m.usageList[url]+1
-        end if
-    end for
 end sub
 
 sub tmRemoveTextureByScreenId(screenID as integer)
@@ -93,18 +88,18 @@ function tmRemoveTextureByListId(listId as string, list as object) as integer
     removeCount = 0
     if list[listID] <> invalid then
         for each url in list[listID]
-            ' other screens are using this bitmap (not probable yet)
-            if m.usageList[url] <> invalid and m.usageList[url] > 1 then
-                m.usageList[url] = m.usageList[url] - 1
-            else
-                removeCount = removeCount + 1
-                m.TManager.UnloadBitmap(url)
-                m.ClearCache(url)
-            end if
+            removeCount = removeCount + 1
+            m.TManager.UnloadBitmap(url)
         end for
         ' consider this list empty
         list[listID].clear()
     end if
+
+    ' Set the cached urls as pending delete. We'll remove the urls from
+    ' the pending delete list if used by the new screen
+    for each url in m.cacheList
+        m.DeleteCache(url)
+    end for
 
     Debug("Texture Manager: " + tostr(m.cacheList.Count()) + " cached manually")
     return removeCount
@@ -348,25 +343,66 @@ function tmReceiveTexture(tmsg as object, screen as object) as boolean
     return false
 end function
 
-sub tmSetCache(region as object, sourceUrl as dynamic)
+sub tmSetCache(region as object, sourceUrl as dynamic, altUrl as dynamic)
+    ' Cache the url and alternate url (pretranscoded url)
     if sourceUrl <> invalid then
         m.cacheList[sourceUrl] = region
+        if altUrl <> invalid then
+            m.cacheList[altUrl] = region
+            m.cacheMapList[altUrl] = sourceUrl
+            m.cacheMapList[sourceUrl] = sourceUrl
+        end if
+
+        ' Clear any pending deleted for utilized cache
+        m.UseCache(sourceUrl)
     end if
 end sub
 
 function tmGetCache(sourceUrl as dynamic, width as integer, height as integer) as dynamic
     if sourceUrl = invalid then return invalid
     cache = m.cacheList[sourceUrl]
+
+    ' Verify the cached region has the same dimensions
     if type(cache) <> "roRegion" or width <> cache.GetWidth() or height <> cache.GetHeight() then
         cache = invalid
+    else
+        ' Remove any pending deletes for utilized cache
+        m.UseCache(sourceUrl)
     end if
+
     return cache
 end function
 
-sub tmClearCache(sourceUrl=invalid as dynamic)
+' Add the sourceUrl to a pending delete list
+sub tmDeleteCache(sourceUrl=invalid as dynamic)
     if IsString(sourceUrl) then
-        m.cacheList.Delete(sourceUrl)
+        if m.cacheList.DoesExist(sourceUrl) then
+            m.cacheDelList[sourceUrl] = true
+        end if
+        if m.cacheMapList.DoesExist(sourceUrl) then
+             m.cacheDelList[m.cacheMapList[sourceUrl]] = true
+        end if
     else
-        m.cacheList.clear()
+        m.ClearCache(true)
+    end if
+end sub
+
+sub tmClearCache(clearAll=false as boolean)
+    if clearAll then
+        m.cacheList.Clear()
+        m.cacheMap.Clear()
+    else if m.cacheDelList.Count() > 0 then
+        for each key in m.cacheDelList
+            m.cacheList.Delete(key)
+            m.cacheMapList.Delete(key)
+        end for
+        m.cacheDelList.Clear()
+    end if
+end sub
+
+sub tmUseCache(sourceUrl as string)
+    m.cacheDelList.Delete(sourceUrl)
+    if m.cacheMapList[sourceUrl] <> invalid then
+        m.cacheDelList.Delete(m.cacheMapList[sourceUrl])
     end if
 end sub

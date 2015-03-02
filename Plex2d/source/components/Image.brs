@@ -37,6 +37,7 @@ function imageDraw() as object
 
         ' If a cache for the current source exists, lets use it for the initial region.
         if m.cache = true and IsString(m.source) then
+            m.altCacheUrl = m.source
             m.region = TextureManager().GetCache(m.source, width, height)
         end if
 
@@ -240,9 +241,10 @@ sub imageSetBitmap(bmp=invalid as dynamic, makeCopy=false as boolean)
     ' Let whoever cares layout the component again.
     m.Trigger("performParentLayout", [m])
 
-    ' Cache the region if applicable
+    ' Cache the region if applicable. Try and use the original url before we transcode as
+    ' we may use a different server to transcode, rendering the cached url useless.
     if m.cache = true then
-        TextureManager().SetCache(m.region, m.source)
+        TextureManager().SetCache(m.region, m.source, m.altCacheUrl)
     end if
 
     ' Let whoever cares know that we should be redrawn.

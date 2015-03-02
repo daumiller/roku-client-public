@@ -202,6 +202,9 @@ sub compShow()
 
     ' Enable listeners once we completed drawing the screen
     m.EnableListeners()
+
+    ' Clear any unused cache
+    TextureManager().ClearCache()
 end sub
 
 ' TODO(rob) screen is not required to be passed, but we might want to ignore
