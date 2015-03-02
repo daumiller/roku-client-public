@@ -79,7 +79,8 @@ function homeHandleCommand(command as string, item as dynamic) as boolean
         ' Provide some feedback for unsupported and unreachable servers
         if server.IsSupported = false then
             title = "Please upgrade your server"
-            subtitle = "Plex Media Server version " + AppSettings().GetGlobal("MinServerVersionStr") + " or higher is required."
+            subtitle = "Plex Media Server version " + AppSettings().GetGlobal("MinServerVersionStr") + " or higher is required. "
+            subtitle = subtitle + server.name + " is running version " + server.GetVersion()
             dialog = createDialog(title, subtitle, m)
             dialog.Show()
         else if server.IsReachable() = false then

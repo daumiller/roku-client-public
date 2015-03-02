@@ -39,6 +39,7 @@ function PlexServerClass() as object
         obj.Merge = pnsMerge
         obj.Equals = pnsEquals
         obj.ToString = pnsToString
+        obj.GetVersion = pnsGetVersion
 
         m.PlexServerClass = obj
     end if
@@ -79,7 +80,7 @@ function createPlexServerForResource(resource as object) as object
     obj.synced = (resource.Get("synced") = "1")
     obj.uuid = resource.Get("clientIdentifier")
     obj.name = resource.Get("name")
-    obj.version = ParseVersion(resource.Get("productVersion", ""))
+    obj.versionArr = ParseVersion(resource.Get("productVersion", ""))
     obj.connections = resource.connections
 
     return obj
@@ -172,14 +173,14 @@ function pnsCollectDataFromRoot(xml as object) as boolean
     ' TODO(schuyler): Process transcoder qualities
 
     if isnonemptystr(xml@version) then
-        m.version = ParseVersion(xml@version)
+        m.versionArr = ParseVersion(xml@version)
     end if
 
-    if CheckMinimumVersion([0, 9, 11, 11], m.version) then
+    if CheckMinimumVersion([0, 9, 11, 11], m.versionArr) then
         m.features["mkv_transcode"] = true
     end if
 
-    m.IsSupported = CheckMinimumVersion(AppSettings().GetGlobal("minServerVersionArr"), m.version)
+    m.IsSupported = CheckMinimumVersion(AppSettings().GetGlobal("minServerVersionArr"), m.versionArr)
 
     Debug("Server information updated from reachability check: " + tostr(m))
 
@@ -304,3 +305,14 @@ end function
 function pnsToString() as string
     return "Server " + m.name + " owned: " + tostr(m.owned) + " uuid: " + tostr(m.uuid)
 end function
+
+sub pnsGetVersion() as string
+    if m.versionArr = invalid then return ""
+
+    version = CreateObject("roList")
+    for index = 0 to 3
+        version.Push(m.versionArr[index])
+    end for
+
+    return JoinArray(version, ".")
+end sub
