@@ -100,6 +100,7 @@ sub ppcGetComponents()
     if m.item.Get("art") <> invalid then
         background = createImage(m.item, 1280, 720, { blur: 20, opacity: 70, background: Colors().ToHexString("Black") })
         background.SetOrientation(background.ORIENTATION_LANDSCAPE)
+        background.cache = true
         background.fade = true
         m.components.Push(background)
     end if
@@ -226,6 +227,8 @@ function ppcGetImages() as object
     container.width = ComponentClass().GetWidthForOrientation(orientation, container.height)
 
     poster = createImage(m.item, container.width, container.height)
+    poster.fade = true
+    poster.cache = true
     poster.SetOrientation(orientation)
     container.components.push(poster)
 

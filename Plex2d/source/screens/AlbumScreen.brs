@@ -126,6 +126,7 @@ sub albumGetComponents()
     background.zOrderInit = 0
     background.thumbAttr = ["art", "parentThumb", "thumb"]
     background.SetOrientation(background.ORIENTATION_LANDSCAPE)
+    background.cache = true
     background.fade = true
     m.components.Push(background)
 
@@ -164,6 +165,8 @@ sub albumGetComponents()
 
     ' *** Album image ***
     album = createImage(m.item, parentWidth, parentHeight)
+    album.fade = true
+    album.cache = true
     album.thumbAttr = ["thumb", "art", "parentThumb"]
     album.SetFrame(xOffset, yOffset, parentWidth, parentHeight)
     m.components.push(album)

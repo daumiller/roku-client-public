@@ -415,6 +415,7 @@ function preplayGetImages() as object
 
     posterThumb = createImage(m.item, posterSize.width, posterSize.height)
     posterThumb.thumbAttr = posterAttr
+    posterThumb.fade = true
     posterThumb.cache = true
     components.push(posterThumb)
 
@@ -422,6 +423,7 @@ function preplayGetImages() as object
         ' We need to force this one to use the thumb attr
         mediaThumb = createImage(m.item, mediaSize.width, mediaSize.height)
         mediaThumb.thumbAttr = "thumb"
+        mediaThumb.fade = true
         mediaThumb.cache = true
         components.push(mediaThumb)
     end if

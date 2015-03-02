@@ -45,6 +45,7 @@ sub oddbuttonInit(text as string, font as object,  maxHeight as integer)
     if thumb <> invalid then
         avatar = iif(instr(1, thumb, "gravatar") > 0, thumb + "&s=26", thumb)
         m.avatar = createImage(avatar, 26, 26)
+        m.avatar.cache = true
         m.AddComponent(m.avatar)
     end if
 
