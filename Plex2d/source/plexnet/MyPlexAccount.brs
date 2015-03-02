@@ -251,6 +251,8 @@ sub mpaUpdateHomeUsers()
             if user@thumb <> invalid and not CheckMinimumVersion([6, 1]) and instr(1, user@thumb, "http://www.gravatar.com") > 0 then
                 user.AddAttribute("thumb", ResolveRedirect(user@thumb))
             end if
+            ' update the current users avatar (after ResolveRedirect)
+            if m.id = user@id then m.thumb = user@thumb
             homeUser = user.GetAttributes()
             homeUser.isAdmin = (homeUser.admin = "1")
             homeUser.isManaged = (homeUser.restricted = "1")

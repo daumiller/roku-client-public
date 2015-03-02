@@ -78,6 +78,11 @@ function indiDraw(redraw=false as boolean) as object
             for line = 0 to m.size
                 m.region.DrawLine(m.width - (m.size - line), line, m.width, line, m.fgColor)
             end for
+        else if m.valign = m.ALIGN_MIDDLE then
+            ' no border or alpha padding for center
+            for line = 0 to int(m.size/2)
+                m.region.DrawLine(line, line, m.size - line, line, m.fgColor)
+            end for
         else
             ' border - Transparent or standard IndicatorBorder
             for line = 0 to m.height

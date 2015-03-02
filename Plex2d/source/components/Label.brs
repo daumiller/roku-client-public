@@ -13,6 +13,7 @@ function LabelClass() as object
         obj.SetColor = labelSetColor
         obj.SetBorder = labelSetBorder
         obj.DrawIndicator = labelDrawIndicator
+        obj.SetIndicator = labelSetIndicator
         obj.SetText = labelSetText
 
         obj.WrapText = labelWrapText
@@ -123,6 +124,10 @@ function labelDraw(redraw=false as boolean) as object
             m.region.DrawRect(0, 0, m.border.left, m.height, m.border.color)
         end if
     next
+
+    if m.useIndicator = true then
+        m.DrawIndicator()
+    end if
 
     return [m]
 end function
@@ -248,28 +253,33 @@ function labelMaxLineLength(text as string, startPos=0 as integer) as integer
     return startPos + 1
 end function
 
-sub labelDrawIndicator(valign=invalid as dynamic, halign=invalid as dynamic)
-    if m.useIndicator = true then
-        indicator = createIndicator(Colors().Indicator, int(m.height * 0.4), true)
-        indicator.bgColor = m.bgColor
-        indicator.valign = firstOf(valign, indicator.ALIGN_BOTTOM)
-        indicator.halign = firstOf(halign, indicator.JUSTIFY_RIGHT)
-        indicator.Draw()
+sub labelSetIndicator(valign=invalid as dynamic, halign=invalid as dynamic)
+    m.valignIndicator = valign
+    m.halignIndicator = halign
+end sub
 
-        if indicator.halign = indicator.JUSTIFY_RIGHT then
-            xOffset = m.width - indicator.region.GetWidth()
-        else
-            xOffset = 0
-        end if
+sub labelDrawIndicator()
+    indicator = createIndicator(Colors().Indicator, int(m.height * 0.4), true)
+    indicator.bgColor = m.bgColor
+    indicator.valign = firstOf(m.valignIndicator, indicator.ALIGN_BOTTOM)
+    indicator.halign = firstOf(m.halignIndicator, indicator.JUSTIFY_RIGHT)
+    indicator.Draw()
 
-        if indicator.valign = indicator.ALIGN_BOTTOM then
-            yOffset = m.height - indicator.region.GetHeight()
-        else
-            yOffset = 0
-        end if
-
-        m.region.DrawObject(xOffset, yOffset, indicator.region)
+    if indicator.halign = indicator.JUSTIFY_RIGHT then
+        xOffset = m.width - indicator.region.GetWidth()
+    else
+        xOffset = 0
     end if
+
+    if indicator.valign = indicator.ALIGN_BOTTOM then
+        yOffset = m.height - indicator.region.GetHeight()
+    else if indicator.valign = indicator.ALIGN_MIDDLE then
+        yOffset = m.height/2 - indicator.region.GetHeight()/4
+    else
+        yOffset = 0
+    end if
+
+    m.region.DrawObject(xOffset, yOffset, indicator.region)
 end sub
 
 sub labelSetText(text as string, redraw=false as boolean, resize=false as boolean)

@@ -53,7 +53,8 @@ sub ddoverlayOnFailedFocus(direction as string, focusedItem=invalid as dynamic)
 end sub
 
 sub ddoverlayCalculatePosition(vbox as object)
-    ddProp = { width: m.button.width, height: 0, x: m.button.x, y: m.button.y }
+    parent = computeRect(m.button)
+    ddProp = { width: 0, height: 0, x: parent.left, y: parent.up }
 
     ' calculate the required height and width for the homogeneous buttons
     for each component in vbox.components
@@ -72,9 +73,10 @@ sub ddoverlayCalculatePosition(vbox as object)
 
     ' set the position of the drop down (supported: bottom [default], and right)
     if m.button.dropDownPosition = "right" then
-        ddProp.x = m.button.x + m.button.width + m.button.parent.spacing
+        ddProp.x = parent.right + m.button.parent.spacing
     else
-        ddProp.y = m.button.y + m.button.height + m.button.parent.spacing
+        ddProp.x = ddProp.x - (computeRect(ddProp).right - parent.right)
+        ddProp.y = parent.down + m.button.parent.spacing
     end if
 
     ' verify the xOffset+width is not off the screen (safe area)
@@ -90,7 +92,7 @@ sub ddoverlayCalculatePosition(vbox as object)
     vbox.SetFrame(ddProp.x, ddProp.y, ddProp.width, ddProp.height)
 
     ' make sure that our scrolling starts within the safe area
-    maxScrollHeight = ddProp.height - m.button.height
+    maxScrollHeight = ddProp.height - parent.height
     if maxScrollHeight < m.button.maxHeight then
         vbox.SetScrollable(maxScrollHeight)
     end if
@@ -110,7 +112,7 @@ sub ddoverlayGetComponents()
             if option.padding <> invalid then
                 comp.setPadding(option.padding.top, option.padding.right, option.padding.bottom, option.padding.left)
             else
-                comp.setPadding(5)
+                comp.setPadding(10 + CompositorScreen().focusPixels)
             end if
             if option.halign <> invalid then comp.halign = m[option.halign]
             if option.width  <> invalid then comp.width  = option.width

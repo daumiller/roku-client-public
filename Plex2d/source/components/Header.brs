@@ -34,9 +34,9 @@ sub headerInit()
     }
 
     m.buttons = {
-        maxWidth: 250,
-        minWidth: 128,
-        height: 40,
+        maxWidth: 400,
+        minWidth: 50,
+        height: 36,
         valign: "ALIGN_MIDDLE",
         spacing: 10,
         padding: 10,
@@ -81,7 +81,7 @@ sub headerPerformLayout()
     buttons = createObject("roList")
     if tostr(m.screen.screenName) = "Home Screen" then
         ' Server List Drop Down
-        button = createServerDropDownButton(m.screen.server.name, m.customFonts.buttons, int(720 / 2), m.screen)
+        button = createServerDropDownButton(m.screen.server, m.customFonts.buttons, int(720 / 2), m.screen)
         button.SetPadding(0, m.buttons.padding, 0, m.buttons.padding)
         button.pvalign = button[m.buttons.valign]
         button.SetColor(Colors().Subtitle)
@@ -89,7 +89,7 @@ sub headerPerformLayout()
         buttons.push(button)
 
         ' Options Drop Down: Settings, Sign Out/In
-        button = createDropDownButton(firstOf(MyPlexAccount().title, "Options"), m.customFonts.buttons, int(720 / 2), m.screen, false)
+        button = createOptionsDropDownButton(firstOf(MyPlexAccount().title, "Options"), m.customFonts.buttons, int(720 / 2), m.screen)
         button.SetPadding(0, m.buttons.padding, 0, m.buttons.padding)
         button.pvalign = button[m.buttons.valign]
         button.GetOptions = headerGetOptions
@@ -110,6 +110,7 @@ sub headerPerformLayout()
         hbox = createHBox(false, false, false, m.buttons.spacing)
         buttonContWidth = 0
         for each button in buttons
+            button.height = m.buttons.height
             buttonWidth = button.GetPreferredWidth()
             if buttonWidth > m.buttons.maxWidth then
                 button.width = m.buttons.maxWidth
@@ -136,7 +137,7 @@ function headerGetOptions() as object
 
     mpa = MyPlexAccount()
     if mpa.IsSignedIn then
-        m.options.push({text: "Switch User", command: "show_users", font: font, height: 66, width: 128 })
+        m.options.push({text: "Switch User", command: "show_users", font: font, height: 66})
         if MyPlexAccount().isManaged then
             connect = invalid
         else
@@ -148,10 +149,8 @@ function headerGetOptions() as object
         connect = {text: "Sign In", command: "sign_in"}
     end if
 
-    m.options.push({text: "Settings", command: "settings", font: font, height: 66, width: 128 })
-    if connect <> invalid then
-        m.options.push({text: connect.text, command: connect.command, font: font, height: 66, width: 128 })
-    end if
+    m.options.push({text: "Settings", command: "settings", font: font, height: 66})
+    m.options.push({text: connect.text, command: connect.command, font: font, height: 66})
 
     return m.options
 end function

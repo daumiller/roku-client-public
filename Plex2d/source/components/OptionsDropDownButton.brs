@@ -1,45 +1,38 @@
-function ServerDropDownButtonClass() as object
-    if m.ServerDropDownButtonClass = invalid then
+function OptionsDropDownButtonClass() as object
+    if m.OptionsDropDownButtonClass = invalid then
         obj = CreateObject("roAssociativeArray")
         obj.Append(CompositeDropDownButtonClass())
-        obj.ClassName = "ServerDropDownButton"
+        obj.ClassName = "OptionsDropDownButton"
 
         ' Method overrides
-        obj.Init = sddbuttonInit
-        obj.PerformLayout = sddbuttonPerformLayout
+        obj.Init = oddbuttonInit
+        obj.PerformLayout = oddbuttonPerformLayout
 
-        ' Overlay overrides
-        obj.GetComponents = sddoverlayGetComponents
-        obj.CreateButton = sddoverlayCreateButton
-
-        m.ServerDropDownButtonClass = obj
+        m.OptionsDropDownButtonClass = obj
     end if
 
-    return m.ServerDropDownButtonClass
+    return m.OptionsDropDownButtonClass
 end function
 
-function createServerDropDownButton(server as object, font as object, maxHeight as integer, screen as object) as object
+function createOptionsDropDownButton(text as string, font as object, maxHeight as integer, screen as object) as object
     obj = CreateObject("roAssociativeArray")
-    obj.Append(ServerDropDownButtonClass())
+    obj.Append(OptionsDropDownButtonClass())
 
     obj.screen = screen
-    obj.server = server
 
-    obj.Init(server.name, font, maxHeight)
+    obj.Init(text, font, maxHeight)
 
     return obj
 end function
 
-sub sddbuttonInit(text as string, font as object,  maxHeight as integer)
+sub oddbuttonInit(text as string, font as object,  maxHeight as integer)
     ApplyFunc(CompositeDropDownButtonClass().Init, m, [text, font, maxHeight])
 
     ' Custom fonts for the drop down options. These need to be references at this
     ' this level to conserve memory. Each drop down item will have a reference.
     m.customFonts = {
         title: FontRegistry().NORMAL,
-        subtitle: FontRegistry().SMALL,
         glyph: FontRegistry().GetIconFont(11),
-        status: FontRegistry().GetTextFont(20),
     }
 
     ' Title
@@ -47,9 +40,13 @@ sub sddbuttonInit(text as string, font as object,  maxHeight as integer)
     m.title.SetColor(Colors().Subtitle)
     m.AddComponent(m.title)
 
-    ' Image
-    m.image = createImage("pkg:/images/pms_logo_HD_26x26.png", 26, 26, invalid, "scale-to-fit")
-    m.AddComponent(m.image)
+    ' Avatar
+    thumb = MyPlexAccount().thumb
+    if thumb <> invalid then
+        avatar = iif(instr(1, thumb, "gravatar") > 0, thumb + "&s=26", thumb)
+        m.avatar = createImage(avatar, 26, 26)
+        m.AddComponent(m.avatar)
+    end if
 
     ' Indicator
     m.indicator = createLabel(Glyphs().D_TRIANGLE, m.customFonts.glyph)
@@ -61,7 +58,7 @@ sub sddbuttonInit(text as string, font as object,  maxHeight as integer)
     m.minWidth = 128
 end sub
 
-sub sddbuttonPerformLayout()
+sub oddbuttonPerformLayout()
     ApplyFunc(CompositeDropDownButtonClass().PerformLayout, m)
 
     ' Indicator
@@ -70,9 +67,11 @@ sub sddbuttonPerformLayout()
     m.indicator.SetFrame(xOffset, yOffset, m.indicator.GetPreferredWidth(), m.indicator.GetPreferredHeight())
 
     ' Avatar
-    yOffset = m.GetYOffsetAlignment(m.image.GetPreferredHeight())
-    xOffset = xOffset - m.padding.right - m.image.GetPreferredWidth()
-    m.image.SetFrame(xOffset, yOffset, m.image.GetPreferredWidth(), m.image.GetPreferredHeight())
+    if m.avatar <> invalid then
+        yOffset = m.GetYOffsetAlignment(m.avatar.GetPreferredHeight())
+        xOffset = xOffset - m.padding.right - m.avatar.GetPreferredWidth()
+        m.avatar.SetFrame(xOffset, yOffset, m.avatar.GetPreferredWidth(), m.avatar.GetPreferredHeight())
+    end if
 
     ' Title (Use a temporary label to utilize the required methods)
     m.title.width = xOffset - m.padding.right

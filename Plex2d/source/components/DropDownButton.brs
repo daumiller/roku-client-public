@@ -6,7 +6,6 @@ function DropDownButtonClass() as object
 
         ' Methods
         obj.Init = ddbuttonInit
-        obj.Draw = ddbuttonDraw
         obj.Show = ddbuttonShow
         obj.SetDropDownPosition = ddbuttonSetDropDownPosition
         obj.GetOptions = ddbuttonGetOptions
@@ -44,14 +43,8 @@ sub ddbuttonInit(text as string, font as object, maxHeight as integer)
     m.options = createObject("roList")
 
     m.SetDropDownPosition("down")
+    m.SetIndicator(m.ALIGN_BOTTOM, m.JUSTIFY_RIGHT)
 end sub
-
-function ddbuttonDraw(redraw=false as boolean) as object
-    ApplyFunc(LabelClass().Draw, m, [redraw])
-    m.DrawIndicator(m.ALIGN_BOTTOM, m.JUSTIFY_RIGHT)
-
-    return [m]
-end function
 
 sub ddbuttonShow()
     m.overlay = m.CreateOverlay(m.screen)

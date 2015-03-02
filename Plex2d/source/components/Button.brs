@@ -5,7 +5,6 @@ function ButtonClass() as object
         obj.ClassName = "Button"
 
         obj.Init = buttonInit
-        obj.Draw = buttonDraw
 
         m.ButtonClass = obj
     end if
@@ -32,11 +31,6 @@ sub buttonInit(text as string, font as object)
     m.selectable = true
     m.halign = m.JUSTIFY_CENTER
     m.valign = m.ALIGN_MIDDLE
+
+    m.SetIndicator(m.ALIGN_BOTTOM, m.JUSTIFY_RIGHT)
 end sub
-
-function buttonDraw(redraw=false as boolean) as object
-    ApplyFunc(LabelClass().Draw, m, [redraw])
-    m.DrawIndicator(m.ALIGN_BOTTOM, m.JUSTIFY_RIGHT)
-
-    return [m]
-end function
