@@ -96,34 +96,35 @@ sub miniplayerInit()
     vbTrack = createVBox(false, false, false, 0)
 
     ' Image placeholder (transparent region)
-    m.Image = createImage(item, 28, 28)
-    m.Image.pvalign = m.Image.ALIGN_MIDDLE
-    m.Image.zOrderInit = m.zOrderInit
+    m.image = createImage(item, 28, 28)
+    m.image.SetOrientation(m.image.ORIENTATION_SQUARE)
+    m.image.pvalign = m.image.ALIGN_MIDDLE
+    m.image.zOrderInit = m.zOrderInit
 
     ' Title placeholder
-    m.Title = createLabel(firstOf(labels.title, ""), FontRegistry().SMALL)
-    m.Title.width = m.width
-    m.Title.zOrderInit = m.zOrderInit
+    m.title = createLabel(firstOf(labels.title, ""), FontRegistry().SMALL)
+    m.title.width = m.width
+    m.title.zOrderInit = m.zOrderInit
 
     ' Subtitle placeholder
-    m.Subtitle = createLabel(firstOf(labels.subtitle, ""), FontRegistry().SMALL)
-    m.Subtitle.width = m.width
-    m.Subtitle.zOrderInit = m.zOrderInit
+    m.subtitle = createLabel(firstOf(labels.subtitle, ""), FontRegistry().SMALL)
+    m.subtitle.width = m.width
+    m.subtitle.zOrderInit = m.zOrderInit
 
     ' Progress bar placeholder
-    m.Progress = createBlock(&hffffff60)
-    m.Progress.width = m.width
-    m.Progress.height = 2
-    m.Progress.zOrderInit = m.ZOrderInit
+    m.progress = createBlock(&hffffff60)
+    m.progress.width = m.width
+    m.progress.height = 2
+    m.progress.zOrderInit = m.ZOrderInit
 
-    vbTrack.AddComponent(m.Title)
-    vbTrack.AddComponent(m.Subtitle)
+    vbTrack.AddComponent(m.title)
+    vbTrack.AddComponent(m.subtitle)
 
-    hbImgTrack.AddComponent(m.Image)
+    hbImgTrack.AddComponent(m.image)
     hbImgTrack.AddComponent(vbTrack)
 
     vbMain.AddComponent(hbImgTrack)
-    vbMain.AddComponent(m.Progress)
+    vbMain.AddComponent(m.progress)
 
     m.AddComponent(vbMain)
 
@@ -138,31 +139,31 @@ sub miniplayerInit()
 end sub
 
 sub miniplayerSetTitle(text as string)
-    if m.Title.sprite = invalid then return
+    if m.title.sprite = invalid then return
 
-    m.Title.text = text
-    m.Title.Draw(true)
+    m.title.text = text
+    m.title.Draw(true)
 end sub
 
 sub miniplayerSetSubtitle(text as string)
-    if m.Subtitle.sprite = invalid then return
+    if m.subtitle.sprite = invalid then return
 
-    m.Subtitle.text = text
-    m.Subtitle.Draw(true)
+    m.subtitle.text = text
+    m.subtitle.Draw(true)
 end sub
 
 function miniplayerSetProgress(time as integer, duration as integer) as boolean
-    if m.Progress.sprite = invalid or duration = 0 then return false
+    if m.progress.sprite = invalid or duration = 0 then return false
 
-    region = m.Progress.sprite.GetRegion()
-    region.Clear(m.Progress.bgColor)
+    region = m.progress.sprite.GetRegion()
+    region.Clear(m.progress.bgColor)
     progressPercent = int(time/1000) / int(duration/1000)
-    region.DrawRect(0, 0, cint(m.Progress.width * progressPercent), m.Progress.height, Colors().Orange)
+    region.DrawRect(0, 0, cint(m.progress.width * progressPercent), m.progress.height, Colors().Orange)
     return true
 end function
 
 sub miniplayerSetImage(item as object)
-    m.Image.Replace(item)
+    m.image.Replace(item)
 end sub
 
 sub miniplayerShow(draw=true as boolean)
@@ -185,10 +186,10 @@ end sub
 sub miniPlayerSetZ(zOrder as integer)
     if m.isDrawn = false then return
 
-    m.Image.sprite.setZ(zOrder)
-    m.Title.sprite.setZ(zOrder)
-    m.Subtitle.sprite.setZ(zOrder)
-    m.Progress.sprite.setZ(zOrder)
+    m.image.sprite.setZ(zOrder)
+    m.title.sprite.setZ(zOrder)
+    m.subtitle.sprite.setZ(zOrder)
+    m.progress.sprite.setZ(zOrder)
 end sub
 
 function miniplayerDraw() as object
