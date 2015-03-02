@@ -47,6 +47,8 @@ function imageDraw() as object
                 m.FromLocal(m.placeholder)
             else
                 ' Just do the basic region initialization until we get a real bitmap.
+                ' Use a transparent region if we are going to fade in.
+                if m.fade = true then m.bgColor = Colors().Transparent
                 m.InitRegion()
             end if
         end if
