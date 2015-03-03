@@ -6,6 +6,7 @@ function AudioEvents() as object
         obj.OnKeyPress = audioeventsOnKeyPress
         obj.OnPress = audioeventsOnPress
         obj.OnRelease = audioeventsOnRelease
+        obj.SetVolume = audioSetVolume
 
         ' Audio clips
         obj.clips = {}
@@ -34,13 +35,9 @@ function AudioEvents() as object
         ' obj.keyCodes["fwd"] = obj.clips.click
         ' obj.keyCodes["info"] = obj.clips.click
 
-        ' Audio volume. These clips are pretty quiet compared to default audio
-        ' clips for standard screens. As of now, there is now way to query the
-        ' roku "Menu Volume" setting, which is lame because we don't know if
-        ' we should even play them, regardless of the expected volume. Does
-        ' that me we need a custom pref?
-        obj.volume = 90
+        obj.SetVolume(AppSettings().GetIntPreference("menu_volume"))
 
+        Application().On("change:menu_volume", createCallable("SetVolume", obj))
         m.AudioEvents = obj
     end if
 
@@ -48,6 +45,8 @@ function AudioEvents() as object
 end function
 
 sub audioeventsOnKeyPress(keyCode as integer)
+    if m.volume = 0 or AudioPlayer().isPlaying = true then return
+
     if keyCode >= 100 then
         m.OnRelease(KeyCodeToString(keyCode - 100))
     else
@@ -69,4 +68,9 @@ sub audioeventsOnRelease(key as string)
     if type(m.keyRelease[key]) = "roAudioResource" then
         m.keyRelease[key].Trigger(m.volume)
     end if
+end sub
+
+sub audioSetVolume(volume as dynamic)
+    if not isint(volume) then volume = volume.toint()
+    m.volume = volume
 end sub
