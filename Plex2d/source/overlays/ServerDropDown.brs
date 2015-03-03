@@ -10,8 +10,7 @@ sub sddoverlayGetComponents()
     ' `PlexServerManager().GetServers()`
     servers = createObject("roList")
     serversOwned = createObject("roList")
-    serversOnline = createObject("roList")
-    serversOffline = createObject("roList")
+    serversShared = createObject("roList")
 
     buttonWidth = m.button.minWidth
     for each server in PlexServerManager().GetServers()
@@ -24,15 +23,12 @@ sub sddoverlayGetComponents()
         ' server ordering
         if server.owned then
             serversOwned.push(server)
-        else if server.IsReachable() then
-            serversOnline.push(server)
         else
-            serversOffline.push(server)
+            serversShared.push(server)
         end if
     end for
     servers.Append(serversOwned)
-    servers.Append(serversOnline)
-    servers.Append(serversOffline)
+    servers.Append(serversShared)
 
     if servers.Count() = 0 then return
 
