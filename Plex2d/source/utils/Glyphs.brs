@@ -27,7 +27,7 @@ function Glyphs() as object
         obj.DEL_LABEL   = chr(&he257)
         obj.DELETE      = chr(&he017)
         obj.CONFIG      = chr(&he281)
-        obj.HOME        = chr(&he029)
+        obj.HOME        = chr(&he021)
         obj.SEARCH      = chr(&he058)
         obj.FILM_STRIP  = chr(&he009)
         obj.TRAILER     = chr(&hf109)
