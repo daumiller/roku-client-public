@@ -136,8 +136,12 @@ function headerGetOptions() as object
 
     mpa = MyPlexAccount()
     if mpa.IsSignedIn then
-        connect = {text: "Sign Out", command: "sign_out"}
         m.options.push({text: "Switch User", command: "show_users", font: font, height: 66, width: 128 })
+        if MyPlexAccount().isManaged then
+            connect = invalid
+        else
+            connect = {text: "Sign Out", command: "sign_out"}
+        end if
     else if mpa.IsOffline then
         connect = {text: "Offline Mode" }
     else
@@ -145,7 +149,9 @@ function headerGetOptions() as object
     end if
 
     m.options.push({text: "Settings", command: "settings", font: font, height: 66, width: 128 })
-    m.options.push({text: connect.text, command: connect.command, font: font, height: 66, width: 128 })
+    if connect <> invalid then
+        m.options.push({text: connect.text, command: connect.command, font: font, height: 66, width: 128 })
+    end if
 
     return m.options
 end function
