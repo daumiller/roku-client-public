@@ -37,7 +37,6 @@ sub oddbuttonInit(text as string, font as object,  maxHeight as integer)
 
     ' Title
     m.title = createLabel(m.text, m.customFonts.title)
-    m.title.SetColor(Colors().Subtitle)
     m.AddComponent(m.title)
 
     ' Avatar
@@ -51,10 +50,9 @@ sub oddbuttonInit(text as string, font as object,  maxHeight as integer)
 
     ' Indicator
     m.indicator = createLabel(Glyphs().D_TRIANGLE, m.customFonts.glyph)
-    m.indicator.SetColor(Colors().Subtitle)
     m.AddComponent(m.indicator)
 
-    ' Max and Min width of the drop down options (server/owner name dependent)
+    ' Max and Min width of the drop down options
     m.maxWidth = 400
     m.minWidth = 128
 end sub
@@ -65,6 +63,7 @@ sub oddbuttonPerformLayout()
     ' Indicator
     yOffset = m.GetYOffsetAlignment(m.indicator.font.GetOneLineHeight())
     xOffset = m.width - m.padding.right - m.indicator.GetPreferredWidth()
+    m.indicator.SetColor(m.fgColor)
     m.indicator.SetFrame(xOffset, yOffset, m.indicator.GetPreferredWidth(), m.indicator.GetPreferredHeight())
 
     ' Avatar
@@ -74,9 +73,10 @@ sub oddbuttonPerformLayout()
         m.avatar.SetFrame(xOffset, yOffset, m.avatar.GetPreferredWidth(), m.avatar.GetPreferredHeight())
     end if
 
-    ' Title (Use a temporary label to utilize the required methods)
+    ' Title
     m.title.width = xOffset - m.padding.right
     yOffset = m.GetYOffsetAlignment(m.title.font.GetOneLineHeight())
     xOffset = m.padding.left
+    m.title.SetColor(m.fgColor)
     m.title.SetFrame(xOffset, yOffset, m.title.GetPreferredWidth(), m.title.GetPreferredHeight())
 end sub

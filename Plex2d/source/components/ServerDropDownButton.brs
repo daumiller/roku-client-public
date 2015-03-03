@@ -44,16 +44,14 @@ sub sddbuttonInit(text as string, font as object,  maxHeight as integer)
 
     ' Title
     m.title = createLabel(m.text, m.customFonts.title)
-    m.title.SetColor(Colors().Subtitle)
     m.AddComponent(m.title)
 
-    ' Image
+    ' PMS Logo
     m.image = createImage("pkg:/images/pms_logo_HD_26x26.png", 26, 26, invalid, "scale-to-fit")
     m.AddComponent(m.image)
 
     ' Indicator
     m.indicator = createLabel(Glyphs().D_TRIANGLE, m.customFonts.glyph)
-    m.indicator.SetColor(Colors().Subtitle)
     m.AddComponent(m.indicator)
 
     ' Max and Min width of the drop down options (server/owner name dependent)
@@ -67,16 +65,18 @@ sub sddbuttonPerformLayout()
     ' Indicator
     yOffset = m.GetYOffsetAlignment(m.indicator.font.GetOneLineHeight())
     xOffset = m.width - m.padding.right - m.indicator.GetPreferredWidth()
+    m.indicator.SetColor(m.fgColor)
     m.indicator.SetFrame(xOffset, yOffset, m.indicator.GetPreferredWidth(), m.indicator.GetPreferredHeight())
 
-    ' Avatar
+    ' PMS Logo
     yOffset = m.GetYOffsetAlignment(m.image.GetPreferredHeight())
     xOffset = xOffset - m.padding.right - m.image.GetPreferredWidth()
     m.image.SetFrame(xOffset, yOffset, m.image.GetPreferredWidth(), m.image.GetPreferredHeight())
 
-    ' Title (Use a temporary label to utilize the required methods)
+    ' Title
     m.title.width = xOffset - m.padding.right
     yOffset = m.GetYOffsetAlignment(m.title.font.GetOneLineHeight())
     xOffset = m.padding.left
+    m.title.SetColor(m.fgColor)
     m.title.SetFrame(xOffset, yOffset, m.title.GetPreferredWidth(), m.title.GetPreferredHeight())
 end sub
