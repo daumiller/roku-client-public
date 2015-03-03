@@ -10,6 +10,7 @@ function DialogClass() as object
         obj.AddButton = dialogAddButton
         obj.CreateButton = dialogCreateButton
         obj.HandleButton = dialogHandleButton
+        obj.OnKeyRelease = dialogOnKeyRelease
 
         m.DialogClass = obj
     end if
@@ -198,3 +199,11 @@ function VideoResumeDialog(item as object, screen as object) as dynamic
     dialog.Show(true)
     return dialog.result
 end function
+
+sub dialogOnKeyRelease(keyCode as integer)
+    ' Consider the PLAY button the same as OK
+    if keyCode = m.kp_PLAY then
+        keyCode = m.kp_OK
+    end if
+    ApplyFunc(OverlayClass().OnKeyRelease, m, [keyCode])
+end sub
