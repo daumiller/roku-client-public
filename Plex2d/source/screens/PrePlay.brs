@@ -13,8 +13,10 @@ function PreplayScreen() as object
         obj.Init = preplayInit
         obj.OnResponse = preplayOnResponse
         obj.OnDetailsResponse = preplayOnDetailsResponse
+        obj.SetContext = preplaySetContext
         obj.LoadContext = preplayLoadContext
         obj.OnContextResponse = preplayOnContextResponse
+        obj.AdvanceContext = preplayAdvanceContext
         obj.HandleCommand = preplayHandleCommand
         obj.GetComponents = preplayGetComponents
         obj.OnPlayButton = preplayOnPlayButton
@@ -71,7 +73,7 @@ sub preplayShow()
     if not Application().IsActiveScreen(m) then return
 
     if m.requestContext = invalid then
-        request = createPlexRequest(m.server, m.requestItem.GetItemPath())
+        request = createPlexRequest(m.server, firstOf(m.itemPath, m.requestItem.GetItemPath()))
         context = request.CreateRequestContext("preplay_item", createCallable("OnResponse", m))
         Application().StartRequest(request, context)
         m.requestContext = context
@@ -79,9 +81,11 @@ sub preplayShow()
         ApplyFunc(ComponentsScreen().Show, m)
 
         ' re-request the item to verify it's accessible
-        request = createPlexRequest(m.server, m.requestItem.GetItemPath(true))
+        request = createPlexRequest(m.server, m.item.GetItemPath(true))
         context = request.CreateRequestContext("preplay_item", createCallable("OnDetailsResponse", m))
         Application().StartRequest(request, context)
+
+        ' Load context for << >> navigation
         m.LoadContext()
     else
         dialog = createDialog("Unable to load", "Sorry, we couldn't load the requested item.", m)
@@ -94,18 +98,12 @@ end sub
 sub preplayOnResponse(request as object, response as object, context as object)
     response.ParseResponse()
     context.response = response
-    context.items = response.items
-    if context.items = invalid then return
+    if response.items = invalid then return
 
-    ' Will we ever receive more than one item here? If we do, we'll end up using this
-    ' context for << >> buttons
-    if context.items.Count() = 1 then
-        m.item = context.items[0]
-    else
-        m.curIndex = 0
-        m.items = context.items
-        m.item = m.items[m.curIndex]
-    end if
+    ' Will we ever receive more than one item here? If we do, we'll
+    ' end up using this context for << >> buttons
+    m.item = response.items[0]
+    m.SetContext(response.items, 0)
 
     m.Show()
 end sub
@@ -114,15 +112,33 @@ sub preplayOnContextResponse(request as object, response as object, context as o
     response.ParseResponse()
     if response.items = invalid then return
 
-    ' Only include library items and set curIndex
-    m.items = createObject("roList")
-    for index = 0 to response.items.Count() - 1
-        item = response.items[index]
+    ' Handle the Continue Watching hub differently as it has no container key.
+    if tostr(context.hubIdentifier) = "home.continue" then
+        for each hub in response.items
+            if hub.Get("hubIdentifier", "") = context.hubIdentifier then
+                m.SetContext(hub.items)
+                return
+            end if
+        end for
+    end if
+
+    m.SetContext(response.items)
+end sub
+
+sub preplaySetContext(items=invalid as dynamic, curIndex=invalid as dynamic)
+    if items = invalid or items.Count() <= 1 then return
+
+    ' Only include library items, update curIndex. We will also only
+    ' keep a reference to the items path for memory conservation.
+    m.context = createObject("roList")
+    m.curIndex = curIndex
+    for index = 0 to items.Count() - 1
+        item = items[index]
         if item <> invalid and item.IsLibraryItem() then
             if m.curIndex = invalid and item.Get("ratingKey") = m.item.Get("ratingKey") then
                 m.curIndex = index
             end if
-            m.items.Push(item)
+            m.context.Push(item.GetItemPath())
         end if
     end for
 end sub
@@ -888,39 +904,36 @@ sub preplayUpdatePrefOptions(settings as object, prefKey as string, prefValue=in
 end sub
 
 sub preplayLoadContext()
-    ' Load context for the preplay (<< >> buttons)
-    path = m.requestItem.GetAllItemsPath()
-    if m.items = invalid and path <> invalid then
-        request = createPlexRequest(m.server, m.requestItem.GetAllItemsPath())
-        context = request.CreateRequestContext("preplay_context", createCallable("OnContextResponse", m))
-        Application().StartRequest(request, context)
+    if m.context = invalid then
+        item = iif(m.item.type = "episode", m.item, m.requestItem)
+        if item.GetContextPath() <> invalid then
+            request = createPlexRequest(m.server, item.GetContextPath())
+            context = request.CreateRequestContext("preplay_context", createCallable("OnContextResponse", m))
+            context.hubIdentifier = m.requestItem.container.Get("hubIdentifier")
+            Application().StartRequest(request, context)
+        end if
+    end if
+end sub
+
+sub preplayAdvanceContext(delta as integer)
+    if m.curIndex = invalid or m.context = invalid then return
+
+    newIndex = (m.curIndex + delta) mod m.context.Count()
+    newIndex = iif(newIndex < 0, newIndex + m.context.Count(), newIndex)
+
+    if IsString(m.context[newIndex]) then
+        m.curIndex = newIndex
+        m.itemPath = m.context[m.curIndex]
+        m.Refresh()
     end if
 end sub
 
 sub preplayOnFwdButton(item=invalid as dynamic)
-    if m.curIndex = invalid or m.items = invalid then return
-    m.curIndex = m.curIndex + 1
-    if m.curIndex > m.items.Count()-1 then
-        m.curIndex = 0
-    end if
-    m.requestItem = m.items[m.curIndex]
-
-    if m.requestItem <> invalid then
-        m.Refresh()
-    end if
+    m.AdvanceContext(1)
 end sub
 
 sub preplayOnRevButton(item=invalid as dynamic)
-    if m.curIndex = invalid or m.items = invalid then return
-    m.curIndex = m.curIndex - 1
-    if m.curIndex < 0 then
-        m.curIndex = m.items.Count() - 1
-    end if
-    m.requestItem = m.items[m.curIndex]
-
-    if m.requestItem <> invalid then
-        m.Refresh()
-    end if
+    m.AdvanceContext(-1)
 end sub
 
 sub preplaySetRefreshCache(key as string, component as object)

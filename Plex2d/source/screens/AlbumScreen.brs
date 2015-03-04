@@ -111,6 +111,8 @@ sub albumShow()
         if m.item <> invalid then
             ApplyFunc(ComponentsScreen().Show, m)
             m.ToggleSummary()
+
+            ' Load context for << >> navigation
             m.LoadContext()
         else
             dialog = createDialog("Unable to load", "Sorry, we couldn't load the requested item.", m)
@@ -491,6 +493,8 @@ sub albumToggleSummary()
 end sub
 
 sub albumRefresh(request=invalid as dynamic, response=invalid as dynamic, context=invalid as dynamic)
-    m.ResetInit()
-    ApplyFunc(PreplayScreen().Refresh, m)
+    if m.itemPath <> invalid then
+        m.ResetInit(m.itemPath)
+        ApplyFunc(PreplayScreen().Refresh, m)
+    end if
 end sub
