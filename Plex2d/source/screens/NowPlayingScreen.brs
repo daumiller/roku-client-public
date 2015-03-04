@@ -406,6 +406,8 @@ function nowplayingSetProgress(time as integer, duration as integer) as boolean
 end function
 
 sub nowplayingOnPlay(player as object, item as object)
+    TextureManager().DeleteCache()
+
     m.SetImage(item, m.image)
     m.SetImage(item, m.queueImage)
     m.SetImage(item, m.background)
@@ -417,6 +419,9 @@ sub nowplayingOnPlay(player as object, item as object)
     m.UpdateTracks(item)
 
     m.Refresh()
+
+    ' Clear any unused cache
+    TextureManager().ClearCache()
 end sub
 
 sub nowplayingOnStop(player as object, item as object)

@@ -96,10 +96,8 @@ function tmRemoveTextureByListId(listId as string, list as object) as integer
     end if
 
     ' Set the cached urls as pending delete. We'll remove the urls from
-    ' the pending delete list if used by the new screen
-    for each url in m.cacheList
-        m.DeleteCache(url)
-    end for
+    ' the pending delete list if used by the new screen, or clear them.
+    m.DeleteCache()
 
     Debug("Texture Manager: " + tostr(m.cacheList.Count()) + " cached manually")
     return removeCount
@@ -377,18 +375,16 @@ function tmGetCache(sourceUrl as dynamic, width as integer, height as integer) a
     return cache
 end function
 
-' Add the sourceUrl to a pending delete list
-sub tmDeleteCache(sourceUrl=invalid as dynamic)
-    if IsString(sourceUrl) then
+' Add all cached urls to the pending delete list
+sub tmDeleteCache()
+    for each sourceUrl in m.cacheList
         if m.cacheList.DoesExist(sourceUrl) then
             m.cacheDelList[sourceUrl] = true
         end if
         if m.cacheMapList.DoesExist(sourceUrl) then
              m.cacheDelList[m.cacheMapList[sourceUrl]] = true
         end if
-    else
-        m.ClearCache(true)
-    end if
+    end for
 end sub
 
 sub tmClearCache(clearAll=false as boolean)
@@ -400,8 +396,8 @@ sub tmClearCache(clearAll=false as boolean)
             m.cacheList.Delete(key)
             m.cacheMapList.Delete(key)
         end for
-        m.cacheDelList.Clear()
     end if
+    m.cacheDelList.Clear()
 end sub
 
 sub tmUseCache(sourceUrl as string)
