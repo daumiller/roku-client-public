@@ -181,6 +181,10 @@ sub tmRequestTexture(component as object, context as object)
         Warn("Ignoring texture request. URL is invalid.")
         component.SetBitmap(invalid)
         return
+    else if TextureManager().GetCache(context.url, context.width, context.height) <> invalid then
+        region = TextureManager().GetCache(context.url, context.width, context.height)
+        component.SetBitmap(region.GetBitmap())
+        return
     end if
 
     ' cancel any pending texture for this component

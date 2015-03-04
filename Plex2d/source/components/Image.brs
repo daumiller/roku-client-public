@@ -36,7 +36,7 @@ function imageDraw() as object
         height = firstOf(m.preferredHeight, m.height)
 
         ' If a cache for the current source exists, lets use it for the initial region.
-        if m.cache = true and IsString(m.source) then
+        if m.cache = true and IsString(m.source) and m.isReplacement <> true then
             m.altCacheUrl = m.source
             m.region = TextureManager().GetCache(m.source, width, height)
         end if
@@ -95,7 +95,7 @@ function imageDraw() as object
             if m.oldSource <> tostr(m.source) then
                 TextureManager().RemoveTexture(m.oldSource, true)
             else
-                doRequest = not (m.isReplacement = true)
+                doRequest = m.isReplacement <> true
             end if
         end if
         m.isReplacement = invalid
@@ -111,14 +111,7 @@ function imageDraw() as object
                 ' scaleSize: m.scaleSize,
                 ' scaleMode: 1
             }
-
-            ' Use a cached image if applicable or send or create a request
-            imageCache = TextureManager().GetCache(m.source, width, height)
-            if imageCache <> invalid then
-                m.region = imageCache
-            else
-                TextureManager().RequestTexture(m, context)
-            end if
+            TextureManager().RequestTexture(m, context)
         else
             Debug("Ignore request for unmodified image replacement")
         end if
@@ -280,6 +273,7 @@ sub imageSetBitmap(bmp=invalid as dynamic, makeCopy=false as boolean)
                 m.region.DrawObject(0, 0, orig, fade)
                 m.Trigger("redraw", [m])
             end for
+            m.region.SetAlphaEnable(false)
             m.fadeRegion = invalid
         end if
     else
