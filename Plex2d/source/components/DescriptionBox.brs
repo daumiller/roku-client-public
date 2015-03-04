@@ -77,7 +77,7 @@ function dboxShow(item as object) as boolean
     plexObject = item.plexObject
     contentType = plexObject.Get("type", "")
     viewGroup = plexObject.container.Get("viewGroup", "")
-    Debug("Show description: " + plexObject.toString() + ", contentType=" + contentType + ", viewGroup=" + viewGroup)
+    Verbose("Show description: " + plexObject.toString() + ", contentType=" + contentType + ", viewGroup=" + viewGroup)
 
     ' *** Component Description *** '
     if contentType = "episode" or contentType = "season" and contentType <> viewGroup then

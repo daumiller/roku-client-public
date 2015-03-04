@@ -250,20 +250,20 @@ end sub
 
 sub compDestroyComponents(clear=true as boolean)
     if m.focusedItem <> invalid then
-        Debug("compDestroyComponents:: focusedItem")
+        Verbose("compDestroyComponents:: focusedItem")
         m.focusedItem.Destroy()
         m.focusedItem = invalid
     end if
 
     if m.components.count() > 0 then
-        Debug("compDestroyComponents:: before: " + tostr(m.components.count()))
+        Verbose("compDestroyComponents:: before: " + tostr(m.components.count()))
         for each comp in m.components
             comp.Destroy()
         end for
         if clear then
             m.components.clear()
         end if
-        Debug("compDestroyComponents:: after: " + tostr(m.components.count()))
+        Verbose("compDestroyComponents:: after: " + tostr(m.components.count()))
     end if
 end sub
 
@@ -286,7 +286,7 @@ function compHandleMessage(msg as object) as boolean
 
         ' TODO(schuyler): Lock remote events? (moved todo in case we want to lock other buttons? -rob)
         if (keyCode = m.kp_BK or keyCode - 100 = m.kp_BK) and Locks().IsLocked("BackButton") then
-            Debug(KeyCodeToString(keyCode) + " is disabled")
+            Info(KeyCodeToString(keyCode) + " is disabled")
             return handled
         end if
 
@@ -1027,8 +1027,8 @@ sub compLazyLoadExec(components as object, zOrder=1 as integer)
     if components.count() = 0 then return
     for each comp in components
         if comp.SpriteIsLoaded() = false then
-            Debug("******** Drawing (lazy-load) zOrder " + tostr(zOrder) + ", " + tostr(comp))
-            comp.draw()
+            Debug("Drawing (lazy-load) zOrder " + tostr(zOrder) + ", " + tostr(comp))
+            comp.Draw()
             ' add the sprite placeholder to the compositors screen
             if comp.sprite = invalid then
                 comp.sprite = m.screen.compositor.NewSprite(comp.x, comp.y, comp.region, zOrder)
@@ -1202,7 +1202,7 @@ sub compShowFailure(title=invalid as dynamic, text=invalid as dynamic, popScreen
 end sub
 
 sub compOnKeyboardRelease(keyCode as integer, value as string)
-    Debug("no-op keyboard release: keyCode=" + tostr(keyCode) + ", value=" + value)
+    Verbose("no-op keyboard release: keyCode=" + tostr(keyCode) + ", value=" + value)
 end sub
 
 sub compCancelRequests()

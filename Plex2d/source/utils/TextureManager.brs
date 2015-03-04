@@ -137,7 +137,7 @@ end function
 ' we may want to cancel all textures due to a shift, so we'll need to keep
 ' any request not shifting.
 sub tmCancelAll(includeFixed=true as boolean)
-    Debug("cancel pending textures")
+    Verbose("Cancel pending textures")
     if m.ListCount <> invalid and m.ListCount > 0 then
         for each key in m.requestList
             if includeFixed or m.requestList[key].component.fixed = false then
@@ -152,7 +152,7 @@ end sub
 ' Resets the list by emptying the manager and clearing
 ' out any items remaing, resets all values
 sub tmReset()
-    Debug("reset texture manager")
+    Debug("Reset texture manager")
     ' cancel any pending requests
     m.CancelAll()
 
@@ -241,7 +241,7 @@ end function
 
 ' This function receives the texture and processes it, if successful it increments the receive count
 function tmReceiveTexture(tmsg as object, screen as object) as boolean
-    Debug("Received texture event")
+    Verbose("Received texture event")
     ' Get the returned state
     state = tmsg.GetState()
 

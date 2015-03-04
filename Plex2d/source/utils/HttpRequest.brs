@@ -56,7 +56,7 @@ function httpStartAsync(body=invalid as dynamic, contentType=invalid as dynamic)
     m.request.SetPort(Application().port)
 
     if body = invalid then
-        Debug("Starting request: GET " + m.request.GetUrl())
+        Info("Starting request: GET " + m.request.GetUrl())
         started = m.request.AsyncGetToString()
     else
         if contentType = invalid then
@@ -65,7 +65,7 @@ function httpStartAsync(body=invalid as dynamic, contentType=invalid as dynamic)
             m.request.AddHeader("Content-Type", MimeType(contentType))
         end if
 
-        Debug("Starting request: POST " + m.request.GetUrl())
+        Info("Starting request: POST " + m.request.GetUrl())
         started = m.request.AsyncPostFromString(body)
     end if
 

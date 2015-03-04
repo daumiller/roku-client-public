@@ -38,7 +38,7 @@ end function
 
 sub timerLogElapsedTime(msg, mark=true)
     elapsed = m.timer.TotalMilliseconds()
-    Debug(msg + " took: " + tostr(elapsed) + "ms")
+    Verbose(msg + " took: " + tostr(elapsed) + "ms")
     if mark then m.timer.Mark()
 end sub
 

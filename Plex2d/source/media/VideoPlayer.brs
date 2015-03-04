@@ -183,7 +183,7 @@ function vpHandleMessage(msg) as boolean
             if amountPlayed > m.playbackTimer.GetElapsedSeconds() then amountPlayed = m.playbackTimer.GetElapsedSeconds()
 
             if amountPlayed > 0 then
-                Debug("Sending analytics event, appear to have watched video for " + tostr(amountPlayed) + " seconds")
+                Info("Sending analytics event, appear to have watched video for " + tostr(amountPlayed) + " seconds")
                 Analytics().TrackEvent("Playback", item.Get("type", "clip"), tostr(item.GetIdentifier()), amountPlayed)
             end if
 
@@ -193,7 +193,7 @@ function vpHandleMessage(msg) as boolean
 
             ' Fallback transcode with resume support
             if m.playbackError and m.IsTranscoded = false then
-                Debug("Direct Play failed: falling back to transcode")
+                Warn("Direct Play failed: falling back to transcode")
                 lastPosition = m.GetPlaybackPosition(true)
                 videoItem = m.CreateContentMetadata(m.GetCurrentItem(), true, iif(lastPosition > m.seekValue, lastPosition, m.seekValue))
                 if videoItem.playbackSupported <> false then
@@ -206,12 +206,12 @@ function vpHandleMessage(msg) as boolean
             end if
 
             if m.playbackError <> true and m.isPlayed and (m.curIndex < m.context.Count() - 1 or m.repeat <> m.REPEAT_NONE) then
-                Debug("Going to try to play the next item")
+                Info("Going to try to play the next item")
                 m.player = invalid
                 m.screen = invalid
                 m.Next()
             else
-                Debug("Done with entire play queue, going to pop screen")
+                Info("Done with entire play queue, going to pop screen")
                 m.SetPlayState(m.STATE_STOPPED)
                 NowPlayingManager().location = "navigation"
                 m.UpdateNowPlaying()
@@ -242,9 +242,9 @@ function vpHandleMessage(msg) as boolean
                 m.UpdateNowPlaying(true)
             end if
         else if msg.isRequestFailed() then
-            Debug("vsHandleMessage::isRequestFailed - message = " + tostr(msg.GetMessage()))
-            Debug("vsHandleMessage::isRequestFailed - data = " + tostr(msg.GetData()))
-            Debug("vsHandleMessage::isRequestFailed - index = " + tostr(msg.GetIndex()))
+            Warn("vsHandleMessage::isRequestFailed - message = " + tostr(msg.GetMessage()))
+            Warn("vsHandleMessage::isRequestFailed - data = " + tostr(msg.GetData()))
+            Warn("vsHandleMessage::isRequestFailed - index = " + tostr(msg.GetIndex()))
             m.playbackError = true
         else if msg.isPaused() then
             Debug("vsHandleMessage::isPaused: position -> " + tostr(m.lastPosition))
@@ -257,14 +257,14 @@ function vpHandleMessage(msg) as boolean
             m.Trigger("resumed", [m, item])
             m.UpdateNowPlaying()
         else if msg.isPartialResult() then
-            Debug("vsHandleMessage::isPartialResult: position -> " + tostr(m.lastPosition))
+            Warn("vsHandleMessage::isPartialResult: position -> " + tostr(m.lastPosition))
             m.SendTranscoderCommand("stop")
         else if msg.isFullResult() then
-            Debug("vsHandleMessage::isFullResult: position -> " + tostr(m.lastPosition))
+            Info("vsHandleMessage::isFullResult: position -> " + tostr(m.lastPosition))
             m.isPlayed = true
             m.SendTranscoderCommand("stop")
         else if msg.isStreamStarted() then
-            Debug("vsHandleMessage::isStreamStarted: position -> " + tostr(m.lastPosition))
+            Info("vsHandleMessage::isStreamStarted: position -> " + tostr(m.lastPosition))
             Debug("Message data -> " + tostr(msg.GetInfo()))
 
             m.RequestTranscodeSessionInfo()
@@ -295,7 +295,7 @@ function vpHandleMessage(msg) as boolean
             ' anything with it. It includes info like the stream bandwidth,
             ' sequence, URL, and start time.
         else
-            Debug("Unknown event: " + tostr(msg.GetType()) + " msg: " + tostr(msg.GetMessage()))
+            Warn("Unknown event: " + tostr(msg.GetType()) + " msg: " + tostr(msg.GetMessage()))
         end if
     end if
 
@@ -387,7 +387,7 @@ function vpCreateContentMetadata(item as object, forceTranscode=false as boolean
     if forceTranscode then
         directPlay = false
         if allowDirectStream = false and allowTranscode = false then
-            Debug("Forced transcode requested: allowDirectStream and allowTranscode not enabled")
+            Warn("Forced transcode requested: allowDirectStream and allowTranscode not enabled")
             obj.playbackSupported = false
             return obj
         end if

@@ -81,7 +81,7 @@ sub hubPerformLayout()
     xOffset = m.x + contentArea.x
     yOffset = m.y + contentArea.y
 
-    Debug("Laying out hub at (" + tostr(xOffset) + "," + tostr(yOffset) + "), available height is " + tostr(availableHeight))
+    Verbose("Laying out hub at (" + tostr(xOffset) + "," + tostr(yOffset) + "), available height is " + tostr(availableHeight))
 
     ' Generally speaking, we end up laying out some number of rows and columns.
     ' So if we need to layout a hero first, go ahead and do that now. Then we
@@ -127,7 +127,7 @@ sub hubPerformLayout()
         component.SetOrientation(m.orientation)
 
         xOffset = xOffset + heroWidth + m.spacing
-        Debug("Hero width was " + tostr(heroWidth) + ", xOffset is now " + tostr(xOffset))
+        Verbose("Hero width was " + tostr(heroWidth) + ", xOffset is now " + tostr(xOffset))
 
         if m.layout = m.LAYOUT_HERO_2 then
             rows = 1
@@ -151,7 +151,7 @@ sub hubPerformLayout()
         itemWidth = m.GetWidthForOrientation(m.orientation, itemHeight)
         itemYOffset = yOffset
 
-        Debug("Each grid item will be " + tostr(itemWidth) + "x" + tostr(itemHeight))
+        Verbose("Each grid item will be " + tostr(itemWidth) + "x" + tostr(itemHeight))
         for count = 0 to 1
             component = m.components.Next()
             component.fixed = false
@@ -171,8 +171,8 @@ sub hubPerformLayout()
         heroHeight = availableHeight - itemHeight - m.spacing
         heroWidth = itemWidth * 2 + m.spacing
 
-        Debug("Hero item will be " + tostr(heroWidth) + "x" + tostr(heroHeight))
-        Debug("Each grid item will be " + tostr(itemWidth) + "x" + tostr(itemHeight))
+        Verbose("Hero item will be " + tostr(heroWidth) + "x" + tostr(heroHeight))
+        Verbose("Each grid item will be " + tostr(itemWidth) + "x" + tostr(itemHeight))
 
         component = m.components.Next()
         component.fixed = false
@@ -216,7 +216,7 @@ sub hubPerformLayout()
         itemHeight = int((availableHeight - (m.spacing * (rows - 1))) / rows)
         itemWidth = m.GetWidthForOrientation(m.orientation, itemHeight)
 
-        Debug("Each grid item will be " + tostr(itemWidth) + "x" + tostr(itemHeight))
+        Verbose("Each grid item will be " + tostr(itemWidth) + "x" + tostr(itemHeight))
 
         xOffsets = CreateObject("roArray", cols, false)
         xOffsets[0] = xOffset

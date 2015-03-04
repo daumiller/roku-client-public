@@ -81,7 +81,7 @@ sub compositorDrawComponent(component as object, screen=invalid as dynamic)
         else
             zOrder = -1
         end if
-        Debug("******** Drawing " + tostr(comp) + " zOrder:" + tostr(zOrder))
+        Verbose("Drawing " + tostr(comp) + " zOrder:" + tostr(zOrder))
         comp.sprite = m.compositor.NewSprite(comp.x, comp.y, comp.region, zOrder)
         comp.On("redraw", createCallable("OnComponentRedraw", m, "compositorRedraw"))
         if screen <> invalid and comp.IsAnimated = true then
@@ -173,7 +173,7 @@ sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
     end if
 
     if reuseFocus then
-        Debug("Reusing existing focus sprite")
+        Verbose("Reusing existing focus sprite")
         m.focusSprite.MoveTo(focus.x, focus.y)
         m.focusSprite.SetZ(focus.zOrder)
     else

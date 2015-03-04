@@ -123,7 +123,7 @@ function apHandleMessage(msg as object) as boolean
 
             ' Send an analytics event for anything but theme music
             amountPlayed = m.GetPlaybackPosition()
-            Debug("Sending analytics event, appear to have listened to audio for " + tostr(amountPlayed) + " seconds")
+            Info("Sending analytics event, appear to have listened to audio for " + tostr(amountPlayed) + " seconds")
             Analytics().TrackEvent("Playback", item.Get("type", "track"), tostr(item.GetIdentifier()), amountPlayed)
 
             if m.repeat <> m.REPEAT_ONE then
@@ -134,7 +134,7 @@ function apHandleMessage(msg as object) as boolean
             m.ignoreTimelines = false
             m.curIndex = m.AdvanceIndex()
         else if msg.isListItemSelected() then
-            Debug("Audio: Starting to play track: " + tostr(metadata.Url))
+            Info("Audio: Starting to play track: " + tostr(metadata.Url))
             forceTimeline = true
             m.ignoreTimelines = false
             m.SetPlayState(m.STATE_PLAYING)
@@ -171,7 +171,7 @@ function apHandleMessage(msg as object) as boolean
             m.Stop()
             ' TODO(schuyler): Do we ever need to show an error?
         else if msg.isPartialResult() then
-            Debug("Audio: isPartialResult")
+            Warn("Audio: isPartialResult")
             ' TODO(schuyler): Do we need to do anything here?
         end if
 

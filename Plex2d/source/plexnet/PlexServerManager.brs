@@ -238,14 +238,14 @@ sub psmCheckSelectedServerSearch()
         next
 
         if waitingForPreferred then
-            Debug("Still waiting for preferred server")
+            Info("Still waiting for preferred server")
         else if waitingForOwned and (m.searchContext.bestServer = invalid or m.searchContext.bestServer.owned <> true) then
-            Debug("Still waiting for an owned server")
+            Info("Still waiting for an owned server")
         else if waitingForAnything and m.searchContext.bestServer = invalid then
-            Debug("Still waiting for any server")
+            Info("Still waiting for any server")
         else
             ' No hope for anything better, let's select what we found
-            Debug("Settling for the best server we found")
+            Info("Settling for the best server we found")
             m.SetSelectedServer(m.searchContext.bestServer, true)
         end if
     end if
@@ -286,7 +286,7 @@ sub psmLoadState()
         m.serversByUuid[server.uuid] = server
     next
 
-    Debug("Loaded " + tostr(obj.servers.Count()) + " servers from registry")
+    Info("Loaded " + tostr(obj.servers.Count()) + " servers from registry")
     m.UpdateReachability(false)
 end sub
 
@@ -348,7 +348,7 @@ sub psmStartSelectedServerSearch(reset=false as boolean)
         waitingForResources: MyPlexAccount().isSignedIn
     }
 
-    Debug("Starting selected server search, hoping for " + tostr(m.searchContext.preferredServer))
+    Info("Starting selected server search, hoping for " + tostr(m.searchContext.preferredServer))
 end sub
 
 sub psmOnAccountChange(account as dynamic, reallyChanged as boolean)

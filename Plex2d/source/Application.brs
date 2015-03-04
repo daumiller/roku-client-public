@@ -520,7 +520,7 @@ sub appProcessUrlEvent(msg as object)
     id = msg.GetSourceIdentity().tostr()
     requestContext = m.pendingRequests[id]
     if requestContext <> invalid then
-        Debug("Got a " + tostr(msg.GetResponseCode()) + " from " + requestContext.request.url)
+        Info("Got a " + tostr(msg.GetResponseCode()) + " from " + requestContext.request.url)
         m.pendingRequests.Delete(id)
 
         ' Clear our timeout timer

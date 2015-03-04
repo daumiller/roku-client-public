@@ -58,8 +58,8 @@ function ComponentClass() as object
         obj.GetWidthForOrientation = compGetWidthForOrientation
 
         ' no-op methods
-        obj.OnBlur = function(arg=invalid) : Debug("OnBlur:no-op") : end function
-        obj.OnFocus = function() : Debug("OnFocus:no-op") : end function
+        obj.OnBlur = function(arg=invalid) : Verbose("OnBlur:no-op") : end function
+        obj.OnFocus = function() : Verbose("OnFocus:no-op") : end function
 
         ' shifting methods
         obj.ShiftPosition = compShiftPosition
@@ -341,7 +341,7 @@ sub compUnload(nest=0 as integer)
     ' being fixed or not. This must of been a (incorrect) workaround to some issue.
     if m.fixed = true and nest=0 then return
 
-    Debug(string(nest," ") + "-- unload component " + tostr(m))
+    Verbose(string(nest," ") + "-- unload component " + tostr(m))
 
     ' Clean any objects in memory (bitmaps, regions and sprites)
     m.region = invalid

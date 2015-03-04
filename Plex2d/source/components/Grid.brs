@@ -50,7 +50,7 @@ sub gridPerformLayout()
     xOffset = m.x + contentArea.x
     yOffset = m.y + contentArea.y
 
-    Debug("Laying out grid at (" + tostr(xOffset) + "," + tostr(yOffset) + "), available height is " + tostr(availableHeight))
+    Verbose("Laying out grid at (" + tostr(xOffset) + "," + tostr(yOffset) + "), available height is " + tostr(availableHeight))
 
     m.components.Reset()
     rows = m.rows
@@ -67,7 +67,7 @@ sub gridPerformLayout()
     itemHeight = int((availableHeight - (m.spacing * (rows - 1))) / rows)
     itemWidth = m.GetWidthForOrientation(m.orientation, itemHeight)
 
-    Debug("Each grid item will be " + tostr(itemWidth) + "x" + tostr(itemHeight))
+    Verbose("Each grid item will be " + tostr(itemWidth) + "x" + tostr(itemHeight))
 
     xOffsets = CreateObject("roArray", cols, false)
     xOffsets[0] = xOffset
