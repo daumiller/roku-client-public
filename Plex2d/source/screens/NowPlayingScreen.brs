@@ -388,6 +388,7 @@ sub nowplayingSetTitle(text as string, component as object)
 end sub
 
 sub nowplayingSetImage(item as object, component as object)
+    if item.Get("key") = m.item.Get("key") then return
     component.Replace(item)
 end sub
 
@@ -418,6 +419,7 @@ sub nowplayingOnPlay(player as object, item as object)
     m.SetTitle(Glyphs().PAUSE, m.playButton)
     m.UpdateTracks(item)
 
+    m.item = item
     m.Refresh()
 
     ' Clear any unused cache
