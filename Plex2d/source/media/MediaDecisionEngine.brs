@@ -311,6 +311,9 @@ function mdeCanUseSoftSubs(stream as object) as boolean
     ' from Windows-1252. This should be the full set of languages that are
     ' completely representable in Windows-1252. PMS should specifically be
     ' returning ISO 639-2/B language codes.
+    ' Update: Roku has added support for additional characters, but still only
+    ' Latin characters. We can now basically support anything from the various
+    ' ISO-8859 character sets, but nothing non-Latin.
 
     if m.SoftSubLanguages = invalid then
         m.SoftSubLanguages = {
@@ -319,30 +322,47 @@ function mdeCanUseSoftSubs(stream as object) as boolean
             baq: 1,
             bre: 1,
             cat: 1,
+            cze: 1,
             dan: 1,
+            dut: 1,
             eng: 1,
-            fao: 1,
-            glg: 1,
-            ger: 1,
-            ice: 1,
-            may: 1,
-            gle: 1,
-            ita: 1,
-            lat: 1,
-            ltz: 1,
-            nor: 1,
-            oci: 1,
-            por: 1,
-            roh: 1,
-            gla: 1,
-            spa: 1,
-            swa: 1,
-            swe: 1,
-            wln: 1,
+            epo: 1,
             est: 1,
+            fao: 1,
             fin: 1,
             fre: 1,
-            dut: 1
+            ger: 1,
+            gla: 1,
+            gle: 1,
+            glg: 1,
+            hrv: 1,
+            hun: 1,
+            ice: 1,
+            ita: 1,
+            lat: 1,
+            lav: 1,
+            lit: 1,
+            ltz: 1,
+            may: 1,
+            mlt: 1,
+            nno: 1,
+            nob: 1,
+            nor: 1,
+            oci: 1,
+            pol: 1,
+            por: 1,
+            roh: 1,
+            rum: 1,
+            slo: 1,
+            slv: 1,
+            spa: 1,
+            srd: 1,
+            swa: 1,
+            swe: 1,
+            tur: 1,
+            vie: 1,
+            wel: 1,
+            wln: 1,
         }
     end if
 
