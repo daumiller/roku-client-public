@@ -925,6 +925,13 @@ end sub
 
 sub preplaySetRefreshCache(key as string, component as object)
     if m[key] = invalid then return
-    m[key].region = m.refreshCache[key]
+
+    ' Set the intial region for the new component to the cache region.
+    cache = m.refreshCache[key]
+    if type(cache) = "roRegion" and cache.GetWidth() = component.GetPreferredWidth() and cache.GetHeight() = component.GetPreferredHeight() then
+        m[key].region = cache
+    end if
+
+    ' Invalidate the cache and retain the key to cache the response.
     m.refreshCache[key] = invalid
 end sub
