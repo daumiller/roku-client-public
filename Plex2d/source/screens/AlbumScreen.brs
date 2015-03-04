@@ -8,6 +8,8 @@ function AlbumScreen() as object
         ' Methods
         obj.Init = albumInit
         obj.Show = albumShow
+        obj.ResetInit = albumResetInit
+        obj.Refresh = albumRefresh
         obj.OnChildResponse = albumOnChildResponse
         obj.GetComponents = albumGetComponents
         obj.HandleCommand = albumHandleCommand
@@ -25,8 +27,6 @@ function AlbumScreen() as object
 
         ' Remote button methods
         obj.OnPlayButton = albumOnPlayButton
-        obj.OnFwdButton = albumOnFwdButton
-        obj.OnRevButton = albumOnRevButton
 
         m.AlbumScreen = obj
     end if
@@ -55,23 +55,7 @@ sub albumInit()
         trackStatus: FontRegistry().GetIconFont(16)
     }
 
-    ' path override (optional)
-    if m.path <> invalid then
-        m.childrenPath = m.path + "/children"
-    else
-        m.path = m.requestItem.GetItemPath()
-        m.childrenPath = m.requestItem.GetAbsolutePath("key")
-    end if
-
-    m.childrenPath = m.childrenPath + "?excludeAllLeaves=1"
-    m.parentPath = m.path + "?includeRelated=1&includeRelatedCount=0&includeExtras=1"
-
-    m.server = m.requestItem.GetServer()
-
-    m.requestContext = invalid
-    m.childRequestContext = invalid
-    m.children = CreateObject("roList")
-    m.summaryVisible = false
+    m.ResetInit(m.path)
 
     ' Set up audio player listeners
     m.DisableListeners()
@@ -82,27 +66,52 @@ sub albumInit()
     m.AddListener(m.player, "resumed", CreateCallable("OnResume", m))
 end sub
 
+sub albumResetInit(path=invalid as dynamic)
+    m.server = m.requestItem.GetServer()
+
+    ' path override (optional)
+    if path <> invalid then
+        m.path = path
+        m.childrenPath = m.path + "/children"
+    else
+        m.path = m.requestItem.GetItemPath()
+        m.childrenPath = m.requestItem.GetAbsolutePath("key")
+    end if
+
+    m.childrenPath = m.childrenPath + "?excludeAllLeaves=1"
+    m.parentPath = m.path + "?includeRelated=1&includeRelatedCount=0&includeExtras=1"
+
+    m.requestContext = invalid
+    m.childRequestContext = invalid
+    m.children = CreateObject("roList")
+    m.summaryVisible = false
+end sub
+
 sub albumShow()
     if not Application().IsActiveScreen(m) then return
 
+    requests = CreateObject("roList")
     if m.requestContext = invalid then
         request = createPlexRequest(m.server, m.parentPath)
-        context = request.CreateRequestContext("preplay_item", createCallable("OnResponse", m))
-        Application().StartRequest(request, context)
-        m.requestContext = context
+        m.requestContext = request.CreateRequestContext("preplay_item", createCallable("OnResponse", m))
+        requests.Push({request: request, context: m.requestContext})
     end if
 
     if m.childRequestContext = invalid then
         request = createPlexRequest(m.server, m.childrenPath)
-        context = request.CreateRequestContext("preplay_item", createCallable("OnChildResponse", m))
-        Application().StartRequest(request, context)
-        m.childRequestContext = context
+        m.childRequestContext = request.CreateRequestContext("preplay_item", createCallable("OnChildResponse", m))
+        requests.Push({request: request, context: m.childRequestContext})
     end if
+
+    for each request in requests
+        Application().StartRequest(request.request, request.context)
+    end for
 
     if m.requestContext.response <> invalid and m.childRequestContext.response <> invalid then
         if m.item <> invalid then
             ApplyFunc(ComponentsScreen().Show, m)
             m.ToggleSummary()
+            m.LoadContext()
         else
             dialog = createDialog("Unable to load", "Sorry, we couldn't load the requested item.", m)
             dialog.AddButton("OK", "close_screen")
@@ -122,13 +131,13 @@ sub albumGetComponents()
     end if
 
     ' *** Background Artwork *** '
-    background = createImage(m.item, 1280, 720, { blur: 20, opacity: 70, background: Colors().ToHexString("Black") })
-    background.zOrderInit = 0
-    background.thumbAttr = ["art", "parentThumb", "thumb"]
-    background.SetOrientation(background.ORIENTATION_LANDSCAPE)
-    background.cache = true
-    background.fade = true
-    m.components.Push(background)
+    m.background = createImage(m.item, 1280, 720, { blur: 20, opacity: 70, background: Colors().ToHexString("Black") })
+    m.background.thumbAttr = ["art", "parentThumb", "thumb"]
+    m.background.SetOrientation(m.background.ORIENTATION_LANDSCAPE)
+    m.background.cache = true
+    m.background.fade = true
+    m.components.Push(m.background)
+    m.SetRefreshCache("background", m.background)
 
     ' *** HEADER *** '
     header = createHeader(m)
@@ -164,12 +173,13 @@ sub albumGetComponents()
     m.components.push(albumTitle)
 
     ' *** Album image ***
-    album = createImage(m.item, parentWidth, parentHeight)
-    album.fade = true
-    album.cache = true
-    album.SetOrientation(album.ORIENTATION_SQUARE)
-    album.SetFrame(xOffset, yOffset, parentWidth, parentHeight)
-    m.components.push(album)
+    m.album = createImage(m.item, parentWidth, parentHeight)
+    m.album.fade = true
+    m.album.cache = true
+    m.album.SetOrientation(m.album.ORIENTATION_SQUARE)
+    m.album.SetFrame(xOffset, yOffset, parentWidth, parentHeight)
+    m.components.push(m.album)
+    m.SetRefreshCache("album", m.album)
 
     ' xOffset share with Summary and Track list
     xOffset = xOffset + parentSpacing + parentWidth
@@ -280,7 +290,7 @@ sub albumOnChildResponse(request as object, response as object, context as objec
 
     ' duration calculation until PMS supplies it.
     m.duration = 0
-
+    m.children.Clear()
     if context.items.count() > 0 then
         for each item in context.items
             m.duration = m.duration + item.GetInt("duration")
@@ -458,14 +468,6 @@ sub albumOnPlayButton(item=invalid as dynamic)
     end if
 end sub
 
-sub albumOnFwdButton(item=invalid as dynamic)
-    m.player.OnFwdButton()
-end sub
-
-sub albumOnRevButton(item=invalid as dynamic)
-    m.player.OnRevButton()
-end sub
-
 sub albumToggleSummary()
     Debug("toggle summary: summaryVisible=" + tostr(m.summaryVisible))
 
@@ -486,4 +488,9 @@ sub albumToggleSummary()
     m.lastFocusedItem = invalid
 
     m.screen.DrawAll()
+end sub
+
+sub albumRefresh(request=invalid as dynamic, response=invalid as dynamic, context=invalid as dynamic)
+    m.ResetInit()
+    ApplyFunc(PreplayScreen().Refresh, m)
 end sub

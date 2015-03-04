@@ -61,6 +61,7 @@ function PlexObjectClass() as object
 
         obj.GetAbsolutePath = pnoGetAbsolutePath
         obj.GetItemPath = pnoGetItemPath
+        obj.GetAllItemsPath = pnoGetAllItemsPath
         obj.GetServer = pnoGetServer
         obj.GetPosterTranscodeURL = pnoGetPosterTranscodeURL
         obj.GetImageTranscodeURL = pnoGetImageTranscodeURL
@@ -542,6 +543,22 @@ function pnoGetItemPath(checkFiles=false as boolean) as string
             key = key + iif(hasParams, "&", "?") + "includeRelated=1&includeRelatedCount=0"
             key = key + "&includeExtras=1"
         end if
+    end if
+
+    return key
+end function
+
+function pnoGetAllItemsPath() as dynamic
+    if m.type = "episode" then
+        key = m.GetFirst(["grandparentKey", "parentKey"])
+        if key <> invalid then key = key + "/allLeaves"
+    else
+        key = invalid
+    end if
+
+    ' fall back to container key for context
+    if key = invalid and m.container <> invalid and m.container.Has("key") then
+        key = m.container.getAbsolutePath(m.container.Get("key"))
     end if
 
     return key

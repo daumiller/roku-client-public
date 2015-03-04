@@ -13,9 +13,13 @@ function PreplayScreen() as object
         obj.Init = preplayInit
         obj.OnResponse = preplayOnResponse
         obj.OnDetailsResponse = preplayOnDetailsResponse
+        obj.LoadContext = preplayLoadContext
+        obj.OnContextResponse = preplayOnContextResponse
         obj.HandleCommand = preplayHandleCommand
         obj.GetComponents = preplayGetComponents
         obj.OnPlayButton = preplayOnPlayButton
+        obj.OnFwdButton = preplayOnFwdButton
+        obj.OnRevButton = preplayOnRevButton
         obj.OnDelete = preplayOnDelete
 
         obj.GetButtons = preplayGetButtons
@@ -23,6 +27,7 @@ function PreplayScreen() as object
         obj.GetSideInfo = preplayGetSideInfo
         obj.GetMainInfo = preplayGetMainInfo
         obj.UpdatePrefOptions = preplayUpdatePrefOptions
+        obj.SetRefreshCache = preplaySetRefreshCache
 
         obj.OnSettingsClosed = preplayOnSettingsClosed
 
@@ -47,6 +52,7 @@ sub preplayInit()
     m.customFonts.glyphs = FontRegistry().GetIconFont(32)
 
     m.requestContext = invalid
+    m.refreshCache = CreateObject("roAssociativeArray")
 end sub
 
 function createPreplayScreen(item as object) as object
@@ -71,10 +77,12 @@ sub preplayShow()
         m.requestContext = context
     else if m.item <> invalid then
         ApplyFunc(ComponentsScreen().Show, m)
+
         ' re-request the item to verify it's accessible
         request = createPlexRequest(m.server, m.requestItem.GetItemPath(true))
         context = request.CreateRequestContext("preplay_item", createCallable("OnDetailsResponse", m))
         Application().StartRequest(request, context)
+        m.LoadContext()
     else
         dialog = createDialog("Unable to load", "Sorry, we couldn't load the requested item.", m)
         dialog.AddButton("OK", "close_screen")
@@ -89,18 +97,34 @@ sub preplayOnResponse(request as object, response as object, context as object)
     context.items = response.items
     if context.items = invalid then return
 
-    if context.items.count() = 1 then
+    ' Will we ever receive more than one item here? If we do, we'll end up using this
+    ' context for << >> buttons
+    if context.items.Count() = 1 then
         m.item = context.items[0]
     else
-        ' TODO(rob) we probably need to clean this up. A preplay screen should
-        ' only be for one item. We will probably deal with this when we have
-        ' implemented << >> to switch preplays with context.
         m.curIndex = 0
         m.items = context.items
-        m.item = m.items[0]
+        m.item = m.items[m.curIndex]
     end if
 
     m.Show()
+end sub
+
+sub preplayOnContextResponse(request as object, response as object, context as object)
+    response.ParseResponse()
+    if response.items = invalid then return
+
+    ' Only include library items and set curIndex
+    m.items = createObject("roList")
+    for index = 0 to response.items.Count() - 1
+        item = response.items[index]
+        if item <> invalid and item.IsLibraryItem() then
+            if m.curIndex = invalid and item.Get("ratingKey") = m.item.Get("ratingKey") then
+                m.curIndex = index
+            end if
+            m.items.Push(item)
+        end if
+    end for
 end sub
 
 sub preplayOnDetailsResponse(request as object, response as object, context as object)
@@ -204,11 +228,12 @@ sub preplayGetComponents()
 
     ' *** Background Artwork *** '
     if m.item.Get("art") <> invalid then
-        background = createImage(m.item, 1280, 720, { blur: 20, opacity: 70, background: Colors().ToHexString("Black") })
-        background.SetOrientation(background.ORIENTATION_LANDSCAPE)
-        background.cache = true
-        background.fade = true
-        m.components.Push(background)
+        m.background = createImage(m.item, 1280, 720, { blur: 20, opacity: 70, background: Colors().ToHexString("Black") })
+        m.background.SetOrientation(m.background.ORIENTATION_LANDSCAPE)
+        m.background.cache = true
+        m.background.fade = true
+        m.components.Push(m.background)
+        m.SetRefreshCache("background", m.background)
     end if
 
     background = createBlock(Colors().OverlayMed)
@@ -413,19 +438,21 @@ function preplayGetImages() as object
         posterSize = { width: 295, height: 434 }
     end if
 
-    posterThumb = createImage(m.item, posterSize.width, posterSize.height)
-    posterThumb.thumbAttr = posterAttr
-    posterThumb.fade = true
-    posterThumb.cache = true
-    components.push(posterThumb)
+    m.posterThumb = createImage(m.item, posterSize.width, posterSize.height)
+    m.posterThumb.thumbAttr = posterAttr
+    m.posterThumb.fade = true
+    m.posterThumb.cache = true
+    components.push(m.posterThumb)
+    m.SetRefreshCache("posterThumb", m.posterThumb)
 
     if mediaSize <> invalid then
         ' We need to force this one to use the thumb attr
-        mediaThumb = createImage(m.item, mediaSize.width, mediaSize.height)
-        mediaThumb.thumbAttr = "thumb"
-        mediaThumb.fade = true
-        mediaThumb.cache = true
-        components.push(mediaThumb)
+        m.mediaThumb = createImage(m.item, mediaSize.width, mediaSize.height)
+        m.mediaThumb.thumbAttr = "thumb"
+        m.mediaThumb.fade = true
+        m.mediaThumb.cache = true
+        components.push(m.mediaThumb)
+        m.SetRefreshCache("mediaThumb", m.mediaThumb)
     end if
 
     return components
@@ -709,6 +736,15 @@ function preplayGetPrefs() as object
 end function
 
 sub preplayRefresh(request=invalid as dynamic, response=invalid as dynamic, context=invalid as dynamic)
+    for each toCache in m.refreshCache
+        if m[toCache] <> invalid then
+            m.refreshCache[toCache] = m[toCache].region
+        end if
+    end for
+
+    TextureManager().RemoveTextureByScreenId(m.screenID)
+    m.CancelRequests()
+
     ' clear a few items to fully refresh the screen (without destorying the screen)
     m.requestContext = invalid
     m.item = invalid
@@ -849,4 +885,46 @@ sub preplayUpdatePrefOptions(settings as object, prefKey as string, prefValue=in
         end for
 
     end if
+end sub
+
+sub preplayLoadContext()
+    ' Load context for the preplay (<< >> buttons)
+    path = m.requestItem.GetAllItemsPath()
+    if m.items = invalid and path <> invalid then
+        request = createPlexRequest(m.server, m.requestItem.GetAllItemsPath())
+        context = request.CreateRequestContext("preplay_context", createCallable("OnContextResponse", m))
+        Application().StartRequest(request, context)
+    end if
+end sub
+
+sub preplayOnFwdButton(item=invalid as dynamic)
+    if m.curIndex = invalid or m.items = invalid then return
+    m.curIndex = m.curIndex + 1
+    if m.curIndex > m.items.Count()-1 then
+        m.curIndex = 0
+    end if
+    m.requestItem = m.items[m.curIndex]
+
+    if m.requestItem <> invalid then
+        m.Refresh()
+    end if
+end sub
+
+sub preplayOnRevButton(item=invalid as dynamic)
+    if m.curIndex = invalid or m.items = invalid then return
+    m.curIndex = m.curIndex - 1
+    if m.curIndex < 0 then
+        m.curIndex = m.items.Count() - 1
+    end if
+    m.requestItem = m.items[m.curIndex]
+
+    if m.requestItem <> invalid then
+        m.Refresh()
+    end if
+end sub
+
+sub preplaySetRefreshCache(key as string, component as object)
+    if m[key] = invalid then return
+    m[key].region = m.refreshCache[key]
+    m.refreshCache[key] = invalid
 end sub

@@ -69,8 +69,8 @@ function ComponentsScreen() as object
         obj.OnKeyPress = compOnKeyPress
         obj.OnKeyHeld = compOnKeyHeld
         obj.OnKeyRelease = compOnKeyRelease
-        obj.OnInfoButton = compOnInfoButton
         obj.OnPlayButton = compOnPlayButton
+        obj.CancelRequests = compCancelRequests
 
         ' Focus handling
         obj.OnFocus = compOnFocus
@@ -324,7 +324,13 @@ sub compOnKeyHeld(timer as object)
         ' After the first held event, shorten the timer's duration.
         timer.SetDuration(150, true)
 
-        m.OnKeyPress(m.lastKey, true)
+        ' verify we don't have a pending release waiting
+        msg = Application().port.PeekMessage()
+        if type(msg) = "roUniversalControlEvent" and msg.GetInt() >= 100 then
+            Debug("Ignored OnKeyHeld. Pending key release waiting in msg queue.")
+        else
+            m.OnKeyPress(m.lastKey, true)
+        end if
     else
         timer.active = false
     end if
@@ -1194,4 +1200,8 @@ end sub
 
 sub compOnKeyboardRelease(keyCode as integer, value as string)
     Debug("no-op keyboard release: keyCode=" + tostr(keyCode) + ", value=" + value)
+end sub
+
+sub compCancelRequests()
+    Application().CancelRequests(tostr(m.screenID))
 end sub
