@@ -27,11 +27,14 @@ function createPlexItem(container as object, xml as object) as object
 
     obj.mediaItems = CreateObject("roList")
 
-    for each elem in xml.GetChildElements()
-        if elem.GetName() = "Media" then
-            obj.mediaItems.Push(createPlexMedia(container, elem))
-        end if
-    next
+    children = xml.GetChildElements()
+    if children <> invalid then
+        for each elem in children
+            if elem.GetName() = "Media" then
+                obj.mediaItems.Push(createPlexMedia(container, elem))
+            end if
+        next
+    end if
 
     ' Normalize some old XML
     if obj.type = "track" then

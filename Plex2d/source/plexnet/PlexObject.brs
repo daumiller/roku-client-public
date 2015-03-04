@@ -103,23 +103,27 @@ sub pnoInit(container as object, xml as object)
                     m.tags[elem.GetName()] = CreateObject("roList")
                 end if
                 m.tags[elem.GetName()].Push(createPlexTag(elem))
-            else if elem.GetName() = "OnDeck" then
-                if m.onDeck = invalid then m.onDeck = CreateObject("roList")
-                for each node in elem.GetChildElements()
-                    m.onDeck.push(createPlexObjectFromElement(container, node))
-                end for
-            else if elem.GetName() = "Related" then
-                if m.relatedItems = invalid then m.relatedItems = CreateObject("roList")
-                for each node in elem.GetChildElements()
-                    m.relatedItems.push(createPlexObjectFromElement(container, node))
-                end for
-            else if elem.GetName() = "Extras" then
-                if m.extraItems = invalid then m.extraItems = CreateObject("roList")
-                for each node in elem.GetChildElements()
-                    m.extraItems.push(createPlexObjectFromElement(container, node))
-                end for
             end if
-        next
+        end for
+
+        if xml.OnDeck.GetChildElements() <> invalid then
+            if m.onDeck = invalid then m.onDeck = CreateObject("roList")
+            for each node in xml.OnDeck.GetChildElements()
+                m.onDeck.push(createPlexObjectFromElement(container, node))
+            end for
+        end if
+        if xml.Related.GetChildElements() <> invalid then
+            if m.relatedItems = invalid then m.relatedItems = CreateObject("roList")
+            for each node in xml.Related.GetChildElements()
+                m.relatedItems.push(createPlexObjectFromElement(container, node))
+            end for
+        end if
+        if xml.Extras.GetChildElements() <> invalid then
+            if m.extraItems = invalid then m.extraItems = CreateObject("roList")
+            for each node in xml.Extras.GetChildElements()
+                m.extraItems.push(createPlexObjectFromElement(container, node))
+            end for
+        end if
     end if
 
     ' Copy some attributes from the container to the object

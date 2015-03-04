@@ -43,10 +43,12 @@ function pnrParseResponse() as boolean
             m.container = createPlexContainer(m.server, m.address, xml)
 
             children = xml.GetChildElements()
-            for each node in children
-                item = createPlexObjectFromElement(m.container, node)
-                m.items.Push(item)
-            next
+            if children <> invalid then
+                for each node in children
+                    item = createPlexObjectFromElement(m.container, node)
+                    m.items.Push(item)
+                next
+            end if
 
             m.parsed = true
         end if

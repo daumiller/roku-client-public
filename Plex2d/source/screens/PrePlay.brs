@@ -546,29 +546,30 @@ function preplayGetButtons() as object
     end if
 
     ' more/pivots drop down
-    if m.item.relatedItems <> invalid and m.item.relatedItems.count() > 0 or m.item.Get("type", "") = "episode" then
-        button = {
-            type: "dropDown",
-            text: Glyphs().MORE,
-            position: "right",
-            options: createObject("roList")
-        }
+    button = {
+        type: "dropDown",
+        text: Glyphs().MORE,
+        position: "right",
+        options: createObject("roList")
+    }
 
-        ' manual pivots for an episode
-        if m.item.Get("type", "") = "episode" then
-            button.options.Push({command: "go_to_show", text: "Go to show"})
-            button.options.Push({command: "go_to_season", text: "Go to season " + m.item.Get("parentIndex", "")})
-        end if
+    if m.item.Get("type", "") = "episode" then
+        button.options.Push({command: "go_to_show", text: "Go to show"})
+        button.options.Push({command: "go_to_season", text: "Go to season " + m.item.Get("parentIndex", "")})
+    end if
 
+    if m.item.relatedItems <> invalid and m.item.relatedItems.Count() > 0 then
         for each item in m.item.relatedItems
             option = {
                 text: item.GetSingleLineTitle(),
                 command: "show_grid",
                 plexObject: item,
             }
-            button.options.push(option)
+            button.options.Push(option)
         end for
+    end if
 
+    if button.options.Count() > 0 then
         buttons.Push(button)
     end if
 
