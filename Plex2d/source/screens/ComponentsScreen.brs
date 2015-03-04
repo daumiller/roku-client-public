@@ -1023,7 +1023,7 @@ end sub
 ' by passing a list of components either on screen or off (which may not
 ' alway be true in the future)
 sub compLazyLoadExec(components as object, zOrder=1 as integer)
-    if NOT Application().IsActiveScreen(m) then return
+    if not Application().IsActiveScreen(m) then return
     if components.count() = 0 then return
     for each comp in components
         if comp.SpriteIsLoaded() = false then
@@ -1037,18 +1037,6 @@ sub compLazyLoadExec(components as object, zOrder=1 as integer)
         end if
     end for
     perfTimer().Log("lazy-load components")
-end sub
-
-sub compOnInfoButton()
-    item = m.focusedItem
-    print "---- item ----"
-    print item
-    print "---- item.plexObject ----"
-    print item.plexObject
-    print "---- item.metadata ----"
-    print item.metadata
-    print "---- item.command ----"
-    print item.command
 end sub
 
 function compCalculateFirstOrLast(components as object, shift as object, skipIgnore=false as boolean) as integer

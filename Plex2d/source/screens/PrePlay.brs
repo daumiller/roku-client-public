@@ -298,7 +298,7 @@ sub preplayGetComponents()
             hbMediaFlags.AddComponent(image)
         end if
     end for
-    m.components.push(hbMediaFlags)
+    m.components.Push(hbMediaFlags)
     xOffset = xOffset + spacing + m.components.peek().width
 
     ' *** Progress Bar *** '
@@ -322,7 +322,7 @@ sub preplayGetComponents()
     summary.SetPadding(10, 10, 10, 0)
     summary.SetFrame(xOffset, 364, 1230-xOffset, 239)
     summary.SetColor(Colors().Text, &h00000000, Colors().OverlayLht)
-    m.components.push(summary)
+    m.components.Push(summary)
 
     ' *** Right Side Info *** '
     vbox = createVBox(false, false, false, 0)
@@ -340,14 +340,14 @@ function preplayGetMainInfo() as object
     spacer = "   "
     normalFont = FontRegistry().NORMAL
     if m.item.Get("type", "") = "episode" then
-        components.push(createLabel(m.item.Get("grandparentTitle", ""), m.customFonts.large))
-        components.push(createLabel(m.item.Get("title", ""), m.customFonts.large))
+        components.Push(createLabel(m.item.Get("grandparentTitle", ""), m.customFonts.large))
+        components.Push(createLabel(m.item.Get("title", ""), m.customFonts.large))
 
         text = m.item.GetOriginallyAvailableAt()
         if m.item.Has("index") and m.item.Has("parentIndex") and not m.item.IsDateBased() then
             text = "Season " + tostr(m.item.Get("parentIndex")) + " Episode " + m.item.Get("index") + " / " + text
         end if
-        components.push(createLabel(text, normalFont))
+        components.Push(createLabel(text, normalFont))
 
         statusBox = createHBox(false, false, false, normalFont.GetOneLineWidth(" ", 20))
         statusBox.width = m.vbInfo.width
@@ -362,12 +362,12 @@ function preplayGetMainInfo() as object
         m.accessibleLabel = createLabel(" ", normalFont)
         m.accessibleLabel.zOrderInit = -1
         statusBox.AddComponent(m.accessibleLabel)
-        components.push(statusBox)
+        components.Push(statusBox)
 
-        components.push(createSpacer(0, normalFont.getOneLineHeight()))
+        components.Push(createSpacer(0, normalFont.getOneLineHeight()))
     else
-        components.push(createLabel(m.item.Get("title", ""), m.customFonts.large))
-        components.push(createLabel(ucase(m.item.GetLimitedTagValues("Genre", 3)), normalFont))
+        components.Push(createLabel(m.item.Get("title", ""), m.customFonts.large))
+        components.Push(createLabel(ucase(m.item.GetLimitedTagValues("Genre", 3)), normalFont))
 
         statusBox = createHBox(false, false, false, normalFont.GetOneLineWidth(" ", 20))
         statusBox.width = m.vbInfo.width
@@ -384,15 +384,15 @@ function preplayGetMainInfo() as object
         m.accessibleLabel = createLabel(" ", normalFont)
         m.accessibleLabel.zOrderInit = -1
         statusBox.AddComponent(m.accessibleLabel)
-        components.push(statusBox)
+        components.Push(statusBox)
 
-        components.push(createSpacer(0, normalFont.getOneLineHeight()))
+        components.Push(createSpacer(0, normalFont.getOneLineHeight()))
         if m.item.IsHomeVideo() then
-            components.push(createSpacer(0, normalFont.getOneLineHeight()))
-            components.push(createSpacer(0, normalFont.getOneLineHeight()))
+            components.Push(createSpacer(0, normalFont.getOneLineHeight()))
+            components.Push(createSpacer(0, normalFont.getOneLineHeight()))
         else
-            components.push(createLabel("DIRECTOR" + spacer + m.item.GetLimitedTagValues("Director", 5), normalFont))
-            components.push(createLabel("CAST" + spacer + m.item.GetLimitedTagValues("Role", 5), normalFont))
+            components.Push(createLabel("DIRECTOR" + spacer + m.item.GetLimitedTagValues("Director", 5), normalFont))
+            components.Push(createLabel("CAST" + spacer + m.item.GetLimitedTagValues("Role", 5), normalFont))
         end if
     end if
 
@@ -410,8 +410,8 @@ function preplayGetMainInfo() as object
     end if
     m.audioLabel = createLabel("AUDIO" + spacer + audioText, normalFont)
     m.subtitleLabel = createLabel("SUBTITLES" + spacer + subText, normalFont)
-    components.push(m.audioLabel)
-    components.push(m.subtitleLabel)
+    components.Push(m.audioLabel)
+    components.Push(m.subtitleLabel)
 
     return components
 end function
@@ -420,13 +420,13 @@ function preplayGetSideInfo() as object
     components = createObject("roList")
 
     if tostr(m.item.Get("type")) = "episode" then
-        components.push(createLabel(m.item.Get("year", ""), m.customFonts.large))
-        components.push(createLabel(m.item.GetDuration(), m.customFonts.large))
-        components.push(createStars(m.item.GetInt("rating"), 16))
+        components.Push(createLabel(m.item.Get("year", ""), m.customFonts.large))
+        components.Push(createLabel(m.item.GetDuration(), m.customFonts.large))
+        components.Push(createStars(m.item.GetInt("rating"), 16))
     else
-        components.push(createLabel(m.item.Get("year", ""), m.customFonts.large))
-        components.push(createStars(m.item.GetInt("rating"), 16))
-        components.push(createLabel(m.item.Get("contentRating", ""), FontRegistry().NORMAL))
+        components.Push(createLabel(m.item.Get("year", ""), m.customFonts.large))
+        components.Push(createStars(m.item.GetInt("rating"), 16))
+        components.Push(createLabel(m.item.Get("contentRating", ""), FontRegistry().NORMAL))
     end if
 
     for each comp in components
@@ -458,7 +458,7 @@ function preplayGetImages() as object
     m.posterThumb.thumbAttr = posterAttr
     m.posterThumb.fade = true
     m.posterThumb.cache = true
-    components.push(m.posterThumb)
+    components.Push(m.posterThumb)
     m.SetRefreshCache("posterThumb", m.posterThumb)
 
     if mediaSize <> invalid then
@@ -467,7 +467,7 @@ function preplayGetImages() as object
         m.mediaThumb.thumbAttr = "thumb"
         m.mediaThumb.fade = true
         m.mediaThumb.cache = true
-        components.push(m.mediaThumb)
+        components.Push(m.mediaThumb)
         m.SetRefreshCache("mediaThumb", m.mediaThumb)
     end if
 
@@ -480,9 +480,9 @@ function preplayGetButtons() as object
 
     showPlayButton = true
     if m.item.InProgress() then
-        buttons.push({text: Glyphs().RESUME, command: "resume", item: m.item})
+        buttons.Push({text: Glyphs().RESUME, command: "resume", item: m.item})
     else
-        buttons.push({text: Glyphs().PLAY, command: "play", item: m.item})
+        buttons.Push({text: Glyphs().PLAY, command: "play", item: m.item})
         showPlayButton = false
     end if
 
@@ -499,20 +499,20 @@ function preplayGetButtons() as object
             button.options.Push({text: "Play from beginning", command: "play"})
         end if
         button.options.Push({text: "Play without trailers", command: "playWithoutTrailers"})
-        buttons.push(button)
+        buttons.Push(button)
     else if showPlayButton then
-        buttons.push({text: Glyphs().PLAY, command: "play", item: m.item})
+        buttons.Push({text: Glyphs().PLAY, command: "play", item: m.item})
     end if
 
     ' Settings
     if m.item.IsVideoItem() and m.item.mediaItems <> invalid then
-        buttons.push({text: Glyphs().EQ, command: "settings", useIndicator: true})
+        buttons.Push({text: Glyphs().EQ, command: "settings", useIndicator: true})
     end if
 
     if m.item.IsUnwatched() then
-        buttons.push({text: Glyphs().SCROBBLE, command: "scrobble"})
+        buttons.Push({text: Glyphs().SCROBBLE, command: "scrobble"})
     else
-        buttons.push({text: Glyphs().UNSCROBBLE, command: "unscrobble"})
+        buttons.Push({text: Glyphs().UNSCROBBLE, command: "unscrobble"})
     end if
 
     ' Shared prefs for any dropdown
@@ -525,7 +525,7 @@ function preplayGetButtons() as object
     }
 
     ' extras drop down
-    if m.item.extraItems <> invalid and m.item.extraItems.count() > 0 then
+    if m.item.extraItems <> invalid and m.item.extraItems.Count() > 0 then
         button = {
             type: "dropDown",
             text: Glyphs().EXTRAS,
@@ -574,7 +574,7 @@ function preplayGetButtons() as object
     end if
 
     if m.server.allowsMediaDeletion then
-        buttons.push({text: Glyphs().DELETE, command: "delete"})
+        buttons.Push({text: Glyphs().DELETE, command: "delete"})
     end if
 
     for each button in buttons
@@ -584,7 +584,7 @@ function preplayGetButtons() as object
             for each option in button.options
                 option.Append(optionPrefs)
                 option.plexObject = firstOf(option.plexObject, button.item)
-                btn.options.push(option)
+                btn.options.Push(option)
             end for
         else
             btn = createButton(button.text, m.customFonts.glyphs, button.command, (button.useIndicator = true))
@@ -595,7 +595,7 @@ function preplayGetButtons() as object
         btn.height = buttonHeight
         btn.plexObject = button.item
         if m.focusedItem = invalid then m.focusedItem = btn
-        components.push(btn)
+        components.Push(btn)
     end for
 
     return components
