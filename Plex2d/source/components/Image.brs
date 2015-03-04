@@ -41,14 +41,19 @@ function imageDraw() as object
             m.region = TextureManager().GetCache(m.source, width, height)
         end if
 
+        ' Copy the existing region (if it exists) if we if we are fading in
+        if m.fade = true and m.region <> invalid then
+            bitmap = CreateObject("roBitmap", {width: m.region.GetWidth(), height: m.region.GetHeight(), alphaEnable: false})
+            bitmap.DrawObject(0, 0, m.region)
+            m.fadeRegion = CreateObject("roRegion", bitmap, 0, 0, bitmap.GetWidth(), bitmap.GetHeight())
+        end if
+
         if m.region = invalid then
             if m.placeholder <> invalid then
                 ' Draw the placeholder for now, but don't keep a reference to the bitmap.
                 m.FromLocal(m.placeholder)
             else
                 ' Just do the basic region initialization until we get a real bitmap.
-                ' Use a transparent region if we are going to fade in.
-                if m.fade = true then m.bgColor = Colors().Transparent
                 m.InitRegion()
             end if
         end if
@@ -259,13 +264,23 @@ sub imageSetBitmap(bmp=invalid as dynamic, makeCopy=false as boolean)
             m.lastFadeSource = m.source
             orig = createobject("roBitmap", {width: m.region.GetWidth(), height: m.region.GetHeight(), AlphaEnable: false})
             orig.DrawObject(0, 0, m.region)
-            m.region.DrawObject(0, 0, orig, -256)
-            incr = 20
-            for fade = -256 to 0 step incr
+            m.region.SetAlphaEnable(true)
+            if m.fadeRegion = invalid then
+                ' Clear the region if we have no source to fade into
+                m.region.Clear(Colors().Transparent)
+                incr = 20
+            else
+                incr = 15
+            end if
+            for fade = -256 to -1 step incr
+                if m.fadeRegion <> invalid then
+                    m.region.DrawObject(0, 0, m.fadeRegion)
+                end if
                 if abs(fade) < incr then fade = -1
                 m.region.DrawObject(0, 0, orig, fade)
                 m.Trigger("redraw", [m])
             end for
+            m.fadeRegion = invalid
         end if
     else
         m.Trigger("redraw", [m])

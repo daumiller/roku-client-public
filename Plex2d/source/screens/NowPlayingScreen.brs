@@ -118,6 +118,8 @@ sub nowplayingGetComponents()
     m.image = createImage(m.item, albumLarge, albumLarge)
     m.image.SetFrame(xOffset, yOffset, albumLarge, albumLarge)
     m.image.SetOrientation(m.image.ORIENTATION_SQUARE)
+    m.image.cache = true
+    m.image.fade = true
     m.components.push(imageBorder)
     m.components.push(m.image)
     m.nowplayingView.Push(imageBorder)
@@ -132,6 +134,8 @@ sub nowplayingGetComponents()
     m.queueImage.SetFrame(xOffset, yOffset, albumSmall, albumSmall)
     m.queueImage.SetOrientation(m.queueImage.ORIENTATION_SQUARE)
     m.queueImage.zOrderInit = -1
+    m.queueImage.cache = true
+    m.queueImage.fade = true
     m.components.push(queueImageBorder)
     m.components.push(m.queueImage)
     m.queueView.Push(queueImageBorder)
