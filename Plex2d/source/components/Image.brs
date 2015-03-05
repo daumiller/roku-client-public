@@ -37,7 +37,7 @@ function imageDraw() as object
 
         ' If a cache for the current source exists, lets use it for the initial region.
         if m.cache = true and IsString(m.source) and m.isReplacement <> true then
-            m.altCacheUrl = m.source
+            m.altSourceUrl = m.source
             m.region = TextureManager().GetCache(m.source, width, height)
         end if
 
@@ -113,7 +113,13 @@ function imageDraw() as object
                 ' scaleSize: m.scaleSize,
                 ' scaleMode: 1
             }
-            TextureManager().RequestTexture(m, context)
+            ' Use a cached image if applicable or send or create a request
+            imageCache = TextureManager().GetCache(m.source, width, height)
+            if imageCache <> invalid then
+                m.region = imageCache
+            else
+                TextureManager().RequestTexture(m, context)
+            end if
         else
             Debug("Ignore request for unmodified image replacement")
         end if
@@ -243,10 +249,9 @@ sub imageSetBitmap(bmp=invalid as dynamic, makeCopy=false as boolean)
     ' Let whoever cares layout the component again.
     m.Trigger("performParentLayout", [m])
 
-    ' Cache the region if applicable. Try and use the original url before we transcode as
-    ' we may use a different server to transcode, rendering the cached url useless.
+    ' Cache the region if applicable.
     if m.cache = true then
-        TextureManager().SetCache(m.region, m.source, m.altCacheUrl)
+        TextureManager().SetCache(m)
     end if
 
     ' Let whoever cares know that we should be redrawn.
@@ -339,8 +344,23 @@ sub imageReplace(item as object)
         Fatal("Replace only handles plex objects")
     end if
 
+    ' If this component is cached, then we must break ties with any existing cache, otherwise the
+    ' region will override any url/regions this component cached
+    if m.cache = true and m.region <> invalid then
+        bitmap = createobject("roBitmap", {width: m.region.GetWidth(), height: m.region.GetHeight(), AlphaEnable: false})
+        bitmap.DrawObject(0, 0, m.region)
+        m.region = invalid
+        m.region = CreateObject("roRegion", bitmap, 0, 0, bitmap.GetWidth(), bitmap.GetHeight())
+    end if
+
     m.isReplacement = true
     m.bitmap = invalid
     m.sourceOrig = item
     m.Draw()
+
+    ' We depend on a texture request to redraw, so we must redraw here if we didn't
+    ' request a new image, most likey because we had a cached region
+    if m.textureRequest = invalid and m.region <> invalid then
+        m.SetBitmap(m.region.GetBitmap())
+    end if
 end sub

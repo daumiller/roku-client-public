@@ -175,14 +175,13 @@ end sub
 ' Each texture object is sent to this function, which creates the texturerequest and sends it
 ' It also increments the sendcount
 sub tmRequestTexture(component as object, context as object)
+    ' Our logic expects to set the bitmap after a texture request. Odd things happen if we
+    ' try to set the bitmap and redraw inside of our component draw loop. This is a total
+    ' hack, but setting the invalid url to 127.0.0.1 will allow us to use the same logic
+    ' for setting empty/invalid bitmaps
     if context.url = invalid then
-        Warn("Ignoring texture request. URL is invalid.")
-        component.SetBitmap(invalid)
-        return
-    else if TextureManager().GetCache(context.url, context.width, context.height) <> invalid then
-        region = TextureManager().GetCache(context.url, context.width, context.height)
-        component.SetBitmap(region.GetBitmap())
-        return
+        if context.url = invalid then context.url = "http://127.0.0.1"
+        context.retriesRemaining = 0
     end if
 
     ' cancel any pending texture for this component
@@ -282,6 +281,7 @@ function tmReceiveTexture(tmsg as object, screen as object) as boolean
             m.TrackByScreen(tmsg.GetURI(), screen)
 
             context.component.pendingTexture = false
+            context.component.textureRequest = invalid
             context.component.SetBitmap(bitmap)
 
             return true
@@ -345,19 +345,22 @@ function tmReceiveTexture(tmsg as object, screen as object) as boolean
     return false
 end function
 
-sub tmSetCache(region as object, sourceUrl as dynamic, altUrl as dynamic)
-    ' Cache the url and alternate url (pretranscoded url)
-    if sourceUrl <> invalid then
-        m.cacheList[sourceUrl] = region
-        if altUrl <> invalid then
-            m.cacheList[altUrl] = region
-            m.cacheMapList[altUrl] = sourceUrl
-            m.cacheMapList[sourceUrl] = sourceUrl
-        end if
+sub tmSetCache(component as object) 'region as object, sourceUrl as dynamic, altUrl as dynamic)
+    if not IsString(component.source) or component.region = invalid then return
 
-        ' Clear any pending deleted for utilized cache
-        m.UseCache(sourceUrl)
+    ' Cache the url and alternate url (pretranscoded url)
+    sourceUrl = component.source
+    altSourceUrl = component.altSourceUrl
+    m.cacheList[sourceUrl] = component.region
+    if altSourceUrl <> invalid then
+        m.cacheList[altSourceUrl] = component.region
+        m.cacheMapList[altSourceUrl] = sourceUrl
+        m.cacheMapList[sourceUrl] = sourceUrl
+        component.altSourceUrl = invalid
     end if
+
+    ' Clear any pending deleted for utilized cache
+    m.UseCache(sourceUrl)
 end sub
 
 function tmGetCache(sourceUrl as dynamic, width as integer, height as integer) as dynamic
@@ -390,7 +393,7 @@ end sub
 sub tmClearCache(clearAll=false as boolean)
     if clearAll then
         m.cacheList.Clear()
-        m.cacheMap.Clear()
+        m.cacheMapList.Clear()
     else if m.cacheDelList.Count() > 0 then
         for each key in m.cacheDelList
             m.cacheList.Delete(key)
