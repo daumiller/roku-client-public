@@ -150,7 +150,10 @@ function headerGetOptions() as object
     end if
 
     m.options.push({text: "Settings", command: "settings", font: font, height: 66})
-    m.options.push({text: connect.text, command: connect.command, font: font, height: 66})
+
+    if connect <> invalid then
+        m.options.push({text: connect.text, command: connect.command, font: font, height: 66})
+    end if
 
     return m.options
 end function
