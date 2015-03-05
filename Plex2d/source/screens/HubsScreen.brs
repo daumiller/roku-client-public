@@ -12,6 +12,9 @@ function HubsScreen() as object
         obj.GetComponents = hubsGetComponents
         obj.HandleCommand = hubsHandleCommand
         obj.GetEmptyMessage = hubsGetEmptyMessage
+        obj.OnFwdButton = hubsOnFwdButton
+        obj.OnRevButton = hubsOnRevButton
+        obj.AdvanceContainerFocus = hubsAdvanceContainerFocus
 
         ' Hubs and Buttons
         obj.GetHubs = hubsGetHubs
@@ -31,6 +34,7 @@ sub hubsInit()
     ' Section and Hub containers
     m.hubsContainer = CreateObject("roAssociativeArray")
     m.buttonsContainer = CreateObject("roAssociativeArray")
+    m.focusContainers = CreateObject("roArray", 5, true)
 end sub
 
 function hubsOnResponse(request as object, response as object, context as object) as object
@@ -82,6 +86,7 @@ sub hubsGetComponents()
             if m.focusedItem = invalid then m.focusedItem = button
         end for
         hbox.AddComponent(vbox)
+        m.focusContainers.Push(vbox)
     end if
 
     ' ** HUBS ** '
@@ -92,6 +97,7 @@ sub hubsGetComponents()
             if index = 0 then hubs[index].first = true
             hubs[index].demandLeft = 300
             hbox.AddComponent(hubs[index])
+            m.focusContainers.Push(hubs[index])
         end for
     else
         ' Display a helpful messae if the hubs are empty.
@@ -228,3 +234,36 @@ function hubsGetEmptyMessage() as object
     obj.subtitle = "Please add content and/or check that " + chr(34) + "Include in dashboard" + chr(34) + " is enabled.".
     return obj
 end function
+
+sub hubsOnFwdButton(item=invalid as dynamic)
+    m.AdvanceContainerFocus(1)
+end sub
+
+sub hubsOnRevButton(item=invalid as dynamic)
+    m.AdvanceContainerFocus(-1)
+end sub
+
+sub hubsAdvanceContainerFocus(delta as integer)
+    if m.focusContainers.Count() = 0 then return
+
+    ' default to first/last container if no match
+    containerIndex = iif(delta < 0, 0, m.focusContainers.Count() - 1)
+    if m.focusedItem.parent <> invalid then
+        for index = 0 to m.focusContainers.Count() - 1
+            container = m.focusContainers[index]
+            if container.id = m.focusedItem.parent.id then
+                containerIndex = index + delta
+                exit for
+            end if
+        end for
+    end if
+    if m.focusContainers[containerIndex] = invalid then return
+
+    ' Set focus to the first focusable item in the container
+    for each comp in m.focusContainers[containerIndex].components
+        if comp.focusable = true then
+            m.FocusItemManually(comp)
+            exit for
+        end if
+    end for
+end sub
