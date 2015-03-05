@@ -102,6 +102,7 @@ sub trackInitComponents()
 
     if m.isMixed = true then
         m.trackImage = createImage(m.plexObject, m.height, m.height)
+        m.trackImage.SetOrientation(m.trackImage.ORIENTATION_SQUARE)
         m.trackImage.cache = true
         m.AddComponent(m.trackImage)
     end if
