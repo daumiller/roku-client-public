@@ -236,17 +236,11 @@ sub compShiftPosition(deltaX=0 as integer, deltaY=0 as integer, shiftSprite=true
     ' ignore shifting fixed components
     if m.fixed = true or (m.fixedVertical = true and m.fixedHorizontal = true) then return
 
-    ' ignore vertical shift / allow horizontal shift
-    if m.fixedVertical = true then
-        if deltaX = 0 then return
-        deltaY = 0
-    end if
+    ' ignore vertical shift
+    if m.fixedVertical = true then deltaY = 0
 
-    ' ignore horizontal shift / allow vertical shift
-    if m.fixedHorizontal = true then
-        if deltaY = 0 then return
-        deltaX = 0
-    end if
+    ' ignore horizontal shift
+    if m.fixedHorizontal = true then deltaX = 0
 
     ' set the components new coords
     m.x = m.x + deltaX
