@@ -407,7 +407,9 @@ function nowplayingSetProgress(time as integer, duration as integer) as boolean
 end function
 
 sub nowplayingOnPlay(player as object, item as object)
-    TextureManager().DeleteCache()
+    if m.overlayScreen.Count() = 0 then
+        TextureManager().DeleteCache()
+    end if
 
     m.SetImage(item, m.image)
     m.SetImage(item, m.queueImage)
@@ -423,7 +425,9 @@ sub nowplayingOnPlay(player as object, item as object)
     m.Refresh()
 
     ' Clear any unused cache
-    TextureManager().ClearCache()
+    if m.overlayScreen.Count() = 0 then
+        TextureManager().ClearCache()
+    end if
 end sub
 
 sub nowplayingOnStop(player as object, item as object)

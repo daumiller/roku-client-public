@@ -219,8 +219,12 @@ sub npqoOnChange(player as object, item as object)
 end sub
 
 sub npqoRefresh()
+    TextureManager().DeleteCache()
+
     m.DestroyComponents()
     m.Show()
+
+    TextureManager().ClearCache()
 end sub
 
 sub npqoOnFailedFocus(direction as string, focusedItem=invalid as dynamic)
