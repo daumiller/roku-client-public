@@ -324,13 +324,15 @@ sub compOnKeyHeld(timer as object)
         ' After the first held event, shorten the timer's duration.
         timer.SetDuration(150, true)
 
-        ' verify we don't have a pending release waiting
-        msg = Application().port.PeekMessage()
-        if type(msg) = "roUniversalControlEvent" and msg.GetInt() >= 100 then
-            Debug("Ignored OnKeyHeld. Pending key release waiting in msg queue.")
-        else
-            m.OnKeyPress(m.lastKey, true)
-        end if
+        ' TODO(rob): I still don't have a better solution for this, but the previous method
+        ' didn't work well while holding down the fwd/rev button scrolling a grid. There were
+        ' other pending events waiting in the queue before the key release event.
+        ' This may even fix some issue for the standard KeyPress events when a user quickly
+        ' presses the same directional button.
+        while Application().port.PeekMessage() <> invalid
+            timeout = Application().ProcessOneMessage(0, true)
+        end while
+        m.OnKeyPress(m.lastKey, true)
     else
         timer.active = false
     end if

@@ -216,7 +216,7 @@ sub appRun()
     Info("Finished global message loop")
 end sub
 
-function appProcessOneMessage(timeout)
+function appProcessOneMessage(timeout as integer, ignoreTimers=false as boolean)
     if AppSettings().GetGlobal("roDeviceInfo").TimeSinceLastKeyPress() > AppSettings().GetGlobal("idleLockTimeout") then
          m.CreateLockScreen()
     end if
@@ -257,6 +257,7 @@ function appProcessOneMessage(timeout)
     end if
 
     ' Check for any expired timers
+    if ignoreTimers then return timeout
     timeout = 0
     timersToRemove = CreateObject("roList")
     for each timerID in m.timers
