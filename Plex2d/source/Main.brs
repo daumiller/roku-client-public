@@ -3,6 +3,7 @@ sub main(args)
 
     settings = AppSettings()
 
+    settings.MigrateSettings()
     settings.ProcessLaunchArgs(args)
 
     Info("App version: " + settings.GetGlobal("appName") + " " + settings.GetGlobal("appVersionStr"))

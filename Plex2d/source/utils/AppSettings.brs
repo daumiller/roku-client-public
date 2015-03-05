@@ -23,6 +23,7 @@ function AppSettings()
         obj.ClearRegistry = settingsClearRegistry
 
         obj.ProcessLaunchArgs = settingsProcessLaunchArgs
+        obj.MigrateSettings = settingsMigrateSettings
         obj.GetGlobal = settingsGetGlobal
         obj.GetIntGlobal = settingsGetIntGlobal
         obj.InitGlobals = settingsInitGlobals
@@ -172,7 +173,7 @@ sub settingsInitPrefs()
         key: "cinema_trailers",
         title: "Cinema Trailers",
         default: "0",
-        section: "preferences",
+        section: "user",
         prefType: "enum",
         options: options
     }
@@ -379,6 +380,21 @@ sub settingsProcessLaunchArgs(args)
             m.DumpRegistry()
         end if
     next
+end sub
+
+sub settingsMigrateSettings()
+    ' We periodically change settings in a release that requires us to
+    ' tweak old values or move from some old setting to a new setting. This
+    ' method is always called at startup to provide a convenient place to
+    ' make those tweaks. Most things added here should be temporary, removed
+    ' in the subsequent release.
+
+    ' Migrate cinema trailers from a global preference to a per-user preference
+    value = m.GetRegistry("cinema_trailers", invalid, "preferences")
+    if value <> invalid then
+        m.SetPreference("cinema_trailers", value)
+        m.ClearRegistry("cinema_trailers", "preferences")
+    end if
 end sub
 
 sub settingsDumpRegistry()
