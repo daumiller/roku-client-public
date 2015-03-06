@@ -32,6 +32,7 @@ function AppSettings()
 
         obj.GetGlobalSettings = settingsGetGlobalSettings
         obj.SupportsSurroundSound = settingsSupportsSurroundSound
+        obj.SupportsAudioStream = settingsSupportsAudioStream
         obj.GetMaxResolution = settingsGetMaxResolution
         obj.GetWidth = settingsGetWidth
         obj.GetHeight = settingsGetHeight
@@ -95,22 +96,9 @@ sub settingsInitPrefs()
     ' to do things like just call GetPreference(name) without having to specify
     ' a default value or worry about scoping.
 
-    ' Surround sound. A boolean pref for each codec.
-    m.prefs["surround_sound_ac3"] = {
-        key: "surround_sound_ac3",
-        title: "Dolby Digital (AC3)",
-        default: "1",
-        section: "preferences",
-        prefType: "bool"
-    }
-
-    m.prefs["surround_sound_dca"] = {
-        key: "surround_sound_dca",
-        title: "DTS (DCA)",
-        default: "1",
-        section: "preferences",
-        prefType: "bool"
-    }
+    ' NOTE: We no longer define audio preferences for surround sound. Starting
+    ' in firmware 6.1 this can (and should) be configured in the global Roku
+    ' settings, so we rely on those.
 
     ' Subtitles.
     m.prefs["hardsubtitles"] = {
@@ -492,6 +480,24 @@ sub settingsInitGlobals()
     ' Minimum server version required
     m.globals["minServerVersionStr"] = "0.9.11.1"
     m.globals["minServerVersionArr"] = ParseVersion(m.globals["minServerVersionStr"])
+
+    ' Parse audio decoder info. Plugging in the headphones doesn't affect this,
+    ' it only changes the result of HasFeature(), so we can parse this once and
+    ' store the results.
+    channelsByCodec = {}
+    audioDecoders = device.GetAudioDecodeInfo()
+    for each codec in audioDecoders
+        numChannels = audioDecoders[codec].Tokenize(":")[0].toint()
+        if codec = "DTS" then
+            codec = "dca"
+        else if codec = "wma" then
+            codec = "wmav2"
+        else
+            codec = LCase(codec)
+        end if
+        channelsByCodec.AddReplace(codec, numChannels)
+    next
+    m.globals["audioDecoders"] = channelsByCodec
 end sub
 
 function settingsGetCapabilities(recompute=false as boolean) as string
@@ -506,19 +512,11 @@ function settingsGetCapabilities(recompute=false as boolean) as string
     caps = "videoDecoders=h264{profile:high&resolution:1080&level=41};audioDecoders=aac{channels:2}"
 
     if m.SupportsSurroundSound(true) then
-        surroundSoundAC3 = m.GetBoolPreference("surround_sound_ac3")
-        surroundSoundDCA = m.GetBoolPreference("surround_sound_dca")
-    else
-        surroundSoundAC3 = false
-        surroundSoundDCA = false
-    end if
-
-    if surroundSoundAC3 then
-        caps = caps + ",ac3{channels:8}"
-    end if
-
-    if surroundSoundDCA then
-        caps = caps + ",dca{channels:8}"
+        for each codec in ["ac3", "dca"]
+            if m.globals["audioDecoders"].DoesExist(codec) then
+                caps = caps + "," + codec + "{channels:" + tostr(m.globals["audioDecoders"][codec]) + "}"
+            end if
+        next
     end if
 
     m.globals["capabilities"] = caps
@@ -534,15 +532,6 @@ function settingsGetGlobalSettings() as object
 
     ' Video preferences, liberally defined for now
     video = CreateObject("roList")
-
-    ' Surround sound, but only if the device is configured for it
-    if m.SupportsSurroundSound(true) then
-        options = [
-            m.prefs["surround_sound_ac3"],
-            m.prefs["surround_sound_dca"],
-        ]
-        video.Push({key: "surround_sound", title: "Receiver Capabilities", options: options, prefType: "bool"})
-    end if
 
     ' Soft subtitles
     options = [
@@ -613,6 +602,23 @@ function settingsSupportsSurroundSound(refresh=false as boolean) as boolean
     end if
 
     return result
+end function
+
+function settingsSupportsAudioStream(codec as dynamic, channels as integer) as boolean
+    if codec = invalid then return true
+
+    supported = true
+    maxChannels = firstOf(m.globals["audioDecoders"][codec], 0)
+
+    if maxChannels > 2 and not m.SupportsSurroundSound() then
+        ' It's a surround sound codec and we can't do surround sound
+        supported = false
+    else if maxChannels = 0 or maxChannels < channels then
+        ' The codec is either unsupported or can't handle the requested channels
+        supported = false
+    end if
+
+    return supported
 end function
 
 ' TODO(schuyler): Is this based on the server's quality? Local quality? Something else?

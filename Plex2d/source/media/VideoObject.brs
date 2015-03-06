@@ -148,7 +148,7 @@ function voBuildTranscodeHls(obj as object, partIndex as integer, directStream a
     extras = "add-limitation(scope=videoCodec&scopeName=h264&type=upperBound&name=video.level&value=41&isRequired=true)"
 
     settings = AppSettings()
-    if settings.SupportsSurroundSound() and settings.GetBoolPreference("surround_sound_ac3") then
+    if settings.SupportsAudioStream("ac3", 6) then
         extras = extras + "+add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=hls&audioCodec=ac3)"
     end if
 
@@ -206,11 +206,11 @@ function voBuildTranscodeMkv(obj as object, partIndex as integer, directStream a
 
     settings = AppSettings()
     if settings.SupportsSurroundSound() then
-        if settings.GetBoolPreference("surround_sound_ac3") then
+        if settings.SupportsAudioStream("ac3", 6) then
             extras = extras + "+add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=http&audioCodec=ac3)"
         end if
 
-        if settings.GetBoolPreference("surround_sound_dca") then
+        if settings.SupportsAudioStream("dca", 6) then
             extras = extras + "+add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=http&audioCodec=dca)"
         end if
     end if

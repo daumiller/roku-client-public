@@ -142,18 +142,20 @@ function mdeEvaluateMediaVideo(item as object, media as object) as object
     ' iterate over the streams and see if there are any red flags that would
     ' prevent direct play. If there are multiple video streams, we're hosed.
     ' For audio streams, we have a fighting chance if the selected stream can
-    ' be selected by language.
+    ' be selected by language, but we need to be careful about guessing which
+    ' audio stream the Roku will pick for a given language.
 
     numVideoStreams = 0
-    stereoCodec = invalid
-    surroundCodec = invalid
-    surroundStreamFirst = false
     audioLanguageForceable = false
+    problematicAudioStream = false
+    audioStreamCompatible = invalid
 
     if choice.audioStream <> invalid then
         audioLanguage = choice.audioStream.Get("languageCode", "unk")
-        audioLanguageSeen = false
-        maxChannels = iif(settings.SupportsSurroundSound(), 8, 2)
+        audioLanguageChannelsSeen = 0
+    else
+        ' No audio stream, which is fine, so pretend like we saw it
+        audioLanguageForceable = true
     end if
 
     if part.GetBool("hasChapterVideoStream") then numVideoStreams = 1
@@ -167,22 +169,36 @@ function mdeEvaluateMediaVideo(item as object, media as object) as object
                 choice.score = choice.score + 20
             end if
         else if streamType = stream.TYPE_AUDIO then
-            numChannels = stream.GetInt("channels")
-            if numChannels <= 2 then
-                if stereoCodec = invalid then
-                    stereoCodec = stream.Get("codec")
-                    surroundStreamFirst = (surroundCodec <> invalid)
-                end if
-            else if surroundCodec = invalid then
-                surroundCodec = stream.Get("codec")
-            end if
 
-            if audioLanguage = stream.Get("languageCode", "unk") and numChannels <= maxChannels then
-                if stream.IsSelected() and not audioLanguageSeen then
-                    audioLanguageForceable = true
-                end if
+            ' This is a bit tricky. The only hint we can give the player is the
+            ' language that we want to play. So we basically need to decide if
+            ' telling it the language will result in the stream we want. We
+            ' believe that the first, best compatible stream will be played,
+            ' where "best" means that the Roku will prefer surround sound when
+            ' possible. We can completely ignore streams with a different
+            ' language set, as well as incompatible streams. For a compatible
+            ' stream, if it has more channels than any compatible stream we've
+            ' seen so far, then we think it will be the stream that gets played.
+            ' So if the stream is our selected stream, that's a good thing. If
+            ' it's not our selected stream, then that's a bad thing and we
+            ' note that setting the language won't force the proper stream to
+            ' be played.
+            '
+            if audioLanguage = stream.Get("languageCode", "unk") then
+                codec = stream.Get("codec", "")
+                numChannels = stream.GetInt("channels")
 
-                audioLanguageSeen = true
+                if settings.SupportsAudioStream(codec, numChannels) then
+                    if stream.IsSelected() then audioStreamCompatible = true
+                    if numChannels > audioLanguageChannelsSeen then
+                        audioLanguageForceable = stream.IsSelected()
+                        audioLanguageChannelsSeen = numChannels
+                    end if
+                else if stream.IsSelected() then
+                    audioStreamCompatible = false
+                else if codec = "aac" and numChannels > 2 and audioStreamCompatible = invalid then
+                    problematicAudioStream = true
+                end if
             end if
 
             if stream.Get("codec") = "aac" then
@@ -198,10 +214,12 @@ function mdeEvaluateMediaVideo(item as object, media as object) as object
         Info("MDE: Multiple video streams, won't try to direct play")
     else if choice.subtitleStream <> invalid and not choice.isExternalSoftSub then
         Info("MDE: Need to burn in subtitles")
-    else if surroundStreamFirst and surroundCodec = "aac" then
-        Info("MDE: First audio stream is 5.1 AAC")
+    else if problematicAudioStream then
+        Info("MDE: Problematic AAC stream with more than 2 channels prevents direct play")
+    else if audioStreamCompatible <> true then
+        Info("MDE: Selected audio stream is incompatible")
     else if not audioLanguageForceable then
-        Info("MDE: Secondary audio stream is selected and can't be forced by language")
+        Info("MDE: Selected audio stream can't be forced by language")
     else if m.CanDirectPlay(media, part, choice.videoStream, choice.audioStream) then
         choice.isDirectPlayable = true
         choice.score = choice.score + 2000
@@ -224,21 +242,14 @@ function mdeCanDirectPlay(media as object, part as object, videoStream as object
         Fatal("No video stream")
     end if
 
-    ' Check current surround sound support
-    if settings.SupportsSurroundSound() then
-        surroundSoundAC3 = settings.GetBoolPreference("surround_sound_ac3")
-        surroundSoundDCA = settings.GetBoolPreference("surround_sound_dca")
-    else
-        surroundSoundAC3 = false
-        surroundSoundDCA = false
-    end if
-
     container = media.Get("container")
     videoCodec = videoStream.Get("codec")
     if audioStream = invalid then
         audioCodec = invalid
+        numChannels = 0
     else
         audioCodec = audioStream.Get("codec")
+        numChannels = audioStream.GetInt("channels")
     end if
 
     if container = "mp4" or container = "mov" or container = "m4v" then
@@ -255,8 +266,10 @@ function mdeCanDirectPlay(media as object, part as object, videoStream as object
             return false
         end if
 
-        if not ((surroundSoundAC3 and audioCodec = "ac3") or (audioCodec = "aac" and audioStream.GetInt("channels") <= 2)) then
-            Info("MDE: Unsupported audio track: " + tostr(audioCodec))
+        ' We shouldn't have to whitelist particular audio codecs, we can just
+        ' check to see if the Roku can decode this codec with the number of channels.
+        if not settings.SupportsAudioStream(audioCodec, numChannels) then
+            Info("MDE: Unsupported audio track: " + tostr(audioCodec) + " (" + tostr(numChannels) + " channels)")
             return false
         end if
 
@@ -281,8 +294,10 @@ function mdeCanDirectPlay(media as object, part as object, videoStream as object
             return false
         end if
 
-        if not ((surroundSoundAC3 and audioCodec = "ac3") or (surroundSoundDCA and audioCodec = "dca") or ((audioCodec = "aac" or audioCodec = "mp3") and audioStream.GetInt("channels") <= 2)) then
-            Info("MDE: Unsupported audio track: " + tostr(audioCodec))
+        ' We shouldn't have to whitelist particular audio codecs, we can just
+        ' check to see if the Roku can decode this codec with the number of channels.
+        if not settings.SupportsAudioStream(audioCodec, numChannels) then
+            Info("MDE: Unsupported audio track: " + tostr(audioCodec) + " (" + tostr(numChannels) + " channels)")
             return false
         end if
 
