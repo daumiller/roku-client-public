@@ -317,17 +317,29 @@ end sub
 sub compGetShiftableItems(partShift as object, fullShift as object, lazyLoad=invalid as dynamic, deltaX=0 as integer, deltaY=0 as integer)
     ' all components are fixed by default. You must set fixed = false in
     ' either the Components Class or directly on the component
-    if NOT(m.fixed = false) then return
+    if m.fixed <> false then return
 
     if lazyLoad <> invalid and lazyLoad.trigger = invalid and m.SpriteIsLoaded() = false and m.IsOnScreen(0, 0, ComponentsScreen().ll_triggerX, ComponentsScreen().ll_triggerY) then
         lazyLoad.trigger = true
     end if
 
     ' obtain a list of shiftable items, either on screen now, or on screen after the shifted amount
-    if m.IsOnScreen() or ((deltaX <> 0 or deltaY <> 0) and m.IsOnscreen(deltaX, deltaY)) then
-        partShift.Push(m)
+    ' any sprite with a zOrder > -1 is considered onScreen (this is quick)
+
+    if deltaX = 0 and deltaY = 0 then
+        if m.sprite <> invalid and m.sprite.GetZ() > -1 then
+            partShift.Push(m)
+        else
+            fullShift.Push(m)
+        end if
     else
-        fullShift.Push(m)
+        if m.sprite <> invalid and m.sprite.GetZ() > -1 then
+            partShift.Push(m)
+        else if m.IsOnscreen(deltaX, deltaY) then
+            partShift.Push(m)
+        else
+            fullShift.Push(m)
+        end if
     end if
 end sub
 
