@@ -284,9 +284,36 @@ sub vboxShiftComponents(shift as object, refocus=invalid as dynamic)
 
     partShift = CreateObject("roList")
     fullShift = CreateObject("roList")
-    lazyLoad = CreateObject("roAssociativeArray")
+    lazyLoad = Createobject("roList")
+
+    ' This assumes all vbox components are the same height
+    if m.vShift = invalid then
+        displayHeight = AppSettings().GetGlobal("displaySize").h
+        m.vShift = {
+            onScreenY: m.components.Peek().height * -2,
+            onScreenH: displayHeight,
+            triggerY: ComponentsScreen().ll_triggerY * -1,
+            triggerH: displayHeight + ComponentsScreen().ll_triggerY,
+            loadY: ComponentsScreen().ll_loadY * -1,
+            loadH: displayHeight + ComponentsScreen().ll_loadY,
+        }
+    end if
+
+    triggerLazyLoad = false
     for each component in m.components
-        component.GetShiftableItems(partShift, fullShift, lazyLoad, shift.x, shift.y)
+        compY = component.y + shift.y
+        if compY > m.vShift.onScreenY and compY < m.vShift.onScreenH then
+            partShift.push(component)
+        else if not triggerLazyLoad and compY > m.vShift.triggerY and compY < m.vShift.triggerH and component.SpriteIsLoaded() = false then
+            triggerLazyLoad = true
+            fullShift.push(component)
+            lazyLoad.push(component)
+        else if triggerLazyLoad and compY > m.vShift.loadY and compY < m.vShift.loadH and component.SpriteIsLoaded() = false then
+            lazyLoad.push(component)
+            fullShift.push(component)
+        else
+            fullShift.push(component)
+        end if
     next
 
     ' lazy-load any components that will be on-screen after we shift and cancel
@@ -308,45 +335,47 @@ sub vboxShiftComponents(shift as object, refocus=invalid as dynamic)
         end for
     end if
 
+    ' shift all the off screen components (ignore shifting the sprite)
+    for each comp in fullShift
+        comp.ShiftPosition(shift.x, shift.y, false)
+    end for
+
     ' Set the visibility after shifting (special case for vbox)
     m.SetVisible()
 
     ' Normally we would just set onScreenComponents=partShift, however we are executing
     ' this in the containers context, so we must make one more pass to get a list of all
     ' the on screen components after the shift.
-    m.screen.onScreenComponents.Clear()
-    for each component in m.screen.components
-        component.GetShiftableItems(m.screen.onScreenComponents, [])
-    next
-
-    ' shift all the off screen components (ignore shifting the sprite)
-    for each comp in fullShift
-        comp.ShiftPosition(shift.x, shift.y, false)
-    end for
-
-    ' lazyload off screen components within our range. Remember we need to execute the
-    ' lazyload routines in the screens context.
-    if lazyLoad.trigger = true then
-        lazyLoad.components = CreateObject("roList")
-
-        ' add any off screen component within range
-        for each candidate in fullShift
-            if candidate.SpriteIsLoaded() = false and candidate.IsOnScreen(0, 0, 0, ComponentsScreen().ll_loadY) then
-                lazyLoad.components.Push(candidate)
+    ' This logic has been optimized instead of using the generic methods
+    onScreenReplacment = CreateObject("roList")
+    onScreenComponents = m.screen.onScreenComponents
+    for each component in onScreenComponents
+        exclude = false
+        for each comp in partShift
+            if component.Equals(comp) then
+                exclude = true
+                exit for
             end if
         end for
 
-        Debug("Determined lazy load components (off screen): total=" + tostr(lazyLoad.components.count()))
-
-        if lazyLoad.components.count() > 0 then
-            m.screen.lazyLoadTimer.active = true
-            m.screen.lazyLoadTimer.components = lazyLoad.components
-            Application().AddTimer(m.screen.lazyLoadTimer, createCallable("LazyLoadOnTimer", m.screen))
-            m.screen.lazyLoadTimer.mark()
+        if not exclude then
+           component.GetFocusableItems(onScreenReplacment)
         end if
-    end if
+    next
+    for each component in partShift
+        component.GetFocusableItems(onScreenReplacment)
+    end for
+    onScreenComponents = onScreenReplacment
 
-    if lazyLoad.components = invalid then
+    ' lazyload off screen components within our range. Remember we need to execute the
+    ' lazyload routines in the screens context.
+    if lazyLoad.Count() > 0 then
+        Debug("lazy load components (off screen): total=" + tostr(lazyLoad.Count()))
+        m.screen.lazyLoadTimer.active = true
+        m.screen.lazyLoadTimer.components = lazyLoad
+        Application().AddTimer(m.screen.lazyLoadTimer, createCallable("LazyLoadOnTimer", m.screen))
+        m.screen.lazyLoadTimer.mark()
+    else
         m.screen.lazyLoadTimer.active = false
         m.screen.lazyLoadTimer.components = invalid
     end if
