@@ -295,12 +295,13 @@ function compHandleMessage(msg as object) as boolean
             m.keyPressTimer = invalid
         end if
 
+        m.isKeyRepeat = false
         if keyCode >= 100 then
             m.OnKeyRelease(keyCode - 100)
             m.lastKey = -1
         else
             m.lastKey = keyCode
-            m.OnKeyPress(keyCode, false)
+            m.OnKeyPress(keyCode, m.isKeyRepeat)
 
             m.keyPressTimer = createTimer("holdDownKeyPress")
             m.keyPressTimer.SetDuration(500, true)
@@ -334,6 +335,7 @@ sub compOnKeyHeld(timer as object)
 end sub
 
 sub compOnKeyPress(keyCode as integer, repeat as boolean)
+    m.isKeyRepeat = repeat
     if keyCode = m.kp_RT or keyCode = m.kp_LT or keyCode = m.kp_UP or keyCode = m.kp_DN then
         direction = KeyCodeToString(keyCode)
         toFocus = invalid
@@ -409,7 +411,8 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
         else
             m.OnRevButton(m.focusedItem)
         end if
-    else if keyCode = m.kp_BK and repeat then
+    else if keyCode = m.kp_BK and m.isKeyRepeat then
+        m.isKeyRepeat = false
         m.keyPressTimer.active = false
         m.keyPressTimer = invalid
         Application().GoHome()

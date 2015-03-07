@@ -268,9 +268,10 @@ end sub
 sub vboxShiftComponents(shift as object, refocus=invalid as dynamic)
     Debug("shift vbox by: " + tostr(shift.x) + "," + tostr(shift.y))
 
-    ' Disable animation on refocus or if the shift is greater than the vbox height.
-    ' This fixes any possible memory issue and unnecessary scrolling animation.
-    if refocus <> invalid or abs(shift.y) > m.height then
+    ' Disable animation for key repeats, on refocus, or if the shift is
+    ' greater than the vbox height. This fixes any possible memory issue,
+    ' unnecessary scrolling animation, and improves performance.
+    if m.screen.isKeyRepeat = true or refocus <> invalid or abs(shift.y) > m.height then
         disableAnimation = true
     else
         disableAnimation = false
