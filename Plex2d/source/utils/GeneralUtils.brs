@@ -560,3 +560,7 @@ function CreateRegion(width as integer, height as integer, color as integer, alp
     region = CreateObject("roRegion", bmp, 0, 0, bmp.GetWidth(), bmp.GetHeight())
     return region
 end function
+
+function IsKeyReleaseMessage(msg as object) as boolean
+    return (type(msg) = "roUniversalControlEvent" and msg.GetInt() >= 100)
+end function

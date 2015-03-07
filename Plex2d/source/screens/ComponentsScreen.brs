@@ -324,15 +324,16 @@ sub compOnKeyHeld(timer as object)
         ' After the first held event, shorten the timer's duration.
         timer.SetDuration(150, true)
 
-        ' TODO(rob): I still don't have a better solution for this, but the previous method
-        ' didn't work well while holding down the fwd/rev button scrolling a grid. There were
-        ' other pending events waiting in the queue before the key release event.
-        ' This may even fix some issue for the standard KeyPress events when a user quickly
-        ' presses the same directional button.
-        while Application().port.PeekMessage() <> invalid
-            timeout = Application().ProcessOneMessage(0, true)
-        end while
-        m.OnKeyPress(m.lastKey, true)
+        ' If we've received a key release event, don't simulate another key
+        ' press. We may have received a key release but not processed it yet
+        ' because of slower events ahead of it in the queue (e.g. URL or texture
+        ' events).
+        '
+        if Application().HasQueuedMessage(IsKeyReleaseMessage) then
+            timer.active = false
+        else
+            m.OnKeyPress(m.lastKey, true)
+        end if
     else
         timer.active = false
     end if

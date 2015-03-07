@@ -23,6 +23,8 @@ function Application()
 
         obj.initializers = {}
 
+        obj.queuedMessages = CreateObject("roList")
+
         obj.AssignScreenID = appAssignScreenID
         obj.ClearScreens = appClearScreens
         obj.PushScreen = appPushScreen
@@ -47,6 +49,7 @@ function Application()
         obj.ProcessNonBlocking = appProcessNonBlocking
         obj.ProcessUrlEvent = appProcessUrlEvent
         obj.ProcessTextureEvent = appProcessTextureEvent
+        obj.HasQueuedMessage = appHasQueuedMessage
         obj.OnInitialized = appOnInitialized
 
         obj.OnAccountChange = appOnAccountChange
@@ -216,14 +219,18 @@ sub appRun()
     Info("Finished global message loop")
 end sub
 
-function appProcessOneMessage(timeout as integer, ignoreTimers=false as boolean)
+function appProcessOneMessage(timeout as integer) as integer
     if AppSettings().GetGlobal("roDeviceInfo").TimeSinceLastKeyPress() > AppSettings().GetGlobal("idleLockTimeout") then
          m.CreateLockScreen()
     end if
 
     WebServer().PreWait()
 
-    msg = wait(timeout, m.port)
+    if m.queuedMessages.Count() > 0 then
+        msg = m.queuedMessages.Shift()
+    else
+        msg = wait(timeout, m.port)
+    end if
 
     if msg <> invalid then
         ' Socket events are chatty (every 5 seconds per PMS) and URL events
@@ -257,7 +264,6 @@ function appProcessOneMessage(timeout as integer, ignoreTimers=false as boolean)
     end if
 
     ' Check for any expired timers
-    if ignoreTimers then return timeout
     timeout = 0
     timersToRemove = CreateObject("roList")
     for each timerID in m.timers
@@ -283,6 +289,20 @@ function appProcessOneMessage(timeout as integer, ignoreTimers=false as boolean)
     next
 
     return timeout
+end function
+
+function appHasQueuedMessage(predicate as function) as boolean
+    for each msg in m.queuedMessages
+        if predicate(msg) then return true
+    next
+
+    while m.port.PeekMessage() <> invalid
+        msg = wait(1, m.port)
+        m.queuedMessages.Push(msg)
+        if predicate(msg) then return true
+    end while
+
+    return false
 end function
 
 sub appOnInitialized()
