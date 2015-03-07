@@ -431,11 +431,7 @@ function playlistGetTrackComponent(plexObject as dynamic) as dynamic
 end function
 
 sub playlistOnPlayButton(item=invalid as dynamic)
-    if m.player.IsActive() then
-        m.player.OnPlayButton()
-    else
-        m.HandleCommand("play", item)
-    end if
+    m.HandleCommand("play", item)
 end sub
 
 sub playlistRefresh(request=invalid as dynamic, response=invalid as dynamic, context=invalid as dynamic)

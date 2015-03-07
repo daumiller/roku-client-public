@@ -460,11 +460,7 @@ function albumGetTrackComponent(plexObject as dynamic) as dynamic
 end function
 
 sub albumOnPlayButton(item=invalid as dynamic)
-    if m.player.IsActive() then
-        m.player.OnPlayButton()
-    else
-        m.HandleCommand("play", item)
-    end if
+    m.HandleCommand("play", item)
 end sub
 
 sub albumToggleSummary()
