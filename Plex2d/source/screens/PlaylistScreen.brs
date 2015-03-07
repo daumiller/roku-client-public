@@ -106,9 +106,9 @@ sub playlistShow()
 
     if m.childRequestContext = invalid then
         request = createPlexRequest(m.server, m.childrenPath)
+        ' TODO(rob): Remove this limit, which requires lazy loading chunks (grid screen)
         request.AddHeader("X-Plex-Container-Start", "0")
-        request.AddHeader("X-Plex-Container-Size", "100")
-
+        request.AddHeader("X-Plex-Container-Size", "500")
         m.childRequestContext = request.CreateRequestContext("preplay_item", createCallable("OnChildResponse", m))
         requests.Push({request: request, context: m.childRequestContext})
     end if
