@@ -83,11 +83,11 @@ function createGridScreen(item as object, path=invalid as dynamic, rows=2 as int
     if orientation <> invalid then
         obj.orientation = orientation
     else if containerType = invalid then
-        obj.orientation=ComponentClass().ORIENTATION_LANDSCAPE
+        obj.orientation = ComponentClass().ORIENTATION_LANDSCAPE
     else if containerType = "movie" or containerType = "show" or containerType = "episode" or containerType = "mixed" then
-        obj.orientation=ComponentClass().ORIENTATION_PORTRAIT
-    else if containerType = "photo" or containerType = "artist" or containerType = "album" then
-        obj.orientation=ComponentClass().ORIENTATION_SQUARE
+        obj.orientation = ComponentClass().ORIENTATION_PORTRAIT
+    else if containerType = "photo" or containerType = "artist" or containerType = "album" or containerType = "playlist" then
+        obj.orientation = ComponentClass().ORIENTATION_SQUARE
     else
         obj.orientation = ComponentClass().ORIENTATION_LANDSCAPE
     end if
@@ -541,6 +541,7 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
                 end if
                 gridItem.ReInit(item, title, item.GetViewOffsetPercentage(), item.GetUnwatchedCount(), item.IsUnwatched())
             end if
+            gridItem.SetOrientation(m.orientation)
             gridItem.setMetadata(item.attrs)
             gridItem.plexObject = item
             gridItem.SetFocusable("show_item")
@@ -553,7 +554,7 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
 
             ' redraw the component, only within the loading area (ll_load*)
             if gridItem.IsOnScreen(0, 0, m.ll_loadX, m.ll_loadY) then
-                gridItem.draw()
+                gridItem.Draw()
             end if
         end if
     end for

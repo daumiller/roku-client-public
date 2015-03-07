@@ -32,18 +32,19 @@ sub hubsInit()
     ApplyFunc(ComponentsScreen().Init, m)
 
     ' Section and Hub containers
-    m.hubsContainer = CreateObject("roAssociativeArray")
-    m.buttonsContainer = CreateObject("roAssociativeArray")
+    m.hubsContext = CreateObject("roAssociativeArray")
+    m.buttonsContext = CreateObject("roAssociativeArray")
+    m.playlistContext = CreateObject("roAssociativeArray")
     m.focusContainers = CreateObject("roArray", 5, true)
 end sub
 
-function hubsOnResponse(request as object, response as object, context as object) as object
+sub hubsOnResponse(request as object, response as object, context as object)
     response.ParseResponse()
     context.response = response
     context.items = response.items
 
     m.show()
-end function
+end sub
 
 function hubsHandleCommand(command as string, item as dynamic) as boolean
     handled = true
@@ -192,8 +193,8 @@ function hubsCreateHub(container) as dynamic
     return hub
 end function
 
-function hubsCreateButton(container as object) as object
-    button = createButton(container.GetSingleLineTitle(), FontRegistry().LARGE, "show_section")
+function hubsCreateButton(container as object, command="show_section" as string) as object
+    button = createButton(container.GetSingleLineTitle(), FontRegistry().LARGE, command)
     button.setMetadata(container.attrs)
     button.plexObject = container
     button.width = 200
@@ -205,8 +206,8 @@ end function
 
 function hubsGetButtons() as object
     buttons = []
-    for each container in m.buttonsContainer.items
-        buttons.push(m.createButton(container))
+    for each item in m.buttonsContext.items
+        buttons.push(m.createButton(item))
     end for
 
     return buttons
@@ -215,8 +216,8 @@ end function
 function hubsGetHubs() as object
     hubs = []
 
-    for each container in m.hubsContainer.items
-        hub = m.CreateHub(container)
+    for each item in m.hubsContext.items
+        hub = m.CreateHub(item)
         if hub <> invalid then hubs.push(hub)
     end for
 
@@ -224,8 +225,9 @@ function hubsGetHubs() as object
 end function
 
 sub hubsClearCache()
-    if m.hubsContainer <> invalid then m.hubsContainer.clear()
-    if m.buttonsContainer <> invalid then m.buttonsContainer.clear()
+    if m.hubsContext <> invalid then m.hubsContext.Clear()
+    if m.buttonsContext <> invalid then m.buttonsContext.Clear()
+    if m.playlistContext <> invalid then m.playlistContext.Clear()
 end sub
 
 function hubsGetEmptyMessage() as object

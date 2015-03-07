@@ -488,9 +488,7 @@ function compHandleCommand(command as string, item as dynamic) as boolean
         else if itemType = "artist" then
             Application().PushScreen(createArtistScreen(item.plexObject))
         else if itemType = "playlist" then
-            ' TODO(rob): what type of preplay do we use for playlists? Do we even include
-            ' playlists, or wait for the next iteration when we have playQueue support?
-            Application().PushScreen(createPreplayContextScreen(item.plexObject))
+            Application().PushScreen(createPlaylistScreen(item.plexObject))
         else if itemType = "show" then
             Application().PushScreen(createPreplayContextScreen(item.plexObject))
         else if item.plexObject.IsDirectory() then
@@ -791,14 +789,23 @@ sub compCalculateShift(toFocus as object, refocus=invalid as dynamic)
         safeLeft: 50
     }
 
+    ' Improve our caculation time. We can safely ignore the parent checks if the
+    ' toFocus and current focus are siblings of a vbox parent.
+    parent = toFocus.parent
+    if parent <> invalid and (parent.ignoreParentShift = true or parent.isVScrollable = true and parent.Equals(m.focusedItem.parent)) then
+        ignoreParent = true
+    else
+        ignoreParent = false
+    end if
+
     focusRect = computeRect(toFocus)
     ' reuse the last position on refocus
     if refocus <> invalid and focusRect.left <> refocus.left then
         shift.x = refocus.left - focusRect.left
     ' verify the component is on the screen if no parent exists
-    else if toFocus.parent = invalid or toFocus.parent.ignoreParentShift = true then
-        if toFocus.parent <> invalid and toFocus.parent.demandLeft <> invalid then
-            shift.x = toFocus.parent.demandLeft - focusRect.left
+    else if ignoreParent then
+        if parent.demandLeft <> invalid then
+            shift.x = parent.demandLeft - focusRect.left
         else if focusRect.right > shift.safeRight
             shift.x = shift.safeRight - focusRect.right
         else if focusRect.left < shift.safeLeft then
@@ -807,7 +814,7 @@ sub compCalculateShift(toFocus as object, refocus=invalid as dynamic)
     ' verify the components parent is on the screen (only tested with hubs)
     else
         parentCont = CreateObject("roList")
-        checkComp = toFocus.parent.GetShiftableItems(parentCont, parentCont)
+        checkComp = parent.GetShiftableItems(parentCont, parentCont)
         cont = {
             checkShift: invalid
             left: invalid
@@ -815,11 +822,11 @@ sub compCalculateShift(toFocus as object, refocus=invalid as dynamic)
         }
 
         ' adhere to the parents wanted left position
-        if toFocus.parent <> invalid and toFocus.parent.first = true then
+        if parent <> invalid and parent.first = true then
             shift.demandLeft = shift.safeLeft
             shift.forceShift = (m.lastDirection <> "left")
-        else if toFocus.parent.demandLeft <> invalid then
-            shift.demandLeft = toFocus.parent.demandLeft
+        else if parent.demandLeft <> invalid then
+            shift.demandLeft = parent.demandLeft
         end if
 
         ' calculate the min/max left/right offsets in the parent container

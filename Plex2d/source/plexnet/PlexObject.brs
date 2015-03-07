@@ -82,6 +82,7 @@ sub pnoInit(container as object, xml as object)
     ApplyFunc(PlexAttributeCollectionClass().Init, m, [xml])
 
     m.type = firstOf(m.Get("type"), LCase(m.name))
+    m.playlistType = m.Get("playlistType", "")
     m.container = container
 
     ' Hack for photo albums
@@ -139,11 +140,11 @@ sub pnoInitSynthetic(container as object, name as string)
 end sub
 
 function pnoIsVideoItem() as boolean
-    return (m.type = "movie" or m.type = "episode" or m.type = "clip" or m.type = "video")
+    return (m.type = "movie" or m.type = "episode" or m.type = "clip" or m.type = "video" or m.playlistType = "video")
 end function
 
 function pnoIsMusicItem() as boolean
-    return (m.type = "track" or m.type = "album")
+    return (m.type = "track" or m.type = "album" or m.playlistType = "audio")
 end function
 
 function pnoIsPhotoItem() as boolean

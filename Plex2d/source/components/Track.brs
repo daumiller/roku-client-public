@@ -11,6 +11,7 @@ function TrackClass() as object
         obj.InitComponents = trackInitComponents
         obj.PerformLayout = trackPerformLayout
         obj.SetPlaying = trackSetPlaying
+        obj.SetIndex = trackSetIndex
 
         m.TrackClass = obj
     end if
@@ -54,6 +55,10 @@ sub trackInit(titleFont as object, subtitleFont as object, glyphFont as object)
     m.InitComponents()
 end sub
 
+sub trackSetIndex(index as integer)
+    m.index.SetText(tostr(index))
+end sub
+
 sub trackSetPlaying(playing=true as boolean)
     m.isPlaying = playing
     m.isPaused = AudioPlayer().isPaused
@@ -95,7 +100,7 @@ sub trackInitComponents()
     if m.isMixed = true then
         trackIndex = item.GetFirst(["playQueueIndex", "index", ""])
     else
-        trackIndex = item.Get("index","")
+        trackIndex = item.Get("index", "")
     end if
     m.index = createLabel(trackIndex, m.customFonts.title)
     m.index.SetPadding(m.padding.top, m.padding.right, m.padding.bottom, m.padding.left)

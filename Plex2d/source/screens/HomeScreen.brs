@@ -8,6 +8,7 @@ function HomeScreen() as object
         obj.OnKeyRelease = homeOnKeyRelease
         obj.OnOverlayClose = homeOnOverlayClose
         obj.GetEmptyMessage = homeGetEmptyMessage
+        obj.OnPlaylistResponse = homeOnPlaylistResponse
 
         ' TODO(rob): remove/modify to allow non-video sections
         ' temporary override to exclude non-video sections
@@ -25,9 +26,9 @@ function createHomeScreen(server as object) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(HomeScreen())
 
-    obj.Init()
-
     obj.server = server
+
+    obj.Init()
 
     Application().clearScreens()
 
@@ -42,23 +43,28 @@ sub homeShow()
     ' because some hubs are very dynamic (maybe not on the home screen)
 
     ' section requests
-    if m.buttonsContainer.request = invalid then
+    if m.buttonsContext.request = invalid then
         request = createPlexRequest(m.server, "/library/sections")
-        context = request.CreateRequestContext("sections", createCallable("OnResponse", m))
-        Application().StartRequest(request, context)
-        m.buttonsContainer = context
+        m.buttonsContext = request.CreateRequestContext("sections", createCallable("OnResponse", m))
+        Application().StartRequest(request, m.buttonsContext)
     end if
 
-    ' hub requests
-    if m.hubsContainer.request = invalid then
-        ' TODO(rob): modify to allow non-video sections
-        request = createPlexRequest(m.server, "/hubs?excludePlaylists=1&excludePhotos=1")
-        context = request.CreateRequestContext("hubs", createCallable("OnResponse", m))
-        Application().StartRequest(request, context)
-        m.hubsContainer = context
+    if m.playlistContext.request = invalid then
+        request = createPlexRequest(m.server, "/playlists/all")
+        request.AddHeader("X-Plex-Container-Start", "0")
+        request.AddHeader("X-Plex-Container-Size", "0")
+        m.playlistContext = request.CreateRequestContext("playlists", createCallable("OnPlaylistResponse", m))
+        Application().StartRequest(request, m.playlistContext)
     end if
 
-    if m.hubsContainer.response <> invalid and m.buttonsContainer.response <> invalid then
+    if m.hubsContext.request = invalid then
+        ' TODO(rob): modify to allow Photos
+        request = createPlexRequest(m.server, "/hubs?excludePhotos=1")
+        m.hubsContext = request.CreateRequestContext("hubs", createCallable("OnResponse", m))
+        Application().StartRequest(request, m.hubsContext)
+    end if
+
+    if m.hubsContext.response <> invalid and m.buttonsContext.response <> invalid and m.playlistContext.response <> invalid then
         ApplyFunc(ComponentsScreen().Show, m)
     else
         Debug("HubsShow:: waiting for all requests to be completed")
@@ -106,11 +112,16 @@ end function
 ' temporary override to exclude non-video sections
 function homeGetButtons() as object
     buttons = []
-    for each container in m.buttonsContainer.items
-        if container.Get("type") = "show" or container.Get("type") = "movie" or container.Get("type") = "artist" then
-            buttons.push(m.createButton(container))
+
+    if m.playlistContext.item <> invalid then
+        buttons.push(m.createButton(m.playlistContext.item, "show_grid"))
+    end if
+
+    for each item in m.buttonsContext.items
+        if item.Get("type") = "show" or item.Get("type") = "movie" or item.Get("type") = "artist" then
+            buttons.push(m.createButton(item))
         else
-            Debug("excluding section type: " + container.Get("type",""))
+            Debug("excluding section type: " + item.Get("type",""))
         end if
     end for
 
@@ -154,3 +165,21 @@ function homeGetEmptyMessage() as object
     obj.subtitle = "Please add content and/or check that " + chr(34) + "Include in dashboard" + chr(34) + " is enabled in your library sections."
     return obj
 end function
+
+sub homeOnPlaylistResponse(request as object, response as object, context as object)
+    response.ParseResponse()
+    context.response = response
+    if response.container.GetInt("totalSize") = 0 then return
+
+    ' There may be a better way to do this, but we need to generate
+    ' a synthetic PlexObject to add a playlist button.
+    obj = CreateObject("roAssociativeArray")
+    obj.Append(PlexObjectClass())
+    obj.InitSynthetic(response.container, "Playlists")
+    obj.Set("title", "Playlists")
+    obj.Set("key", response.container.address)
+    obj.Set("type", "playlist")
+    context.item = obj
+
+    m.Show()
+end sub

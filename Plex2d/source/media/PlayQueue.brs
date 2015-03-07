@@ -37,7 +37,7 @@ function createPlayQueue(server as object, contentType as string, uri as string,
     obj.items = CreateObject("roList")
 
     request = createPlexRequest(server, "/playQueues")
-    request.AddParam("uri", uri)
+    request.AddParam(iif(options.isPlaylist = invalid, "uri", "playlistID"), uri)
     request.AddParam("type", contentType)
 
     if options.key <> invalid then
@@ -95,11 +95,15 @@ function createPlayQueueForItem(item as object, options=invalid as dynamic) as o
     end if
 
     itemType = iif(item.IsDirectory(), "directory", "item")
+    path = invalid
 
     ' How exactly to construct the item URI depends on the metadata type, though
     ' whenever possible we simply use /library/metadata/:id.
     '
-    if item.type = "track" then
+    if item.type = "playlist" then
+        uri = item.Get("ratingKey")
+        options.isPlaylist = true
+    else if item.type = "track" then
         path = "/library/metadata/" + item.Get("parentRatingKey", "")
         itemType = "directory"
     else if item.type = "photo" then
@@ -125,7 +129,9 @@ function createPlayQueueForItem(item as object, options=invalid as dynamic) as o
         path = item.GetAbsolutePath("key")
     end if
 
-    uri = uri + itemType + "/" + UrlEscape(path)
+    if path <> invalid then
+        uri = uri + itemType + "/" + UrlEscape(path)
+    end if
 
     return createPlayQueue(item.GetServer(), contentType, uri, options)
 end function

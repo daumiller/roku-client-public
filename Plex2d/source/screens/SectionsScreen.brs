@@ -43,25 +43,23 @@ sub sectionsShow()
     ' because some hubs are very dynamic (maybe not on the home screen)
 
     ' section requests
-    if m.buttonsContainer.request = invalid then
+    if m.buttonsContext.request = invalid then
         request = createPlexRequest(m.server, m.item.GetAbsolutePath("key"))
-        context = request.CreateRequestContext("sections", createCallable("OnResponse", m))
-        Application().StartRequest(request, context)
-        m.buttonsContainer = context
+        m.buttonsContext = request.CreateRequestContext("sections", createCallable("OnResponse", m))
+        Application().StartRequest(request, m.buttonsContext)
     end if
 
     ' hub requests
-    if m.hubsContainer.request = invalid then
+    if m.hubsContext.request = invalid then
         request = createPlexRequest(m.server, "/hubs/sections/" + m.item.Get("key"))
-        context = request.CreateRequestContext("hubs", createCallable("OnResponse", m))
-        Application().StartRequest(request, context)
-        m.hubsContainer = context
+        m.hubsContext = request.CreateRequestContext("hubs", createCallable("OnResponse", m))
+        Application().StartRequest(request, m.hubsContext)
     end if
 
-    if m.hubsContainer.response <> invalid and m.buttonsContainer.response <> invalid then
+    if m.hubsContext.response <> invalid and m.buttonsContext.response <> invalid then
         ' switch into browse mode if the section hubs are empty. By default out first
         ' button on the section screen is the browse by all
-        if m.hubsContainer.items.Count() = 0 then
+        if m.hubsContext.items.Count() = 0 then
             browseItem = m.GetButtons()[0]
             if browseItem <> invalid and browseItem.plexObject <> invalid then
                 Debug("Section Hub are empty, switching to browse mode")
@@ -97,10 +95,10 @@ function sectionsGetButtons() as object
     '
     allowedKeys = {all: 1, unwatched: 1}
 
-    for each container in m.buttonsContainer.items
-        if allowedKeys.DoesExist(container.Get("key", "")) then
-            container.attrs.type = firstOf(container.Get("type"), m.contentType)
-            buttons.push(m.createButton(container))
+    for each item in m.buttonsContext.items
+        if allowedKeys.DoesExist(item.Get("key", "")) then
+            item.attrs.type = firstOf(item.Get("type"), m.contentType)
+            buttons.push(m.createButton(item))
         end if
     end for
 
