@@ -364,7 +364,7 @@ function pnoGetLibrarySectionId() as string
 end function
 
 function pnoGetLibrarySectionUuid() as string
-    uuid = m.GetFirst(["uuid", "librarySectionUUID"]) 
+    uuid = m.GetFirst(["uuid", "librarySectionUUID"])
 
     if uuid = invalid then
         uuid = m.container.Get("librarySectionUUID", "")

@@ -69,7 +69,7 @@ sub npqoGetComponents()
     height = m.screen.progress.y
 
     trackPrefs = {
-        background: Colors().GetAlpha(&h000000ff, 30)
+        background: Colors().GetAlpha(&hffffffff, 10),
         width: 1230 - xOffset - spacing,
         height: iif(isMixed, 80, 60),
         fixed: false,
@@ -134,7 +134,7 @@ sub npqoGetComponents()
 
     ' Background of focused item. We have to use a separate background
     ' component due to the aliasing issue.
-    m.focusBG = createBlock(Colors().OverlayDark)
+    m.focusBG = createBlock(Colors().GetAlpha("Black", 40))
     m.focusBG.setFrame(0, 0, trackPrefs.width, trackPrefs.height)
     m.focusBG.fixed = false
     m.focusBG.zOrderInit = -1

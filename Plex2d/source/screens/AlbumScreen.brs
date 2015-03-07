@@ -52,7 +52,7 @@ sub albumInit()
     ' Intialize custom fonts for this screen
     m.customFonts = {
         glyphs: FontRegistry().GetIconFont(32)
-        trackStatus: FontRegistry().GetIconFont(16)
+        trackStatus: FontRegistry().GetIconFont(20)
     }
 
     m.ResetInit(m.path)
@@ -202,7 +202,7 @@ sub albumGetComponents()
     ' *** Track List Area *** '
     padding = 20
     trackPrefs = {
-        background: &hffffff10,
+        background: Colors().GetAlpha(&hffffffff, 10),
         width: 1230 - xOffset - padding,
         height: 50,
         fixed: false,
@@ -268,7 +268,7 @@ sub albumGetComponents()
     ' Background of focused item.
     ' note: we cannot just change the background of the track composite due
     ' to the aliasing issues.
-    m.focusBG = createBlock(Colors().OverlayDark)
+    m.focusBG = createBlock(Colors().GetAlpha("Black", 40))
     m.focusBG.setFrame(0, 0, trackPrefs.width, trackPrefs.height)
     m.focusBG.fixed = false
     m.focusBG.zOrderInit = -1

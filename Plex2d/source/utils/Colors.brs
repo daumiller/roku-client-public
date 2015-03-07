@@ -24,7 +24,7 @@ function Colors() as object
 
         ' These are dependent on the regions background color
         obj.TextLight = &hffffffe0
-        obj.TextDim = &hffffff60
+        obj.TextDim = &hffffff80
 
         obj.Transparent = &h00000000
         obj.Black = &h000000ff
