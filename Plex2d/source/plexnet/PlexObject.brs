@@ -172,7 +172,7 @@ function pnoIsLibrarySection() as boolean
 end function
 
 function pnoIsLibraryItem() as boolean
-    return (instr(1, m.Get("key", ""), "/library/metadata") > 0)
+    return (instr(1, m.Get("key", ""), "/library/metadata") > 0 or instr(1, m.Get("key", ""), "/playlists/") > 0)
 end function
 
 function pnoIsPersonalLibrarySection() as boolean
