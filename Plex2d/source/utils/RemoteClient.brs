@@ -230,6 +230,7 @@ sub remoteOnMetadataResponse(request as object, response as object, context as o
             if item.IsVideoItem() then
                 player = VideoPlayer()
                 pqType = "video"
+                player.shouldResume = (validint(context.offset) > 0)
             else if item.IsMusicItem() then
                 player = AudioPlayer()
                 pqType = "audio"
