@@ -349,14 +349,15 @@ function playlistHandleCommand(command as string, item as dynamic) as boolean
     if command = "play" or command = "shuffle" then
         ' start content from requested index, or from the beginning.
 
-        ' TODO(rob): start from the selected item
+        options = createPlayOptions()
+        options.shuffle = (command = "shuffle")
 
-        if m.item <> invalid then
-            options = createPlayOptions()
-            options.shuffle = (command = "shuffle")
-            pq = createPlayQueueForItem(m.item, options)
-            m.player.SetPlayQueue(pq, true)
+        if item <> invalid and item.plexObject <> invalid then
+            options.key = item.plexObject.Get("key")
         end if
+
+        pq = createPlayQueueForItem(m.item, options)
+        m.player.SetPlayQueue(pq, true)
     else
         return ApplyFunc(ComponentsScreen().HandleCommand, m, [command, item])
     end if
