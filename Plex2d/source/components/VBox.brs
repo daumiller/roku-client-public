@@ -289,9 +289,10 @@ sub vboxShiftComponents(shift as object, refocus=invalid as dynamic)
     ' This assumes all vbox components are the same height
     if m.vShift = invalid then
         displayHeight = AppSettings().GetGlobal("displaySize").h
+        offset = m.components.Peek().height
         m.vShift = {
-            onScreenY: m.components.Peek().height * -2,
-            onScreenH: displayHeight,
+            onScreenY: offset * -2
+            onScreenH: displayHeight + offset,
             triggerY: ComponentsScreen().ll_triggerY * -1,
             triggerH: displayHeight + ComponentsScreen().ll_triggerY,
             loadY: ComponentsScreen().ll_loadY * -1,
