@@ -28,6 +28,7 @@ function createTrack(item as object, titleFont as object, subtitleFont as object
     obj.isPaused = false
     obj.trackCount = trackCount
     obj.isMixed = isMixed
+    obj.innerBorderFocus = true
 
     obj.Init(titleFont, subtitleFont, glyphFont)
 

@@ -42,6 +42,8 @@ end function
 sub cardInit(imageSource=invalid as dynamic, text=invalid as dynamic, watchedPercentage=invalid as dynamic, unwatchedCount=invalid as dynamic, unwatched=false as boolean)
     ApplyFunc(CompositeClass().Init, m)
 
+    m.innerBorderFocus = true
+
     m.overlayPadding =  {
         top: 5,
         right: 5,

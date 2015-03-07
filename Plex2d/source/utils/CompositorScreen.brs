@@ -138,7 +138,7 @@ sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
         }
     else
         ' Cards focus box includes 1px black inner border
-        if tostr(component.ClassName) = "Card" then
+        if component.innerBorderFocus = true then
             innerPixels = 1
         else
             innerPixels = 0
