@@ -135,6 +135,15 @@ function imageDraw() as object
     return [m]
 end function
 
+function createBackgroundImage(item as object) as object
+    obj = createImage(item, 1280, 720, { blur: 20, opacity: 70, background: Colors().ToHexString("Black") })
+    obj.SetOrientation(obj.ORIENTATION_LANDSCAPE)
+    obj.cache = true
+    obj.fade = true
+    obj.failedBgColor = Colors().Background
+    return obj
+end function
+
 function createImageScaleToParent(source as dynamic, parent as object) as object
     ' create a 1x1 image to handle creating a temporary regions
     ' for the downloaded image to replace.
@@ -201,7 +210,11 @@ sub imageSetBitmap(bmp=invalid as dynamic, makeCopy=false as boolean)
     if bmp = invalid then
         Debug("Invalid bitmap: set empty")
         bmp = CreateObject("roBitmap", {width: m.GetPreferredWidth(), height: m.GetPreferredHeight(), alphaEnable: false})
-        bmp.Clear(Colors().Empty)
+
+        ' Set the region transparent unless the image has a parent. The idea is
+        ' is that we don't want to show a placeholder for broken images, but we
+        ' do want them for a card, or some other composite.
+        bmp.Clear(firstOf(m.failedBgColor, Colors().Empty))
         if m.fade = true then m.ignoreFade = true
     end if
 

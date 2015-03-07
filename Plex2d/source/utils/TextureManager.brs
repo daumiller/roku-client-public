@@ -322,12 +322,13 @@ function tmReceiveTexture(tmsg as object, screen as object) as boolean
             else
                 m.ReceiveCount = m.ReceiveCount + 1
 
-                ' TODO(schuyler): Should we notify the component? Call SetBitmap(invalid)?
-
                 str = "Handle failure by setting bitmap invalid. State: " + state.toStr() + "  Bitmap: " + type(tmsg.GetBitmap())
                 str = str + " URI: " + context.url
                 Debug(str)
 
+                context.textureRequest = invalid
+                context.component.pendingTexture = false
+                context.component.textureRequest = invalid
                 context.component.SetBitmap(invalid)
                 return true
             end if

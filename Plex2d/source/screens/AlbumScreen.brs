@@ -133,11 +133,8 @@ sub albumGetComponents()
     end if
 
     ' *** Background Artwork *** '
-    m.background = createImage(m.item, 1280, 720, { blur: 20, opacity: 70, background: Colors().ToHexString("Black") })
+    m.background = createBackgroundImage(m.item)
     m.background.thumbAttr = ["art", "parentThumb", "thumb"]
-    m.background.SetOrientation(m.background.ORIENTATION_LANDSCAPE)
-    m.background.cache = true
-    m.background.fade = true
     m.components.Push(m.background)
     m.SetRefreshCache("background", m.background)
 

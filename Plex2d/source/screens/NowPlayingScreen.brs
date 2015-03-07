@@ -103,12 +103,8 @@ sub nowplayingGetComponents()
     albumSmall = 400
 
     ' *** Background Artwork *** '
-    m.background = createImage(m.item, 1280, 720, { blur: 15, opacity: 70, background: Colors().ToHexString("Black") })
-    m.background.zOrderInit = 0
+    m.background = createBackgroundImage(m.item)
     m.background.thumbAttr = ["art", "parentThumb", "grandparentThumb", "thumb"]
-    m.background.SetOrientation(m.background.ORIENTATION_LANDSCAPE)
-    m.background.cache = true
-    m.background.fade = true
     m.components.Push(m.background)
 
     ' *** image *** '

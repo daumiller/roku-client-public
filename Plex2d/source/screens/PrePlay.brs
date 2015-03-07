@@ -244,10 +244,7 @@ sub preplayGetComponents()
 
     ' *** Background Artwork *** '
     if m.item.Get("art") <> invalid then
-        m.background = createImage(m.item, 1280, 720, { blur: 20, opacity: 70, background: Colors().ToHexString("Black") })
-        m.background.SetOrientation(m.background.ORIENTATION_LANDSCAPE)
-        m.background.cache = true
-        m.background.fade = true
+        m.background = createBackgroundImage(m.item)
         m.components.Push(m.background)
         m.SetRefreshCache("background", m.background)
     end if
