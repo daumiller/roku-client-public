@@ -111,11 +111,21 @@ sub gsShow()
         Application().StartRequest(request, context)
         m.gridContainer = context
 
+        ' TODO(schuyler): This is a bit of a hack to allow jump lists for Unwatched.
+        ' We can find a better solution when we solve filtering/browsing more generally.
         ' create requests for the jump items (only if we are using the ALL endpoint)
-        if m.jumpContainer.request = invalid and instr(1, m.path, "/all") > 0 and not instr(1, m.path, "sort=") > 0 then
+        if m.jumpContainer.request = invalid and (instr(1, m.path, "/all") > 0 or instr(1, m.path, "/unwatched") > 0) and not instr(1, m.path, "sort=") > 0 then
             ' support filtered endpoints (replace /all with /firstCharacter)
-            regex = CreateObject("roRegex", "/all", "")
-            jumpUrl = regex.Replace(m.path, "/firstCharacter")
+            regex = CreateObject("roRegex", "/(\w+)(\?|$)", "")
+            jumpUrl = regex.Replace(m.path, "/firstCharacter\2")
+            match = regex.Match(m.path)
+            if match[1] = "unwatched" then
+                if instr(1, jumpUrl, "?") then
+                    jumpUrl = jumpUrl + "&unwatched=1"
+                else
+                    jumpUrl = jumpUrl + "?unwatched=1"
+                end if
+            end if
             request = createPlexRequest(m.server, jumpUrl)
             context = request.CreateRequestContext("jump", createCallable("OnJumpResponse", m))
             Application().StartRequest(request, context)

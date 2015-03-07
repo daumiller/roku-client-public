@@ -89,8 +89,16 @@ end function
 
 function sectionsGetButtons() as object
     buttons = []
+
+    ' We could very easily allow any keys here. For example, we could
+    ' whitelist certain keys, or allow everything that isn't secondary.
+    ' We could allow By Folder. But for now, we're just allowing all and
+    ' unwatched. We'll reevaluate as we sort out filtering and browsing.
+    '
+    allowedKeys = {all: 1, unwatched: 1}
+
     for each container in m.buttonsContainer.items
-        if container.Get("key") = "all" then
+        if allowedKeys.DoesExist(container.Get("key", "")) then
             container.attrs.type = firstOf(container.Get("type"), m.contentType)
             buttons.push(m.createButton(container))
         end if
