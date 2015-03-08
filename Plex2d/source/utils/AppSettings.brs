@@ -485,18 +485,38 @@ sub settingsInitGlobals()
     ' it only changes the result of HasFeature(), so we can parse this once and
     ' store the results.
     channelsByCodec = {}
-    audioDecoders = device.GetAudioDecodeInfo()
-    for each codec in audioDecoders
-        numChannels = audioDecoders[codec].Tokenize(":")[0].toint()
-        if codec = "DTS" then
-            codec = "dca"
-        else if codec = "wma" then
-            codec = "wmav2"
-        else
-            codec = LCase(codec)
+
+    if CheckMinimumVersion([6, 1]) then
+        audioDecoders = device.GetAudioDecodeInfo()
+        for each codec in audioDecoders
+            numChannels = audioDecoders[codec].Tokenize(":")[0].toint()
+            if codec = "DTS" then
+                codec = "dca"
+            else if codec = "wma" then
+                codec = "wmav2"
+            else
+                codec = LCase(codec)
+            end if
+            channelsByCodec.AddReplace(codec, numChannels)
+        next
+    else
+        ' TODO(schuyler): Remove all of this once we can force 6.1 as a minimum
+        ' version. In the meantime, we only make a modest effort to respect
+        ' the surround sound preferences. They're no longer visible.
+        channelsByCodec["aac"] = 2
+        channelsByCodec["wmav2"] = 2
+        channelsByCodec["mp3"] = 2
+        channelsByCodec["flac"] = 2
+
+        if m.GetIntRegistry("surround_sound_ac3", 1, "preferences") = 1 then
+            channelsByCodec["ac3"] = 6
         end if
-        channelsByCodec.AddReplace(codec, numChannels)
-    next
+
+        if m.GetIntRegistry("surround_sound_dca", 1, "preferences") = 1 then
+            channelsByCodec["dca"] = 6
+        end if
+    end if
+
     m.globals["audioDecoders"] = channelsByCodec
 end sub
 
