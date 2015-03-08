@@ -97,7 +97,19 @@ function sectionsGetButtons() as object
 
     for each item in m.buttonsContext.items
         if allowedKeys.DoesExist(item.Get("key", "")) then
-            item.attrs.type = firstOf(item.Get("type"), m.contentType)
+            item.Set("type", firstOf(item.Get("type"), m.contentType, ""))
+
+            ' Convert the unwatched endpoint to a filtered endpoint. We'll
+            ' probably need to do this for any keys we may include.
+            if item.Get("key") = "unwatched" then
+                if item.Get("type", "") = "show" then
+                    key = "all?type=2&unwatchedLeaves=1"
+                else
+                    key = "all?unwatched=1"
+                end if
+                item.Set("key", key)
+            end if
+
             buttons.push(m.createButton(item))
         end if
     end for
