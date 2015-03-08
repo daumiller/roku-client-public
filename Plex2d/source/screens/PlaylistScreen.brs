@@ -350,6 +350,7 @@ sub playlistRefresh(request=invalid as dynamic, response=invalid as dynamic, con
     if m.itemPath <> invalid then
         m.ResetInit(m.itemPath)
         ApplyFunc(PreplayScreen().Refresh, m)
+        m.refocus = invalid
     end if
 end sub
 
