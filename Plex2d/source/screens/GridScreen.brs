@@ -533,10 +533,12 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
             viewGroup = item.container.Get("viewGroup", "")
 
             ' TODO(rob): handle the viewstate overlays differently (cleaner...)
+            thumbAttrs = invalid
             if contentType = "album" or contentType = "artist" then
                 gridItem.ReInit(item, item.GetOverlayTitle())
             else
                 if contentType = "episode" and viewGroup = contentType and item.Get("index") <> invalid then
+                    thumbAttrs = ["thumb", "art"]
                     title = "Episode " + item.Get("index")
                 else
                     title = item.GetOverlayTitle()
@@ -544,6 +546,7 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
                 gridItem.ReInit(item, title, item.GetViewOffsetPercentage(), item.GetUnwatchedCount(), item.IsUnwatched())
             end if
             gridItem.SetOrientation(m.orientation)
+            gridItem.SetThumbAttr(thumbAttrs)
             gridItem.setMetadata(item.attrs)
             gridItem.plexObject = item
             gridItem.SetFocusable("show_item")

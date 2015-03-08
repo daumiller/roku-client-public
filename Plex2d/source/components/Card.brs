@@ -12,6 +12,7 @@ function CardClass() as object
         obj.InitComponents = cardInitComponents
         obj.PerformLayout = cardPerformLayout
         obj.SetOrientation = cardSetOrientation
+        obj.SetThumbAttr = cardSetThumbAttr
 
         m.CardClass = obj
     end if
@@ -133,6 +134,12 @@ sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, 
         m.AddComponent(m.unwatched)
     end if
 
+end sub
+
+sub cardSetThumbAttr(thumbAttr=invalid as dynamic)
+    if m.image <> invalid then
+        m.image.thumbAttr = thumbAttr
+    end if
 end sub
 
 sub cardSetOrientation(orientation as integer)
