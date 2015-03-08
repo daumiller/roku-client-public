@@ -297,6 +297,10 @@ function compHandleMessage(msg as object) as boolean
 
         m.isKeyRepeat = false
         if keyCode >= 100 then
+            if m.DrawFocusOnRelease = true then
+                m.DrawFocusOnRelease = false
+                m.screen.DrawFocus(m.focusedItem, true)
+            end if
             m.OnKeyRelease(keyCode - 100)
             m.lastKey = -1
         else
@@ -326,6 +330,10 @@ sub compOnKeyHeld(timer as object)
         '
         if Application().HasQueuedMessage(IsKeyReleaseMessage) then
             timer.active = false
+            if m.DrawFocusOnRelease = true then
+                m.DrawFocusOnRelease = false
+                m.screen.DrawFocus(m.focusedItem, true)
+            end if
         else
             m.OnKeyPress(m.lastKey, true)
         end if
@@ -404,8 +412,7 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
             m.Trigger("OnFailedFocus", [direction, m.focusedItem])
         end if
     else if keyCode = m.kp_REV or keyCode = m.kp_FWD then
-        ' TODO(schuyler): Handle focus (big) shift
-        ' m.OnItemFocused(m.focusedItem)
+        if m.isKeyRepeat then m.DrawFocusOnRelease = true
         if keyCode = m.kp_FWD then
             m.OnFwdButton(m.focusedItem)
         else
@@ -967,7 +974,9 @@ sub compShiftComponents(shift as object, refocus=invalid as dynamic)
     perfTimer().Log("Shifted OFF screen items (fullShift)")
 
     ' draw the focus before we lazy load
-    m.screen.DrawFocus(m.focusedItem, true)
+    if m.DrawFocusOnRelease <> true then
+        m.screen.DrawFocus(m.focusedItem, true)
+    end if
 
     ' lazy-load any components off screen, but within our range (ll_triggerX)
     ' create a timer to load when the user has stopped shifting (LazyLoadOnTimer)
@@ -1146,7 +1155,9 @@ sub compOnFocus(toFocus as object, lastFocus=invalid as dynamic, direction=inval
     ' let the new focus know it's now focused after shifting
     m.OnFocusIn(toFocus, lastFocus)
 
-    m.screen.DrawFocus(toFocus, true)
+    if m.DrawFocusOnRelease <> true then
+        m.screen.DrawFocus(toFocus, true)
+    end if
 end sub
 
 sub compOnFocusIn(toFocus=invalid as dynamic, lastFocus=invalid as dynamic)

@@ -479,7 +479,9 @@ sub gsShiftComponents(shift as object, refocus=invalid as dynamic)
     perfTimer().Log("Shifted ON screen items, expect *high* ms  (partShift)")
 
     ' draw the focus directly after shifting all on screen components
-    m.screen.DrawFocus(m.focusedItem, true)
+    if m.DrawFocusOnRelease <> true then
+        m.screen.DrawFocus(m.focusedItem, true)
+    end if
 
     ' shift all off screen components. This will set the x,y postition and
     ' unload the components if offscreen by enough pixels (ll_unloadX)
