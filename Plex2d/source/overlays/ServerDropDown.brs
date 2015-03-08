@@ -15,10 +15,10 @@ sub sddoverlayGetComponents()
     buttonWidth = m.button.minWidth
     for each server in PlexServerManager().GetServers()
         ' calculate the dynamic width
-        serverWidth = m.button.customFonts.title.GetOneLineWidth(server.name, m.button.maxWidth)
-        ownerWidth = m.button.customFonts.title.GetOneLineWidth(tostr(server.owner), m.button.maxWidth)
-        if serverWidth > buttonWidth then buttonWidth = serverWidth
-        if ownerWidth > buttonWidth then buttonWidth = ownerWidth
+        titleWidth = m.button.customFonts.title.GetOneLineWidth(server.name, m.button.maxWidth)
+        subtitleWidth = m.button.customFonts.subtitle.GetOneLineWidth(firstOf(server.GetSubtitle(), ""), m.button.maxWidth)
+        if titleWidth > buttonWidth then buttonWidth = titleWidth
+        if subtitleWidth > buttonWidth then buttonWidth = subtitleWidth
 
         ' server ordering
         if server.owned then
@@ -59,7 +59,7 @@ function sddoverlayCreateButton(server as object, command as dynamic, width as i
     obj.width = width
     obj.height = height
     obj.padding = padding
-    obj.focusInside = true
+    obj.innerBorderFocus = true
     obj.zOrder = ZOrders().DROPDOWN
     obj.SetMetadata(server)
 

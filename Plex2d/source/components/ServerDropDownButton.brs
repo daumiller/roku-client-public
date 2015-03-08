@@ -37,7 +37,7 @@ sub sddbuttonInit(text as string, font as object,  maxHeight as integer)
     ' this level to conserve memory. Each drop down item will have a reference.
     m.customFonts = {
         title: FontRegistry().NORMAL,
-        subtitle: FontRegistry().SMALL,
+        subtitle: FontRegistry().NORMAL,
         glyph: FontRegistry().GetIconFont(11),
         status: FontRegistry().GetTextFont(20),
     }
@@ -55,7 +55,7 @@ sub sddbuttonInit(text as string, font as object,  maxHeight as integer)
     m.AddComponent(m.indicator)
 
     ' Max and Min width of the drop down options (server/owner name dependent)
-    m.maxWidth = 400
+    m.maxWidth = 450
     m.minWidth = 128
 end sub
 
