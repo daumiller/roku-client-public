@@ -144,21 +144,26 @@ sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
             innerPixels = 0
         end if
 
+        if component.focusSeparator = invalid then
+            component.focusSeparator = 0
+        end if
+
         focus = {
             x: component.x - numPixels - innerPixels,
             y: component.y - numPixels - innerPixels,
             w: component.width + (numPixels * 2) + (innerPixels * 2),
-            h: component.height + (numPixels * 2) + (innerPixels * 2),
+            h: component.height + (numPixels * 2) + (innerPixels * 2) - component.focusSeparator,
         }
         if innerPixels > 0 then
             innerBorder = {
                 x: numPixels
                 y: numPixels
                 w: component.width + innerPixels
-                h: component.height + innerPixels*2
+                h: component.height + innerPixels*2 - component.focusSeparator
             }
         end if
     end if
+
     focus.append({
         color: Colors().OrangeLight,
         zOrder: ZOrders().FOCUS,

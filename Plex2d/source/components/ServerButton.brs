@@ -62,6 +62,10 @@ function serverbuttonDraw(redraw=false as boolean) as object
         xOffset = 0
     end if
 
+    if m.focusSeparator <> invalid then
+        m.region.DrawRect(xOffset, m.height - m.focusSeparator, m.width - xOffset*2, m.focusSeparator, Colors().Black)
+    end if
+
     ' Include subtitle if server is shared
     titleText = tostr(m.server.name)
     subtitleText = m.server.GetSubtitle()

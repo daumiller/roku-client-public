@@ -49,6 +49,7 @@ sub sddoverlayGetComponents()
         comp = m.button.createButton(server, "selected_server", buttonWidth, buttonHeight, padding)
         vbox.AddComponent(comp)
     end for
+    comp.focusSeparator = invalid
 
     m.CalculatePosition(vbox)
 end sub
@@ -60,6 +61,7 @@ function sddoverlayCreateButton(server as object, command as dynamic, width as i
     obj.height = height
     obj.padding = padding
     obj.innerBorderFocus = true
+    obj.focusSeparator = 1
     obj.zOrder = ZOrders().DROPDOWN
     obj.SetMetadata(server)
 
