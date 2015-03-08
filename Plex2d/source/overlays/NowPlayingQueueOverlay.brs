@@ -85,7 +85,7 @@ sub npqoGetComponents()
 
     m.trackList = createVBox(false, false, false, 0)
     m.trackList.SetFrame(xOffset + padding, padding, trackPrefs.width, height - padding)
-    m.trackList.SetScrollable((padding + height) / 2, false, false, "right")
+    m.trackList.SetScrollable(AppSettings().GetHeight() / 2, false, false, "right")
     m.trackList.stopShiftIfInView = true
 
     ' *** Tracks *** '
@@ -134,7 +134,7 @@ sub npqoGetComponents()
 
     ' Background of focused item. We have to use a separate background
     ' component due to the aliasing issue.
-    m.focusBG = createBlock(Colors().GetAlpha("Black", 40))
+    m.focusBG = createBlock(Colors().GetAlpha("Black", 60))
     m.focusBG.setFrame(0, 0, trackPrefs.width, trackPrefs.height)
     m.focusBG.fixed = false
     m.focusBG.zOrderInit = -1

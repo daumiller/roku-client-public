@@ -268,7 +268,7 @@ sub albumGetComponents()
     ' Background of focused item.
     ' note: we cannot just change the background of the track composite due
     ' to the aliasing issues.
-    m.focusBG = createBlock(Colors().GetAlpha("Black", 40))
+    m.focusBG = createBlock(Colors().GetAlpha("Black", 60))
     m.focusBG.setFrame(0, 0, trackPrefs.width, trackPrefs.height)
     m.focusBG.fixed = false
     m.focusBG.zOrderInit = -1

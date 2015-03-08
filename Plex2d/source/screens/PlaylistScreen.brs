@@ -199,10 +199,10 @@ sub playlistGetComponents()
     ' for y and height, e.g. y=50, h=670.
 
     itemListY = m.header.GetPreferredHeight() + m.specs.childSpacing
-    itemListH = 670 - itemListY
+    itemListH = AppSettings().GetHeight() - itemListY
     m.itemList = createVBox(false, false, false, 0)
     m.itemList.SetFrame(m.specs.xOffset + m.specs.parentSpacing, itemListY, m.listPrefs.width, itemListH)
-    m.itemList.SetScrollable(itemListH / 2, true, true, invalid)
+    m.itemList.SetScrollable(AppSettings().GetHeight() / 2, true, true, invalid)
     m.itemList.stopShiftIfInView = true
     m.itemList.scrollOverflow = true
 
@@ -244,7 +244,7 @@ sub playlistGetComponents()
 
     ' Background of focused item. We cannot just change the background
     ' of the track composite due to the aliasing issues.
-    m.focusBG = createBlock(Colors().GetAlpha("Black", 40))
+    m.focusBG = createBlock(Colors().GetAlpha("Black", 60))
     m.focusBG.setFrame(0, 0, m.listPrefs.width, m.listPrefs.height)
     m.focusBG.fixed = false
     m.focusBG.zOrderInit = -1
