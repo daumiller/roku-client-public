@@ -42,7 +42,7 @@ sub listenersEnableListeners()
     end if
 end sub
 
-sub listenersDisableListeners()
+sub listenersDisableListeners(clear=false as boolean)
     if not m.listenersOn then return
     m.listenersOn = false
 
@@ -50,5 +50,6 @@ sub listenersDisableListeners()
         for each listener in m.listeners
             listener.subject.Off(listener.eventName, listener.callback)
         next
+        if clear then m.listeners.Clear()
     end if
 end sub

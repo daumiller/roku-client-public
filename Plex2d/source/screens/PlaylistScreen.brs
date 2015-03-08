@@ -1,8 +1,3 @@
-' TODO(rob): clean this up. This is just a modification of the AlbumScreen. We'll
-' need to completely redo the "trackList" which should look more like a mixed
-' Now Playing Queue overlay. We'll probably want a base PlaylistScreen that
-' Video/Audio and Photo playlists will inherit.
-
 function PlaylistScreen() as object
     if m.PlaylistScreen = invalid then
         obj = CreateObject("roAssociativeArray")
@@ -12,6 +7,7 @@ function PlaylistScreen() as object
 
         ' Methods
         obj.Init = playlistInit
+        obj.InitItem = playlistInitItem
         obj.Show = playlistShow
         obj.ResetInit = playlistResetInit
         obj.Refresh = playlistRefresh
@@ -20,8 +16,8 @@ function PlaylistScreen() as object
         obj.HandleCommand = playlistHandleCommand
         obj.GetButtons = playlistGetButtons
         obj.OnFocusIn = playlistOnFocusIn
+        obj.GetListComponent = playlistGetListComponent
         obj.SetNowPlaying = playlistSetNowPlaying
-        obj.GetTrackComponent = playlistGetTrackComponent
 
         ' Listener Methods
         obj.OnPlay = playlistOnPlay
@@ -56,25 +52,14 @@ sub playlistInit()
     ' Intialize custom fonts for this screen
     m.customFonts = {
         glyphs: FontRegistry().GetIconFont(32)
-        trackStatus: FontRegistry().GetIconFont(16)
+        trackStatus: FontRegistry().GetIconFont(20)
     }
 
     m.ResetInit(m.path)
-
-    ' Set up audio player listeners
-    m.DisableListeners()
-    if m.requestItem.Get("playlistType") = "audio" then
-        m.player = AudioPlayer()
-        m.AddListener(m.player, "playing", CreateCallable("OnPlay", m))
-        m.AddListener(m.player, "stopped", CreateCallable("OnStop", m))
-        m.AddListener(m.player, "paused", CreateCallable("OnPause", m))
-        m.AddListener(m.player, "resumed", CreateCallable("OnResume", m))
-    else
-        m.player = VideoPlayer()
-    end if
 end sub
 
 sub playlistResetInit(path=invalid as dynamic)
+    m.DisableListeners(true)
     m.server = m.requestItem.GetServer()
 
     ' path override (optional)
@@ -119,156 +104,24 @@ sub playlistShow()
 
     if m.requestContext.response <> invalid and m.childRequestContext.response <> invalid then
         if m.item <> invalid then
+            m.InitItem()
+
             ApplyFunc(ComponentsScreen().Show, m)
+
+            ' TODO(rob): This works just like the other preplay screens, but do we want
+            ' the << >> buttons to scroll quicker through the vertical list? We might
+            ' just want to keep this consistent, and it may be irrelevant once we have
+            ' support for scrolling acceleration.
 
             ' Load context for << >> navigation
             m.LoadContext()
         else
-            dialog = createDialog("Unable to load", "Sorry, we couldn't load the requested item.", m)
+            dialog = createDialog("Unable to load", "Sorry, we couldn't load the requested playlist.", m)
             dialog.AddButton("OK", "close_screen")
             dialog.HandleButton = preplayDialogHandleButton
             dialog.Show()
         end if
     end if
-end sub
-
-sub playlistGetComponents()
-    m.DestroyComponents()
-    m.focusedItem = invalid
-
-    ' set the duration, unless the PMS supplies it.
-    if m.item.Get("duration") = invalid and m.duration > 0 then
-        m.item.Set("duration", m.duration.toStr())
-    end if
-
-    ' *** Background Artwork *** '
-    m.background = createBackgroundImage(m.item)
-    m.background.thumbAttr = ["composite", "art", "parentThumb", "thumb"]
-    m.components.Push(m.background)
-    m.SetRefreshCache("background", m.background)
-
-    ' *** HEADER *** '
-    header = createHeader(m)
-    m.components.Push(header)
-
-    yOffset = 140
-    xOffset = 50
-    parentSpacing = 30
-    parentHeight = 434
-    parentWidth = parentHeight
-    childSpacing = 10
-
-    ' *** Buttons *** '
-    vbButtons = createVBox(false, false, false, childSpacing)
-    vbButtons.SetFrame(xOffset, yOffset, 100, 720 - yOffset)
-    vbButtons.ignoreFirstLast = true
-    for each comp in m.GetButtons()
-        vbButtons.AddComponent(comp)
-    end for
-    m.components.Push(vbButtons)
-    xOffset = xOffset + parentSpacing + vbButtons.width
-
-    ' *** playlist title ***
-    lineHeight = FontRegistry().NORMAL.GetOneLineHeight()
-    playlistTitle = createLabel(ucase(m.item.Get("title")), FontRegistry().NORMAL)
-    playlistTitle.SetFrame(xOffset, yOffset - childSpacing - lineHeight, parentWidth, lineHeight)
-    playlistTitle.SetColor(Colors().TextDim)
-    m.components.push(playlistTitle)
-
-    ' *** playlist image ***
-    m.image = createImage(m.item, parentWidth, parentHeight)
-    m.image.fade = true
-    m.image.cache = true
-    m.image.SetOrientation(m.image.ORIENTATION_SQUARE)
-    m.image.SetFrame(xOffset, yOffset, parentWidth, parentHeight)
-    m.components.push(m.image)
-    m.SetRefreshCache("image", m.image)
-
-    ' xOffset share with Summary and Track list
-    xOffset = xOffset + parentSpacing + parentWidth
-    width = 1230 - xOffset
-
-    ' *** Track List Area *** '
-    padding = 20
-    trackPrefs = {
-        background: &hffffff10,
-        width: 1230 - xOffset - padding,
-        height: 50,
-        fixed: false,
-        focusBG: true,
-        disallowExit: { down: true },
-        zOrder: 2
-    }
-
-    m.trackBG = createBlock(trackPrefs.background)
-    m.trackBG.zOrder = trackPrefs.zOrder
-    m.trackBG.setFrame(xOffset, header.GetPreferredHeight(), 1280 - xOffset, 720 - header.GetPreferredHeight())
-    m.components.Push(m.trackBG)
-
-    ' TODO(rob): HD/SD note. We need to set some contstants for safe viewable areas of the
-    ' screen. We have arbitrarily picked 50px. e.g. x=50, w=1230, so we'll assume the same
-    ' for y and height, e.g. y=50, h=670.
-
-    trackListY = header.GetPreferredHeight() + padding
-    trackListH = 670 - trackListY
-    m.trackList = createVBox(false, false, false, 0)
-    m.trackList.SetFrame(xOffset + padding, trackListY, trackPrefs.width, trackListH)
-    m.trackList.SetScrollable(trackListH / 2, true, true, invalid)
-    m.trackList.stopShiftIfInView = true
-    m.trackList.scrollOverflow = true
-
-    ' *** Tracks *** '
-    trackCount = m.children.Count()
-    ' create a shared region for the separator
-    sepRegion = CreateRegion(trackPrefs.width, 1, Colors().OverlayDark)
-    for index = 0 to trackCount - 1
-        item = m.children[index]
-        track = createTrack(item, FontRegistry().NORMAL, FontRegistry().SMALL, m.customFonts.trackStatus, trackCount)
-        track.SetIndex(index + 1)
-        track.Append(trackPrefs)
-        track.plexObject = item
-        track.trackIndex = index
-        track.SetFocusable("play")
-        m.trackList.AddComponent(track)
-        if m.focusedItem = invalid then m.focusedItem = track
-
-        if index < trackCount - 1 then
-            sep = createBlock(Colors().OverlayDark)
-            sep.region = sepRegion
-            sep.height = 1
-            sep.width = trackPrefs.width
-            sep.fixed = trackPrefs.fixed
-            sep.zOrder = trackPrefs.zOrder
-            m.trackList.AddComponent(sep)
-        end if
-    end for
-    m.components.Push(m.trackList)
-
-    ' Set the focus to the current AudioPlayer track, if applicable.
-    component = m.GetTrackComponent(m.player.GetCurrentItem())
-    if component <> invalid then
-        m.focusedItem = component
-        if m.player.isPlaying then
-            m.OnPlay(m.player, component.plexObject)
-        else if m.player.isPaused then
-            m.OnPause(m.player, component.plexObject)
-        end if
-    end if
-
-    ' Background of focused item.
-    ' note: we cannot just change the background of the track composite due
-    ' to the aliasing issues.
-    m.focusBG = createBlock(Colors().OverlayDark)
-    m.focusBG.setFrame(0, 0, trackPrefs.width, trackPrefs.height)
-    m.focusBG.fixed = false
-    m.focusBG.zOrderInit = -1
-    m.components.Push(m.focusBG)
-
-    ' Static description box
-    title = JoinArray([m.item.Get("year", ""), m.item.GetChildCountString()], " / ")
-    descBox = createStaticDescriptionBox(title, m.item.GetDuration())
-    descBox.setFrame(50, 630, 1280-50, 100)
-    m.components.Push(descBox)
 end sub
 
 sub playlistOnChildResponse(request as object, response as object, context as object)
@@ -288,6 +141,119 @@ sub playlistOnChildResponse(request as object, response as object, context as ob
     end if
 
     m.show()
+end sub
+
+sub playlistGetComponents()
+    m.DestroyComponents()
+    m.focusedItem = invalid
+
+    ' set the duration, unless the PMS supplies it.
+    if m.item.Get("duration") = invalid and m.duration > 0 then
+        m.item.Set("duration", m.duration.toStr())
+    end if
+
+    ' *** Background Artwork *** '
+    m.background = createBackgroundImage(m.item)
+    m.background.thumbAttr = ["composite", "art", "parentThumb", "thumb"]
+    m.components.Push(m.background)
+    m.SetRefreshCache("background", m.background)
+
+    ' *** HEADER *** '
+    m.header = createHeader(m)
+    m.components.Push(m.header)
+
+    ' *** Buttons *** '
+    vbButtons = createVBox(false, false, false, m.specs.childSpacing)
+    vbButtons.SetFrame(m.specs.xOffset, m.specs.yOffset, 100, 720 - m.specs.yOffset)
+    vbButtons.ignoreFirstLast = true
+    for each comp in m.GetButtons()
+        vbButtons.AddComponent(comp)
+    end for
+    m.components.Push(vbButtons)
+    m.specs.xOffset = m.specs.xOffset + m.specs.parentSpacing + vbButtons.width
+
+    ' *** playlist title ***
+    lineHeight = FontRegistry().NORMAL.GetOneLineHeight()
+    playlistTitle = createLabel("PLAYLISTS / " + ucase(m.item.Get("title")), FontRegistry().NORMAL)
+    playlistTitle.SetFrame(m.specs.xOffset, m.specs.yOffset - m.specs.childSpacing - lineHeight, m.specs.parentWidth, lineHeight)
+    m.components.push(playlistTitle)
+
+    ' *** playlist image ***
+    m.image = createImage(m.item, m.specs.parentWidth, m.specs.parentHeight)
+    m.image.fade = true
+    m.image.cache = true
+    m.image.SetOrientation(m.image.ORIENTATION_SQUARE)
+    m.image.SetFrame(m.specs.xOffset, m.specs.yOffset, m.specs.parentWidth, m.specs.parentHeight)
+    m.components.push(m.image)
+    m.SetRefreshCache("image", m.image)
+
+    ' xOffset share with Summary and Track list
+    m.specs.xOffset = m.specs.xOffset + m.specs.parentSpacing + m.specs.parentWidth
+    m.trackBG = createBlock(m.listPrefs.background)
+    m.trackBG.zOrder = m.listPrefs.zOrder
+    m.trackBG.setFrame(m.specs.xOffset, m.header.GetPreferredHeight(), 1280 - m.specs.xOffset, 720 - m.header.GetPreferredHeight())
+    m.components.Push(m.trackBG)
+
+    ' TODO(rob): HD/SD note. We need to set some contstants for safe viewable areas of the
+    ' screen. We have arbitrarily picked 50px. e.g. x=50, w=1230, so we'll assume the same
+    ' for y and height, e.g. y=50, h=670.
+
+    itemListY = m.header.GetPreferredHeight() + m.specs.childSpacing
+    itemListH = 670 - itemListY
+    m.itemList = createVBox(false, false, false, 0)
+    m.itemList.SetFrame(m.specs.xOffset + m.specs.parentSpacing, itemListY, m.listPrefs.width, itemListH)
+    m.itemList.SetScrollable(itemListH / 2, true, true, invalid)
+    m.itemList.stopShiftIfInView = true
+    m.itemList.scrollOverflow = true
+
+    ' *** Playlist Items *** '
+    trackCount = m.children.Count()
+    ' create a shared region for the separator
+    sepRegion = CreateRegion(m.listPrefs.width, 1, Colors().OverlayDark)
+    for index = 0 to trackCount - 1
+        item = m.children[index]
+        track = createTrack(item, FontRegistry().NORMAL, FontRegistry().SMALL, m.customFonts.trackStatus, trackCount, true)
+        track.Append(m.listPrefs)
+        track.plexObject = item
+        track.trackIndex = index
+        track.SetIndex(index + 1)
+        track.SetFocusable("play")
+        m.itemList.AddComponent(track)
+        if m.focusedItem = invalid then m.focusedItem = track
+
+        if index < trackCount - 1 then
+            sep = createBlock(Colors().OverlayDark)
+            sep.Append(m.listPrefs)
+            sep.region = sepRegion
+            sep.height = 1
+            m.itemList.AddComponent(sep)
+        end if
+    end for
+    m.components.Push(m.itemList)
+
+    ' Set the focus to the current AudioPlayer track, if applicable.
+    component = m.GetListComponent(m.player.GetCurrentItem())
+    if component <> invalid then
+        m.focusedItem = component
+        if m.player.isPlaying then
+            m.OnPlay(m.player, component.plexObject)
+        else if m.player.isPaused then
+            m.OnPause(m.player, component.plexObject)
+        end if
+    end if
+
+    ' Background of focused item. We cannot just change the background
+    ' of the track composite due to the aliasing issues.
+    m.focusBG = createBlock(Colors().GetAlpha("Black", 40))
+    m.focusBG.setFrame(0, 0, m.listPrefs.width, m.listPrefs.height)
+    m.focusBG.fixed = false
+    m.focusBG.zOrderInit = -1
+    m.components.Push(m.focusBG)
+
+    ' Static description box
+    descBox = createStaticDescriptionBox(m.item.GetChildCountString(), m.item.GetDuration())
+    descBox.setFrame(50, 630, 1280-50, 100)
+    m.components.Push(descBox)
 end sub
 
 function playlistGetButtons() as object
@@ -376,6 +342,73 @@ sub playlistOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
     end if
 end sub
 
+sub playlistOnPlayButton(item=invalid as dynamic)
+    m.HandleCommand("play", item)
+end sub
+
+sub playlistRefresh(request=invalid as dynamic, response=invalid as dynamic, context=invalid as dynamic)
+    if m.itemPath <> invalid then
+        m.ResetInit(m.itemPath)
+        ApplyFunc(PreplayScreen().Refresh, m)
+    end if
+end sub
+
+sub playlistInitItem() as object
+    ' These may change per item and since we use the same screen when context
+    ' switching (REV/REW), we'll have to modify them after we have set m.item.
+
+    m.specs = {
+        yOffset: 125, ' TODO(rob): this should be 148?, but that means our header height is wrong everywhere.
+        xOffset: 50,  ' TODO(rob): apprently our safe offsets are +/- 40 (not 50)
+        parentSpacing: 40,
+        parentHeight: 283,
+        parentWidth: 283,
+        childSpacing: 10,
+    }
+
+    m.listPrefs = {
+        background: Colors().GetAlpha(&hffffffff, 10),
+        fixed: false,
+        focusBG: true,
+        zOrder: 2
+    }
+
+    if m.item.Get("playlistType") = "audio" then
+        m.player = AudioPlayer()
+
+        m.listPrefs.width = 635
+        m.listPrefs.height = 73
+
+        m.AddListener(m.player, "playing", CreateCallable("OnPlay", m))
+        m.AddListener(m.player, "stopped", CreateCallable("OnStop", m))
+        m.AddListener(m.player, "paused", CreateCallable("OnPause", m))
+        m.AddListener(m.player, "resumed", CreateCallable("OnResume", m))
+    else
+        m.player = VideoPlayer()
+
+        m.listPrefs.width = 677
+        m.listPrefs.height = 120
+    end if
+end sub
+
+sub playlistOnPlay(player as object, item as object)
+    m.SetNowPlaying(item, true)
+end sub
+
+sub playlistOnStop(player as object, item as object)
+    m.SetNowPlaying(item, false)
+end sub
+
+sub playlistOnPause(player as object, item as object)
+    m.paused = m.GetListComponent(item)
+    m.SetNowPlaying(item, false)
+end sub
+
+sub playlistOnResume(player as object, item as object)
+    m.paused = invalid
+    m.SetNowPlaying(item, true)
+end sub
+
 sub playlistSetNowPlaying(plexObject as object, status=true as boolean)
     if not Application().IsActiveScreen(m) then return
 
@@ -389,39 +422,18 @@ sub playlistSetNowPlaying(plexObject as object, status=true as boolean)
         m.playing = invalid
     end if
 
-    component = m.GetTrackComponent(plexObject)
+    component = m.GetListComponent(plexObject)
     if component <> invalid then
         component.SetPlaying(status)
         m.playing = iif(status, component, invalid)
     end if
 end sub
 
-sub playlistOnPlay(player as object, item as object)
-    m.SetNowPlaying(item, true)
-end sub
-
-sub playlistOnStop(player as object, item as object)
-    m.SetNowPlaying(item, false)
-end sub
-
-sub playlistOnPause(player as object, item as object)
-    m.paused = m.GetTrackComponent(item)
-    m.SetNowPlaying(item, false)
-end sub
-
-sub playlistOnResume(player as object, item as object)
-    m.paused = invalid
-    m.SetNowPlaying(item, true)
-end sub
-
-function playlistGetTrackComponent(plexObject as dynamic) as dynamic
+function playlistGetListComponent(plexObject as dynamic) as dynamic
     if plexObject = invalid or m.item = invalid then return invalid
 
-    ' ignore checking for child if parent is different
-    if m.item.Get("ratingKey") <> plexObject.Get("parentRatingKey") then return invalid
-
     ' locate the component by the plexObect and return
-    for each track in m.trackList.components
+    for each track in m.itemList.components
         if track.plexObject <> invalid and plexObject.Get("key") = track.plexObject.Get("key") then
             return track
         end if
@@ -429,14 +441,3 @@ function playlistGetTrackComponent(plexObject as dynamic) as dynamic
 
     return invalid
 end function
-
-sub playlistOnPlayButton(item=invalid as dynamic)
-    m.HandleCommand("play", item)
-end sub
-
-sub playlistRefresh(request=invalid as dynamic, response=invalid as dynamic, context=invalid as dynamic)
-    if m.itemPath <> invalid then
-        m.ResetInit(m.itemPath)
-        ApplyFunc(PreplayScreen().Refresh, m)
-    end if
-end sub
