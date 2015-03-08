@@ -212,7 +212,7 @@ sub playlistGetComponents()
     sepRegion = CreateRegion(m.listPrefs.width, 1, Colors().OverlayDark)
     for index = 0 to trackCount - 1
         item = m.children[index]
-        track = createTrack(item, FontRegistry().NORMAL, FontRegistry().SMALL, m.customFonts.trackStatus, trackCount, true)
+        track = createTrack(item, FontRegistry().NORMAL, FontRegistry().NORMAL, m.customFonts.trackStatus, trackCount, true)
         track.Append(m.listPrefs)
         track.plexObject = item
         track.trackIndex = index
