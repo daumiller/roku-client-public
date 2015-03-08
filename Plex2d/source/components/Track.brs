@@ -141,6 +141,9 @@ sub trackInitComponents()
             m.subtitle.SetPadding(0, m.padding.right, 0, m.padding.left)
             m.AddComponent(m.subtitle)
         end if
+        m.time = createLabel(item.GetDuration(), m.customFonts.title)
+        m.time.SetPadding(m.padding.top, m.padding.right, m.padding.bottom, m.padding.left)
+        m.AddComponent(m.time)
     else
         if item.type = "episode" then
             subtitle = joinArray([item.Get("grandparentTitle"), item.GetSingleLineTitle()], " / ")
@@ -159,10 +162,6 @@ sub trackInitComponents()
         m.runtime.SetPadding(0, m.padding.right, 0, m.padding.left)
         m.AddComponent(m.runtime)
     end if
-
-    m.time = createLabel(item.GetDuration(), m.customFonts.title)
-    m.time.SetPadding(m.padding.top, m.padding.right, m.padding.bottom, m.padding.left)
-    m.AddComponent(m.time)
 end sub
 
 sub trackPerformLayout()
@@ -188,9 +187,13 @@ sub trackPerformLayout()
     end if
 
     ' track time
-    xOffsetTime = m.width - m.time.GetPreferredWidth() - spacing
-    yOffset = middle - m.time.GetPreferredHeight()/2
-    m.time.SetFrame(xOffsetTime, yOffset, m.time.GetPreferredWidth(), m.time.GetPreferredHeight())
+    if m.time <> invalid then
+        xOffsetTime = m.width - m.time.GetPreferredWidth() - spacing
+        yOffset = middle - m.time.GetPreferredHeight()/2
+        m.time.SetFrame(xOffsetTime, yOffset, m.time.GetPreferredWidth(), m.time.GetPreferredHeight())
+    else
+        xOffsetTime = m.width
+    end if
 
     ' title / subtitle / runtime
     height = m.title.GetPreferredHeight()
