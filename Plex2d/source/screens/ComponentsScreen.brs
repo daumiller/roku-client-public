@@ -118,12 +118,18 @@ sub compInit()
     m.shiftableComponents = CreateObject("roList")
     m.animatedComponents = CreateObject("roList")
 
-    ' lazy load timer ( loading off screen components )
+    ' lazy load timer (loading off screen components)
     m.lazyLoadTimer = createTimer("lazyLoad")
     m.lazyLoadTimer.SetDuration(m.ll_timerDur)
+    m.lazyLoadTimer.active = false
 end sub
 
 sub compShow()
+    ' deactivate the lazy load timer (do not invalidate)
+    if m.lazyLoadTimer <> invalid and m.lazyLoadTimer.active = true then
+        m.lazyLoadTimer.active = false
+    end if
+
     ' clear any components references (refreshing a screen)
     m.onscreenComponents.clear()
     m.shiftableComponents.clear()
