@@ -103,10 +103,10 @@ sub hubPerformLayout()
         component.fixed = false
 
         if m.layout = m.LAYOUT_HERO_3 and (m.ORIENTATION = m.ORIENTATION_LANDSCAPE or m.ORIENTATION = m.ORIENTATION_SQUARE) then
-            availableHeight = int(availableHeight/3) * 3
-            childHeight = availableHeight/3
+            childHeight = int((availableHeight - (m.spacing * 2)) / 3)
+            childWidth = m.GetWidthForOrientation(m.orientation, childHeight)
             heroHeight = availableHeight - childHeight - m.spacing
-            heroWidth = m.GetWidthForOrientation(m.orientation, heroHeight) + m.spacing
+            heroWidth = childWidth * 2 + m.spacing
             availableHeight = childHeight
         else if m.layout = m.LAYOUT_LANDSCAPE_1 or m.layout = m.LAYOUT_SQUARE_1 then
             heroHeight = availableHeight - availableHeight/3 - m.spacing
