@@ -248,7 +248,7 @@ function appProcessOneMessage(timeout as integer, ignoreAudio=false as boolean)
         ' Process any audio event immediately
         if type(msg) = "roUniversalControlEvent" then
             keyCode = msg.GetInt()
-            if (keyCode = m.kp_BK or keyCode - 100 = m.kp_BK) and Locks().IsLocked("BackButton") then
+            if (keyCode = ComponentsScreen().kp_BK or keyCode - 100 = ComponentsScreen().kp_BK) and Locks().IsLocked("BackButton") then
                 Debug(KeyCodeToString(keyCode) + " is disabled")
                 return timeout
             end if
