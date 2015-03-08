@@ -301,6 +301,13 @@ function mdeCanDirectPlay(media as object, part as object, videoStream as object
             return false
         end if
 
+        ' TODO(schuyler): We've reported this to Roku, they may fix it. If/when
+        ' they do, we should move this behind a firmware version check.
+        if videoStream.GetBool("headerStripping") and audioCodec = "ac3" then
+            Error("MDE: Header stripping with AC3 audio")
+            return false
+        end if
+
         ' Those were our problems, everything else should be OK.
         return true
     else if container = "hls" then
