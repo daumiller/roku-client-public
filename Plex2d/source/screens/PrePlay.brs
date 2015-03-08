@@ -768,6 +768,7 @@ sub preplayRefresh(request=invalid as dynamic, response=invalid as dynamic, cont
     m.refocus = computeRect(m.focusedItem)
     m.refocus.id = m.focusedItem.id
 
+    Application().ShowLoadingModal(m)
     m.Show()
 end sub
 
