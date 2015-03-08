@@ -1,0 +1,34 @@
+NEW:
+- Add support to delete media item
+- Add unwatched button to libraries
+- Playlist support - view / play / shuffle
+- Audio feedback (Advanced Settings / Menu Volume)
+- Grid paging via FWD/REV buttons
+- Hub paging via FWD/REV buttons
+- Move between preplay screens via FWD/REV button
+  - Move between Episodes in a Series
+  - Move between Movies, Albums and Playlist
+- Convert cinema trailers to a per-user pref
+- Allow additional languages for soft subtitles
+- Update header buttons - Indicators, Avatar and PMS logo
+- Simulate the OK button when PLAY is pressed in a dialog
+- Add support for Unwatched/Unavailable labels on preplay
+- Handle keyboard events on PIN screen (Roku remote app)
+
+FIXES:
+- Increase font size
+- Update server dropdown
+- Disable direct play of MKVs with header stripping and AC3
+- Respect offset parameter for flung video
+- Rework direct play decision for audio streams
+- Do not allow managed users the ability to sign out
+- Better image transitions (crossfade support)
+- Better support to cache images
+- Misc Performance improvements
+- Show related pivots on preplay regardless item having extras
+- Fix broken album images
+- Fix Direct Play when video has 2ch and 5.1ch audio streams in the same language
+- Fix possible issue where the video player may close unexpectedly
+- Fix Continue Watching hub item size.
+- Fix possible crash when clicking the related button on preplay
+- Fix early truncation in the Now Playing queue list
