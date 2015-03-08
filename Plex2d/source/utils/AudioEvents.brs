@@ -21,6 +21,9 @@ function AudioEvents() as object
         obj.keyPress["up"] = obj.clips.cursor
         obj.keyPress["down"] = obj.clips.cursor
 
+        obj.keyPress["fwd"] = obj.clips.cursor
+        obj.keyPress["rev"] = obj.clips.cursor
+
         obj.keyPress["ok"] = obj.clips.click
         obj.keyPress["play"] = obj.clips.click
 
