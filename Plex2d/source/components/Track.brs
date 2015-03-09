@@ -82,11 +82,11 @@ sub trackSetPlaying(playing=true as boolean)
             if comp.Equals(m.index) then
                 if m.isPlaying or m.isPaused then
                     if comp.origText = invalid then comp.origText = comp.text
-                    comp.SetText(iif(m.isPlaying, Glyphs().PLAY, Glyphs().PAUSE))
                     comp.font = m.customFonts.glyph
+                    comp.SetText(iif(m.isPlaying, Glyphs().PLAY, Glyphs().PAUSE), false, true)
                 else
-                    comp.SetText(comp.origText)
                     comp.font = m.customFonts.index
+                    if comp.origText <> invalid then comp.SetText(comp.origText, false, true)
                 end if
             end if
             comp.SetColor(iif(comp.Equals(m.subtitle), comp.fgColor, fgColor), m.bgColor)
@@ -112,7 +112,8 @@ sub trackInitComponents()
     end if
 
     m.index = createLabel(trackIndex, m.customFonts.index)
-    m.index.SetPadding(m.padding.top, m.padding.right, m.padding.bottom, m.padding.left)
+    m.index.valign = m.index.ALIGN_MIDDLE
+    m.index.SetPadding(0, m.padding.right, 0, m.padding.left)
     m.AddComponent(m.index)
 
     if m.isMixed = true then
@@ -174,8 +175,7 @@ sub trackPerformLayout()
 
     ' track index / status glyph
     if m.index <> invalid then
-        yOffset = middle - m.index.GetPreferredHeight()/2
-        m.index.SetFrame(xOffset, yOffset, m.index.GetPreferredWidth(), m.index.GetPreferredHeight())
+        m.index.SetFrame(xOffset, 0, m.index.GetPreferredWidth(), m.height)
     end if
     xOffset = xOffset + m.title.font.GetOneLineWidth(string(len(m.trackCount.toStr()), "0"), m.width) + spacing
 

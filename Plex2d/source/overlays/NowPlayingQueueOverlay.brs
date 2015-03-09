@@ -44,7 +44,7 @@ sub npqoInit()
 
     m.customFonts = {
         glyphs: FontRegistry().GetIconFont(32)
-        trackStatus: FontRegistry().GetIconFont(18)
+        trackStatus: FontRegistry().GetIconFont(20)
     }
 
     ' Set up audio player listeners
