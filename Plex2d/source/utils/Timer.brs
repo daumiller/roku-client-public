@@ -98,5 +98,5 @@ end function
 
 sub perfTimerLog(msg = "" as string)
     if m.active <> true or Logger().level > logger().LEVEL_VERBOSE then return
-    m.LogElapsedTime("++++++++++ PERFORMANCE: " + tostr(msg), true, true)
+    m.LogElapsedTime("++++++++++ PERFORMANCE: " + tostr(msg), true)
 end sub
