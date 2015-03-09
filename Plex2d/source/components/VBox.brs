@@ -348,24 +348,27 @@ sub vboxShiftComponents(shift as object, refocus=invalid as dynamic)
     ' this in the containers context, so we must make one more pass to get a list of all
     ' the on screen components after the shift.
     ' This logic has been optimized instead of using the generic methods
-    onScreenReplacment = CreateObject("roList")
-    for each component in m.screen.onScreenComponents
-        exclude = false
-        for each comp in partShift
-            if component.Equals(comp) then
-                exclude = true
-                exit for
-            end if
-        end for
+    ' We can safely ignore this step if an overlay is active.
+    if m.screen.overlayScreen.Count() = 0 then
+        onScreenReplacment = CreateObject("roList")
+        for each component in m.screen.onScreenComponents
+            exclude = false
+            for each comp in partShift
+                if component.Equals(comp) then
+                    exclude = true
+                    exit for
+                end if
+            end for
 
-        if not exclude then
-           component.GetFocusableItems(onScreenReplacment)
-        end if
-    next
-    for each component in partShift
-        component.GetFocusableItems(onScreenReplacment)
-    end for
-    m.screen.onScreenComponents = onScreenReplacment
+            if not exclude then
+               component.GetFocusableItems(onScreenReplacment)
+            end if
+        next
+        for each component in partShift
+            component.GetFocusableItems(onScreenReplacment)
+        end for
+        m.screen.onScreenComponents = onScreenReplacment
+    end if
 
     ' lazyload off screen components within our range. Remember we need to execute the
     ' lazyload routines in the screens context.
