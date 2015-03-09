@@ -1,0 +1,2 @@
+FIXES:
+- Fix possible crash on the Now Playing screen.
