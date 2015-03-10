@@ -71,6 +71,8 @@ function ComponentsScreen() as object
         obj.OnKeyRelease = compOnKeyRelease
         obj.OnPlayButton = compOnPlayButton
         obj.CancelRequests = compCancelRequests
+        obj.OnFwdButton = compOnFwdButton
+        obj.OnRevButton = compOnRevButton
 
         ' Focus handling
         obj.OnFocus = compOnFocus
@@ -1216,4 +1218,12 @@ end sub
 
 sub compCancelRequests()
     Application().CancelRequests(tostr(m.screenID))
+end sub
+
+sub compOnFwdButton(item=invalid as dynamic)
+    ' no-op
+end sub
+
+sub compOnRevButton(item=invalid as dynamic)
+    ' no-op
 end sub
