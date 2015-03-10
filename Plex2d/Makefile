@@ -22,6 +22,7 @@ include ../app.mk
 APPTITLE = $(APPNAME)Pass
 
 num_functions := $(shell grep -ri --include=*.brs 'end \(function\|sub\)' . | wc -l | tr -d ' ')
+timestamp := $(shell date +'%Y-%m-%d-%H:%M:%S')
 
 .PHONY: manifest count_functions test ninja rel
 
@@ -46,6 +47,7 @@ count_functions:
 
 screenshot:
 	$(CURL) -s -F passwd= -F mysubmit=Screenshot -F "archive=;filename=" -H "Expect:" "http://$(ROKU_DEV_TARGET)/plugin_inspect" > /dev/null
-	$(CURL) -s "http://$(ROKU_DEV_TARGET)/pkgs/dev.jpg" > roku_screenshot.jpg
+	$(CURL) -s "http://$(ROKU_DEV_TARGET)/pkgs/dev.jpg" > roku_screenshot-$(timestamp).jpg
+	$(shell ln -fs roku_screenshot-$(timestamp).jpg roku_screenshot.jpg)
 
 all: $(APPNAME)

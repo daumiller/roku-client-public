@@ -59,7 +59,7 @@ $(APPNAME): $(APPDEPS)
 	@if [ -d $(SOURCEREL)/$(APPNAME) ]; \
 	then \
 		(zip -0 -r "$(ZIPREL)/$(APPNAME).zip" . -i \*.png $(ZIP_EXCLUDE)); \
-		(zip -9 -r "$(ZIPREL)/$(APPNAME).zip" . -x \*~ -x \*.png -x Makefile $(ZIP_EXCLUDE)); \
+		(zip -9 -r "$(ZIPREL)/$(APPNAME).zip" . -x \*~ -x \*.png -x Makefile -x roku_screenshot\*.jpg $(ZIP_EXCLUDE)); \
 	else \
 		echo "Source for $(APPNAME) not found at $(SOURCEREL)/$(APPNAME)"; \
 	fi
