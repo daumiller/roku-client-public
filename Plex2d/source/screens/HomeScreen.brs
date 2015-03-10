@@ -176,9 +176,10 @@ sub homeOnPlaylistResponse(request as object, response as object, context as obj
     obj = CreateObject("roAssociativeArray")
     obj.Append(PlexObjectClass())
     obj.InitSynthetic(response.container, "Playlists")
+    obj.container.Set("type", "playlist")
+    obj.Set("type", "Playlist")
     obj.Set("title", "Playlists")
     obj.Set("key", response.container.address)
-    obj.Set("type", "playlist")
     context.item = obj
 
     m.Show()

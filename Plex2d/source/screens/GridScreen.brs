@@ -79,19 +79,19 @@ function createGridScreen(item as object, path=invalid as dynamic, rows=2 as int
 
     ' TODO(rob): we need a better way to determine orientation, or we might just need to
     ' always set it when calling the grid screen
-    containerType = item.Get("type")
+    m.containerType = firstOf(item.container.Get("type"), item.Get("type"))
     if orientation <> invalid then
         obj.orientation = orientation
-    else if containerType = invalid then
+    else if m.containerType = invalid then
         obj.orientation = ComponentClass().ORIENTATION_LANDSCAPE
-    else if containerType = "movie" or containerType = "show" or containerType = "episode" or containerType = "mixed" then
+    else if m.containerType = "movie" or m.containerType = "show" or m.containerType = "episode" or m.containerType = "mixed" then
         obj.orientation = ComponentClass().ORIENTATION_PORTRAIT
-    else if containerType = "photo" or containerType = "artist" or containerType = "album" or containerType = "playlist" then
+    else if m.containerType = "photo" or m.containerType = "artist" or m.containerType = "album" or m.containerType = "playlist" then
         obj.orientation = ComponentClass().ORIENTATION_SQUARE
     else
         obj.orientation = ComponentClass().ORIENTATION_LANDSCAPE
     end if
-    Debug("GridScreen: containerType=" + tostr(containerType) + ", orientation=" + tostr(obj.orientation))
+    Debug("GridScreen: containerType=" + tostr(m.containerType) + ", orientation=" + tostr(obj.orientation))
 
     ' how should we handle these variables?
     obj.rows = rows
@@ -182,7 +182,7 @@ function gsOnGridResponse(request as object, response as object, context as obje
     m.container = response.container
 
     ' obtain the contentType and viewGroup for UI decisions (overlay, orientation)
-    m.contentType = firstOf(m.container.Get("type"), m.item.type)
+    m.contentType = firstOf(m.container.Get("type"), m.containerType)
     m.viewGroup = m.container.Get("viewGroup", "")
 
     m.totalSize = response.container.getint("totalSize")
