@@ -98,8 +98,9 @@ function tmRemoveTextureByListId(listId as string, list as object) as integer
     ' Set the cached urls as pending delete. We'll remove the urls from
     ' the pending delete list if used by the new screen, or clear them.
     m.DeleteCache()
-
-    Debug("Texture Manager: " + tostr(m.cacheList.Count()) + " cached manually")
+    if AppSettings().GetGlobal("hasFirmware6_1") then
+        Debug("Texture Manager: " + tostr(m.cacheList.Count()) + " cached manually")
+    endif
     return removeCount
 end function
 
@@ -395,7 +396,7 @@ sub tmClearCache(clearAll=false as boolean)
     if clearAll then
         m.cacheList.Clear()
         m.cacheMapList.Clear()
-    else if m.cacheDelList.Count() > 0 then
+    else if not AppSettings().GetGlobal("hasFirmware6_1") or m.cacheDelList.Count() > 0 then
         for each key in m.cacheDelList
             m.cacheList.Delete(key)
             m.cacheMapList.Delete(key)

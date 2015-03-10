@@ -540,7 +540,7 @@ end function
 function GetFriendlyName() as string
     device = AppSettings().GetGlobal("roDeviceInfo")
 
-    if CheckMinimumVersion([6, 1]) then
+    if AppSettings().GetGlobal("hasFirmware6_1") then
         return device.GetFriendlyName()
     else
         obj = CreateObject("roURLTransfer")

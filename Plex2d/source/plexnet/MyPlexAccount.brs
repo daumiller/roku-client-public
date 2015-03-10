@@ -248,7 +248,7 @@ sub mpaUpdateHomeUsers()
         for each user in xml.user
             ' Roku doesn't handle 302 (on firmware < 6.1) so we'll have to resolve the redirect manually.
             ' TODO(rob): we should cache this and only update on change or when stale.
-            if user@thumb <> invalid and not CheckMinimumVersion([6, 1]) and instr(1, user@thumb, "http://www.gravatar.com") > 0 then
+            if user@thumb <> invalid and not AppSettings().GetGlobal("hasFirmware6_1") and instr(1, user@thumb, "http://www.gravatar.com") > 0 then
                 user.AddAttribute("thumb", ResolveRedirect(user@thumb))
             end if
             ' update the current users avatar (after ResolveRedirect)

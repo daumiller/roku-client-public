@@ -448,6 +448,7 @@ sub settingsInitGlobals()
 
     m.globals["rokuVersionStr"] = versionStr
     m.globals["rokuVersionArr"] = [major, minor, build]
+    m.globals["hasFirmware6_1"] = CheckMinimumVersion([6, 1])
 
     appInfo = CreateObject("roAppInfo")
     m.globals["appVersionStr"] = appInfo.GetVersion()
