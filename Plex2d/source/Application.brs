@@ -636,7 +636,7 @@ end sub
 function appCheckExclusions() as boolean
     ' basics we'll be verifying
     resolution = not AppSettings().GetGlobal("IsHD")
-    firmware = not CheckMinimumVersion([5, 6])
+    firmware = not CheckMinimumVersion([5, 5])
 
     if resolution then
         excluded = true
