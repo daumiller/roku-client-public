@@ -14,6 +14,7 @@ function PlayQueueClass() as object
         obj.windowSize = 0
 
         obj.Refresh = pqRefresh
+        obj.OnRefreshTimer = pqOnRefreshTimer
         obj.OnResponse = pqOnResponse
         obj.IsWindowed = pqIsWindowed
 
@@ -154,16 +155,38 @@ function createPlayQueueForId(server as object, contentType as string, id as int
     return obj
 end function
 
-sub pqRefresh(force=true as boolean)
+sub pqOnRefreshTimer(timer as object)
+    m.Refresh(true, false)
+end sub
+
+sub pqRefresh(force=true as boolean, delay=false as boolean)
     ' We refresh our play queue if the caller insists or if we only have a
     ' portion of our play queue loaded. In particular, this means that we don't
     ' refresh the play queue if we're asked to refresh because a new track is
     ' being played but we have the entire album loaded already.
     '
     if force or m.IsWindowed() then
-        request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id))
-        context = request.CreateRequestContext("refresh", createCallable("OnResponse", m))
-        Application().StartRequest(request, context)
+        if delay then
+            ' We occasionally want to refresh the PQ in response to moving to a
+            ' new item and starting playback, but if we refresh immediately then
+            ' we probably end up refreshing before PMS realizes we've moved on.
+            ' There's no great solution, but delaying our refresh by just a few
+            ' seconds makes us much more likely to get an accurate window (and
+            ' accurate selected IDs) from PMS.
+
+            if m.refreshTimer = invalid then
+                m.refreshTimer = createTimer("refresh")
+                m.refreshTimer.SetDuration(5000, false)
+                m.refreshTimer.callback = createCallable("OnRefreshTimer", m)
+            end if
+
+            m.refreshTimer.active = true
+            Application().AddTimer(m.refreshTimer, m.refreshTimer.callback)
+        else
+            request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id))
+            context = request.CreateRequestContext("refresh", createCallable("OnResponse", m))
+            Application().StartRequest(request, context)
+        end if
     end if
 end sub
 
@@ -198,49 +221,60 @@ sub pqOnResponse(request as object, response as object, context as object)
         m.supportsShuffle = not response.container.Has("playQueueLastAddedItemID")
         m.totalSize = response.container.GetInt("playQueueTotalCount")
         m.windowSize = response.items.Count()
+        m.version = response.container.GetInt("playQueueVersion")
         m.items = response.items
 
-        ' Calculate the current track index
-        m.playQueueItemOffset = response.container.GetInt("playQueueSelectedItemOffset")
-        m.playQueueSelectedMetadataItemID = response.container.Get("playQueueSelectedMetadataItemID", "")
-        playQueueOffset = 0
-        for index = 0 to m.items.Count() - 1
-            if m.items[index].Get("ratingKey", "") = m.playQueueSelectedMetadataItemID then
-                playQueueOffset = m.playQueueItemOffset - index + 1
-                exit for
-            end if
-        end for
+        ' Figure out the selected track index and offset. PMS tries to make some
+        ' of this easy, but it might not realize that we've advanced to a new
+        ' track, so we can't blindly trust it. On the other hand, it's possible
+        ' that PMS completely changed the PQ item IDs (e.g. upon shuffling), so
+        ' we might need to use its values. We iterate through the items and try
+        ' to find the item that we believe is selected, only settling for what
+        ' PMS says if we fail.
 
-        ' Determine if we have mixed parents
+        playQueueOffset = invalid
+        selectedId = invalid
+        pmsSelectedId = response.container.GetInt("playQueueSelectedItemID")
         lastItem = invalid
         m.isMixed = false
-        for index = 0 to m.items.Count() - 1
-            i = m.items[index]
-            i.Set("playQueueIndex", tostr(playQueueOffset + index))
 
-            if m.IsMixed <> true then
-                if i.Get("parentKey") = invalid then
-                    m.isMixed = true
-                else if lastItem <> invalid and i.Get("parentKey") <> lastItem.Get("parentKey") then
-                    m.isMixed = true
-                end if
+        for index = 0 to m.items.Count() - 1
+            item = m.items[index]
+
+            if playQueueOffset = invalid and item.GetInt("playQueueItemID") = pmsSelectedId then
+                playQueueOffset = response.container.GetInt("playQueueSelectedItemOffset") - index + 1
+
+                ' Update the index of everything we've already past.
+                for i = 0 to index - 1
+                    m.items[i].Set("playQueueIndex", tostr(playQueueOffset + i))
+                end for
             end if
-            lastItem = i
+
+            if playQueueOffset <> invalid then
+                item.Set("playQueueIndex", tostr(playQueueOffset + index))
+            end if
+
+            ' If we found the item that we believe is selected then we should
+            ' continue to treat it as selected.
+            ' TODO(schuyler): Should we be checking the metadata ID (rating key)
+            ' instead? I don't think it matters in practice, but it may be
+            ' more correct.
+            '
+            if selectedId = invalid and item.GetInt("playQueueItemID") = m.selectedId then
+                selectedId = m.selectedId
+            end if
+
+            if not m.isMixed then
+                if item.Get("parentKey") = invalid then
+                    m.isMixed = true
+                else
+                    m.isMixed = (lastItem <> invalid and item.Get("parentKey") <> lastItem.Get("parentKey"))
+                end if
+                lastItem = item
+            end if
         end for
 
-        newVersion = response.container.GetInt("playQueueVersion")
-
-        ' We may have changed the selected ID ourselves as we advanced to the
-        ' next item, and we may have refreshed before the first timeline
-        ' convinced PMS that we've moved on. We should never need to get this
-        ' info from PMS once we've started playing, so don't bother. The one
-        ' important exception is that if the version changed then our item IDs
-        ' probably changed along with it.
-        '
-        if m.selectedId = invalid or newVersion <> m.version then
-            m.selectedId = response.container.GetInt("playQueueSelectedItemID")
-            m.version = newVersion
-        end if
+        if selectedId = invalid then m.selectedId = pmsSelectedId
 
         ' TODO(schuyler): Set repeat as soon as PMS starts returning it
 

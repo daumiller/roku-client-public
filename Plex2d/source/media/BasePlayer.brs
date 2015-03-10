@@ -138,7 +138,7 @@ function bpAdvanceIndex(delta=1 as integer, updatePlayQueue=true as boolean) as 
 
     if updatePlayQueue then
         m.playQueue.selectedId = m.context[newIndex].item.GetInt("playQueueItemID")
-        m.playQueue.Refresh(false)
+        m.playQueue.Refresh(false, true)
     end if
 
     return newIndex
