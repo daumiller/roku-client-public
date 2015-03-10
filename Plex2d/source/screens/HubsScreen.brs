@@ -43,7 +43,7 @@ sub hubsOnResponse(request as object, response as object, context as object)
     context.response = response
     context.items = response.items
 
-    m.show()
+    m.Show()
 end sub
 
 function hubsHandleCommand(command as string, item as dynamic) as boolean

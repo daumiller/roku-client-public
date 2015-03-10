@@ -140,7 +140,7 @@ sub playlistOnChildResponse(request as object, response as object, context as ob
         end for
     end if
 
-    m.show()
+    m.Show()
 end sub
 
 sub playlistGetComponents()

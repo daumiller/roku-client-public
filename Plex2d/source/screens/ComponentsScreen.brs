@@ -89,7 +89,7 @@ end function
 
 sub compActivate()
     m.Init()
-    m.show()
+    m.Show()
 end sub
 
 sub compInit()
@@ -485,7 +485,7 @@ function compHandleCommand(command as string, item as dynamic) as boolean
     if command = "go_home" then
         Application().GoHome()
     else if command = "show_dropdown" then
-        item.show()
+        item.Show()
     else if command = "show_item" and item.plexObject <> invalid then
         ' We want to show a screen for a PlexObject of some sort. Look at the
         ' type and try to choose the best screen type.

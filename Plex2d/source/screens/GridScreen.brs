@@ -150,7 +150,7 @@ sub gsShow()
 end sub
 
 ' Handle jump response (firstCharacter)
-function gsOnJumpResponse(request as object, response as object, context as object) as object
+sub gsOnJumpResponse(request as object, response as object, context as object)
     response.ParseResponse()
     context.response = response
 
@@ -166,15 +166,15 @@ function gsOnJumpResponse(request as object, response as object, context as obje
         incr = incr + item.GetInt("size")
     end for
 
-    m.show()
-end function
+    m.Show()
+end sub
 
 ' Handle initial response from the endpoint request
-function gsOnGridResponse(request as object, response as object, context as object) as object
+sub gsOnGridResponse(request as object, response as object, context as object)
     ' Show a failure and pop the screen if the request failed.
-    if not response.isSuccess() then
+    if not response.IsSuccess() then
         m.ShowFailure()
-        return invalid
+        return
     end if
 
     response.ParseResponse()
@@ -209,8 +209,8 @@ function gsOnGridResponse(request as object, response as object, context as obje
         m.placeholders.push(placeholder)
     end for
 
-    m.show()
-end function
+    m.Show()
+end sub
 
 function gsHandleCommand(command as string, item as dynamic) as boolean
     handled = true

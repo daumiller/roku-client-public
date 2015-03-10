@@ -98,12 +98,13 @@ end sub
 sub preplayOnResponse(request as object, response as object, context as object)
     response.ParseResponse()
     context.response = response
-    if response.items = invalid then return
 
-    ' Will we ever receive more than one item here? If we do, we'll
-    ' end up using this context for << >> buttons
-    m.item = response.items[0]
-    m.SetContext(response.items, 0)
+    if response.items.Count() > 0 then
+        ' Will we ever receive more than one item here? If we do, we'll
+        ' end up using this context for << >> buttons
+        m.item = response.items[0]
+        m.SetContext(response.items, 0)
+    end if
 
     m.Show()
 end sub

@@ -208,7 +208,7 @@ sub artistOnChildResponse(request as object, response as object, context as obje
         end for
     end if
 
-    m.show()
+    m.Show()
 end sub
 
 function artistGetButtons() as object

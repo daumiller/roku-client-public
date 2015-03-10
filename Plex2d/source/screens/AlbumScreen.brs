@@ -297,7 +297,7 @@ sub albumOnChildResponse(request as object, response as object, context as objec
         end for
     end if
 
-    m.show()
+    m.Show()
 end sub
 
 function albumGetButtons() as object

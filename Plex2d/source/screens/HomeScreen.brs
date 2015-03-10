@@ -169,18 +169,19 @@ end function
 sub homeOnPlaylistResponse(request as object, response as object, context as object)
     response.ParseResponse()
     context.response = response
-    if response.container.GetInt("totalSize") = 0 then return
 
-    ' There may be a better way to do this, but we need to generate
-    ' a synthetic PlexObject to add a playlist button.
-    obj = CreateObject("roAssociativeArray")
-    obj.Append(PlexObjectClass())
-    obj.InitSynthetic(response.container, "Playlists")
-    obj.container.Set("type", "playlist")
-    obj.Set("type", "Playlist")
-    obj.Set("title", "Playlists")
-    obj.Set("key", response.container.address)
-    context.item = obj
+    if response.container.GetInt("totalSize") > 0 then
+        ' There may be a better way to do this, but we need to generate
+        ' a synthetic PlexObject to add a playlist button.
+        obj = CreateObject("roAssociativeArray")
+        obj.Append(PlexObjectClass())
+        obj.InitSynthetic(response.container, "Playlists")
+        obj.container.Set("type", "playlist")
+        obj.Set("type", "Playlist")
+        obj.Set("title", "Playlists")
+        obj.Set("key", response.container.address)
+        context.item = obj
+    end if
 
     m.Show()
 end sub
