@@ -116,7 +116,8 @@ sub trackInitComponents()
     m.index.SetPadding(0, m.padding.right, 0, m.padding.left)
     m.AddComponent(m.index)
 
-    if m.isMixed = true then
+    ' Include an image for mixed content or video items
+    if m.isMixed = true or item.IsVideoItem() then
         m.trackImage = createImage(m.plexObject, m.height, m.height)
         if item.type = "track" then
             m.trackImage.SetOrientation(ComponentClass().ORIENTATION_SQUARE)
@@ -128,6 +129,19 @@ sub trackInitComponents()
         end if
         m.trackImage.cache = true
         m.AddComponent(m.trackImage)
+    end if
+
+    ' Include watched status overlays for video items
+    if m.trackImage <> invalid and item.IsVideoItem() then
+        if item.GetViewOffsetPercentage() > 0 then
+            m.progress = createProgressBar(item.GetViewOffsetPercentage(), Colors().OverlayVeryDark , Colors().Orange)
+            m.AddComponent(m.progress)
+        else if item.IsUnwatched() then
+            m.unwatched = createIndicator(Colors().Orange, FontRegistry().NORMAL.GetOneLineHeight())
+            m.unwatched.valign = m.unwatched.ALIGN_TOP
+            m.unwatched.halign = m.unwatched.JUSTIFY_RIGHT
+            m.AddComponent(m.unwatched)
+        end if
     end if
 
     m.title = createLabel(item.Get("title", ""), m.customFonts.title)
@@ -182,7 +196,19 @@ sub trackPerformLayout()
     if m.trackImage <> invalid then
         height = cint(m.height * .726)
         width = m.trackImage.GetWidthForOrientation(m.trackImage.orientation, height)
-        m.trackImage.SetFrame(xOffset, middle - height/2, width, height)
+        yOffset = middle - height/2
+        m.trackImage.SetFrame(xOffset, yOffset, width, height)
+
+        if m.unwatched <> invalid or m.progress <> invalid then
+            ' composite needs to be alpha enabled for the overlay
+            m.alphaEnable = true
+            if m.progress <> invalid and m.progress.percent > 0 then
+                progressHeight = 5
+                m.progress.SetFrame(xOffset, yOffset + height - progressHeight, width, progressHeight)
+            else if m.unwatched <> invalid then
+                m.unwatched.SetFrame(xOffset, yOffset, width, m.unwatched.GetPreferredHeight())
+            end if
+        end if
         xOffset = xOffset +m.trackImage.GetPreferredWidth() + spacing
     end if
 
