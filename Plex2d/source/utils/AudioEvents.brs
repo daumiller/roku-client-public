@@ -58,16 +58,12 @@ sub audioeventsOnKeyPress(keyCode as integer)
 end sub
 
 sub audioeventsOnPress(key as string)
-    if key = "back" and Locks().IsLocked("BackButton") then return
-
     if type(m.keyPress[key]) = "roAudioResource" then
         m.keyPress[key].Trigger(m.volume)
     end if
 end sub
 
 sub audioeventsOnRelease(key as string)
-    if key = "back" and Locks().IsLocked("BackButton") then return
-
     if type(m.keyRelease[key]) = "roAudioResource" then
         m.keyRelease[key].Trigger(m.volume)
     end if
