@@ -27,7 +27,7 @@ function mdeChooseMedia(item as object) as object
     ' See if we're missing media/stream details for this item.
     if item.IsLibraryItem() and item.IsVideoItem() and item.mediaItems.Count() > 0 and not item.mediaItems[0].HasStreams() then
         ' TODO(schuyler): Fetch the details
-        Fatal("Can't make media choice, missing details")
+        Warn("Can't make media choice, missing details")
     end if
 
     ' Take a first pass through the media items to create a list of candidates
