@@ -53,6 +53,7 @@ sub apStop()
     if m.context <> invalid then
         m.player.Stop()
         m.SetPlayState(m.STATE_STOPPED)
+        m.UpdateNowPlaying()
         m.Trigger("stopped", [m, m.GetCurrentItem()])
         ' TODO(rob): do we want to keep/reset the last position on stop?
         m.curIndex = 0
