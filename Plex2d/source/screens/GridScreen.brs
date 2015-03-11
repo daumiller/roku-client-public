@@ -79,19 +79,29 @@ function createGridScreen(item as object, path=invalid as dynamic, rows=2 as int
 
     ' TODO(rob): we need a better way to determine orientation, or we might just need to
     ' always set it when calling the grid screen
-    m.containerType = firstOf(item.container.Get("type"), item.Get("type"))
+    obj.containerType = firstOf(item.container.Get("type"), item.Get("type"))
+
+    ' Prefer the specific item type if mixed
+    if obj.containerType = "mixed" then obj.containerType = firstOf(item.Get("type"), obj.containerType)
+
+    ' Handle endpoints where the container type is invalid and the item type is an episode.
+    ' e.g. "home.ondeck" which are all episodes, but we display them as portrait (mixed)
+    if item.container.Get("type") = invalid and item.Get("type") = "episode" then
+        obj.containerType = "mixed"
+    end if
+
     if orientation <> invalid then
         obj.orientation = orientation
-    else if m.containerType = invalid then
+    else if obj.containerType = invalid or obj.containerType = "season" or obj.containerType = "episode" then
         obj.orientation = ComponentClass().ORIENTATION_LANDSCAPE
-    else if m.containerType = "movie" or m.containerType = "show" or m.containerType = "episode" or m.containerType = "mixed" then
+    else if obj.containerType = "movie" or obj.containerType = "show" or obj.containerType = "mixed" then
         obj.orientation = ComponentClass().ORIENTATION_PORTRAIT
-    else if m.containerType = "photo" or m.containerType = "artist" or m.containerType = "album" or m.containerType = "playlist" then
+    else if obj.containerType = "photo" or obj.containerType = "artist" or obj.containerType = "album" or obj.containerType = "playlist" then
         obj.orientation = ComponentClass().ORIENTATION_SQUARE
     else
         obj.orientation = ComponentClass().ORIENTATION_LANDSCAPE
     end if
-    Debug("GridScreen: containerType=" + tostr(m.containerType) + ", orientation=" + tostr(obj.orientation))
+    Debug("GridScreen: containerType=" + tostr(obj.containerType) + ", orientation=" + tostr(obj.orientation))
 
     ' how should we handle these variables?
     obj.rows = rows
