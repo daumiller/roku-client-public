@@ -90,6 +90,7 @@ end sub
 sub nowplayingGetComponents()
     m.DestroyComponents()
     m.focusedItem = invalid
+    m.hiddenFocusedItem = invalid
 
     yOffset = 50
     xOffset = 50
@@ -227,6 +228,10 @@ function nowplayingHandleCommand(command as string, item=invalid as dynamic) as 
 
     if m.focusTimer <> invalid then m.focusTimer.Mark()
 
+    if m.hiddenFocusedItem <> invalid then
+        m.OnFocusIn(m.hiddenFocusedItem)
+    end if
+
     if command = "playToggle" then
         if m.player.IsPlaying then
             m.player.Pause()
@@ -301,9 +306,15 @@ end function
 sub nowplayingOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
     ApplyFunc(ComponentsScreen().OnFocusIn, m, [toFocus, lastFocus])
 
+    if m.hiddenFocusedItem <> invalid then
+        m.focusedItem = m.hiddenFocusedItem
+        m.hiddenFocusedItem = invalid
+        toFocus = m.focusedItem
+    end if
     toFocus.SetColor(Colors().OrangeLight)
     toFocus.Draw(true)
-    if lastFocus <> invalid then
+
+    if lastFocus <> invalid and not lastFocus.Equals(toFocus) then
         lastFocus.SetColor(firstOf(lastFocus.statusColor, Colors().TextDim))
         lastFocus.Draw(true)
     end if
@@ -338,11 +349,7 @@ sub nowplayingOnFocusTimer(timer as object)
     if m.focusedItem <> invalid then
         m.focusedItem.SetColor(firstOf(m.focusedItem.statusColor, Colors().TextDim))
         m.focusedItem.Draw(true)
-
-        ' set the last focus (to refocus) and invalidate the current.
-        m.lastFocusedItem = m.focusedItem
-        m.focusedItem = invalid
-
+        m.hiddenFocusedItem = m.focusedItem
         m.Refresh()
     end if
 end sub
