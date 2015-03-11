@@ -537,9 +537,13 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
             if contentType = "album" or contentType = "artist" then
                 gridItem.ReInit(item, item.GetOverlayTitle())
             else
-                if contentType = "episode" and viewGroup = contentType and item.Get("index") <> invalid then
+                if contentType = "episode" and viewGroup = contentType then
                     thumbAttrs = ["thumb", "art"]
-                    title = "Episode " + item.Get("index")
+                    if item.Get("index") <> invalid then
+                        title = "Episode " + item.Get("index")
+                    else
+                        title = item.GetOverlayTitle()
+                    end if
                 else
                     title = item.GetOverlayTitle()
                 end if
