@@ -1,0 +1,9 @@
+NEW:
+ - Lower minimum firmware version to 5.5
+
+FIXES:
+ - Update now playing immediately when we stop a track
+ - Fix grid orientation regression and handle stacked episodes grid layout
+ - Fix episode grid layout and overlay for date based episodes
+ - Fix selected item for large play queues
+ - Fix crash when using firmware < 6.1
