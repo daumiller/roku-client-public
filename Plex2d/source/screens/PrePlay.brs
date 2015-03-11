@@ -507,7 +507,7 @@ function preplayGetButtons() as object
         buttons.Push({text: Glyphs().EQ, command: "settings", useIndicator: true})
     end if
 
-    if m.item.IsUnwatched() then
+    if m.item.IsUnwatched() or m.item.InProgress() then
         buttons.Push({text: Glyphs().SCROBBLE, command: "scrobble"})
     else
         buttons.Push({text: Glyphs().UNSCROBBLE, command: "unscrobble"})
