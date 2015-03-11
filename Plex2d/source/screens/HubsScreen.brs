@@ -166,7 +166,7 @@ function hubsCreateHub(container) as dynamic
 
         ' TODO(rob): handle the viewstate overlays differently (cleaner...)
         contentType = item.Get("type", "")
-        if contentType = "album" or contentType = "artist" then
+        if contentType = "album" or contentType = "artist" or contentType = "playlist" then
             card = createCard(item, item.GetOverlayTitle())
         else
             card = createCard(item, title, item.GetViewOffsetPercentage(), item.GetUnwatchedCount(), item.IsUnwatched())

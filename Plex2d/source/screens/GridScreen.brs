@@ -544,7 +544,7 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
 
             ' TODO(rob): handle the viewstate overlays differently (cleaner...)
             thumbAttrs = invalid
-            if contentType = "album" or contentType = "artist" then
+            if contentType = "album" or contentType = "artist" or contentType = "playlist" then
                 gridItem.ReInit(item, item.GetOverlayTitle())
             else
                 if contentType = "episode" and viewGroup = contentType then
