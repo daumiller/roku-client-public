@@ -47,8 +47,9 @@ function pbDraw(redraw=false as boolean) as object
     m.InitRegion()
 
     ' draw the progress bar on the existing region
+    delta = iif(m.height > 2, 1, 0)
     if m.IsAnimated = false then
-        m.region.DrawRect(0, 0, m.fgWidth, m.height, m.fgColor)
+        m.region.DrawRect(0, delta, m.fgWidth, m.height - delta*2, m.fgColor)
     end if
 
     return [m]

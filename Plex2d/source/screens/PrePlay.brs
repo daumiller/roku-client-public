@@ -302,7 +302,7 @@ sub preplayGetComponents()
     ' *** Progress Bar *** '
     if m.item.GetViewOffsetPercentage() > 0 then
         progress = createProgressBar(m.item.GetViewOffsetPercentage(), Colors().Transparent, Colors().Orange)
-        progress.setFrame(xOffset - spacing, descBlock.y, descBlock.width - xOffset + spacing, 6)
+        progress.setFrame(xOffset - spacing, descBlock.y - 6, descBlock.width - xOffset + spacing, 6)
         progress.IsAnimated = true
         m.components.Push(progress)
     end if
