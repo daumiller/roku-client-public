@@ -6,6 +6,7 @@ function IndicatorClass() as object
         obj.ClassName = "Indicator"
 
         obj.draw = indiDraw
+        obj.SetDimensions = indiSetDimensions
 
         m.IndicatorClass = obj
     end if
@@ -19,28 +20,32 @@ function createIndicator(color as integer, height as integer, alphaBorder=false 
 
     obj.Init()
 
-    obj.height = height
-    obj.width = height
     obj.alphaBorder = alphaBorder
-
-    ' alpha border only works if you are drawing directly onto another bitmap,
-    ' e.g. Label().DrawIndicator(). The height (size) of the region won't change,
-    ' but we will resize the non transparent part of the indicator to fit within
-    ' the requested dimensions.
-    if obj.alphaBorder then
-        obj.size = int(obj.height * 0.7)
-    else
-        obj.size = obj.height - 1
-    end if
-    obj.sizeOffset = obj.height - obj.size
-
     obj.bgColor = (color and &hffffff00)
     obj.fgColor = color
     obj.halign = obj.JUSTIFY_RIGHT
     obj.valign = obj.ALIGN_BOTTOM
 
+    obj.SetDimensions(height, height)
+
     return obj
 end function
+
+sub indiSetDimensions(width as integer, height as integer)
+    m.width = width
+    m.height = height
+
+    ' alpha border only works if you are drawing directly onto another bitmap,
+    ' e.g. Label().DrawIndicator(). The height (size) of the region won't change,
+    ' but we will resize the non transparent part of the indicator to fit within
+    ' the requested dimensions.
+    if m.alphaBorder then
+        m.size = int(m.height * 0.7)
+    else
+        m.size = m.height - 1
+    end if
+    m.sizeOffset = m.height - m.size
+end sub
 
 function indiDraw(redraw=false as boolean) as object
     if redraw = false and m.region <> invalid then return [m]
