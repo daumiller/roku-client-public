@@ -145,16 +145,16 @@ sub nowplayingGetComponents()
 
     m.grandparentTitle = createLabel(m.item.Get("grandparentTitle"), m.customFonts.title)
     m.grandparentTitle.width = vbox.width
-    m.grandparentTitle.SetColor(Colors().TextLight)
+    m.grandparentTitle.SetColor(Colors().TextLht)
     m.parentTitle = createLabel(m.item.Get("parentTitle"), m.customFonts.title)
     m.parentTitle.width = vbox.width
-    m.parentTitle.SetColor(Colors().TextLight)
+    m.parentTitle.SetColor(Colors().TextLht)
     m.title = createLabel(m.item.Get("title"), m.customFonts.titleStrong)
     m.title.width = vbox.width
 
     timeString = "0:00 / " + m.item.GetDuration()
     m.time = createLabel(timeString, m.customFonts.title)
-    m.time.SetColor(Colors().TextLight)
+    m.time.SetColor(Colors().TextLht)
     m.time.width = vbox.width
 
     vbox.AddComponent(m.grandparentTitle)

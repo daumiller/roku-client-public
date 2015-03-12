@@ -23,8 +23,9 @@ function Colors() as object
         obj.Subtitle = &h999999ff
 
         ' These are dependent on the regions background color
-        obj.TextLight = &hffffffe0
-        obj.TextDim = &hffffff80
+        obj.TextLht = obj.GetAlpha(&hffffffff, 90)
+        obj.TextMed = obj.GetAlpha(&hffffffff, 75)
+        obj.TextDim = obj.GetAlpha(&hffffffff, 50)
 
         obj.Transparent = &h00000000
         obj.Black = &h000000ff

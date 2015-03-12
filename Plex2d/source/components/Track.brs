@@ -153,7 +153,7 @@ sub trackInitComponents()
         if m.IsMixed then
             subtitle = joinArray([item.Get("grandparentTitle"), item.Get("parentTitle")], " / ")
             m.subtitle = createLabel(subtitle, m.customFonts.subtitle)
-            m.subtitle.SetColor(Colors().TextDim)
+            m.subtitle.SetColor(Colors().TextMed)
             m.subtitle.SetPadding(0, m.padding.right, 0, m.padding.left)
             m.AddComponent(m.subtitle)
         end if
@@ -168,17 +168,17 @@ sub trackInitComponents()
                 subtitle = joinArray([item.Get("grandparentTitle"), item.GetSingleLineTitle()], " / ")
             end if
             m.subtitle = createLabel(subtitle, m.customFonts.subtitle)
-            m.subtitle.SetColor(Colors().TextDim)
+            m.subtitle.SetColor(Colors().TextMed)
             m.subtitle.SetPadding(0, m.padding.right, 0, m.padding.left)
             m.AddComponent(m.subtitle)
         else
             m.subtitle = createLabel(item.Get("year"), m.customFonts.subtitle)
-            m.subtitle.SetColor(Colors().TextDim)
+            m.subtitle.SetColor(Colors().TextMed)
             m.subtitle.SetPadding(0, m.padding.right, 0, m.padding.left)
             m.AddComponent(m.subtitle)
         end if
         m.runtime = createLabel(item.GetDuration(), m.customFonts.subtitle)
-        m.runtime.SetColor(Colors().TextDim)
+        m.runtime.SetColor(Colors().TextMed)
         m.runtime.SetPadding(0, m.padding.right, 0, m.padding.left)
         m.AddComponent(m.runtime)
     end if
