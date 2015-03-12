@@ -352,6 +352,9 @@ sub psmStartSelectedServerSearch(reset=false as boolean)
 end sub
 
 sub psmOnAccountChange(account as dynamic, reallyChanged as boolean)
+    ' Clear any AudioPlayer data before invalidating the active server
+    if reallyChanged then AudioPlayer().Cleanup()
+
     if account.isSignedIn then
         ' If the user didn't really change, such as selecting the previous user
         ' on the lock screen, then we don't need to clear anything. We can
