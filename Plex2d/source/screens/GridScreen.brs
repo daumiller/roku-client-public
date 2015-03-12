@@ -37,6 +37,9 @@ end function
 sub gsInit()
     ApplyFunc(ComponentsScreen().Init, m)
 
+    m.spacing = 10
+    m.height = 445
+
     ' use default path if not overridden
     if m.path = invalid then
         m.path = m.item.GetAbsolutePath("key")
@@ -75,8 +78,6 @@ function createGridScreen(item as object, path=invalid as dynamic, rows=2 as int
     obj.item = item
     obj.path = path
 
-    obj.Init()
-
     ' TODO(rob): we need a better way to determine orientation, or we might just need to
     ' always set it when calling the grid screen
     obj.containerType = firstOf(item.container.Get("type"), item.Get("type"))
@@ -90,9 +91,14 @@ function createGridScreen(item as object, path=invalid as dynamic, rows=2 as int
         obj.containerType = "mixed"
     end if
 
+    ' Force episodes and seasons into their own screen
+    if obj.containerType = "episode" or obj.containerType = "season" then
+        return createSeasonScreen(item, path)
+    end if
+
     if orientation <> invalid then
         obj.orientation = orientation
-    else if obj.containerType = invalid or obj.containerType = "season" or obj.containerType = "episode" then
+    else if obj.containerType = invalid then
         obj.orientation = ComponentClass().ORIENTATION_LANDSCAPE
     else if obj.containerType = "movie" or obj.containerType = "show" or obj.containerType = "mixed" then
         obj.orientation = ComponentClass().ORIENTATION_PORTRAIT
@@ -101,12 +107,11 @@ function createGridScreen(item as object, path=invalid as dynamic, rows=2 as int
     else
         obj.orientation = ComponentClass().ORIENTATION_LANDSCAPE
     end if
-    Debug("GridScreen: containerType=" + tostr(obj.containerType) + ", orientation=" + tostr(obj.orientation))
 
-    ' how should we handle these variables?
+    obj.Init()
     obj.rows = rows
-    obj.spacing = 10
-    obj.height = 445
+
+    Debug("GridScreen: containerType=" + tostr(obj.containerType) + ", orientation=" + tostr(obj.orientation))
 
     return obj
 end function

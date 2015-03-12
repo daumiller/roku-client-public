@@ -1,4 +1,3 @@
-' TODO(rob): check if media IsAccessible
 function PreplayScreen() as object
     if m.PreplayScreen = invalid then
         obj = CreateObject("roAssociativeArray")
@@ -228,7 +227,7 @@ function preplayHandleCommand(command as string, item as dynamic) as boolean
     else if command = "go_to_show" then
         Application().PushScreen(createPreplayContextScreen(m.item, m.item.Get("grandparentKey")))
     else if command = "go_to_season" then
-        Application().PushScreen(createGridScreen(m.item, m.item.Get("parentKey") + "/children", 2, ComponentClass().ORIENTATION_LANDSCAPE))
+        Application().PushScreen(createSeasonScreen(m.item, m.item.Get("parentKey")))
     else if not ApplyFunc(ComponentsScreen().HandleCommand, m, [command, item])
         handled = false
     end if

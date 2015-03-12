@@ -1,33 +1,26 @@
-function PlaylistScreen() as object
-    if m.PlaylistScreen = invalid then
+function SeasonScreen() as object
+    if m.SeasonScreen = invalid then
         obj = CreateObject("roAssociativeArray")
         obj.Append(ContextListScreen())
 
-        obj.screenName = "Playlist Screen"
+        obj.screenName = "Episodes Screen"
 
         ' Methods
-        obj.InitItem = playlistInitItem
-        obj.GetComponents = playlistGetComponents
+        obj.InitItem = seasonInitItem
+        obj.GetComponents = seasonGetComponents
 
-        ' Methods for playlists
-        obj.GetListComponent = playlistGetListComponent
-        obj.SetNowPlaying = playlistSetNowPlaying
+        ' Methods overrides
+        obj.LoadContext = seasonLoadContext
 
-        ' Listener Methods
-        obj.OnPlay = playlistOnPlay
-        obj.OnStop = playlistOnStop
-        obj.OnPause = playlistOnPause
-        obj.OnResume = playlistOnResume
-
-        m.PlaylistScreen = obj
+        m.SeasonScreen = obj
     end if
 
-    return m.PlaylistScreen
+    return m.SeasonScreen
 end function
 
-function createPlaylistScreen(item as object, path=invalid as dynamic) as object
+function createSeasonScreen(item as object, path=invalid as dynamic) as object
     obj = CreateObject("roAssociativeArray")
-    obj.Append(PlaylistScreen())
+    obj.Append(SeasonScreen())
 
     obj.requestItem = item
     obj.path = path
@@ -37,7 +30,7 @@ function createPlaylistScreen(item as object, path=invalid as dynamic) as object
     return obj
 end function
 
-sub playlistGetComponents()
+sub seasonGetComponents()
     m.DestroyComponents()
     m.focusedItem = invalid
 
@@ -66,17 +59,18 @@ sub playlistGetComponents()
     m.components.Push(vbButtons)
     m.specs.xOffset = m.specs.xOffset + m.specs.parentSpacing + vbButtons.width
 
-    ' *** playlist title ***
+    ' *** season title ***
     lineHeight = FontRegistry().NORMAL.GetOneLineHeight()
-    playlistTitle = createLabel("PLAYLISTS / " + ucase(m.item.Get("title")), FontRegistry().NORMAL)
-    playlistTitle.SetFrame(m.specs.xOffset, m.specs.yOffset - m.specs.childSpacing - lineHeight, m.specs.parentWidth, lineHeight)
-    m.components.Push(playlistTitle)
+    text = m.item.getlongertitle(" / ")
+    seasonTitle = createLabel(text, FontRegistry().NORMAL)
+    seasonTitle.SetFrame(m.specs.xOffset, m.specs.yOffset - m.specs.childSpacing - lineHeight, m.specs.parentWidth, lineHeight)
+    m.components.Push(seasonTitle)
 
-    ' *** playlist image ***
+    ' *** season image ***
     m.image = createImage(m.item, m.specs.parentWidth, m.specs.parentHeight)
     m.image.fade = true
     m.image.cache = true
-    m.image.SetOrientation(m.image.ORIENTATION_SQUARE)
+    m.image.SetOrientation(m.image.ORIENTATION_PORTRAIT)
     m.image.SetFrame(m.specs.xOffset, m.specs.yOffset, m.specs.parentWidth, m.specs.parentHeight)
     m.components.Push(m.image)
     m.SetRefreshCache("image", m.image)
@@ -100,7 +94,7 @@ sub playlistGetComponents()
     m.itemList.stopShiftIfInView = true
     m.itemList.scrollOverflow = true
 
-    ' *** Playlist Items *** '
+    ' *** season Items *** '
     trackCount = m.children.Count()
     ' create a shared region for the separator
     sepRegion = CreateRegion(m.listPrefs.width, 1, Colors().OverlayDark)
@@ -111,7 +105,7 @@ sub playlistGetComponents()
         track.plexObject = item
         track.trackIndex = index
         track.SetIndex(index + 1)
-        track.SetFocusable("play")
+        track.SetFocusable("show_item")
         m.itemList.AddComponent(track)
         if m.focusedItem = invalid then m.focusedItem = track
 
@@ -124,17 +118,6 @@ sub playlistGetComponents()
         end if
     end for
     m.components.Push(m.itemList)
-
-    ' Set the focus to the current AudioPlayer track, if applicable.
-    component = m.GetListComponent(m.player.GetCurrentItem())
-    if component <> invalid then
-        m.focusedItem = component
-        if m.player.isPlaying then
-            m.OnPlay(m.player, component.plexObject)
-        else if m.player.isPaused then
-            m.OnPause(m.player, component.plexObject)
-        end if
-    end if
 
     ' Background of focused item. We cannot just change the background
     ' of the track composite due to the aliasing issues.
@@ -150,74 +133,79 @@ sub playlistGetComponents()
     m.components.Push(descBox)
 end sub
 
-sub playlistInitItem()
-    ApplyFunc(ContextListScreen().InitItem, m)
+function seasonGetButtons() as object
+    components = createObject("roList")
 
-    if m.item.Get("playlistType") = "audio" then
-        m.player = AudioPlayer()
+    buttons = createObject("roList")
+    buttons.Push({text: Glyphs().PLAY, command: "play"})
+    buttons.Push({text: Glyphs().SHUFFLE, command: "shuffle"})
 
-        m.listPrefs.width = 635
-        m.listPrefs.height = 73
-
-        m.AddListener(m.player, "playing", CreateCallable("OnPlay", m))
-        m.AddListener(m.player, "stopped", CreateCallable("OnStop", m))
-        m.AddListener(m.player, "paused", CreateCallable("OnPause", m))
-        m.AddListener(m.player, "resumed", CreateCallable("OnResume", m))
-    else
-        m.player = VideoPlayer()
-
-        m.listPrefs.width = 677
-        m.listPrefs.height = 120
-    end if
-end sub
-
-sub playlistOnPlay(player as object, item as object)
-    m.SetNowPlaying(item, true)
-end sub
-
-sub playlistOnStop(player as object, item as object)
-    m.SetNowPlaying(item, false)
-end sub
-
-sub playlistOnPause(player as object, item as object)
-    m.paused = m.GetListComponent(item)
-    m.SetNowPlaying(item, false)
-end sub
-
-sub playlistOnResume(player as object, item as object)
-    m.paused = invalid
-    m.SetNowPlaying(item, true)
-end sub
-
-sub playlistSetNowPlaying(plexObject as object, status=true as boolean)
-    if not Application().IsActiveScreen(m) then return
-
-    if m.paused <> invalid and m.paused.plexObject.Get("key") <> plexObject.Get("key") then
-        m.paused.SetPlaying(false)
-        m.paused = invalid
-    end if
-
-    if m.playing <> invalid and m.playing.plexObject.Get("key") <> plexObject.Get("key") then
-        m.playing.SetPlaying(false)
-        m.playing = invalid
-    end if
-
-    component = m.GetListComponent(plexObject)
-    if component <> invalid then
-        component.SetPlaying(status)
-        m.playing = iif(status, component, invalid)
-    end if
-end sub
-
-function playlistGetListComponent(plexObject as dynamic) as dynamic
-    if plexObject = invalid or m.item = invalid then return invalid
-
-    ' locate the component by the plexObect and return
-    for each track in m.itemList.components
-        if track.plexObject <> invalid and plexObject.Get("key") = track.plexObject.Get("key") then
-            return track
-        end if
+    buttonHeight = 50
+    for each button in buttons
+        btn = createButton(button.text, m.customFonts.glyphs, button.command)
+        btn.SetColor(Colors().Text, Colors().Button)
+        btn.width = 100
+        btn.height = buttonHeight
+        btn.fixed = false
+        btn.disallowExit = { down: true }
+        if m.focusedItem = invalid then m.focusedItem = btn
+        components.Push(btn)
     end for
 
-    return invalid
+    ' more/pivots drop down
+    optionPrefs = {
+        halign: "JUSTIFY_LEFT",
+        height: buttonHeight
+        padding: { right: 10, left: 10, top: 0, bottom: 0 }
+        font: FontRegistry().NORMAL,
+    }
+
+    btn = createDropDownButton(Glyphs().MORE, m.customFonts.glyphs, buttonHeight * 5, m)
+    btn.SetDropDownPosition("right")
+    btn.SetColor(Colors().Text, Colors().Button)
+    btn.width = 100
+    btn.height = buttonHeight
+    if m.focusedItem = invalid then m.focusedItem = btn
+
+    if m.item.relatedItems <> invalid then
+        for each item in m.item.relatedItems
+            option = {
+                text: item.GetSingleLineTitle(),
+                command: "show_grid",
+                plexObject: item,
+            }
+            option.Append(optionPrefs)
+            btn.options.Push(option)
+        end for
+    end if
+
+    if btn.options.Count() > 0 then
+        components.Push(btn)
+    end if
+
+    return components
 end function
+
+sub seasonInitItem()
+    ApplyFunc(ContextListScreen().InitItem, m)
+
+    m.specs.Append({
+        parentHeight:417
+        parentWidth: 283
+    })
+
+    m.player = VideoPlayer()
+    m.listPrefs.width = 677
+    m.listPrefs.height = 120
+end sub
+
+sub seasonLoadContext()
+    if m.context = invalid then
+        if m.item.GetContextPath(false) <> invalid then
+            request = createPlexRequest(m.server, m.item.GetContextPath(false))
+            context = request.CreateRequestContext("preplay_context", createCallable("OnContextResponse", m))
+            context.hubIdentifier = m.requestItem.container.Get("hubIdentifier")
+            Application().StartRequest(request, context)
+        end if
+    end if
+end sub

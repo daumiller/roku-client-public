@@ -553,9 +553,12 @@ function pnoGetItemPath(checkFiles=false as boolean) as string
     return key
 end function
 
-function pnoGetContextPath() as dynamic
+function pnoGetContextPath(allLeaves=true as boolean) as dynamic
+    suffix = iif(allLeaves, "/allLeaves", "/children?excludeAllLeaves=1")
     if m.type = "episode" and m.Has("grandparentKey") then
-        key = m.Get("grandparentKey") + "/allLeaves"
+        key = m.Get("grandparentKey") + suffix
+    else if m.type = "season" and m.Has("parentKey") then
+        key = m.Get("parentKey") + suffix
     else
         key = m.container.address
     end if
