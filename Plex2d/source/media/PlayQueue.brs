@@ -134,6 +134,8 @@ function createPlayQueueForItem(item as object, options=invalid as dynamic) as o
         uri = uri + itemType + "/" + UrlEscape(path)
     end if
 
+    if options.shuffle = true then options.key = invalid
+
     return createPlayQueue(item.GetServer(), contentType, uri, options)
 end function
 
