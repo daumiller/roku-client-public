@@ -198,21 +198,31 @@ sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic, screen=inv
         y: 0
         hideUp: m.y
         hideDown: m.contentHeight
+        triggerUp: m.scrollTriggerDown - toFocus.height
         triggerDown: m.scrollTriggerDown
         shiftAmount: toFocus.height + m.spacing
     }
 
     ' handle shifting groups (settings menu box)
-    if toFocus.scrollGroupTop <> invalid and toFocus.scrollGroupTop.y < shift.hideUp then
-        if toFocus.y - toFocus.scrollGroupTop.y < m.contentHeight - m.y then
+    if toFocus.scrollGroupTop <> invalid then
+        first = m.components[1]
+        if toFocus.scrollGroupTop.y < shift.hideUp and toFocus.y - toFocus.scrollGroupTop.y < m.contentHeight - m.y then
             toFocus = toFocus.scrollGroupTop
         end if
+    else
+        first = m.components[0]
     end if
 
     focusRect = computeRect(toFocus)
     ' reuse the last position on refocus
     if refocus <> invalid and focusRect.up > refocus.up then
         shift.y = refocus.up - focusRect.up
+    ' keep shifting on keypress up until the first item is in view
+    else if focusRect.up < shift.triggerUp and first.y < shift.hideUp then
+        shift.y = shift.shiftAmount
+        if first.y + shift.y > shift.hideUp then
+            shift.y = shift.hideUp - first.y
+        end if
     ' locate the last item to fit, and shift based on it.
     else if focusRect.down > shift.triggerDown
         candidates = firstOf(tofocus.shiftableParent, tofocus.parent)
@@ -255,7 +265,7 @@ sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic, screen=inv
 
     ' shift the scrollbar if applicable
     if m.scrollbar <> invalid then
-        isFirst = (toFocus.origY = m.y)
+        isFirst = (toFocus.origY = m.y or toFocus.Equals(first))
         isLast = (toFocus.origY + toFocus.height >= lastShift)
         m.scrollbar.Move(toFocus, isFirst, isLast)
     end if
