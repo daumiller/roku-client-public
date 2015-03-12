@@ -19,7 +19,7 @@ function TrackClass() as object
     return m.TrackClass
 end function
 
-function createTrack(item as object, titleFont as object, subtitleFont as object, glyphFont as object, trackCount=1 as integer, isMixed=false as boolean) as object
+function createTrack(item as object, titleFont as object, subtitleFont as object, glyphFont as object, trackCount=1 as integer, isMixed=false as boolean, isSeason=false as boolean) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(TrackClass())
 
@@ -29,6 +29,7 @@ function createTrack(item as object, titleFont as object, subtitleFont as object
     obj.isPaused = false
     obj.trackCount = trackCount
     obj.isMixed = isMixed
+    obj.isSeason = isSeason
     obj.innerBorderFocus = true
 
     obj.Init(titleFont, subtitleFont, glyphFont)
@@ -161,7 +162,11 @@ sub trackInitComponents()
         m.AddComponent(m.time)
     else
         if item.type = "episode" then
-            subtitle = joinArray([item.Get("grandparentTitle"), item.GetSingleLineTitle()], " / ")
+            if m.isSeason then
+                subtitle = item.GetOriginallyAvailableAt()
+            else
+                subtitle = joinArray([item.Get("grandparentTitle"), item.GetSingleLineTitle()], " / ")
+            end if
             m.subtitle = createLabel(subtitle, m.customFonts.subtitle)
             m.subtitle.SetColor(Colors().TextDim)
             m.subtitle.SetPadding(0, m.padding.right, 0, m.padding.left)
