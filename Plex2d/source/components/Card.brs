@@ -13,6 +13,7 @@ function CardClass() as object
         obj.PerformLayout = cardPerformLayout
         obj.SetOrientation = cardSetOrientation
         obj.SetThumbAttr = cardSetThumbAttr
+        obj.EnableFade = cardEnableFade
 
         m.CardClass = obj
     end if
@@ -147,4 +148,9 @@ sub cardSetOrientation(orientation as integer)
     if m.image <> invalid then
         m.image.SetOrientation(orientation)
     end if
+end sub
+
+sub cardEnableFade(status=true as boolean)
+    m.fade = status
+    m.image.fade = status
 end sub

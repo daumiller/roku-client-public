@@ -30,11 +30,19 @@ function compositeDraw() as object
     if m.needsLayout then m.PerformLayout()
 
     ' init the region ( it will be cleared/reused if not invalid )
-    m.InitRegion()
+    ' basic support to fade image components (nothing else). This also
+    ' assumes the image is the full size of the component (card).
+    if m.fade = true and m.region <> invalid then
+        bgColor = Colors().Transparent
+        m.fadeRegion = m.region
+    else
+        bgColor = m.bgColor
+        m.InitRegion()
+    end if
     m.region.setAlphaEnable(m.alphaEnable)
 
     compositor = CreateObject("roCompositor")
-    compositor.SetDrawTo(m.region, m.bgColor)
+    compositor.SetDrawTo(m.region, bgColor)
 
     drawables = CreateObject("roList")
 
