@@ -77,11 +77,13 @@ function dboxShow(item as object) as boolean
     plexObject = item.plexObject
     contentType = plexObject.Get("type", "")
     viewGroup = plexObject.container.Get("viewGroup", "")
+    hasMixedParents = (viewGroup <> contentType or plexObject.container.Get("mixedParents", "") = "1")
+
     Verbose("Show description: " + plexObject.toString() + ", contentType=" + contentType + ", viewGroup=" + viewGroup)
 
     ' *** Component Description *** '
-    if contentType = "episode" or contentType = "season" and contentType <> viewGroup then
-        if contentType <> viewGroup
+    if contentType = "episode" or contentType = "season" then' and hasMixedParents then
+        if hasMixedParents then
             title = plexObject.GetFirst(["grandparentTitle", "parentTitle"], "")
         else
             title = plexObject.Get("title", "")
@@ -97,7 +99,7 @@ function dboxShow(item as object) as boolean
     subtitle = createObject("roList")
     if contentType = "movie" then
         subtitle.push(plexObject.Get("year", ""))
-    else if contentType = "season" or (contentType = "episode" and viewGroup <> contentType) then
+    else if contentType = "season" or contentType = "episode" and hasMixedParents then
         subtitle.push(plexObject.Get("title", ""))
     else if (contentType = "album" or contentType = "artist") and contentType = viewGroup then
         subtitle.push(plexObject.Get("year", ""))

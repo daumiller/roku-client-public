@@ -199,6 +199,7 @@ sub gsOnGridResponse(request as object, response as object, context as object)
     ' obtain the contentType and viewGroup for UI decisions (overlay, orientation)
     m.contentType = firstOf(m.container.Get("type"), m.containerType)
     m.viewGroup = m.container.Get("viewGroup", "")
+    m.hasMixedParents = (m.container.Get("mixedParents", "") = "1")
 
     m.totalSize = response.container.getint("totalSize")
     if m.totalSize < m.chunkSizeInitial then m.chunkSizeInitial = m.totalSize
@@ -254,7 +255,7 @@ sub gsGetComponents()
     ' *** Grid Header *** '
     if m.item.Get("key", "") = "all" and m.container.Get("librarySectionTitle") <> invalid then
         title = m.container.Get("librarySectionTitle")
-    else if m.viewGroup = "episode" then
+    else if m.viewGroup = "episode" and not m.hasMixedParents then
         title = m.container.Get("title1", "") + " / " + m.container.Get("title2", "")
     else
         title = m.item.GetSingleLineTitle()
@@ -552,7 +553,7 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
             if contentType = "album" or contentType = "artist" or contentType = "playlist" then
                 gridItem.ReInit(item, item.GetOverlayTitle())
             else
-                if contentType = "episode" and viewGroup = contentType then
+                if contentType = "episode" and viewGroup = contentType and not m.hasMixedParents then
                     thumbAttrs = ["thumb", "art"]
                     if item.Get("index") <> invalid then
                         title = "Episode " + item.Get("index")
