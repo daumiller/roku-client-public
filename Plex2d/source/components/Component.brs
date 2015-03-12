@@ -248,7 +248,7 @@ sub compShiftPosition(deltaX=0 as integer, deltaY=0 as integer, shiftSprite=true
     ' ignore shifting the sprite (normally off screen), and unload if applicable
     if shiftSprite = false then
         if m.sprite <> invalid and NOT m.IsOnScreen(0, 0, ComponentsScreen().ll_unloadX, ComponentsScreen().ll_unloadY) then
-            m.unload()
+            m.Unload()
         end if
         return
     end if
@@ -350,15 +350,19 @@ sub compUnload(nest=0 as integer)
     ' all children of a non-fixed components. Use destroy() to "unload" fixed components
     ' TODO(rob): I need to reevaluated this. We should unload any component, regardless of
     ' being fixed or not. This must of been a (incorrect) workaround to some issue.
-    if m.fixed = true and nest=0 then return
+    if m.fixed = true and nest = 0 then return
 
-    Verbose(string(nest," ") + "-- unload component " + tostr(m))
+    Verbose(string(nest, " ") + "Unload component " + tostr(m))
 
     ' Clean any objects in memory (bitmaps, regions and sprites)
-    m.region = invalid
     m.bitmap = invalid
-    if m.sprite <> invalid then m.sprite.remove()
-    m.sprite = invalid
+    if m.isSharedRegion <> true then
+        m.region = invalid
+    end if
+    if m.sprite <> invalid then
+        m.sprite.Remove()
+        m.sprite = invalid
+    end if
 
     ' cancel any pending request
     TextureManager().CancelTexture(m.TextureRequest)
@@ -368,7 +372,7 @@ sub compUnload(nest=0 as integer)
     ' iterate through any children
     if m.components <> invalid then
         for each comp in m.components
-            comp.unload(nest+1)
+            comp.Unload(nest + 1)
         end for
     end if
 end sub
@@ -380,10 +384,10 @@ sub compDestroy()
 
     ' Clean any objects in memory (bitmaps, regions, sprites and fonts)
     m.font = invalid
-    m.region = invalid
     m.bitmap = invalid
+    m.region = invalid
     if m.sprite <> invalid then
-        m.sprite.remove()
+        m.sprite.Remove()
         m.sprite = invalid
     end if
 

@@ -14,13 +14,33 @@ function BlockClass() as object
     return m.BlockClass
 end function
 
-function createBlock(color as integer) as object
+function createBlock(color as integer, region=invalid as dynamic) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(BlockClass())
+
+    if region <> invalid then
+        obj.region = region
+        obj.InitRegion = blockInitSharedRegion
+    end if
 
     obj.Init()
 
     obj.bgColor = color
 
     return obj
+end function
+
+function blockInitSharedRegion() as object
+    m.isSharedRegion = true
+
+    ' Resize the shared region (for all) if the size changes. The key here is to
+    ' use m.region.Set() so it replaces all other regions sharing this reference.
+    if m.region <> invalid and (m.region.GetWidth() <> m.width or m.region.GetHeight() <> m.height) then
+        bmp = CreateObject("roBitmap", {width: m.width, height: m.height, alphaEnable: m.alphaEnable})
+        m.region.Set(CreateObject("roRegion", bmp, 0, 0, bmp.GetWidth(), bmp.GetHeight()))
+    end if
+
+    ApplyFunc(ComponentClass().InitRegion, m)
+
+    return [m]
 end function
