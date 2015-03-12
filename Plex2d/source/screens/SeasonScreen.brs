@@ -96,7 +96,7 @@ sub seasonGetComponents()
     ' *** season Items *** '
     trackCount = m.children.Count()
     ' create a shared region for the separator
-    sepRegion = CreateRegion(m.listPrefs.width, 1, Colors().OverlayDark)
+    sepRegion = CreateRegion(m.listPrefs.width, 1, Colors().Separator)
     for index = 0 to trackCount - 1
         item = m.children[index]
         track = createTrack(item, FontRegistry().NORMAL, FontRegistry().NORMAL, m.customFonts.trackStatus, trackCount, true, true)
@@ -109,11 +109,7 @@ sub seasonGetComponents()
         if m.focusedItem = invalid then m.focusedItem = track
 
         if index < trackCount - 1 then
-            sep = createBlock(Colors().OverlayDark)
-            sep.Append(m.listPrefs)
-            sep.region = sepRegion
-            sep.height = 1
-            m.itemList.AddComponent(sep)
+            track.AddSeparator(sepRegion)
         end if
     end for
     m.components.Push(m.itemList)

@@ -9,10 +9,10 @@ function Colors() as object
         ' Constants
         obj.Background = &h111111ff
 
-        obj.OverlayVeryDark = &h000000e0
-        obj.OverlayDark = &h000000b0
-        obj.OverlayMed = &h00000080
-        obj.OverlayLht = &h00000060
+        obj.OverlayVeryDark = obj.GetAlpha(&h000000ff, 90)
+        obj.OverlayDark = obj.GetAlpha(&h000000ff, 70)
+        obj.OverlayMed = obj.GetAlpha(&h000000ff, 50)
+        obj.OverlayLht = obj.GetAlpha(&h000000ff, 35)
 
         obj.Empty = &h1f1f1fff
         obj.Card = &h1f1f1fff
@@ -29,7 +29,7 @@ function Colors() as object
 
         obj.Transparent = &h00000000
         obj.Black = &h000000ff
-        obj.Blue = &h0033CCff
+        obj.Blue = &h0033ccff
         obj.Red = &hc23529ff
         obj.RedAlt = &hd9534fff
         obj.Green = &h5cb85cff
@@ -37,9 +37,10 @@ function Colors() as object
         obj.OrangeLight = &hf9be03ff
 
         ' Component specific
-        obj.ScrollbarBg = &hffffff10
-        obj.ScrollbarFg = obj.Orange and &hffffff60
+        obj.ScrollbarBg = obj.GetAlpha(&hffffffff, 10)
+        obj.ScrollbarFg = obj.GetAlpha(obj.Orange, 40)
         obj.IndicatorBorder = obj.Black
+        obj.Separator = obj.GetAlpha(obj.Black, 75)
 
         m.Colors = obj
     end if

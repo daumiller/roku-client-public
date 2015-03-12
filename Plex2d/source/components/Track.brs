@@ -12,6 +12,7 @@ function TrackClass() as object
         obj.PerformLayout = trackPerformLayout
         obj.SetPlaying = trackSetPlaying
         obj.SetIndex = trackSetIndex
+        obj.AddSeparator = trackAddSeparator
 
         m.TrackClass = obj
     end if
@@ -79,7 +80,7 @@ sub trackSetPlaying(playing=true as boolean)
     end if
 
     for each comp in m.components
-        if not comp.Equals(m.trackImage) then
+        if comp.SetColor <> invalid and comp.SetText <> invalid then
             if comp.Equals(m.index) then
                 if m.isPlaying or m.isPaused then
                     if comp.origText = invalid then comp.origText = comp.text
@@ -192,6 +193,10 @@ sub trackPerformLayout()
     spacing = m.title.font.GetOneLineWidth("000", m.width)
     xOffset = spacing
 
+    if m.separator <> invalid then
+        m.separator.SetFrame(xOffset, m.height - m.separator.height, m.width - xOffset*2, m.separator.height)
+    end if
+
     ' track index / status glyph
     if m.index <> invalid then
         m.index.SetFrame(xOffset, 0, m.index.GetPreferredWidth(), m.height)
@@ -249,4 +254,11 @@ sub trackPerformLayout()
         yOffset = yOffset + m.runtime.GetPreferredHeight()
         m.runtime.SetFrame(xOffset, yOffset, xOffsetTime - xOffset, m.runtime.GetPreferredHeight())
     end if
+end sub
+
+sub trackAddSeparator(region as object, options=invalid as dynamic)
+    m.focusSeparator = region.GetHeight()
+    m.separator = CreateBlock(Colors().Separator, region)
+    m.separator.height = m.focusSeparator
+    m.AddComponent(m.separator)
 end sub

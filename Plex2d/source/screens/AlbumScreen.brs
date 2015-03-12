@@ -231,7 +231,7 @@ sub albumGetComponents()
     ' *** Tracks *** '
     trackCount = m.children.Count()
     ' create a shared region for the separator
-    sepRegion = CreateRegion(trackPrefs.width, 1, Colors().OverlayDark)
+    sepRegion = CreateRegion(trackPrefs.width, 1, Colors().Separator)
     for index = 0 to trackCount - 1
         item = m.children[index]
         track = createTrack(item, FontRegistry().NORMAL, FontRegistry().SMALL, m.customFonts.trackStatus, trackCount)
@@ -243,13 +243,7 @@ sub albumGetComponents()
         if m.focusedItem = invalid then m.focusedItem = track
 
         if index < trackCount - 1 then
-            sep = createBlock(Colors().OverlayDark)
-            sep.region = sepRegion
-            sep.height = 1
-            sep.width = trackPrefs.width
-            sep.fixed = trackPrefs.fixed
-            sep.zOrder = trackPrefs.zOrder
-            m.trackList.AddComponent(sep)
+            track.AddSeparator(sepRegion)
         end if
     end for
     m.components.Push(m.trackList)

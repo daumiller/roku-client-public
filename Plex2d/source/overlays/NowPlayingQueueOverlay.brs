@@ -92,7 +92,7 @@ sub npqoGetComponents()
     items = m.player.context
     trackCount = items.Count()
     ' create a shared region for the separator (conserve memory)
-    sepRegion = CreateRegion(trackPrefs.width, 1, Colors().OverlayDark)
+    sepRegion = CreateRegion(trackPrefs.width, 1, Colors().Separator)
     for index = 0 to trackCount - 1
         item = items.[index].item
         track = createTrack(item, FontRegistry().NORMAL, FontRegistry().MEDIUM, m.customFonts.trackStatus, m.player.playQueue.totalSize, isMixed)
@@ -109,13 +109,7 @@ sub npqoGetComponents()
         if m.screen.focusedItem = invalid then m.screen.focusedItem = track
 
         if index < trackCount - 1 then
-            sep = createBlock(Colors().OverlayDark)
-            sep.region = sepRegion
-            sep.height = 1
-            sep.width = trackPrefs.width
-            sep.fixed = trackPrefs.fixed
-            sep.zOrder = trackPrefs.zOrder
-            m.trackList.AddComponent(sep)
+            track.AddSeparator(sepRegion)
         end if
     end for
     m.components.Push(m.trackList)
