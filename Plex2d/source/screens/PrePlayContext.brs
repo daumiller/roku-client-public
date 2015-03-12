@@ -243,6 +243,7 @@ function ppcGetButtons() as object
     ' Play All to start at the beginning and Play Shuffled.
     '
     buttons.push({text: Glyphs().PLAY, command: "play_default" })
+    buttons.Push({text: Glyphs().SHUFFLE, command: "shuffle"})
 
     ' TODO(rob): scrobble entire container - with warning?
     buttonHeight = 50
