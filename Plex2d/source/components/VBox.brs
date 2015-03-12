@@ -303,7 +303,9 @@ sub vboxShiftComponents(shift as object, refocus=invalid as dynamic)
     triggerLazyLoad = false
     for each component in m.components
         compY = component.y + shift.y
-        if compY > m.vShift.onScreenY and compY < m.vShift.onScreenH then
+        if component.y > m.vShift.onScreenY and component.y < m.vShift.onScreenH then
+            partShift.push(component)
+        else if compY > m.vShift.onScreenY and compY < m.vShift.onScreenH then
             partShift.push(component)
         else if not triggerLazyLoad and compY > m.vShift.triggerY and compY < m.vShift.triggerH and component.SpriteIsLoaded() = false then
             triggerLazyLoad = true
