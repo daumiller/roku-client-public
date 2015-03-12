@@ -67,9 +67,8 @@ sub seasonGetComponents()
     m.components.Push(seasonTitle)
 
     ' *** season image ***
-    m.image = createImage(m.item, m.specs.parentWidth, m.specs.parentHeight)
-    m.image.fade = true
-    m.image.cache = true
+    m.image = createCard(m.item, invalid, invalid, m.item.GetUnwatchedCount())
+    m.image.EnableFade()
     m.image.SetOrientation(m.image.ORIENTATION_PORTRAIT)
     m.image.SetFrame(m.specs.xOffset, m.specs.yOffset, m.specs.parentWidth, m.specs.parentHeight)
     m.components.Push(m.image)
