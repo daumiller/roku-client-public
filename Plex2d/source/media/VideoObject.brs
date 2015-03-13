@@ -150,6 +150,7 @@ function voBuildTranscodeHls(obj as object, partIndex as integer, directStream a
     settings = AppSettings()
     if settings.SupportsAudioStream("ac3", 6) then
         extras = extras + "+add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=hls&audioCodec=ac3)"
+        extras = extras + "+add-direct-play-profile(type=videoProfile&container=matroska&videoCodec=*&audioCodec=ac3)"
     end if
 
     if Len(extras) > 0 then
@@ -208,10 +209,12 @@ function voBuildTranscodeMkv(obj as object, partIndex as integer, directStream a
     if settings.SupportsSurroundSound() then
         if settings.SupportsAudioStream("ac3", 6) then
             extras = extras + "+add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=http&audioCodec=ac3)"
+            extras = extras + "+add-direct-play-profile(type=videoProfile&container=matroska&videoCodec=*&audioCodec=ac3)"
         end if
 
         if settings.SupportsAudioStream("dca", 6) then
             extras = extras + "+add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=http&audioCodec=dca)"
+            extras = extras + "+add-direct-play-profile(type=videoProfile&container=matroska&videoCodec=*&audioCodec=dca)"
         end if
     end if
 

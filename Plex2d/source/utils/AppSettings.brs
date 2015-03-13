@@ -538,6 +538,12 @@ sub settingsInitGlobals()
 end sub
 
 function settingsGetCapabilities(recompute=false as boolean) as string
+    ' If our surround sound support has changed (because of headphones) then
+    ' we need to recompute.
+    '
+    surroundSound = m.SupportsSurroundSound(recompute)
+    if surroundSound <> m.globals["capabilities_surround"] then recompute = true
+
     if not recompute and m.globals["capabilities"] <> invalid then
         return m.globals["capabilities"]
     end if
@@ -548,7 +554,7 @@ function settingsGetCapabilities(recompute=false as boolean) as string
 
     caps = "videoDecoders=h264{profile:high&resolution:1080&level=41};audioDecoders=aac{channels:2}"
 
-    if m.SupportsSurroundSound(true) then
+    if surroundSound then
         for each codec in ["ac3", "dca"]
             if m.globals["audioDecoders"].DoesExist(codec) then
                 caps = caps + "," + codec + "{channels:" + tostr(m.globals["audioDecoders"][codec]) + "}"
@@ -557,6 +563,8 @@ function settingsGetCapabilities(recompute=false as boolean) as string
     end if
 
     m.globals["capabilities"] = caps
+    m.globals["capabilities_surround"] = surroundSound
+
     return caps
 end function
 
