@@ -40,7 +40,7 @@ function Colors() as object
         obj.ScrollbarBg = obj.GetAlpha(&hffffffff, 10)
         obj.ScrollbarFg = obj.GetAlpha(obj.Orange, 40)
         obj.IndicatorBorder = obj.Black
-        obj.Separator = obj.GetAlpha(obj.Black, 75)
+        obj.Separator = obj.Black
 
         m.Colors = obj
     end if

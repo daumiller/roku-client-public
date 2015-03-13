@@ -1,3 +1,7 @@
+' TODO(rob): Generalize this, maybe ContextListItem as Schuyler mentioned.
+' I think we might prefer to have separate methods to create the list item
+' as well.
+'
 function TrackClass() as object
     if m.TrackClass = invalid then
         obj = CreateObject("roAssociativeArray")
