@@ -511,6 +511,8 @@ sub settingsInitGlobals()
                 codec = "dca"
             else if codec = "wma" then
                 codec = "wmav2"
+            else if codec = "DD+" then
+                codec = "eac3"
             else
                 codec = LCase(codec)
             end if
@@ -555,7 +557,7 @@ function settingsGetCapabilities(recompute=false as boolean) as string
     caps = "videoDecoders=h264{profile:high&resolution:1080&level=41};audioDecoders=aac{channels:2}"
 
     if surroundSound then
-        for each codec in ["ac3", "dca"]
+        for each codec in ["ac3", "eac3", "dca"]
             if m.globals["audioDecoders"].DoesExist(codec) then
                 caps = caps + "," + codec + "{channels:" + tostr(m.globals["audioDecoders"][codec]) + "}"
             end if

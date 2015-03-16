@@ -207,15 +207,13 @@ function voBuildTranscodeMkv(obj as object, partIndex as integer, directStream a
 
     settings = AppSettings()
     if settings.SupportsSurroundSound() then
-        if settings.SupportsAudioStream("ac3", 6) then
-            extras = extras + "+add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=http&audioCodec=ac3)"
-            extras = extras + "+add-direct-play-profile(type=videoProfile&container=matroska&videoCodec=*&audioCodec=ac3)"
-        end if
-
-        if settings.SupportsAudioStream("dca", 6) then
-            extras = extras + "+add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=http&audioCodec=dca)"
-            extras = extras + "+add-direct-play-profile(type=videoProfile&container=matroska&videoCodec=*&audioCodec=dca)"
-        end if
+        for each codec in ["ac3", "eac3", "dca"]
+            ' TODO(schuyler): Do we need to pass along the channel count?
+            if settings.SupportsAudioStream(codec, 6) then
+                extras = extras + "+add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=http&audioCodec=" + codec + ")"
+                extras = extras + "+add-direct-play-profile(type=videoProfile&container=matroska&videoCodec=*&audioCodec=" + codec + ")"
+            end if
+        next
     end if
 
     if Len(extras) > 0 then
