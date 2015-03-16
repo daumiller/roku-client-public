@@ -458,10 +458,21 @@ function ProcessPlaybackRefreshPlayQueue() as boolean
 
     playQueue = invalid
 
-    ' TODO(schuyler): Support more than audio. Make it easy to look up a PQ by ID?
-    if AudioPlayer().playQueue <> invalid and tostr(AudioPlayer().playQueue.id) = m.request.query["playQueueID"] then
-        playQueue = AudioPlayer().playQueue
-    end if
+    ' TODO(schuyler): Photos
+
+    ' We can't easily look up a play queue (or player) by ID, but we only care
+    ' about active players, so it's not too bad to iterate over the players.
+
+    players = [AudioPlayer(), VideoPlayer()]
+    pqID = m.request.query["playQueueID"]
+    playQueue = invalid
+
+    for each player in players
+        if player.playQueue <> invalid and tostr(player.playQueue.id) = pqID then
+            playQueue = player.playQueue
+            exit for
+        end if
+    next
 
     if playQueue <> invalid then
         playQueue.Refresh(true)
