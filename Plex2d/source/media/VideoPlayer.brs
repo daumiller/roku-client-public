@@ -189,6 +189,17 @@ function vpHandleMessage(msg) as boolean
 
             Debug("vsHandleMessage::isScreenClosed: position -> " + tostr(m.lastPosition))
 
+            ' If we were specifically told to move to another item, do so now
+            if m.playIndexAfterClose <> invalid then
+                m.ignoreTimelines = false
+                m.curIndex = m.playIndexAfterClose
+                m.playIndexAfterClose = invalid
+                m.player = invalid
+                m.screen = invalid
+                m.Play()
+                return handled
+            end if
+
             ' TODO(rob): multi-parts
 
             ' Fallback transcode with resume support

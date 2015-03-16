@@ -285,6 +285,36 @@ function ProcessPlaybackSeekTo() as boolean
     return true
 end function
 
+function ProcessPlaybackSkipTo() as boolean
+    if not ValidateRemoteControlRequest(m) then return true
+    ProcessCommandID(m.request)
+
+    player = GetPlayerForType(m.request.query["type"])
+    key = m.request.query["key"]
+
+    errorMsg = "Unable to find matching item"
+
+    if player = invalid or key = invalid then
+        errorMsg = "Invalid request"
+    else if player.context <> invalid then
+        for index = 0 to player.context.Count() - 1
+            if key = player.context[index].item.Get("key") then
+                player.PlayItemAtIndex(index)
+                errorMsg = invalid
+                exit for
+            end if
+        next
+    end if
+
+    if errorMsg = invalid then
+        m.simpleOK("")
+    else
+        SendErrorResponse(m, 400, errorMsg)
+    end if
+
+    return true
+end function
+
 function ProcessPlaybackPlay() as boolean
     if not ValidateRemoteControlRequest(m) then return true
     ProcessCommandID(m.request)
@@ -566,6 +596,7 @@ sub InitRemoteControlHandlers()
     ' Playback
     router.AddHandler("/player/playback/playMedia", ProcessPlaybackPlayMedia)
     router.AddHandler("/player/playback/seekTo", ProcessPlaybackSeekTo)
+    router.AddHandler("/player/playback/skipTo", ProcessPlaybackSkipTo)
     router.AddHandler("/player/playback/play", ProcessPlaybackPlay)
     router.AddHandler("/player/playback/pause", ProcessPlaybackPause)
     router.AddHandler("/player/playback/stop", ProcessPlaybackStop)
