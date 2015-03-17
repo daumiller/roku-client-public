@@ -129,25 +129,33 @@ function ProcessPlaybackPlayMedia() as boolean
     ProcessCommandID(m.request)
 
     machineID = m.request.query["machineIdentifier"]
+    address = m.request.query["address"]
+    token = m.request.query["token"]
+
+    ' If the machine ID is `node` then we use our selected server. Otherwise
+    ' we always try to create a synthetic server with the given info instead
+    ' of using our own connection. This is the simplest way to ensure that we
+    ' use the provided (transient) token, which may be for a user other than
+    ' our own. If the controller is badly behaved and doesn't provide a token,
+    ' then we fall back to looking up the server by machine ID and using our
+    ' own connection/token.
 
     if machineID = "node" then
         server = PlexServerManager().GetSelectedServer()
+    else if token <> invalid and address <> invalid then
+        port = firstOf(m.request.query["port"], "32400")
+        protocol = firstOf(m.request.query["protocol"], "http")
+
+        conn = createPlexConnection(PlexConnectionClass().SOURCE_MANUAL, protocol + "://" + address + ":" + port, true, token)
+        server = createPlexServerForConnection(conn)
+        server.uuid = machineID
     else
         server = PlexServerManager().GetServer(machineID)
     end if
 
     if server = invalid then
-        port = firstOf(m.request.query["port"], "32400")
-        protocol = firstOf(m.request.query["protocol"], "http")
-        address = m.request.query["address"]
-        token = m.request.query["token"]
-        if address = invalid then
-            SendErrorResponse(m, 400, "address must be specified")
-            return true
-        end if
-
-        conn = createPlexConnection(PlexConnectionClass().SOURCE_MANUAL, protocol + "://" + address + ":" + port, true, token)
-        server = createPlexServerForConnection(conn)
+        SendErrorResponse(m, 400, "unable to find server")
+        return true
     end if
 
     offset = firstOf(m.request.query["offset"], "0").toint()
