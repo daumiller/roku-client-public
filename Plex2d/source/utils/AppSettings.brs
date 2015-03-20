@@ -115,10 +115,10 @@ sub settingsInitPrefs()
     ' Quality
 
     qualities = CreateObject("roList")
-    qualities.Push({title: "20 Mbps", index: 12, maxBitrate: 20000, maxHeight: 1080})
-    qualities.Push({title: "12 Mbps", index: 11, maxBitrate: 12000, maxHeight: 1080})
-    qualities.Push({title: "10 Mbps", index: 10, maxBitrate: 10000, maxHeight: 1080})
-    qualities.Push({title: "8 Mbps", index: 9, maxBitrate: 8000, maxHeight: 1080})
+    qualities.Push({title: "20 Mbps", index: 12, maxBitrate: 20000, maxHeight: 1088})
+    qualities.Push({title: "12 Mbps", index: 11, maxBitrate: 12000, maxHeight: 1088})
+    qualities.Push({title: "10 Mbps", index: 10, maxBitrate: 10000, maxHeight: 1088})
+    qualities.Push({title: "8 Mbps", index: 9, maxBitrate: 8000, maxHeight: 1088})
     qualities.Push({title: "4 Mbps", index: 8, maxBitrate: 4000, maxHeight: 720})
     qualities.Push({title: "3 Mbps", index: 7, maxBitrate: 3000, maxHeight: 720})
     qualities.Push({title: "2 Mbps", index: 6, maxBitrate: 2000, maxHeight: 720})
@@ -680,7 +680,7 @@ function settingsGetMaxResolution(local as boolean) as integer
     end if
 
     if qualityIndex >= 9 then
-        return 1080
+        return 1088
     else if qualityIndex >= 6 then
         return 720
     else if qualityIndex >= 5 then
