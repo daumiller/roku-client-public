@@ -82,6 +82,12 @@ sub nowplayingInit()
     m.AddListener(m.player, "shuffle", CreateCallable("OnShuffle", m))
     m.AddListener(m.player, "repeat", CreateCallable("OnRepeat", m))
 
+    ' Make sure our item is set to the player's current item. This is normally
+    ' set elsewhere, but it's possible for it to fall out of sync if another
+    ' screen is pushed on top of us (e.g. Lock screen).
+    '
+    m.item = firstOf(m.player.GetCurrentItem(), m.item)
+
     ' Container to toggle
     m.nowPlayingView = CreateObject("roList")
     m.queueView = CreateObject("roList")
