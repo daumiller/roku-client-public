@@ -10,6 +10,9 @@ function UsersScreen() as object
         obj.CreateCard = usersCreateCard
         obj.OnKeyPress = usersOnKeyPress
         obj.OnKeyRelease = usersOnKeyRelease
+        obj.OnFwdButton = usersOnFwdButton
+        obj.OnRevButton = usersOnRevButton
+        obj.OnPlayButton = usersOnPlayButton
         obj.Deactivate = usersDeactivate
         obj.LockScreen = usersLockScreen
 
@@ -154,4 +157,19 @@ sub usersOnKeyPress(keyCode as integer, repeat as boolean)
     if not m.isLockScreen or keyCode <> m.kp_BK
         ApplyFunc(ComponentsScreen().OnKeyPress, m, [keyCode, repeat])
     end if
+end sub
+
+sub usersOnFwdButton(item=invalid as dynamic)
+    if not m.isLockScreen then return
+    AudioPlayer().Next()
+end sub
+
+sub usersOnRevButton(item=invalid as dynamic)
+    if not m.isLockScreen then return
+    AudioPlayer().Prev()
+end sub
+
+sub usersOnPlayButton(item=invalid as dynamic)
+    if not m.isLockScreen then return
+    AudioPlayer().OnPlayButton()
 end sub
