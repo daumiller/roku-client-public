@@ -61,7 +61,7 @@ function voBuild(directPlay=invalid as dynamic, directStream=true as boolean) as
     end if
 
     ' Add soft subtitle info
-    if m.choice.isExternalSoftSub then
+    if m.choice.subtitleDecision = m.choice.SUBTITLES_SOFT_ANY then
         obj.SubtitleUrl = server.BuildUrl(m.choice.subtitleStream.GetSubtitlePath(), true)
         obj.SubtitleConfig = { ShowSubtitle: 1 }
     end if
@@ -136,7 +136,7 @@ function voBuildTranscodeHls(obj as object, partIndex as integer, directStream a
     builder.AddParam("videoResolution", settings.GetGlobal("transcodeVideoResolutions")[qualityIndex])
     builder.AddParam("maxVideoBitrate", settings.GetGlobal("transcodeVideoBitrates")[qualityIndex])
 
-    if m.choice.isExternalSoftSub then
+    if m.choice.subtitleDecision = m.choice.SUBTITLES_SOFT_ANY then
         builder.AddParam("skipSubtitles", "1")
     end if
 
@@ -193,9 +193,11 @@ function voBuildTranscodeMkv(obj as object, partIndex as integer, directStream a
     builder.AddParam("videoResolution", settings.GetGlobal("transcodeVideoResolutions")[qualityIndex])
     builder.AddParam("maxVideoBitrate", settings.GetGlobal("transcodeVideoBitrates")[qualityIndex])
 
-    if m.choice.isExternalSoftSub then
+    obj.SubtitleUrl = invalid
+    if m.choice.subtitleDecision = m.choice.SUBTITLES_BURN then
+        builder.AddParam("subtitles", "burn")
+    else
         builder.AddParam("subtitles", "muxed")
-        obj.SubtitleUrl = invalid
     end if
 
     builder.AddParam("partIndex", tostr(partIndex))

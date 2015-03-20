@@ -12,7 +12,14 @@ function MediaChoiceClass() as object
         obj.videoStream = invalid
         obj.audioStream = invalid
         obj.subtitleStream = invalid
-        obj.isExternalSoftSub = false
+
+        ' Constants
+        obj.SUBTITLES_DEFAULT = 0
+        obj.SUBTITLES_BURN = 1
+        obj.SUBTITLES_SOFT_DP = 2
+        obj.SUBTITLES_SOFT_ANY = 3
+
+        obj.subtitleDecision = obj.SUBTITLES_DEFAULT
 
         obj.ToString = mcToString
 

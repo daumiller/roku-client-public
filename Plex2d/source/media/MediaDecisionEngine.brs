@@ -6,8 +6,8 @@ function MediaDecisionEngine() as object
         obj.ChooseMedia = mdeChooseMedia
         obj.EvaluateMediaVideo = mdeEvaluateMediaVideo
         obj.EvaluateMediaMusic = mdeEvaluateMediaMusic
+        obj.EvaluateSubtitles = mdeEvaluateSubtitles
         obj.CanDirectPlay = mdeCanDirectPlay
-        obj.CanUseSoftSubs = mdeCanUseSoftSubs
 
         m.MediaDecisionEngine = obj
     end if
@@ -128,7 +128,7 @@ function mdeEvaluateMediaVideo(item as object, media as object) as object
     end if
 
     if choice.subtitleStream <> invalid then
-        choice.isExternalSoftSub = m.CanUseSoftSubs(choice.subtitleStream)
+        choice.subtitleDecision = m.EvaluateSubtitles(choice.subtitleStream)
     end if
 
     ' For evaluation purposes, we only care about the first part
@@ -212,7 +212,7 @@ function mdeEvaluateMediaVideo(item as object, media as object) as object
 
     if numVideoStreams > 1 then
         Info("MDE: Multiple video streams, won't try to direct play")
-    else if choice.subtitleStream <> invalid and not choice.isExternalSoftSub then
+    else if choice.subtitleStream <> invalid and (choice.subtitleDecision <> choice.SUBTITLES_SOFT_DP and choice.subtitleDecision <> choice.SUBTITLES_SOFT_ANY) then
         Info("MDE: Need to burn in subtitles")
     else if problematicAudioStream then
         Info("MDE: Problematic AAC stream with more than 2 channels prevents direct play")
@@ -320,12 +320,23 @@ function mdeCanDirectPlay(media as object, part as object, videoStream as object
     return false
 end function
 
-function mdeCanUseSoftSubs(stream as object) as boolean
-    ' Not if the user prefers them burned in
-    if AppSettings().GetBoolPreference("hardsubtitles") then return false
-
-    ' We only support soft subtitles for sidecar SRT.
-    if stream.Get("codec") <> "srt" or stream.Get("key") = invalid then return false
+function mdeEvaluateSubtitles(stream as object) as integer
+    if AppSettings().GetBoolPreference("hardsubtitles") then
+        ' If the user prefers them burned, always burn
+        return MediaChoiceClass().SUBTITLES_BURN
+    else if stream.Get("codec") <> "srt" then
+        ' We only support soft subtitles for SRT. Anything else has to use the
+        ' transcoder, and we defer to it on whether the subs will have to be
+        ' burned or can be converted to SRT and muxed.
+        '
+        return MediaChoiceClass().SUBTITLES_DEFAULT
+    else if stream.Get("key") = invalid then
+        ' Embedded subs don't have keys and can only be direct played
+        result = MediaChoiceClass().SUBTITLES_SOFT_DP
+    else
+        ' Sidecar subs can be direct played or used alongside a transcode
+        result = MediaChoiceClass().SUBTITLES_SOFT_ANY
+    end if
 
     ' TODO(schuyler) If Roku adds support for non-Latin characters, remove
     ' this hackery. To the extent that we continue using this hackery, it
@@ -388,9 +399,12 @@ function mdeCanUseSoftSubs(stream as object) as boolean
         }
     end if
 
-    code = stream.Get("languageCode")
+    if not m.SoftSubLanguages.DoesExist(stream.Get("languageCode", "eng")) then
+        ' If the language is unsupported, then we need to force burning
+        result = MediaChoiceClass().SUBTITLES_BURN
+    end if
 
-    return (code = invalid or m.SoftSubLanguages.DoesExist(code))
+    return result
 end function
 
 function mdeEvaluateMediaMusic(item as object, media as object) as object
