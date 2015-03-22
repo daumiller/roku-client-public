@@ -359,7 +359,7 @@ sub vpPlayItemAtIndex(index as integer)
     ' player (and wait for it to fully close) before we can play something new.
 
     if m.player = invalid then
-        m.curIndex = index
+        m.SetCurrentIndex(index)
         m.Play()
     else
         m.playIndexAfterClose = index

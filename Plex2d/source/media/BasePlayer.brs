@@ -51,6 +51,7 @@ function BasePlayerClass() as object
 
         obj.SetPlayState = bpSetPlayState
         obj.AdvanceIndex = bpAdvanceIndex
+        obj.SetCurrentIndex = bpSetCurrentIndex
         obj.GetCurrentItem = bpGetCurrentItem
         obj.GetNextItem = bpGetNextItem
         obj.GetCurrentMetadata = bpGetCurrentMetadata
@@ -123,26 +124,31 @@ end sub
 sub bpPrev()
     if m.context = invalid then return
 
-    m.PlayItemAtIndex(m.AdvanceIndex(-1))
+    m.PlayItemAtIndex(m.AdvanceIndex(-1, false))
 end sub
 
 sub bpNext()
     if m.context = invalid then return
 
-    m.PlayItemAtIndex(m.AdvanceIndex())
+    m.PlayItemAtIndex(m.AdvanceIndex(1, false))
 end sub
 
-function bpAdvanceIndex(delta=1 as integer, updatePlayQueue=true as boolean) as integer
+function bpAdvanceIndex(delta=1 as integer, updateSelectedItem=true as boolean) as integer
     newIndex = (m.curIndex + delta) mod m.context.Count()
     newIndex = iif(newIndex < 0, newIndex + m.context.Count(), newIndex)
 
-    if updatePlayQueue then
-        m.playQueue.selectedId = m.context[newIndex].item.GetInt("playQueueItemID")
-        m.playQueue.Refresh(false, true)
+    if updateSelectedItem then
+        m.SetCurrentIndex(newIndex)
     end if
 
     return newIndex
 end function
+
+sub bpSetCurrentIndex(newIndex as integer)
+    m.curIndex = newIndex
+    m.playQueue.selectedId = m.context[newIndex].item.GetInt("playQueueItemID")
+    m.playQueue.Refresh(false, true)
+end sub
 
 sub bpSetPlayQueue(playQueue as object, startPlayer=true as boolean)
     ' TODO(schuyler): startPlayer is never false. If it ever is, then

@@ -76,7 +76,7 @@ end sub
 sub apPlayItemAtIndex(index as integer)
     m.ignoreTimelines = true
     m.player.Stop()
-    m.curIndex = index
+    m.SetCurrentIndex(index)
     m.player.SetNext(index)
     m.Play()
 end sub
@@ -85,7 +85,6 @@ sub apPlayItemAtPQIID(playQueueItemID as integer)
     for index = 0 to m.context.Count() - 1
         track = m.context[index]
         if track.item.GetInt("playQueueItemID") = playQueueItemID then
-            m.playQueue.selectedId = playQueueItemID
             m.PlayItemAtIndex(index)
             exit for
         end if
@@ -128,12 +127,12 @@ function apHandleMessage(msg as object) as boolean
             Analytics().TrackEvent("Playback", item.Get("type", "track"), tostr(item.GetIdentifier()), amountPlayed)
 
             if m.repeat <> m.REPEAT_ONE then
-                m.curIndex = m.AdvanceIndex()
+                m.AdvanceIndex()
             end if
         else if msg.isRequestFailed() then
             Error("Audio: Playback of track failed (" + tostr(msg.GetIndex()) + "): " + tostr(msg.GetMessage()))
             m.ignoreTimelines = false
-            m.curIndex = m.AdvanceIndex()
+            m.AdvanceIndex()
         else if msg.isListItemSelected() then
             Info("Audio: Starting to play track: " + tostr(metadata.Url))
             forceTimeline = true
