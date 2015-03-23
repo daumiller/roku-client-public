@@ -140,7 +140,7 @@ function imageDraw() as object
 end function
 
 function createBackgroundImage(item as object) as object
-    obj = createImage(item, 1280, 720, { blur: 20, opacity: 70, background: Colors().ToHexString("Black") })
+    obj = createImage(item, 1280, 720, { blur: 15, opacity: 60, background: Colors().ToHexString("Background") })
     obj.SetOrientation(obj.ORIENTATION_LANDSCAPE)
     obj.cache = true
     obj.fade = true
