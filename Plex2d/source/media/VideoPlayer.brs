@@ -70,9 +70,6 @@ sub vpInit()
     m.timelineTimer.active = true
     Application().AddTimer(m.timelineTimer, m.timelineTimer.callback)
 
-    ' TODO(rob): multi-parts offset (curPartOffset)
-    m.curPartOffset = 0
-
     videoItem = m.GetCurrentMetadata()
 
     ' TODO(rob): better UX error handling
@@ -80,6 +77,8 @@ sub vpInit()
         m.screenError = "invalid video item"
         return
     end if
+
+    m.curPartOffset = validint(videoItem.startOffset)
 
     screen = CreateObject("roVideoScreen")
     screen.SetMessagePort(Application().port)
@@ -200,8 +199,6 @@ function vpHandleMessage(msg) as boolean
                 return handled
             end if
 
-            ' TODO(rob): multi-parts
-
             ' Fallback transcode with resume support
             if m.playbackError and m.IsTranscoded = false then
                 Warn("Direct Play failed: falling back to transcode")
@@ -216,21 +213,33 @@ function vpHandleMessage(msg) as boolean
                 end if
             end if
 
-            if m.playbackError <> true and m.isPlayed and (m.curIndex < m.context.Count() - 1 or m.repeat <> m.REPEAT_NONE) then
-                Info("Going to try to play the next item")
-                m.player = invalid
-                m.screen = invalid
-                m.Next()
-            else
-                Info("Done with entire play queue, going to pop screen")
-                m.SetPlayState(m.STATE_STOPPED)
-                NowPlayingManager().SetLocation(NowPlayingManager().NAVIGATION)
-                m.UpdateNowPlaying()
-                m.Trigger("stopped", [m, item])
-                Application().PopScreen(m)
-                if m.playbackError then m.ShowPlaybackError()
-                m.Cleanup()
+            if m.playbackError <> true and m.isPlayed then
+                videoItem = m.context[m.curIndex]
+
+                if videoItem.HasMoreParts() then
+                    Info("Going to try to play the next part")
+                    videoItem.GoToNextPart()
+                    m.player = invalid
+                    m.screen = invalid
+                    m.Play()
+                    return handled
+                else if m.curIndex < m.context.Count() - 1 or m.repeat <> m.REPEAT_NONE then
+                    Info("Going to try to play the next item")
+                    m.player = invalid
+                    m.screen = invalid
+                    m.Next()
+                    return handled
+                end if
             end if
+
+            Info("Done with entire play queue, going to pop screen")
+            m.SetPlayState(m.STATE_STOPPED)
+            NowPlayingManager().SetLocation(NowPlayingManager().NAVIGATION)
+            m.UpdateNowPlaying()
+            m.Trigger("stopped", [m, item])
+            Application().PopScreen(m)
+            if m.playbackError then m.ShowPlaybackError()
+            m.Cleanup()
         else if msg.isPlaybackPosition() then
             m.lastPosition = m.curPartOffset + msg.GetIndex()
             Debug("vsHandleMessage::isPlaybackPosition: set progress -> " + tostr(1000*m.lastPosition))
@@ -504,31 +513,31 @@ end sub
 
 sub vpShowPlaybackError()
     video = m.context[m.curIndex]
+    curMedia = video.media
     server = video.item.GetServer()
 
     ' HACK to get accessible/available as blocking request. The playQueue
     ' doesn't support checkFiles, so we'll need to add the correct support
     ' for that.
-    ' TODO(rob): update this when we handle multiple parts. The first part may
-    ' be accessible, but next part(s) may not. For now we'll just check the
-    ' item as a whole.. which will fail once we support multi-parts because
-    ' all checks will succeed if any part is accessible or available.
     request = createPlexRequest(server, video.item.GetItemPath(true))
     response = request.DoRequestWithTimeout(10)
-    if response.items[0] <> invalid then
-        curPart = response.items[0]
-    else
-        curPart = video.media.parts[0]
+    if response.items.Count() > 0 and response.items[0].mediaitems <> invalid then
+        for each media in response.items[0].mediaitems
+            if media.Equals(curMedia) then
+                curMedia = media
+                exit for
+            end if
+        next
     end if
     ' End Hack
 
     if video.media.IsIndirect() then
         title = "Video Unavailable"
         text = "Sorry, but we can't play this video. The original video may no longer be available, or it may be in a format that isn't supported."
-    else if curPart <> invalid and curPart.IsAvailable() = false then
+    else if curMedia <> invalid and curMedia.IsAvailable() = false then
         title = "Video Unavailable"
         text = "Please check that this file exists and the necessary drive is mounted."
-    else if curPart <> invalid and curPart.IsAccessible() = false then
+    else if curMedia <> invalid and curMedia.IsAccessible() = false then
         title = "Video Unavailable"
         text = "Please check that this file exists and has appropriate permissions."
     else if m.IsTranscoded = false then

@@ -8,6 +8,9 @@ function VideoObjectClass() as object
         obj.BuildTranscodeMkv = voBuildTranscodeMkv
         obj.BuildDirectPlay = voBuildDirectPlay
 
+        obj.HasMoreParts = voHasMoreParts
+        obj.GoToNextPart = voGoToNextPart
+
         m.VideoObjectClass = obj
     end if
 
@@ -37,7 +40,6 @@ function voBuild(directPlay=invalid as dynamic, directStream=true as boolean) as
     ' Add that first.
 
     obj = CreateObject("roAssociativeArray")
-    obj.PlayStart = int(m.seekValue/1000)
     if m.item.Get("extraTitle") <> invalid then
         obj.Title = m.item.Get("extraTitle")
         obj.hudTitle = m.item.GetLongerTitle()
@@ -66,31 +68,67 @@ function voBuild(directPlay=invalid as dynamic, directStream=true as boolean) as
         obj.SubtitleConfig = { ShowSubtitle: 1 }
     end if
 
-    ' TODO(schuyler): Actual multipart support
-    partIndex = 0
-    part = m.media.parts[partIndex]
+    ' Create one content metadata object for each part and store them as a
+    ' linked list. We probably want a doubly linked list, except that it
+    ' becomes a circular reference nuisance, so we make the current item the
+    ' base object and singly link in each direction from there.
 
-    if part.IsIndexed() then
-        obj.SDBifUrl = part.GetIndexUrl("sd")
-        obj.HDBifUrl = part.GetIndexUrl("hd")
-    end if
+    baseObj = obj
+    prevObj = invalid
+    startOffset = 0
 
-    if directPlay then
-        obj = m.BuildDirectPlay(obj, partIndex)
-    else
-        ' TODO(schuyler): Do we need a preference here? Also, clean this up. If
-        ' we're going to just use MKV, then this is fine. If we're going to
-        ' support both, then we can reduce some code duplication.
-        '
-        ' TODO(schuyler): Actually, we can't seek an MKV transcode until we
-        ' have full control over the seekbar and controls. So for now, we'll
-        ' stick to HLS.
-        '
-        if server.SupportsFeature("mkv_transcode") and false then
-            obj = m.BuildTranscodeMkv(obj, partIndex, directStream)
-        else
-            obj = m.BuildTranscodeHls(obj, partIndex, directStream)
+    for partIndex = 0 to m.media.parts.Count() - 1
+        part = m.media.parts[partIndex]
+        partObj = CreateObject("roAssociativeArray")
+        partObj.Append(baseObj)
+
+        partObj.startOffset = startOffset
+
+        if part.IsIndexed() then
+            partObj.SDBifUrl = part.GetIndexUrl("sd")
+            partObj.HDBifUrl = part.GetIndexUrl("hd")
         end if
+
+        if directPlay then
+            partObj = m.BuildDirectPlay(partObj, partIndex)
+        else
+            ' TODO(schuyler): Do we need a preference here? Also, clean this up. If
+            ' we're going to just use MKV, then this is fine. If we're going to
+            ' support both, then we can reduce some code duplication.
+            '
+            ' TODO(schuyler): Actually, we can't seek an MKV transcode until we
+            ' have full control over the seekbar and controls. So for now, we'll
+            ' stick to HLS.
+            '
+            if server.SupportsFeature("mkv_transcode") and false then
+                partObj = m.BuildTranscodeMkv(partObj, partIndex, directStream)
+            else
+                partObj = m.BuildTranscodeHls(partObj, partIndex, directStream)
+            end if
+        end if
+
+        ' Set up our linked list references. If we couldn't build an actual
+        ' object then fail fast. Otherwise, see if we're at our start offset
+        ' yet in order to decide if we need to link forwards or backwards.
+        '
+        if partObj = invalid then
+            obj = invalid
+            exit for
+        else if int(m.seekValue/1000) >= startOffset then
+            obj = partObj
+            partObj.prevObj = prevObj
+        else if prevObj <> invalid then
+            prevObj.nextPart = partObj
+        end if
+
+        startOffset = startOffset + int(part.GetInt("duration") / 1000)
+
+        prevObj = partObj
+    end for
+
+    ' Only set PlayStart for the initial part, and adjust for the part's offset
+    if obj <> invalid then
+        obj.PlayStart = int(m.seekValue/1000) - obj.startOffset
     end if
 
     m.metadata = obj
@@ -123,9 +161,17 @@ function voBuildTranscodeHls(obj as object, partIndex as integer, directStream a
     builder.AddParam("path", m.item.GetAbsolutePath("key"))
     builder.AddParam("session", settings.GetGlobal("clientIdentifier"))
     builder.AddParam("waitForSegments", "1")
-    builder.AddParam("offset", tostr(int(m.seekValue/1000)))
     builder.AddParam("directPlay", "0")
     builder.AddParam("directStream", iif(directStream, "1", "0"))
+
+    seekOffset = int(m.seekValue/1000)
+    if seekOffset >= obj.startOffset and seekOffset < obj.startOffset + int(part.GetInt("duration") / 1000) then
+        startOffset = seekOffset - obj.startOffset
+    else
+        startOffset = 0
+    end if
+
+    builder.AddParam("offset", tostr(startOffset))
 
     if transcodeServer.IsLocalConnection() then
         qualityIndex = settings.GetIntPreference("local_quality")
@@ -248,3 +294,19 @@ function voBuildDirectPlay(obj as object, partIndex as integer) as dynamic
 
     return obj
 end function
+
+function voHasMoreParts() as boolean
+    return (m.metadata <> invalid and m.metadata.nextPart <> invalid)
+end function
+
+sub voGoToNextPart()
+    oldPart = m.metadata
+    if oldPart = invalid then return
+
+    newPart = oldPart.nextPart
+    if newPart = invalid then return
+
+    newPart.prevPart = oldPart
+    oldPart.nextPart = invalid
+    m.metadata = newPart
+end sub
