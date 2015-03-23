@@ -304,7 +304,7 @@ function pnsEquals(other as dynamic) as boolean
 end function
 
 function pnsToString() as string
-    return "Server " + m.name + " owned: " + tostr(m.owned) + " uuid: " + tostr(m.uuid)
+    return "Server " + tostr(m.name) + " owned: " + tostr(m.owned) + " uuid: " + tostr(m.uuid)
 end function
 
 sub pnsGetVersion() as string
