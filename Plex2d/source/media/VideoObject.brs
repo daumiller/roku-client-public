@@ -167,6 +167,19 @@ function voBuildTranscodeHls(obj as object, partIndex as integer, directStream a
     seekOffset = int(m.seekValue/1000)
     if seekOffset >= obj.startOffset and seekOffset < obj.startOffset + int(part.GetInt("duration") / 1000) then
         startOffset = seekOffset - obj.startOffset
+
+        ' Avoid a perfect storm of PMS and Roku quirks. If we pass an offset to
+        ' the transcoder, then it'll start transcoding from that point. But if
+        ' we try to start a few seconds into the video, the Roku seems to want
+        ' to grab the first segment. The first segment doesn't exist, so PMS
+        ' returns a 404 (but only if the offset is <= 12s, otherwise it returns
+        ' a blank segment). If the Roku gets a 404 for the first segment, then
+        ' it'll fail. So, if we're going to start playing from less than 12
+        ' seconds, don't bother telling the transcoder. It's not worth the
+        ' potential failure, let it transcode from the start so that the first
+        ' segment will always exist.
+        '
+        if startOffset <= 12 then startOffset = 0
     else
         startOffset = 0
     end if
@@ -226,9 +239,30 @@ function voBuildTranscodeMkv(obj as object, partIndex as integer, directStream a
     builder.AddParam("protocol", "http")
     builder.AddParam("path", m.item.GetAbsolutePath("key"))
     builder.AddParam("session", settings.GetGlobal("clientIdentifier"))
-    builder.AddParam("offset", tostr(int(m.seekValue/1000)))
     builder.AddParam("directPlay", "0")
     builder.AddParam("directStream", iif(directStream, "1", "0"))
+
+    seekOffset = int(m.seekValue/1000)
+    if seekOffset >= obj.startOffset and seekOffset < obj.startOffset + int(part.GetInt("duration") / 1000) then
+        startOffset = seekOffset - obj.startOffset
+
+        ' Avoid a perfect storm of PMS and Roku quirks. If we pass an offset to
+        ' the transcoder, then it'll start transcoding from that point. But if
+        ' we try to start a few seconds into the video, the Roku seems to want
+        ' to grab the first segment. The first segment doesn't exist, so PMS
+        ' returns a 404 (but only if the offset is <= 12s, otherwise it returns
+        ' a blank segment). If the Roku gets a 404 for the first segment, then
+        ' it'll fail. So, if we're going to start playing from less than 12
+        ' seconds, don't bother telling the transcoder. It's not worth the
+        ' potential failure, let it transcode from the start so that the first
+        ' segment will always exist.
+        '
+        if startOffset <= 12 then startOffset = 0
+    else
+        startOffset = 0
+    end if
+
+    builder.AddParam("offset", tostr(startOffset))
 
     if transcodeServer.IsLocalConnection() then
         qualityIndex = settings.GetIntPreference("local_quality")
