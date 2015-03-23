@@ -168,7 +168,7 @@ sub appPopScreen(screen as object, callActivate=true as boolean)
     end if
 
     ' Set the remote back to navigation (default for all screens)
-    NowPlayingManager().location = "navigation"
+    NowPlayingManager().SetLocation(NowPlayingManager().NAVIGATION)
 
     ' close any overlay screen (resets focusedItem)
     if IsFunction(screen.closeOverlays) then

@@ -113,13 +113,8 @@ function ProcessTimelinePoll() as boolean
 
     NowPlayingManager().AddPollSubscriber(deviceID, commandID)
 
-    if firstOf(m.request.query["wait"], "0") = "0" then
-        xml = NowPlayingManager().TimelineDataXmlForSubscriber(deviceID)
-        m.mimetype = MimeType("xml")
-        m.simpleOK(xml)
-    else
-        NowPlayingManager().WaitForNextTimeline(deviceID, m)
-    end if
+    immediate = (firstOf(m.request.query["wait"], "0") = "0")
+    NowPlayingManager().WaitForNextTimeline(deviceID, m, immediate)
 
     return true
 end function

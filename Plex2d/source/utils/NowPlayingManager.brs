@@ -38,6 +38,7 @@ function NowPlayingManager()
         obj.WaitForNextTimeline = nowPlayingWaitForNextTimeline
         obj.SetControllable = nowPlayingSetControllable
         obj.SetFocusedTextField = nowPlayingSetFocusedTextField
+        obj.SetLocation = nowPlayingSetLocation
         obj.OnTimelineResponse = nowPlayingOnTimelineResponse
 
         ' Initialization
@@ -210,24 +211,19 @@ sub nowPlayingSendTimelineToAll()
             else
                 m.SendTimelineToSubscriber(subscriber, xml)
             end if
+        else
+            ' A polling subscriber, note that we have an update for it. If it
+            ' doesn't have a pending request, then this flag will ensure it's
+            ' next request responds immediately.
+            subscriber.hasUpdate = true
         end if
     next
 
     for each id in expiredSubscribers
         m.subscribers.Delete(id)
     next
-end sub
 
-sub nowPlayingUpdatePlaybackState(timelineType as string, item as object, state as string, time as integer, playQueue=invalid as dynamic)
-    timeline = m.timelines[timelineType]
-    timeline.state = state
-    timeline.item = item
-    timeline.playQueue = playQueue
-    timeline.attrs["time"] = tostr(time)
-
-    m.SendTimelineToAll()
-
-    ' Send the timeline data to any waiting poll requests
+    ' Send timeline data to any waiting poll requests
     for each id in m.pollReplies
         reply = m.pollReplies[id]
         xml = m.TimelineDataXmlForSubscriber(reply.deviceID)
@@ -238,6 +234,16 @@ sub nowPlayingUpdatePlaybackState(timelineType as string, item as object, state 
     next
 
     m.pollReplies.Clear()
+end sub
+
+sub nowPlayingUpdatePlaybackState(timelineType as string, item as object, state as string, time as integer, playQueue=invalid as dynamic)
+    timeline = m.timelines[timelineType]
+    timeline.state = state
+    timeline.item = item
+    timeline.playQueue = playQueue
+    timeline.attrs["time"] = tostr(time)
+
+    m.SendTimelineToAll()
 
     m.SendTimelineToServer(item, state, time, playQueue)
 end sub
@@ -266,7 +272,10 @@ end function
 function nowPlayingTimelineDataXmlForSubscriber(deviceID as string) as object
     commandID = 0
     subscriber = m.subscribers[firstOf(deviceID, "")]
-    if subscriber <> invalid then commandID = subscriber.commandID
+    if subscriber <> invalid then
+        commandID = subscriber.commandID
+        subscriber.hasUpdate = false
+    end if
 
     xml = m.CreateTimelineDataXml()
     xml.AddAttribute("commandID", tostr(commandID))
@@ -274,20 +283,31 @@ function nowPlayingTimelineDataXmlForSubscriber(deviceID as string) as object
     return xml.GenXml(false)
 end function
 
-sub nowPlayingWaitForNextTimeline(deviceID as string, reply as object)
-    timeoutTimer = createTimer("timeout")
-    timeoutTimer.SetDuration(30000)
-    timeoutTimer.active = true
-    timeoutTimer.reply = reply
+sub nowPlayingWaitForNextTimeline(deviceID as string, reply as object, immediate as boolean)
+    subscriber = m.subscribers[firstOf(deviceID, "")]
+    if subscriber <> invalid and subscriber.hasUpdate = true then
+        immediate = true
+    end if
 
-    reply.source = reply.WAITING
-    reply.deviceID = deviceID
-    reply.timeoutTimer = timeoutTimer
-    reply.OnTimerExpired = pollOnTimerExpired
+    if immediate then
+        xml = m.TimelineDataXmlForSubscriber(deviceID)
+        reply.mimetype = MimeType("xml")
+        reply.simpleOK(xml)
+    else
+        timeoutTimer = createTimer("timeout")
+        timeoutTimer.SetDuration(30000)
+        timeoutTimer.active = true
+        timeoutTimer.reply = reply
 
-    Application().AddTimer(timeoutTimer, createCallable("OnTimerExpired", reply))
+        reply.source = reply.WAITING
+        reply.deviceID = deviceID
+        reply.timeoutTimer = timeoutTimer
+        reply.OnTimerExpired = pollOnTimerExpired
 
-    m.pollReplies[tostr(reply.id)] = reply
+        Application().AddTimer(timeoutTimer, createCallable("OnTimerExpired", reply))
+
+        m.pollReplies[tostr(reply.id)] = reply
+    end if
 end sub
 
 sub pollOnTimerExpired(timer as object)
@@ -381,6 +401,13 @@ sub nowPlayingSetFocusedTextField(name=invalid as dynamic, content=invalid as dy
     m.textFieldContent = firstOf(content, "")
     m.textFieldSecure = secure
     m.SendTimelineToAll()
+end sub
+
+sub nowPlayingSetLocation(location as string)
+    if m.location <> location then
+        m.location = location
+        m.SendTimelineToAll()
+    end if
 end sub
 
 sub nowplayingOnTimelineResponse(request as object, response as object, context as object)

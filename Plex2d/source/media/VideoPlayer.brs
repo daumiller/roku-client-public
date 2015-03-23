@@ -157,11 +157,11 @@ sub vpShow()
         m.ClearMemory()
         m.screen.Show()
 
-        NowPlayingManager().location = "fullScreenVideo"
+        NowPlayingManager().SetLocation(NowPlayingManager().FULLSCREEN_VIDEO)
         m.UpdateNowPlaying()
         m.Trigger("playing", [m, m.GetCurrentItem()])
     else
-        NowPlayingManager().location = "navigation"
+        NowPlayingManager().SetLocation(NowPlayingManager().NAVIGATION)
         Application().PopScreen(m)
     end if
 end sub
@@ -224,7 +224,7 @@ function vpHandleMessage(msg) as boolean
             else
                 Info("Done with entire play queue, going to pop screen")
                 m.SetPlayState(m.STATE_STOPPED)
-                NowPlayingManager().location = "navigation"
+                NowPlayingManager().SetLocation(NowPlayingManager().NAVIGATION)
                 m.UpdateNowPlaying()
                 m.Trigger("stopped", [m, item])
                 Application().PopScreen(m)

@@ -56,7 +56,7 @@ function createNowPlayingScreen(plexItem=invalid as dynamic) as object
 
     obj.Init()
 
-    NowPlayingManager().location = "fullScreenMusic"
+    NowPlayingManager().SetLocation(NowPlayingManager().FULLSCREEN_MUSIC)
 
     return obj
 end function
