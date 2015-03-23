@@ -1,0 +1,17 @@
+NEW:
+ - Rework TV season screen to use list view instead of two-row grid
+ - Add shuffle button to TV show preplay screen
+ - Proper support for Enhanced AC-3
+ - Allow remote buttons to control audio player while on the lock screen
+ - Allow direct play of MKV with embedded SRT subtitles
+ - Support for multipart videos
+
+FIXES:
+ - Add watched status overlays on video list views (e.g. Playlists)
+ - Partially watched items should have a Mark Watched action, not Mark Unwatched
+ - Fix crash when switching users while audio is playing
+ - Fix audio stream selection in certain circumstances, such as plugging in headphones before hitting play
+ - Fix On Deck grid layout within a library
+ - Various Plex Companion fixes
+ - Various UI tweaks
+ 
