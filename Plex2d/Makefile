@@ -16,25 +16,29 @@
 ##########################################################################
 APPNAME = Plex
 APPDEPS = manifest count_functions
-ZIP_EXCLUDE = -x .git\* -x manifest.template -x \*.swp -x \*.DS_Store -x \*.py -x roku_screenshot.jpg
+ZIP_EXCLUDE = -x .git\* -x manifest.template -x \*.swp -x \*.DS_Store -x \*.py -x roku_screenshot\*.jpg -x \*.md
 include ../app.mk
 
-APPTITLE = $(APPNAME)Pass
+APPTITLE = $(APPNAME)Dev
 
 num_functions := $(shell grep -ri --include=*.brs 'end \(function\|sub\)' . | wc -l | tr -d ' ')
 timestamp := $(shell date +'%Y-%m-%d-%H:%M:%S')
 
-.PHONY: manifest count_functions test ninja rel
+.PHONY: manifest count_functions dev pass ninja public
 
-test: APPTITLE = $(APPNAME)Pass
-test: $(APPNAME)
+dev: $(APPNAME)
+
+pass: APPTITLE = $(APPNAME)Pass
+pass: $(APPNAME)
+	$(eval APPTITLE := $(APPNAME)Pass)
 
 ninja: APPTITLE = $(APPNAME)Ninja
 ninja: $(APPNAME)
+	$(eval APPTITLE := $(APPNAME)Ninja)
 
-rel: APPTITLE = $(APPNAME)
-rel: $(APPNAME)
-
+public: APPTITLE = $(APPNAME)
+public: $(APPNAME)
+	$(eval APPTITLE := $(APPNAME))
 
 manifest:
 	$(eval LC_APPTITLE := $(shell tr '[A-Z]' '[a-z]' <<< $(APPTITLE)))

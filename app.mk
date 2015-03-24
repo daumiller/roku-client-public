@@ -28,6 +28,7 @@ SOURCEREL = ..
 ROKU_DEV_USERNAME ?= rokudev
 ROKU_DEV_PASSWORD ?= plex
 CURL = curl -v --anyauth -u $(ROKU_DEV_USERNAME):$(ROKU_DEV_PASSWORD) -H"Expect:"
+HTTP = http -v --auth-type digest --auth $(ROKU_DEV_USERNAME):$(ROKU_DEV_PASSWORD)
 
 
 .PHONY: all $(APPNAME)
@@ -59,15 +60,15 @@ $(APPNAME): $(APPDEPS)
 	@if [ -d $(SOURCEREL)/$(APPNAME) ]; \
 	then \
 		(zip -0 -r "$(ZIPREL)/$(APPNAME).zip" . -i \*.png $(ZIP_EXCLUDE)); \
-		(zip -9 -r "$(ZIPREL)/$(APPNAME).zip" . -x \*~ -x \*.png -x Makefile -x roku_screenshot\*.jpg $(ZIP_EXCLUDE)); \
+		(zip -9 -r "$(ZIPREL)/$(APPNAME).zip" . -x \*~ -x \*.png -x Makefile $(ZIP_EXCLUDE)); \
 	else \
 		echo "Source for $(APPNAME) not found at $(SOURCEREL)/$(APPNAME)"; \
 	fi
 
-	@echo "*** developer zip  $(APPNAME) complete ***"
+	@echo "*** developer zip  $(APPTITLE) complete ***"
 
 install: $(APPNAME)
-	@echo "Installing $(APPNAME) to host $(ROKU_DEV_TARGET)"
+	@echo "Installing $(APPTITLE) to host $(ROKU_DEV_TARGET)"
 	@$(CURL) -s -S -F "mysubmit=Install" -F "archive=@$(ZIPREL)/$(APPNAME).zip" -F "passwd=" http://$(ROKU_DEV_TARGET)/plugin_install | grep "<font color" | sed "s/<font color=\"red\">//"
 
 pkg: install
@@ -86,9 +87,9 @@ pkg: install
 	fi
 
 	@echo "Packaging  $(APPNAME) on host $(ROKU_DEV_TARGET)"
-	@read -p "Password: " REPLY ; echo $$REPLY | xargs -i $(CURL) -s -S -Fmysubmit=Package -Fapp_name=$(APPNAME)/$(VERSION) -Fpasswd={} -Fpkg_time=`expr \`date +%s\` \* 1000` "http://$(ROKU_DEV_TARGET)/plugin_package" | grep '^<font face=' | sed 's/.*href=\"\([^\"]*\)\".*/\1/' | sed 's#pkgs/##' | xargs -i $(CURL) -s -S -o $(PKGREL)/$(APPNAME)_{} http://$(ROKU_DEV_TARGET)/pkgs/{}
+	@read -p "Password: " REPLY ; echo $$REPLY | xargs -I{} $(CURL) -s -S -Fmysubmit=Package -Fapp_name=$(APPNAME)/$(VERSION) -Fpasswd={} -Fpkg_time=`date +%s` "http://$(ROKU_DEV_TARGET)/plugin_package" | grep 'pkgs' | sed 's/.*href=\"\([^\"]*\)\".*/\1/' | sed 's#pkgs//##' | xargs -I{} $(HTTP) -o $(PKGREL)/$(APPTITLE)_{} -d http://$(ROKU_DEV_TARGET)/pkgs/{}
 
-	@echo "*** Package  $(APPNAME) complete ***" 
+	@echo "*** Package  $(APPTITLE) complete ***"
 remove:
 	@echo "Removing $(APPNAME) from host $(ROKU_DEV_TARGET)"
 	@$(CURL) -s -S -F "mysubmit=Delete" -F "archive=" -F "passwd=" http://$(ROKU_DEV_TARGET)/plugin_install | grep "<font color" | sed "s/<font color=\"red\">//"
