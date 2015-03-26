@@ -194,8 +194,9 @@ sub trackPerformLayout()
 
     ' composite: the coordinates of our children are relative to our own x,y.
     middle = m.height/2
-    spacing = m.title.font.GetOneLineWidth("000", m.width)
-    xOffset = spacing
+    spacingSmall = 30
+    spacingBig = 40
+    xOffset = spacingBig
 
     if m.separator <> invalid then
         m.separator.SetFrame(xOffset, m.height - m.separator.height, m.width - xOffset*2, m.separator.height)
@@ -205,7 +206,7 @@ sub trackPerformLayout()
     if m.index <> invalid then
         m.index.SetFrame(xOffset, 0, m.index.GetPreferredWidth(), m.height)
     end if
-    xOffset = xOffset + m.title.font.GetOneLineWidth(string(len(m.trackCount.toStr()), "0"), m.width) + spacing
+    xOffset = xOffset + m.title.font.GetOneLineWidth(string(len(m.trackCount.toStr()), "0"), m.width) + spacingSmall
 
     if m.trackImage <> invalid then
         height = cint(m.height * .726)
@@ -223,12 +224,12 @@ sub trackPerformLayout()
                 m.unwatched.SetFrame(xOffset, yOffset, width, m.unwatched.GetPreferredHeight())
             end if
         end if
-        xOffset = xOffset +m.trackImage.GetPreferredWidth() + spacing
+        xOffset = xOffset +m.trackImage.GetPreferredWidth() + spacingSmall
     end if
 
     ' track time
     if m.time <> invalid then
-        xOffsetTime = m.width - m.time.GetPreferredWidth() - spacing
+        xOffsetTime = m.width - m.time.GetPreferredWidth() - spacingBig
         yOffset = middle - m.time.GetPreferredHeight()/2
         m.time.SetFrame(xOffsetTime, yOffset, m.time.GetPreferredWidth(), m.time.GetPreferredHeight())
     else

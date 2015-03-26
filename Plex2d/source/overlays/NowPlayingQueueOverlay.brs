@@ -62,15 +62,23 @@ end sub
 
 sub npqoGetComponents()
     isMixed = (m.player.playQueue.isMixed = true)
-    padding = 20
-    spacing = 50
+    ' TODO(schuyler): Padding of 40 exposes a sort of worst case scenario when
+    ' scrolling a mixed now playing area. A space just about the size of a single
+    ' track ends up vacant and never used at the bottom of the trackBG area. It's
+    ' not really a problem with the padding though, I suspect the scrollable vbox
+    ' needs to be more sophisticated.
+
+    padding = 40
+    spacing = 40
     yOffset = 0
     xOffset = computeRect(m.screen.queueImage).right + spacing
     height = m.screen.progress.y
 
+    m.trackActions = createButtonGrid(2, 2)
+
     trackPrefs = {
         background: Colors().GetAlpha(&hffffffff, 10),
-        width: 1230 - xOffset - spacing,
+        width: 1230 - xOffset - spacing - m.trackActions.GetPreferredWidth(),
         height: iif(isMixed, 80, 60),
         fixed: false,
         focusBG: true,
@@ -84,7 +92,7 @@ sub npqoGetComponents()
     m.components.Push(m.trackBG)
 
     m.trackList = createVBox(false, false, false, 0)
-    m.trackList.SetFrame(xOffset + padding, padding, trackPrefs.width, height - padding)
+    m.trackList.SetFrame(xOffset + padding, padding, trackPrefs.width + m.trackActions.GetPreferredWidth(), height - padding)
     m.trackList.SetScrollable(AppSettings().GetHeight() / 2, false, false, "right")
     m.trackList.stopShiftIfInView = true
 
@@ -114,6 +122,21 @@ sub npqoGetComponents()
     end for
     m.components.Push(m.trackList)
 
+    ' Track actions
+    actions = createObject("roList")
+    actions.Push({text: ".", command: "todo_more"})
+    actions.Push({text: "^", command: "todo_move_up"})
+    actions.Push({text: "x", command: "todo_remove"})
+    actions.Push({text: "v", command: "todo_move_down"})
+    buttonColor = Colors().GetAlpha("Black", 30)
+
+    for each action in actions
+        btn = createButton(action.text, FontRegistry().NORMAL, action.command)
+        btn.bgColor = buttonColor
+        m.trackActions.AddComponent(btn)
+    next
+    m.components.Push(m.trackActions)
+
     ' Set the focus to the current AudioPlayer track, if applicable.
     component = m.GetTrackComponent(m.player.GetCurrentItem())
     if component <> invalid then
@@ -128,7 +151,7 @@ sub npqoGetComponents()
 
     ' Background of focused item. We have to use a separate background
     ' component due to the aliasing issue.
-    m.focusBG = createBlock(Colors().GetAlpha("Black", 60))
+    m.focusBG = createBlock(Colors().GetAlpha("Black", 40))
     m.focusBG.setFrame(0, 0, trackPrefs.width, trackPrefs.height)
     m.focusBG.fixed = false
     m.focusBG.zOrderInit = -1
@@ -163,12 +186,33 @@ end function
 sub npqoOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
     ApplyFunc(ComponentsScreen().OnFocusIn, m, [toFocus, lastFocus])
 
+    ' TODO(schuyler): Figure out how to actually handle focus. When we focus
+    ' the button grid we want the track to continue to appear focused.
+
+    if toFocus = invalid or toFocus.ClassName <> "Track" then return
+
     overlay = m.overlayScreen[0]
     if toFocus <> invalid and toFocus.focusBG = true and overlay.focusBG <> invalid then
         overlay.focusBG.sprite.MoveTo(toFocus.x, toFocus.y)
         overlay.focusBG.sprite.SetZ(overlay.zOrderOverlay - 1)
     else
         overlay.focusBG.sprite.SetZ(-1)
+    end if
+
+    if toFocus <> invalid then
+        rect = computeRect(toFocus)
+
+        ' First set the container's position in the usual way. But we don't want
+        ' to redraw the whole screen, and the container isn't a composite, so
+        ' we have to iterate over its components and move the sprites individually.
+
+        overlay.trackActions.SetPosition(rect.right + 1, rect.up + int((rect.height - overlay.trackActions.GetPreferredHeight()) / 2))
+        for each component in overlay.trackActions.components
+            component.sprite.MoveTo(component.x, component.y)
+            component.sprite.SetZ(overlay.zOrderOverlay - 1)
+        next
+    else
+        overlay.trackActions.SetVisibility(false)
     end if
 end sub
 
