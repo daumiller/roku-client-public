@@ -201,16 +201,7 @@ sub npqoOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
 
     if toFocus <> invalid then
         rect = computeRect(toFocus)
-
-        ' First set the container's position in the usual way. But we don't want
-        ' to redraw the whole screen, and the container isn't a composite, so
-        ' we have to iterate over its components and move the sprites individually.
-
         overlay.trackActions.SetPosition(rect.right + 1, rect.up + int((rect.height - overlay.trackActions.GetPreferredHeight()) / 2))
-        for each component in overlay.trackActions.components
-            component.sprite.MoveTo(component.x, component.y)
-            component.sprite.SetZ(overlay.zOrderOverlay - 1)
-        next
     else
         overlay.trackActions.SetVisibility(false)
     end if
