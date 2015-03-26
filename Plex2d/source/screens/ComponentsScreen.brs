@@ -694,10 +694,20 @@ function compGetFocusManual(direction as string, focusableComponenents=invalid a
             end if
 
             ' Items are only real candidates if they have a positive navOffset.
+            ' TODO(schuyler): Excluding candidates with a zero offset can
+            ' actually be problematic since we moved our focus point to the
+            ' edge of the item in the direction of navigation. If we have
+            ' "dense" components with no space between them, then the best
+            ' candidate will have a zero nav offset.
+            '
             if navOffset > 0 then
                 if orthOffset < 0 then orthOffset = -1 * orthOffset
 
                 ' Prioritize items that overlap on the orth axix.
+                ' TODO(schuyler): This is hopelessly wrong, isn't it? It always
+                ' looks at up and down without regard for the direction of
+                ' navigation.
+                '
                 rect = computeRect(candidate)
                 if focusedRect.up <= rect.up then
                     if focusedRect.down >= rect.down then
