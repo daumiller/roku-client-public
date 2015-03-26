@@ -107,7 +107,7 @@ sub nowplayingGetComponents()
 
     progressHeight = 6
     albumLarge = 504
-    albumSmall = 400
+    albumSmall = 350
 
     ' *** Background Artwork *** '
     m.background = createBackgroundImage(m.item)
@@ -143,6 +143,40 @@ sub nowplayingGetComponents()
     m.components.push(m.queueImage)
     m.queueView.Push(queueImageBorder)
     m.queueView.Push(m.QueueImage)
+
+    ' *** Current track info while queue overlay is shown *** '
+    vbox = createVBox(false, false, false, 0)
+    queueImageRect = computeRect(queueImageBorder)
+    vbox.SetFrame(queueImageRect.left, queueImageRect.down + parentSpacing, queueImageRect.width, albumLarge - albumSmall)
+
+    font = FontRegistry().LARGE
+    fontBold = FontRegistry().LARGE_BOLD
+    m.queueGrandparentTitle = createLabel(m.item.Get("grandparentTitle"), font)
+    m.queueGrandparentTitle.width = vbox.width
+    m.queueGrandparentTitle.SetColor(Colors().TextLht)
+    m.queueGrandparentTitle.zOrderInit = -1
+    m.queueParentTitle = createLabel(m.item.Get("parentTitle"), font)
+    m.queueParentTitle.width = vbox.width
+    m.queueParentTitle.SetColor(Colors().TextLht)
+    m.queueParentTitle.zOrderInit = -1
+    m.queueTitle = createLabel(m.item.Get("title"), fontBold)
+    m.queueTitle.width = vbox.width
+    m.queueTitle.zOrderInit = -1
+
+    timeString = "0:00 / " + m.item.GetDuration()
+    m.queueTime = createLabel(timeString, font)
+    m.queueTime.SetColor(Colors().TextLht)
+    m.queueTime.width = vbox.width
+    m.queueTime.zOrderInit = -1
+
+    vbox.AddComponent(m.queueGrandparentTitle)
+    vbox.AddComponent(m.queueParentTitle)
+    vbox.AddSpacer(vbox.height - 4 * font.GetOneLineheight())
+    vbox.AddComponent(m.queueTitle)
+    vbox.AddComponent(m.queueTime)
+
+    m.components.Push(vbox)
+    m.queueView.Push(vbox)
 
     ' *** Current track info: grandparentTitle/parentTitle/Title and track progress/duration *** '
     xOffset = xOffset + albumLarge + parentSpacing
@@ -410,7 +444,13 @@ function nowplayingSetProgress(time as integer, duration as integer) as boolean
     region.DrawRect(0, 0, cint(m.Progress.width * progressPercent), m.Progress.height, Colors().OrangeLight)
 
     m.time.text = GetTimeString(time/1000) +" / " + GetTimeString(duration/1000)
-    m.time.Draw(true)
+    m.queueTime.text = m.time.text
+
+    if m.showQueue = true then
+        m.queueTime.Draw(true)
+    else
+        m.time.Draw(true)
+    end if
 
     return true
 end function
@@ -502,9 +542,9 @@ sub nowplayingOnRevButton(item=invalid as dynamic)
 end sub
 
 sub nowplayingToggleQueue()
-    m.showQueue = not m.showQueue = true
+    m.showQueue = not (m.showQueue = true)
 
-    showNowPlaying = m.showQueue = false
+    showNowPlaying = not m.showQueue
     for each component in m.nowplayingView
         component.focusable = showNowPlaying
         component.SetVisible(showNowPlaying)
