@@ -553,12 +553,10 @@ function compHandleCommand(command as string, item as dynamic) as boolean
         foundPlexMix = false
 
         if plexItem <> invalid then
-            if plexItem.relatedItems = invalid then
-                ' Make a blocking request to fetch any related items now
-                request = createPlexRequest(plexItem.GetServer(), plexItem.GetItemPath(false))
-                response = request.DoRequestWithTimeout(10)
-                plexItem = firstOf(response.items[0], plexItem)
-            end if
+            ' The track should have been fetched with details including related
+            ' items already. We _could_ make a blocking request now if
+            ' relatedItems is invalid, but since we think we already have the
+            ' details we're not bothering.
 
             if plexItem.relatedItems <> invalid then
                 for each relatedItem in plexItem.relatedItems

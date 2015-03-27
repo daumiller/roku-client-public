@@ -44,6 +44,7 @@ function createPlayQueue(server as object, contentType as string, uri as string,
     request = createPlexRequest(server, "/playQueues")
     request.AddParam(iif(options.isPlaylist = invalid, "uri", "playlistID"), uri)
     request.AddParam("type", contentType)
+    request.AddParam("includeRelated", "1")
 
     if options.key <> invalid then
         request.AddParam("key", options.key)
@@ -154,6 +155,7 @@ function createPlayQueueForId(server as object, contentType as string, id as int
 
     request = createPlexRequest(server, "/playQueues/" + tostr(id))
     request.AddParam("own", "1")
+    request.AddParam("includeRelated", "1")
 
     context = request.CreateRequestContext("own", createCallable("OnResponse", obj))
     Application().StartRequest(request, context)
@@ -189,7 +191,7 @@ sub pqRefresh(force=true as boolean, delay=false as boolean)
             m.refreshTimer.active = true
             Application().AddTimer(m.refreshTimer, m.refreshTimer.callback)
         else
-            request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id))
+            request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id) + "?includeRelated=1")
             context = request.CreateRequestContext("refresh", createCallable("OnResponse", m))
             Application().StartRequest(request, context)
         end if
@@ -207,7 +209,7 @@ sub pqSetShuffle(shuffle as boolean)
 
     ' Don't change m.isShuffled, it'll be set in OnResponse if all goes well
 
-    request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id) + command, "PUT")
+    request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id) + command + "?includeRelated=1", "PUT")
     context = request.CreateRequestContext("shuffle", createCallable("OnResponse", m))
     Application().StartRequest(request, context, "")
 end sub
@@ -257,12 +259,14 @@ sub pqMoveItem(item as object, after as object)
     end if
 
     request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id) + "/items/" + item.Get("playQueueItemID", "-1") + "/move" + query, "PUT")
+    request.AddParam("includeRelated", "1")
     context = request.CreateRequestContext("move", createCallable("OnResponse", m))
     Application().StartRequest(request, context, "")
 end sub
 
 sub pqRemoveItem(item as object)
     request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id) + "/items/" + item.Get("playQueueItemID", "-1"), "DELETE")
+    request.AddParam("includeRelated", "1")
     context = request.CreateRequestContext("delete", createCallable("OnResponse", m))
     Application().StartRequest(request, context, "")
 end sub
