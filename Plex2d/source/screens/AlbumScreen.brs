@@ -199,11 +199,15 @@ sub albumGetComponents()
     m.summary.zOrderInit = -1
     m.components.push(m.summary)
 
+    ' Create a component for our track actions now in order to reserve space
+    ' for it. We'll add the buttons later.
+    m.trackActions = createButtonGrid(1, 1)
+
     ' *** Track List Area *** '
     padding = 20
     trackPrefs = {
         background: Colors().GetAlpha(&hffffffff, 10),
-        width: 1230 - xOffset - padding,
+        width: 1230 - xOffset - padding - m.trackActions.GetPreferredWidth(),
         height: 50,
         fixed: false,
         focusBG: true,
@@ -223,7 +227,7 @@ sub albumGetComponents()
     trackListY = header.GetPreferredHeight() + padding
     trackListH = 670 - trackListY
     m.trackList = createVBox(false, false, false, 0)
-    m.trackList.SetFrame(xOffset + padding, trackListY, trackPrefs.width, trackListH)
+    m.trackList.SetFrame(xOffset + padding, trackListY, trackPrefs.width + m.trackActions.GetPreferredWidth(), trackListH)
     m.trackList.SetScrollable(trackListH / 2, true, true, invalid)
     m.trackList.stopShiftIfInView = true
     m.trackList.scrollOverflow = true
@@ -247,6 +251,46 @@ sub albumGetComponents()
         end if
     end for
     m.components.Push(m.trackList)
+
+    ' *** Track actions *** '
+    ' TODO(schuyler): This code is almost exactly the same as NowPlayingQueueOverlay.
+    ' Let's find a way to reuse it.
+    actions = createObject("roList")
+    moreOptions = createObject("roList")
+
+    moreOptions.Push({text: "Play next", command: "play_next"})
+    moreOptions.Push({text: "Add to queue", command: "add_to_queue"})
+    moreOptions.Push({text: "Play music video", command: "play_music_video"})
+    moreOptions.Push({text: "Plex Mix", command: "play_plex_mix"})
+
+    actions.Push({text: ".", type: "dropDown", position: "down", options: moreOptions})
+
+    buttonColor = Colors().GetAlpha("Black", 30)
+
+    for each action in actions
+        if action.type = "dropDown" then
+            btn = createDropDownButton(action.text, FontRegistry().NORMAL, 50 * moreOptions.Count(), m, false)
+            btn.SetDropDownPosition(action.position)
+
+            for each option in action.options
+                option.halign = "JUSTIFY_LEFT"
+                option.height = 50
+                option.padding = { right: 10, left: 10, top: 0, bottom: 0}
+                option.font = FontRegistry().NORMAL
+                option.fields = {trackAction: true}
+                btn.options.Push(option)
+            next
+        else
+            btn = createButton(action.text, FontRegistry().NORMAL, action.command)
+            btn.trackAction = true
+        end if
+
+        btn.bgColor = buttonColor
+        btn.SetFocusMethod(btn.FOCUS_BACKGROUND, Colors().OrangeLight)
+
+        m.trackActions.AddComponent(btn)
+    next
+    m.components.Push(m.trackActions)
 
     ' Set the focus to the current AudioPlayer track, if applicable.
     component = m.GetTrackComponent(m.player.GetCurrentItem())
@@ -361,6 +405,12 @@ end function
 function albumHandleCommand(command as string, item as dynamic) as boolean
     handled = true
 
+    ' If it was a track action, make sure it has the last focused track set as its item
+    if item <> invalid and item.trackAction = true then
+        item.plexObject = m.focusedTrack.plexObject
+        m.overlayScreen.Peek().Close()
+    end if
+
     if command = "play" or command = "shuffle" then
         ' start content from requested index, or from the beginning.
         if item <> invalid then
@@ -391,11 +441,24 @@ end function
 sub albumOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
     ApplyFunc(ComponentsScreen().OnFocusIn, m, [toFocus, lastFocus])
 
+    ' TODO(schuyler): Figure out how to actually handle focus. When we focus
+    ' the button grid we want the track to continue to appear focused.
+
+    if toFocus = invalid or toFocus.ClassName <> "Track" then return
+
     if toFocus <> invalid and toFocus.focusBG = true then
         m.focusBG.sprite.MoveTo(toFocus.x, toFocus.y)
         m.focusBG.sprite.SetZ(1)
     else
         m.focusBG.sprite.SetZ(-1)
+    end if
+
+    if toFocus <> invalid then
+        rect = computeRect(toFocus)
+        m.trackActions.SetPosition(rect.right + 1, rect.up + int((rect.height - m.trackActions.GetPreferredHeight()) / 2))
+        m.focusedTrack = toFocus
+    else
+        m.trackActions.SetVisibility(false)
     end if
 end sub
 
