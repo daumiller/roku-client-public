@@ -134,6 +134,13 @@ sub npqoGetComponents()
         btn = createButton(action.text, FontRegistry().NORMAL, action.command)
         btn.bgColor = buttonColor
         btn.SetFocusMethod(btn.FOCUS_BACKGROUND, Colors().OrangeLight)
+
+        ' A little unorthodox, but we want our overlay to be able to handle
+        ' the button commands instead of the screen.
+
+        btn.overlay = m
+        btn.OnSelected = npqoHandleButton
+
         m.trackActions.AddComponent(btn)
     next
     m.components.Push(m.trackActions)
@@ -203,7 +210,7 @@ sub npqoOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
     if toFocus <> invalid then
         rect = computeRect(toFocus)
         overlay.trackActions.SetPosition(rect.right + 1, rect.up + int((rect.height - overlay.trackActions.GetPreferredHeight()) / 2))
-        m.focusedTrack = toFocus.plexObject
+        overlay.focusedTrack = toFocus
     else
         overlay.trackActions.SetVisibility(false)
     end if
@@ -262,5 +269,31 @@ sub npqoOnFailedFocus(direction as string, focusedItem=invalid as dynamic)
     if not m.IsActive() then return
     if direction = "right" or direction = "left" then
         m.Close(true)
+    end if
+end sub
+
+sub npqoHandleButton()
+    ' We're evaluated in the context of the button, which has a reference to the
+    ' overlay, which has a reference to the screen. But we'll just avoid using
+    ' m to reduce confusion.
+
+    btn = m
+    overlay = btn.overlay
+    screen = overlay.screen
+    player = screen.player
+    command = btn.command
+    focusedComponent = overlay.focusedTrack
+    focusedTrack = focusedComponent.plexObject
+
+    if command = "move_item_up" then
+        player.playQueue.MoveItemUp(focusedTrack)
+    else if command = "move_item_down" then
+        player.playQueue.MoveItemDown(focusedTrack)
+    else if command = "remove_item" then
+        if focusedTrack.Equals(player.GetCurrentItem()) then
+            player.Next()
+        end if
+
+        player.playQueue.RemoveItem(focusedTrack)
     end if
 end sub

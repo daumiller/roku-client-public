@@ -292,16 +292,6 @@ function nowplayingHandleCommand(command as string, item=invalid as dynamic) as 
         m.player.Next()
     else if command = "queue" then
         m.toggleQueue()
-    else if command = "move_item_up" then
-        m.player.playQueue.MoveItemUp(m.focusedTrack)
-    else if command = "move_item_down" then
-        m.player.playQueue.MoveItemDown(m.focusedTrack)
-    else if command = "remove_item" then
-        if m.focusedTrack.Equals(m.player.GetCurrentItem()) then
-            m.player.Next()
-        end if
-
-        m.player.playQueue.RemoveItem(m.focusedTrack)
     else
         return ApplyFunc(ComponentsScreen().HandleCommand, m, [command, item])
     end if
