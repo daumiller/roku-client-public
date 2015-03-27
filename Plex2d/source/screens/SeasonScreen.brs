@@ -103,7 +103,9 @@ sub seasonGetComponents()
         track.Append(m.listPrefs)
         track.plexObject = item
         track.trackIndex = index
-        track.SetIndex(index + 1)
+        if not item.Has("index") then
+            track.SetIndex(index + 1)
+        end if
         track.SetFocusable("show_item")
         m.itemList.AddComponent(track)
         if m.focusedItem = invalid then m.focusedItem = track
