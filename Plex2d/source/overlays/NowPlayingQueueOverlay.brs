@@ -11,6 +11,8 @@ function NowPlayingQueueOverlayClass() as object
         obj.GetTrackComponent = npqoGetTrackComponent
         obj.SetNowPlaying = npqoSetNowPlaying
         obj.Refresh = npqoRefresh
+        obj.DeferRefresh = npqoDeferRefresh
+        obj.OnRefreshTimer = npqoOnRefreshTimer
 
         ' Listener Methods
         obj.OnPlay = npqoOnPlay
@@ -257,12 +259,29 @@ sub npqoOnChange(player as object, item as object)
 end sub
 
 sub npqoRefresh()
+    if m.refreshTimer <> invalid then return
+
     TextureManager().DeleteCache()
 
     m.DestroyComponents()
     m.Show()
 
     TextureManager().ClearCache()
+end sub
+
+sub npqoDeferRefresh()
+    if m.refreshTimer = invalid then
+        m.refreshTimer = createTimer("refresh")
+        m.refreshTimer.SetDuration(5000)
+        Application().AddTimer(m.refreshTimer, createCallable("OnRefreshTimer", m))
+    end if
+
+    m.refreshTimer.Mark()
+end sub
+
+sub npqoOnRefreshTimer(timer)
+    m.refreshTimer = invalid
+    m.Refresh()
 end sub
 
 sub npqoOnFailedFocus(direction as string, focusedItem=invalid as dynamic)
@@ -285,15 +304,68 @@ sub npqoHandleButton()
     focusedComponent = overlay.focusedTrack
     focusedTrack = focusedComponent.plexObject
 
+    swapIndex = invalid
+    focusItem = invalid
+
     if command = "move_item_up" then
-        player.playQueue.MoveItemUp(focusedTrack)
+        if player.playQueue.MoveItemUp(focusedTrack) then
+            ' Move the items in the UI now, and then allow the PQ to refresh
+            ' a few seconds after the user stops moving things around.
+            '
+            swapIndex = focusedComponent.trackIndex - 1
+            focusItem = focusedComponent
+            overlay.DeferRefresh()
+        end if
     else if command = "move_item_down" then
-        player.playQueue.MoveItemDown(focusedTrack)
+        if player.playQueue.MoveItemDown(focusedTrack) then
+            ' Move the items in the UI now, and then allow the PQ to refresh
+            ' a few seconds after the user stops moving things around.
+            '
+            swapIndex = focusedComponent.trackIndex
+            focusItem = focusedComponent
+            overlay.DeferRefresh()
+        end if
     else if command = "remove_item" then
         if focusedTrack.Equals(player.GetCurrentItem()) then
             player.Next()
         end if
 
+        ' TODO(schuyler): This is maybe possible, but definitely trickier than
+        ' the straight swap above.
+        '
+        ' if focusedComponent.trackIndex < overlay.trackList.components.Count() - 1 then
+        '     focusItem = overlay.trackList.components[focusedComponent.trackIndex + 1]
+        ' else
+        '     focusItem = overlay.trackList.components[focusedComponent.trackIndex - 1]
+        ' end if
+
         player.playQueue.RemoveItem(focusedTrack)
+    end if
+
+    if swapIndex <> invalid and swapIndex >= 0 then
+        firstComponent = overlay.trackList.components[swapIndex]
+        secondComponent = overlay.trackList.components[swapIndex + 1]
+
+        firstX = firstComponent.x
+        firstY = firstComponent.y
+
+        firstComponent.SetPosition(secondComponent.x, secondComponent.y)
+        secondComponent.SetPosition(firstX, firstY)
+
+        overlay.trackList.components[swapIndex] = secondComponent
+        overlay.trackList.components[swapIndex + 1] = firstComponent
+
+        firstComponent.trackIndex = firstComponent.trackIndex + 1
+        secondComponent.trackIndex = secondComponent.trackIndex - 1
+    end if
+
+    if focusItem <> invalid then
+        ' TODO(schuyler): This approach has the benefit of keeping lots of things
+        ' accurate, including moving the track actions along for the ride. But
+        ' it has the major disadvantage of flashing the focus border and scroll
+        ' bars.
+
+        screen.OnFocus(focusItem, focusItem, "up")
+        screen.OnFocus(btn, focusItem, "right")
     end if
 end sub

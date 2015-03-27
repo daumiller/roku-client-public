@@ -14,6 +14,11 @@ function CompositeClass() as object
         obj.GetFocusableItems = compGetFocusableItems
         obj.GetShiftableItems = compGetShiftableItems
 
+        ' Since we're going to draw to a single sprite, we want to use the
+        ' regular Component SetPosition instead of the Container version.
+        '
+        obj.SetPosition = compSetPosition
+
         obj.multiBitmap = false
 
         m.CompositeClass = obj
