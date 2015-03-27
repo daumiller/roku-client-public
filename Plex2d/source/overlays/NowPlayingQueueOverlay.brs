@@ -133,6 +133,7 @@ sub npqoGetComponents()
     for each action in actions
         btn = createButton(action.text, FontRegistry().NORMAL, action.command)
         btn.bgColor = buttonColor
+        btn.SetFocusMethod(btn.FOCUS_BACKGROUND, Colors().OrangeLight)
         m.trackActions.AddComponent(btn)
     next
     m.components.Push(m.trackActions)

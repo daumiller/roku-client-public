@@ -331,9 +331,9 @@ function nowplayingGetButtons() as object
             if components[key] = invalid then components[key] = createObject("roList")
             btn = createButton(button.text, m.customFonts.glyphs, button.command)
             btn.SetColor(firstOf(button.statusColor, Colors().TextDim))
+            btn.SetFocusMethod(btn.FOCUS_FOREGROUND, Colors().OrangeLight)
             btn.width = 50
             btn.height = 50
-            btn.focusBorder = false
             if m.focusedItem = invalid or button.defaultFocus = true then m.focusedItem = btn
             components[key].push(btn)
             m[button.componentKey] = btn
@@ -350,13 +350,6 @@ sub nowplayingOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
         m.focusedItem = m.hiddenFocusedItem
         m.hiddenFocusedItem = invalid
         toFocus = m.focusedItem
-    end if
-    toFocus.SetColor(Colors().OrangeLight)
-    toFocus.Draw(true)
-
-    if lastFocus <> invalid and not lastFocus.Equals(toFocus) then
-        lastFocus.SetColor(firstOf(lastFocus.statusColor, Colors().TextDim))
-        lastFocus.Draw(true)
     end if
 
     m.Refresh()
