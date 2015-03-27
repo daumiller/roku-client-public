@@ -546,8 +546,45 @@ function compHandleCommand(command as string, item as dynamic) as boolean
             m.CreatePlayerForItem(plexItem, options)
         end if
     else if command = "play_music_video" then
-        dialog = createDialog("TODO", "Sorry, don't know how to do that yet!", m)
-        dialog.Show()
+        plexItem = firstOf(item.plexObject, m.item)
+        foundExtra = false
+
+        if plexItem <> invalid then
+            ' The track may or may not have been fetched with extras already.
+            ' But if it has a music video then it should have a primaryExtraKey.
+            ' If that's present and we find a matching extra, then we play it
+            ' immediately. If not, we fetch that key and play the result.
+
+            extraKey = plexItem.Get("primaryExtraKey")
+            extraItem = invalid
+
+            if extraKey <> invalid then
+                if plexItem.extraItems <> invalid then
+                    for each extra in plexItem.extraItems
+                        if extraKey = extra.Get("key") then
+                            extraItem = extra
+                            exit for
+                        end if
+                    next
+                end if
+
+                if extraItem = invalid then
+                    request = createPlexRequest(plexItem.GetServer(), plexItem.GetAbsolutePath("primaryExtraKey"))
+                    response = request.DoRequestWithTimeout(10)
+                    extraItem = response.items[0]
+                end if
+
+                if extraItem <> invalid then
+                    foundExtra = true
+                    m.CreatePlayerForItem(extraItem)
+                end if
+            end if
+        end if
+
+        if not foundExtra then
+            dialog = createDialog("Unable to load music video", "We're unable to find a music video for this track", m)
+            dialog.Show()
+        end if
     else if command = "play_plex_mix" then
         plexItem = firstOf(item.plexObject, m.item)
         foundPlexMix = false
