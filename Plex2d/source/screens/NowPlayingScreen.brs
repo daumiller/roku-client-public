@@ -292,6 +292,16 @@ function nowplayingHandleCommand(command as string, item=invalid as dynamic) as 
         m.player.Next()
     else if command = "queue" then
         m.toggleQueue()
+    else if command = "move_item_up" then
+        m.player.playQueue.MoveItemUp(m.focusedTrack)
+    else if command = "move_item_down" then
+        m.player.playQueue.MoveItemDown(m.focusedTrack)
+    else if command = "remove_item" then
+        if m.focusedTrack.Equals(m.player.GetCurrentItem()) then
+            m.player.Next()
+        end if
+
+        m.player.playQueue.RemoveItem(m.focusedTrack)
     else
         return ApplyFunc(ComponentsScreen().HandleCommand, m, [command, item])
     end if
@@ -410,6 +420,10 @@ sub nowplayingUpdateTracks(item as object)
     m.SetTitle(item.Get("grandparentTitle", ""), m.grandparentTitle)
     m.SetTitle(item.Get("parentTitle", ""), m.parentTitle)
     m.SetTitle(item.Get("title", ""), m.title)
+
+    m.SetTitle(item.Get("grandparentTitle", ""), m.queueGrandparentTitle)
+    m.SetTitle(item.Get("parentTitle", ""), m.queueParentTitle)
+    m.SetTitle(item.Get("title", ""), m.queueTitle)
 
     nextTrack = m.GetNextTrack()
     m.SetTitle(firstOf(nextTrack.grandparentTitle, ""), m.nextGrandparentTitle)
@@ -547,6 +561,8 @@ sub nowplayingToggleQueue()
         component.focusable = m.showQueue
         component.SetVisible(m.showQueue)
     end for
+
+    m.focusedTrack = invalid
 
     if m.showQueue then
         if m.focusTimer <> invalid then

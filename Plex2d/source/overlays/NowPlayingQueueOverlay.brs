@@ -125,9 +125,9 @@ sub npqoGetComponents()
     ' Track actions
     actions = createObject("roList")
     actions.Push({text: ".", command: "todo_more"})
-    actions.Push({text: "^", command: "todo_move_up"})
-    actions.Push({text: "x", command: "todo_remove"})
-    actions.Push({text: "v", command: "todo_move_down"})
+    actions.Push({text: "^", command: "move_item_up"})
+    actions.Push({text: "x", command: "remove_item"})
+    actions.Push({text: "v", command: "move_item_down"})
     buttonColor = Colors().GetAlpha("Black", 30)
 
     for each action in actions
@@ -203,6 +203,7 @@ sub npqoOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
     if toFocus <> invalid then
         rect = computeRect(toFocus)
         overlay.trackActions.SetPosition(rect.right + 1, rect.up + int((rect.height - overlay.trackActions.GetPreferredHeight()) / 2))
+        m.focusedTrack = toFocus.plexObject
     else
         overlay.trackActions.SetVisibility(false)
     end if

@@ -20,6 +20,10 @@ function PlayQueueClass() as object
 
         obj.SetShuffle = pqSetShuffle
         obj.SetRepeat = pqSetRepeat
+        obj.MoveItemUp = pqMoveItemUp
+        obj.MoveItemDown = pqMoveItemDown
+        obj.MoveItem = pqMoveItem
+        obj.RemoveItem = pqRemoveItem
 
         obj.Equals = pqEquals
 
@@ -214,6 +218,53 @@ sub pqSetRepeat(repeat as boolean)
     ' TODO(schuyler): Flesh this out once PMS supports it
 
     m.isRepeat = repeat
+end sub
+
+function pqMoveItemUp(item as object) as boolean
+    for index = 1 to m.items.Count() - 1
+        if m.items[index].Get("playQueueItemID") = item.Get("playQueueItemID") then
+            if index > 1 then
+                after = m.items[index - 2]
+            else
+                after = invalid
+            end if
+
+            m.MoveItem(item, after)
+            return true
+        end if
+    end for
+
+    return false
+end function
+
+function pqMoveItemDown(item as object) as boolean
+    for index = 0 to m.items.Count() - 2
+        if m.items[index].Get("playQueueItemID") = item.Get("playQueueItemID") then
+            after = m.items[index + 1]
+            m.MoveItem(item, after)
+            return true
+        end if
+    end for
+
+    return false
+end function
+
+sub pqMoveItem(item as object, after as object)
+    if after <> invalid then
+        query = "?after=" + after.Get("playQueueItemID", "-1")
+    else
+        query = ""
+    end if
+
+    request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id) + "/items/" + item.Get("playQueueItemID", "-1") + "/move" + query, "PUT")
+    context = request.CreateRequestContext("move", createCallable("OnResponse", m))
+    Application().StartRequest(request, context, "")
+end sub
+
+sub pqRemoveItem(item as object)
+    request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id) + "/items/" + item.Get("playQueueItemID", "-1"), "DELETE")
+    context = request.CreateRequestContext("delete", createCallable("OnResponse", m))
+    Application().StartRequest(request, context, "")
 end sub
 
 sub pqOnResponse(request as object, response as object, context as object)

@@ -12,6 +12,8 @@ function PlexItemClass() as object
         obj.GetEpisodeString = pniGetEpisodeString
         obj.GetMediaFlagTranscodeURL = pniGetMediaFlagTranscodeURL
 
+        obj.Equals = pniEquals
+
         m.PlexItemClass = obj
     end if
 
@@ -212,4 +214,10 @@ function pniGetMediaFlagTranscodeURL(flag as string, width as integer, height as
     port = server.getLocalServerPort()
 
     return server.BuildUrl("/photo/:/transcode?url=http%3A%2F%2F127.0.0.1:" + port + UrlEscape(url) + params, true)
+end function
+
+function pniEquals(other as dynamic) as boolean
+    if other = invalid then return false
+    if m.ClassName <> other.ClassName then return false
+    return m.AttributesMatch(other, ["ratingKey", "playQueueItemID"])
 end function
