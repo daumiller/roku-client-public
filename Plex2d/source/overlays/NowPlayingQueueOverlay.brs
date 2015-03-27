@@ -126,22 +126,46 @@ sub npqoGetComponents()
 
     ' Track actions
     actions = createObject("roList")
-    actions.Push({text: ".", command: "todo_more"})
+    moreOptions = createObject("roList")
+
+    moreOptions.Push({text: "Play music video", command: "play_music_video"})
+    moreOptions.Push({text: "Plex Mix", command: "play_plex_mix"})
+
+    actions.Push({text: ".", type: "dropDown", position: "down", options: moreOptions})
     actions.Push({text: "^", command: "move_item_up"})
     actions.Push({text: "x", command: "remove_item"})
     actions.Push({text: "v", command: "move_item_down"})
+
     buttonColor = Colors().GetAlpha("Black", 30)
 
     for each action in actions
-        btn = createButton(action.text, FontRegistry().NORMAL, action.command)
+        if action.type = "dropDown" then
+            btn = createDropDownButton(action.text, FontRegistry().NORMAL, 50 * moreOptions.Count(), m.screen, false)
+            btn.SetDropDownPosition(action.position)
+
+            for each option in action.options
+                option.halign = "JUSTIFY_LEFT"
+                option.height = 50
+                option.padding = { right: 10, left: 10, top: 0, bottom: 0}
+                option.font = FontRegistry().NORMAL
+                option.fields = {
+                    overlay: m,
+                    OnSelected: npqoHandleButton,
+                    zOrder: m.zOrderOverlay,
+                }
+                btn.options.Push(option)
+            next
+        else
+            btn = createButton(action.text, FontRegistry().NORMAL, action.command)
+
+            ' A little unorthodox, but we want our overlay to be able to handle
+            ' the button commands instead of the screen.
+            btn.overlay = m
+            btn.OnSelected = npqoHandleButton
+        end if
+
         btn.bgColor = buttonColor
         btn.SetFocusMethod(btn.FOCUS_BACKGROUND, Colors().OrangeLight)
-
-        ' A little unorthodox, but we want our overlay to be able to handle
-        ' the button commands instead of the screen.
-
-        btn.overlay = m
-        btn.OnSelected = npqoHandleButton
 
         m.trackActions.AddComponent(btn)
     next
@@ -340,6 +364,15 @@ sub npqoHandleButton()
         ' end if
 
         player.playQueue.RemoveItem(focusedTrack)
+    else if command = "play_music_video" or command = "play_plex_mix" then
+        screen.overlayScreen.Peek().Close()
+
+        ' We'll let the usual command handling do these, but we need to make
+        ' sure our plexObject is set to the current track.
+        stop
+
+        btn.plexObject = focusedTrack
+        screen.HandleCommand(command, btn)
     end if
 
     if swapIndex <> invalid and swapIndex >= 0 then

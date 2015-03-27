@@ -545,6 +545,12 @@ function compHandleCommand(command as string, item as dynamic) as boolean
 
             m.CreatePlayerForItem(plexItem, options)
         end if
+    else if command = "play_music_video" then
+        dialog = createDialog("TODO", "Sorry, don't know how to do that yet!", m)
+        dialog.Show()
+    else if command = "play_plex_mix" then
+        dialog = createDialog("TODO", "Sorry, don't know how to do that yet!", m)
+        dialog.Show()
     else
         handled = false
     end if

@@ -122,6 +122,9 @@ sub ddoverlayGetComponents()
             comp.fixed = (option.fixed = true)
             comp.SetMetadata(option.metadata)
             comp.plexObject = option.plexObject
+            if option.fields <> invalid then
+                comp.Append(option.fields)
+            end if
             if m.screen.focusedItem = invalid then m.screen.focusedItem = comp
         end if
 
