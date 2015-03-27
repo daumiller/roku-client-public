@@ -253,8 +253,6 @@ sub albumGetComponents()
     m.components.Push(m.trackList)
 
     ' *** Track actions *** '
-    ' TODO(schuyler): This code is almost exactly the same as NowPlayingQueueOverlay.
-    ' Let's find a way to reuse it.
     actions = createObject("roList")
     moreOptions = createObject("roList")
 
@@ -265,31 +263,8 @@ sub albumGetComponents()
 
     actions.Push({text: ".", type: "dropDown", position: "down", options: moreOptions})
 
-    buttonColor = Colors().GetAlpha("Black", 30)
-
-    for each action in actions
-        if action.type = "dropDown" then
-            btn = createDropDownButton(action.text, FontRegistry().NORMAL, 50 * moreOptions.Count(), m, false)
-            btn.SetDropDownPosition(action.position)
-
-            for each option in action.options
-                option.halign = "JUSTIFY_LEFT"
-                option.height = 50
-                option.padding = { right: 10, left: 10, top: 0, bottom: 0}
-                option.font = FontRegistry().NORMAL
-                option.fields = {trackAction: true}
-                btn.options.Push(option)
-            next
-        else
-            btn = createButton(action.text, FontRegistry().NORMAL, action.command)
-            btn.trackAction = true
-        end if
-
-        btn.bgColor = buttonColor
-        btn.SetFocusMethod(btn.FOCUS_BACKGROUND, Colors().OrangeLight)
-
-        m.trackActions.AddComponent(btn)
-    next
+    buttonFields = {trackAction: true}
+    m.trackActions.AddButtons(actions, buttonFields, m)
     m.components.Push(m.trackActions)
 
     ' Set the focus to the current AudioPlayer track, if applicable.

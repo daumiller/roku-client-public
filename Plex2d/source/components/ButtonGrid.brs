@@ -9,6 +9,8 @@ function ButtonGridClass() as object
         obj.GetPreferredWidth = buttonGridGetPreferredWidth
         obj.GetPreferredHeight = buttonGridGetPreferredHeight
 
+        obj.AddButtons = buttonGridAddButtons
+
         m.ButtonGridClass = obj
     end if
 
@@ -76,3 +78,36 @@ end function
 function buttonGridGetPreferredHeight() as integer
     return m.buttonSize * m.rows + (m.rows - 1) * m.spacing
 end function
+
+sub buttonGridAddButtons(actions as object, buttonFields as object, screen as object, btnZOrder=invalid as dynamic)
+    buttonColor = Colors().GetAlpha("Black", 30)
+    if btnZOrder <> invalid then buttonFields.zOrder = btnZOrder
+
+    for each action in actions
+        if action.type = "dropDown" then
+            ' TODO(schuyler): Either switch this to a well known glyph font or
+            ' allow the caller to specify.
+            btn = createDropDownButton(action.text, FontRegistry().NORMAL, 50 * action.options.Count(), screen, false)
+            btn.SetDropDownPosition(action.position)
+
+            for each option in action.options
+                option.halign = "JUSTIFY_LEFT"
+                option.height = 50
+                option.padding = { right: 10, left: 10, top: 0, bottom: 0}
+                option.font = FontRegistry().NORMAL
+                option.fields = buttonFields
+                btn.options.Push(option)
+            next
+
+            if btnZOrder <> invalid then btn.zOrder = btnZOrder
+        else
+            btn = createButton(action.text, FontRegistry().NORMAL, action.command)
+            btn.Append(buttonFields)
+        end if
+
+        btn.bgColor = buttonColor
+        btn.SetFocusMethod(btn.FOCUS_BACKGROUND, Colors().OrangeLight)
+
+        m.AddComponent(btn)
+    next
+end sub
