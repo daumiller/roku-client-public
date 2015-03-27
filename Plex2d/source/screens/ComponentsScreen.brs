@@ -549,8 +549,37 @@ function compHandleCommand(command as string, item as dynamic) as boolean
         dialog = createDialog("TODO", "Sorry, don't know how to do that yet!", m)
         dialog.Show()
     else if command = "play_plex_mix" then
-        dialog = createDialog("TODO", "Sorry, don't know how to do that yet!", m)
-        dialog.Show()
+        plexItem = firstOf(item.plexObject, m.item)
+        foundPlexMix = false
+
+        if plexItem <> invalid then
+            if plexItem.relatedItems = invalid then
+                ' Make a blocking request to fetch any related items now
+                request = createPlexRequest(plexItem.GetServer(), plexItem.GetItemPath(false))
+                response = request.DoRequestWithTimeout(10)
+                plexItem = firstOf(response.items[0], plexItem)
+            end if
+
+            if plexItem.relatedItems <> invalid then
+                for each relatedItem in plexItem.relatedItems
+                    if relatedItem.type = "plexmix" then
+                        ' TODO(schuyler): This works, but the screen updates are less than ideal.
+                        ' TODO(schuyler): Also, if we create a Plex Mix for the currently playing track, it restarts the track.
+                        pq = createPlayQueueForItem(relatedItem)
+                        player = GetPlayerForType(pq.type)
+                        if player <> invalid then
+                            player.SetPlayQueue(pq, true)
+                            foundPlexMix = true
+                        end if
+                    end if
+                next
+            end if
+        end if
+
+        if not foundPlexMix then
+            dialog = createDialog("Unable to create Plex Mix", "We're unable to create a Plex Mix for this track", m)
+            dialog.Show()
+        end if
     else
         handled = false
     end if

@@ -369,7 +369,6 @@ sub npqoHandleButton()
 
         ' We'll let the usual command handling do these, but we need to make
         ' sure our plexObject is set to the current track.
-        stop
 
         btn.plexObject = focusedTrack
         screen.HandleCommand(command, btn)

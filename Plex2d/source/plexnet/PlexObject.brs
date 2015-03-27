@@ -90,6 +90,10 @@ sub pnoInit(container as object, xml as object)
         m.type = "photoalbum"
     end if
 
+    if m.type = "directory" and instr(1, m.Get("key", ""), "services/gracenote/similarPlaylist") > 0 then
+        m.type = "plexmix"
+    end if
+
     ' Allow any PlexObject to have tags so that things like series don't
     ' have to be full PlexItems.
     '
@@ -156,7 +160,7 @@ function pnoIsVideoOrDirectoryItem() as boolean
 end function
 
 function pnoIsMusicOrDirectoryItem() as boolean
-    return (m.IsMusicItem() or m.type = "artist")
+    return (m.IsMusicItem() or m.type = "artist" or m.type = "plexmix")
 end function
 
 function pnoIsPhotoOrDirectoryItem() as boolean
@@ -547,6 +551,9 @@ function pnoGetItemPath(checkFiles=false as boolean) as string
             hasParams = (instr(1, key, "?") > 0)
             key = key + iif(hasParams, "&", "?") + "includeRelated=1&includeRelatedCount=0"
             key = key + "&includeExtras=1"
+        else if m.type = "track" then
+            hasParams = (instr(1, key, "?") > 0)
+            key = key + iif(hasParams, "&", "?") + "includeRelated=1&includeRelatedCount=0"
         end if
     end if
 
