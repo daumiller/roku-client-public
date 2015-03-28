@@ -628,6 +628,11 @@ function compHandleCommand(command as string, item as dynamic) as boolean
         handled = false
     end if
 
+    ' TODO(schuyler): Is this the best way to do this?
+    if item <> invalid and item.closeOverlay = true then
+        m.overlayScreen.Peek().Close()
+    end if
+
     return handled
 end function
 

@@ -122,6 +122,7 @@ sub ddoverlayGetComponents()
             comp.fixed = (option.fixed = true)
             comp.SetMetadata(option.metadata)
             comp.plexObject = option.plexObject
+            comp.closeOverlay = option.closeOverlay
             if option.fields <> invalid then
                 comp.Append(option.fields)
             end if

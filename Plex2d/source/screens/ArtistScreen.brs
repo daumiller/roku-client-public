@@ -233,13 +233,33 @@ function artistGetButtons() as object
     end for
 
     ' more/pivots drop down
-    if m.item.relatedItems <> invalid and m.item.relatedItems.count() > 0 then
-        btn = createDropDownButton(Glyphs().MORE, m.customFonts.glyphs, buttonHeight * 5, m)
-        btn.SetDropDownPosition("right")
-        btn.SetColor(Colors().Text, Colors().Button)
-        btn.width = 100
-        btn.height = buttonHeight
-        if m.focusedItem = invalid then m.focusedItem = btn
+    optionPrefs = {
+        halign: "JUSTIFY_LEFT",
+        height: buttonHeight
+        padding: { right: 10, left: 10, top: 0, bottom: 0 }
+        font: FontRegistry().NORMAL,
+    }
+
+    btn = createDropDownButton(Glyphs().MORE, m.customFonts.glyphs, buttonHeight * 5, m)
+    btn.SetDropDownPosition("right")
+    btn.SetColor(Colors().Text, Colors().Button)
+    btn.width = 100
+    btn.height = buttonHeight
+    if m.focusedItem = invalid then m.focusedItem = btn
+
+    ' manual pivots and commands
+    manualPivotsAndCommands = [
+        {command: "play_next", text: "Play Next", closeOverlay: true},
+        {command: "add_to_queue", text: "Add to Queue", closeOverlay: true},
+    ]
+    for each pivot in manualPivotsAndCommands
+        option = {}
+        option.Append(pivot)
+        option.Append(optionPrefs)
+        btn.options.push(option)
+    end for
+
+    if m.item.relatedItems <> invalid then
         for each item in m.item.relatedItems
             option = {
                 text: item.GetSingleLineTitle(),
@@ -249,8 +269,8 @@ function artistGetButtons() as object
             option.Append(optionPrefs)
             btn.options.push(option)
         end for
-        components.push(btn)
     end if
+    components.push(btn)
 
     return components
 end function

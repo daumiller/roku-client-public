@@ -350,11 +350,13 @@ function albumGetButtons() as object
     btn.height = buttonHeight
     if m.focusedItem = invalid then m.focusedItem = btn
 
-    ' manual pivots
-    manualPivots = [
+    ' manual pivots and commands
+    manualPivotsAndCommands = [
+        {command: "play_next", text: "Play Next", closeOverlay: true},
+        {command: "add_to_queue", text: "Add to Queue", closeOverlay: true},
         {command: "go_to_artist", text: "Go to Artist"},
     ]
-    for each pivot in manualPivots
+    for each pivot in manualPivotsAndCommands
         option = {}
         option.Append(pivot)
         option.Append(optionPrefs)
