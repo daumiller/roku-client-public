@@ -22,6 +22,7 @@ function MiniPlayer() as object
         obj.Draw = miniplayerDraw
 
         ' Listener Methods
+        obj.OnCreated = miniplayerOnCreated
         obj.OnPlay = miniplayerOnPlay
         obj.OnStop = miniplayerOnStop
         obj.OnPause = miniplayerOnPause
@@ -130,6 +131,7 @@ sub miniplayerInit()
 
     ' Set up listeners for AudioPlayer and the MiniPlayer
     m.DisableListeners()
+    m.AddListener(m.player, "created", CreateCallable("OnCreated", m))
     m.AddListener(m.player, "playing", CreateCallable("OnPlay", m))
     m.AddListener(m.player, "stopped", CreateCallable("OnStop", m))
     m.AddListener(m.player, "paused", CreateCallable("OnPause", m))
@@ -198,6 +200,14 @@ function miniplayerDraw() as object
     m.isDrawn = true
     return ApplyFunc(ContainerClass().Draw, m)
 end function
+
+sub miniplayerOnCreated(player as object, item as object)
+    m.SetTitle(item.Get("grandparentTitle", ""))
+    m.SetSubtitle(item.Get("title", ""))
+    m.SetProgress(0, item.GetInt("duration"))
+    m.SetImage(item)
+    m.Show()
+end sub
 
 sub miniplayerOnPlay(player as object, item as object)
     m.SetTitle(item.Get("grandparentTitle", ""))

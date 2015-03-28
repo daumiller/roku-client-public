@@ -24,6 +24,7 @@ function PlayQueueClass() as object
         obj.MoveItemDown = pqMoveItemDown
         obj.MoveItem = pqMoveItem
         obj.RemoveItem = pqRemoveItem
+        obj.AddItem = pqAddItem
 
         obj.Equals = pqEquals
 
@@ -106,7 +107,17 @@ function createPlayQueueForItem(item as object, options=invalid as dynamic) as o
     ' How exactly to construct the item URI depends on the metadata type, though
     ' whenever possible we simply use /library/metadata/:id.
     '
-    if item.type = "playlist" then
+
+    if item.IsLibraryItem()
+        path = "/library/metadata/" + item.Get("ratingKey", "")
+    else
+        path = item.GetAbsolutePath("key")
+    end if
+
+    if options.context = options.CONTEXT_SELF then
+        ' If the context is specifically for just this item, then just use the
+        ' item's key and get out.
+    else if item.type = "playlist" then
         uri = item.Get("ratingKey")
         options.isPlaylist = true
     else if item.type = "track" then
@@ -116,7 +127,7 @@ function createPlayQueueForItem(item as object, options=invalid as dynamic) as o
         path = "/library/sections/" + item.GetLibrarySectionId() + "/all?type=13&parent=" + UrlEscape(item.Get("parentRatingKey", "-1"))
     else if item.type = "photoalbum" then
         path = "/library/sections/" + item.GetLibrarySectionId() + "/all?type=13&parent=" + UrlEscape(item.Get("ratingKey", "-1"))
-    else if item.type = "episode" and options.context <> options.CONTEXT_SELF then
+    else if item.type = "episode" then
         path = "/library/metadata/" + item.Get("grandparentRatingKey", "")
         itemType = "directory"
         options.key = item.GetAbsolutePath("key")
@@ -129,10 +140,6 @@ function createPlayQueueForItem(item as object, options=invalid as dynamic) as o
         if item.onDeck <> invalid and item.onDeck.Count() > 0 then
             options.key = item.onDeck[0].GetAbsolutePath("key")
         end if
-    else if item.IsLibraryItem()
-        path = "/library/metadata/" + item.Get("ratingKey", "")
-    else
-        path = item.GetAbsolutePath("key")
     end if
 
     if path <> invalid then
@@ -161,6 +168,39 @@ function createPlayQueueForId(server as object, contentType as string, id as int
     Application().StartRequest(request, context)
 
     return obj
+end function
+
+function addItemToPlayQueue(item as object, addNext as boolean) as dynamic
+    ' See if we have an active play queue for this media type or if we need to
+    ' create one.
+
+    if item.IsMusicOrDirectoryItem() then
+        player = AudioPlayer()
+    else if item.IsVideoOrDirectoryItem() then
+        player = VideoPlayer()
+    else if item.IsPhotoOrDirectoryItem() then
+        ' player = PhotoPlayer()
+        player = invalid
+    else
+        player = invalid
+    end if
+
+    if player = invalid then
+        Error("Don't know how to add item to play queue: " + tostr(item))
+        return invalid
+    end if
+
+    if player.playQueue <> invalid then
+        playQueue = player.playQueue
+        playQueue.AddItem(item, addNext)
+    else
+        options = createPlayOptions()
+        options.context = options.CONTEXT_SELF
+        playQueue = createPlayQueueForItem(item, options)
+        player.SetPlayQueue(playQueue, false)
+    end if
+
+    return playQueue
 end function
 
 sub pqOnRefreshTimer(timer as object)
@@ -268,6 +308,15 @@ sub pqRemoveItem(item as object)
     request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id) + "/items/" + item.Get("playQueueItemID", "-1"), "DELETE")
     request.AddParam("includeRelated", "1")
     context = request.CreateRequestContext("delete", createCallable("OnResponse", m))
+    Application().StartRequest(request, context, "")
+end sub
+
+sub pqAddItem(item as object, addNext as boolean)
+    request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id), "PUT")
+    request.AddParam("uri", item.GetItemUri())
+    request.AddParam("next", iif(addNext, "1", "0"))
+    request.AddParam("includeRelated", "1")
+    context = request.CreateRequestContext("add", createCallable("OnResponse", m))
     Application().StartRequest(request, context, "")
 end sub
 

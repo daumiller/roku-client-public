@@ -58,6 +58,7 @@ function PlexObjectClass() as object
         obj.GetIdentifier = pnoGetIdentifier
         obj.GetLibrarySectionId = pnoGetLibrarySectionId
         obj.GetLibrarySectionUuid = pnoGetLibrarySectionUuid
+        obj.GetItemUri = pnoGetItemUri
 
         obj.GetAbsolutePath = pnoGetAbsolutePath
         obj.GetItemPath = pnoGetItemPath
@@ -375,6 +376,23 @@ function pnoGetLibrarySectionUuid() as string
     end if
 
     return uuid
+end function
+
+function pnoGetItemUri() as string
+    ' Note that this will always return a URI for this specific item. Play Queue
+    ' creation code may do additional conversions to do things like create a URI
+    ' that represents a parent or grandparent instead of an individual item.
+
+    uri = "library://" + m.GetLibrarySectionUuid() + "/"
+    itemType = iif(m.IsDirectory(), "directory", "item")
+
+    if m.IsLibraryItem()
+        path = "/library/metadata/" + m.Get("ratingKey", "")
+    else
+        path = m.GetAbsolutePath("key")
+    end if
+
+    return uri + itemType + "/" + UrlEscape(path)
 end function
 
 function pnoGetUnwatchedCountString() as string

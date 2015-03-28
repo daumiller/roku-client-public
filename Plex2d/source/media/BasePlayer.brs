@@ -151,13 +151,11 @@ sub bpSetCurrentIndex(newIndex as integer)
 end sub
 
 sub bpSetPlayQueue(playQueue as object, startPlayer=true as boolean)
-    ' TODO(schuyler): startPlayer is never false. If it ever is, then
-    ' we probably need to reconsider how playback is started in
-    ' OnPlayQueueUpdate.
-
     if startPlayer then
         m.ignoreTimelines = true
         m.Stop()
+    else
+        m.playOnLoad = false
     end if
 
     ' TODO(schuyler): If we have an old PQ, clean things up
@@ -249,8 +247,13 @@ sub bpOnPlayQueueUpdate(playQueue as object)
     NowPlayingManager().timelines[m.timelineType].attrs["repeat"] = tostr(m.repeat)
 
     if m.context.Count() > 0 and oldSize = 0 then
-        m.Play()
-        m.Trigger("playbackStarted", [m, m.GetCurrentItem()])
+        if m.playOnLoad <> false then
+            m.Play()
+            m.Trigger("playbackStarted", [m, m.GetCurrentItem()])
+        else
+            m.playOnLoad = invalid
+            m.Trigger("created", [m, m.GetCurrentItem()])
+        end if
     end if
 
     ' Verify the contents of the playQueue have changed before we fire off an event.

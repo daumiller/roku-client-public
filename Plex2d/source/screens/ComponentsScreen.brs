@@ -545,6 +545,15 @@ function compHandleCommand(command as string, item as dynamic) as boolean
 
             m.CreatePlayerForItem(plexItem, options)
         end if
+    else if command = "play_next" or command = "add_to_queue" then
+        plexItem = firstOf(item.plexObject, m.item)
+        playQueue = addItemToPlayQueue(plexItem, (command = "play_next"))
+
+        if playQueue = invalid then
+            ' TODO(schuyler): All of this error handling is lame...
+            dialog = createDialog("Unable to play item", "We're unable to add this item to your play queue", m)
+            dialog.Show()
+        end if
     else if command = "play_music_video" then
         plexItem = firstOf(item.plexObject, m.item)
         foundExtra = false

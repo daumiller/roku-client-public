@@ -55,8 +55,10 @@ sub apStop()
         m.SetPlayState(m.STATE_STOPPED)
         m.UpdateNowPlaying()
         m.Trigger("stopped", [m, m.GetCurrentItem()])
-        ' TODO(rob): do we want to keep/reset the last position on stop?
         m.curIndex = 0
+        m.playQueue = invalid
+        m.context = invalid
+        m.player.SetContentList([])
         m.player.SetNext(m.curIndex)
         m.timelineTimer.active = false
     end if
