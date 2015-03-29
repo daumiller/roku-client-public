@@ -175,6 +175,7 @@ function hubsCreateHub(container) as dynamic
         ' card.setMetadata(item.attrs)
         card.plexObject = item
         card.SetFocusable("show_item")
+        card.DisableNonParentFocus("down")
         if m.focusedItem = invalid then m.focusedItem = card
         hub.AddComponent(card)
     end for

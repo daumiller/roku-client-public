@@ -126,7 +126,7 @@ sub vboxPerformLayout()
 
         ' disallow manual focus DOWN for scrolling containers
         if m.containerHeight > m.contentHeight then
-            m.disallowExit = { down: true }
+            m.DisableNonParentExit("down")
         end if
 
         ' add a semi-transparent block above and below the contentHeight. This

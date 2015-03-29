@@ -144,7 +144,7 @@ function seasonGetButtons() as object
         btn.width = 100
         btn.height = buttonHeight
         btn.fixed = false
-        btn.disallowExit = { down: true }
+        btn.DisableNonParentExit("down")
         if m.focusedItem = invalid then m.focusedItem = btn
         components.Push(btn)
     end for

@@ -212,7 +212,6 @@ sub albumGetComponents()
         height: 50,
         fixed: false,
         focusBG: true,
-        disallowExit: { down: true },
         zOrder: 2,
         hasTrackActions: true
     }
@@ -242,6 +241,7 @@ sub albumGetComponents()
         item = m.children[index]
         track = createTrack(item, FontRegistry().NORMAL, FontRegistry().SMALL, m.customFonts.trackStatus, trackCount)
         track.Append(trackPrefs)
+        track.DisableNonParentExit("down")
         track.plexObject = item
         track.trackIndex = index
         track.SetFocusable("play")
@@ -332,7 +332,7 @@ function albumGetButtons() as object
         btn.width = 100
         btn.height = buttonHeight
         btn.fixed = false
-        btn.disallowExit = { down: true }
+        btn.DisableNonParentExit("down")
         if m.focusedItem = invalid then m.focusedItem = btn
         components.push(btn)
     end for

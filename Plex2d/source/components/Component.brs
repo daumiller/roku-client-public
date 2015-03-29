@@ -56,22 +56,27 @@ function ComponentClass() as object
         obj.SpriteIsLoaded = compSpriteIsLoaded
         obj.SetMetadata = compSetMetadata
         obj.GetWidthForOrientation = compGetWidthForOrientation
+        obj.ToString = compToString
+        obj.Equals = compEquals
+        obj.IsPendingTexture = compIsPendingTexture
+        obj.SetOrientation = compSetOrientation
 
         ' no-op methods
         obj.OnBlur = function(arg=invalid) : Verbose("OnBlur:no-op") : end function
         obj.OnFocus = function() : Verbose("OnFocus:no-op") : end function
 
-        ' shifting methods
+        ' Shifting methods
         obj.ShiftPosition = compShiftPosition
         obj.GetShiftableItems = compGetShiftableItems
         obj.IsOnScreen = compIsOnScreen
 
-        obj.ToString = compToString
-        obj.Equals = compEquals
-
-        obj.IsPendingTexture = compIsPendingTexture
-
-        obj.SetOrientation = compSetOrientation
+        ' Focus Methods
+        obj.ManualFocusIsAllowed = compManualFocusIsAllowed
+        obj.DisableManualFocus = compDisableManualFocus
+        obj.NonParentFocusIsAllowed = compNonParentFocusIsAllowed
+        obj.DisableNonParentFocus = compDisableNonParentFocus
+        obj.NonParentExitIsAllowed = compNonParentExitIsAllowed
+        obj.DisableNonParentExit = compDisableNonParentExit
 
         m.ComponentClass = obj
     end if
@@ -88,6 +93,10 @@ sub componentInit()
     GetGlobalAA().AddReplace("uniqComponentId", m.uniqId + 1)
 
     m.focusSiblings = {}
+
+    ' Focus rule containers
+    m.disabledNonParentFocus = {}
+    m.disabledNonParentExit = {}
 end sub
 
 sub compInitRegion()
@@ -477,4 +486,28 @@ sub compToggleFocusable(visible=true as boolean)
     else if visible and m.wasFocusable = true then
         m.SetFocusable(m.command, visible)
     end if
+end sub
+
+function compManualFocusIsAllowed() as boolean
+    return (m.disabledManualFocus <> true)
+end function
+
+sub compDisableManualFocus(disabled=true as boolean)
+    m.disabledManualFocus = disabled
+end sub
+
+function compNonParentFocusIsAllowed(direction as string) as boolean
+    return (m.disabledNonParentFocus[direction] <> true)
+end function
+
+sub compDisableNonParentFocus(direction as string, disabled=true as boolean)
+    m.disabledNonParentFocus[direction] = disabled
+end sub
+
+function compNonParentExitIsAllowed(direction as string) as boolean
+    return (m.disabledNonParentExit[direction] <> true)
+end function
+
+sub compDisableNonParentExit(direction as string, disabled=true as boolean)
+    m.disabledNonParentExit[direction] = disabled
 end sub

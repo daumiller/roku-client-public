@@ -366,19 +366,19 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
             ' If the component knows its sibling, always use that.
             toFocus = m.focusedItem.GetFocusSibling(KeyCodeToString(keyCode))
 
-            ' Check if we allow disallow manual focus
+            ' Check if we allow disallow manual focus or exiting the parent
             if toFocus = invalid then
-                continue = true
-                parent = m.focusedItem.parent
-                if m.focusedItem.allowManualFocus = false then
+                if m.focusedItem.ManualFocusIsAllowed() <> true then
                     Debug("manual focus not allowed from component")
                     continue = false
-                else if m.focusedItem.disallowExit <> invalid and m.focusedItem.disallowExit[direction] = true then
+                else if not m.focusedItem.NonParentExitIsAllowed(direction) then
                     Debug("manual focus not allowed from component: direction=" + tostr(direction))
                     continue = false
-                else if parent <> invalid and parent.disallowExit <> invalid and parent.disallowExit[direction] = true then
+                else if m.focusedItem.parent <> invalid and not m.focusedItem.parent.NonParentExitIsAllowed(direction) then
                     Debug("manual focus not allowed by parent: direction=" + tostr(direction) )
                     continue = false
+                else
+                    continue = true
                 end if
 
                 ' I do not think we need to have a distinction when we disallow
@@ -400,17 +400,26 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
             toFocus = m.lastFocusedItem
         end if
 
-        ' fallback to a full manual search for any focusable component
+        ' fallback to manual search for focusable component
         if toFocus = invalid then
-            ' support to manually focus on an overlay screen. Force GetFocusManual
-            ' to only use the components on the overlay as focus candidates
-            if m.overlayScreen.Count() > 0 then
-                components = m.overlayScreen.Peek().components
-            else
-                components = invalid
+            ' Try to keep the focus contained to the parent, if applicable.
+            parentComponents = firstOf(m.focusedItem.shiftableParent, m.focusedItem.parent, {}).components
+            if parentComponents <> invalid then
+                toFocus = m.GetFocusManual(KeyCodeToString(keyCode), parentComponents)
             end if
-             ' All else failed, search manually.
-            toFocus = m.GetFocusManual(KeyCodeToString(keyCode), components)
+
+            ' All else failed, search manually.
+            if toFocus = invalid and m.focusedItem.NonParentFocusIsAllowed(direction) then
+                ' support to manually focus on an overlay screen. Force GetFocusManual
+                ' to only use the components on the overlay as focus candidates
+                if m.overlayScreen.Count() > 0 then
+                    components = m.overlayScreen.Peek().components
+                else
+                    components = invalid
+                end if
+
+                toFocus = m.GetFocusManual(KeyCodeToString(keyCode), components)
+            end if
         end if
 
         if toFocus <> invalid then

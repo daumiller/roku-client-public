@@ -311,6 +311,7 @@ sub hubShowMoreButton(moreCommand as dynamic)
         m.moreButton.fixed = false
         m.moreButton.setMetadata(m.container.attrs)
         m.moreButton.plexObject = m.container
+        m.moreButton.DisableNonParentExit("down")
         m.AddComponent(m.moreButton)
     end if
 end sub

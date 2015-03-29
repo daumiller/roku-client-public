@@ -87,7 +87,7 @@ sub settingsGetComponents()
                 btn.scrollGroupTop = label
                 btn.SetDimensions(m.width, 60)
                 btn.SetPadding(0, 0, 0, m.padding*2)
-                btn.allowManualFocus = false
+                btn.DisableManualFocus()
                 btn.listBox = listBox
                 menuBox.AddComponent(btn)
             end if
@@ -235,7 +235,7 @@ sub settingsOnFocus()
             btn.SetDimensions(m.width, m.height)
             btn.SetPadding(0, 0, 0, m.padding.left)
             btn.SetFocusSibling("left", m)
-            btn.allowManualFocus = false
+            btn.DisableManualFocus()
             m.listBox.AddComponent(btn)
         end if
     end for

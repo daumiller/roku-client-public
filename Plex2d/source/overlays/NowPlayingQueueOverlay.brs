@@ -153,7 +153,6 @@ sub npqoGetComponents()
         height: 80,
         fixed: false,
         focusBG: true,
-        disallowExit: { down: true },
         zOrder: m.zOrderOverlay,
         hasTrackActions: true
     }
@@ -178,6 +177,7 @@ sub npqoGetComponents()
         item = items.[index].item
         track = createTrack(item, FontRegistry().NORMAL, FontRegistry().MEDIUM, m.customFonts.trackStatus, m.player.playQueue.totalSize, isMixed)
         track.Append(trackPrefs)
+        track.DisableNonParentExit("down")
         track.plexObject = item
         track.trackIndex = index
         track.SetFocusable("play")
