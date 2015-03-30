@@ -131,6 +131,8 @@ sub npqoGetComponents()
 
     moreOptions.Push({text: "Play music video", command: "play_music_video"})
     moreOptions.Push({text: "Plex Mix", command: "play_plex_mix"})
+    moreOptions.Push({text: "Go to Artist", command: "go_to_artist"})
+    moreOptions.Push({text: "Go to Album", command: "go_to_album"})
 
     actions.Push({text: Glyphs().ELLIPSIS, type: "dropDown", position: "down", options: moreOptions, font: m.customFonts.trackActions})
     actions.Push({text: Glyphs().ARROW_UP, command: "move_item_up", font: m.customFonts.trackActions})
@@ -348,6 +350,10 @@ sub npqoHandleButton()
 
         btn.plexObject = focusedTrack
         screen.HandleCommand(command, btn)
+    else if command = "go_to_artist" then
+        Application().PushScreen(createArtistScreen(focusedTrack, focusedTrack.Get("grandparentKey")))
+    else if command = "go_to_album" then
+        Application().PushScreen(createAlbumScreen(focusedTrack, focusedTrack.Get("parentKey")))
     end if
 
     if swapIndex <> invalid and swapIndex >= 0 then
