@@ -21,6 +21,7 @@ function NowPlayingScreen() as object
         obj.OnProgress = nowplayingOnProgress
         obj.OnRepeat = nowplayingOnRepeat
         obj.OnShuffle = nowplayingOnShuffle
+        obj.OnFailedFocus = nowplayingOnFailedFocus
 
         ' Methods to refresh screen info
         obj.Refresh = nowplayingRefresh
@@ -81,6 +82,9 @@ sub nowplayingInit()
     m.AddListener(m.player, "progress", CreateCallable("OnProgress", m))
     m.AddListener(m.player, "shuffle", CreateCallable("OnShuffle", m))
     m.AddListener(m.player, "repeat", CreateCallable("OnRepeat", m))
+
+    ' Setup screen listeners
+    m.AddListener(m, "OnFailedFocus", CreateCallable("OnFailedFocus", m))
 
     ' Make sure our item is set to the player's current item. This is normally
     ' set elsewhere, but it's possible for it to fall out of sync if another
@@ -344,13 +348,13 @@ function nowplayingGetButtons() as object
 end function
 
 sub nowplayingOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
-    ApplyFunc(ComponentsScreen().OnFocusIn, m, [toFocus, lastFocus])
-
     if m.hiddenFocusedItem <> invalid then
         m.focusedItem = m.hiddenFocusedItem
         m.hiddenFocusedItem = invalid
         toFocus = m.focusedItem
     end if
+
+    ApplyFunc(ComponentsScreen().OnFocusIn, m, [toFocus, lastFocus])
 
     m.Refresh()
 
@@ -569,4 +573,9 @@ end sub
 
 sub nowplayingOnOverlayClose(overlay as object, backButton as boolean)
     m.ToggleQueue()
+end sub
+
+sub nowplayingOnFailedFocus(direction as string, focusedItem=invalid as dynamic)
+    if m.hiddenFocusedItem = invalid then return
+    m.OnFocusIn(m.hiddenFocusedItem)
 end sub
