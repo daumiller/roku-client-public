@@ -118,6 +118,7 @@ function createPlayQueueForItem(item as object, options=invalid as dynamic) as o
         ' If the context is specifically for just this item, then just use the
         ' item's key and get out.
     else if item.type = "playlist" then
+        path = invalid
         uri = item.Get("ratingKey")
         options.isPlaylist = true
     else if item.type = "track" then
