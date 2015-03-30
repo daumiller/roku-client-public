@@ -6,6 +6,7 @@ function Glyphs() as object
         obj.CHECK       = chr(&he207)
         obj.CIR_CHECK   = chr(&he194)
         obj.CIR_MINUS   = chr(&he192)
+        obj.CIR_X       = chr(&he193)
         obj.ELLIPSIS    = chr(&he188)
 
         obj.PLAY        = chr(&he174)
@@ -39,6 +40,9 @@ function Glyphs() as object
         obj.LIST        = chr(&he159)
         obj.D_TRIANGLE  = chr(&h1f450)
         obj.ERROR       = chr(&he197)
+        obj.ARROW_DOWN  = chr(&he000)
+        obj.ARROW_UP    = chr(&he001)
+        obj.EYE         = chr(&he002)
 
         ' Constants Aliases
         obj.SCROBBLE    = obj.CIR_CHECK
