@@ -45,8 +45,6 @@ function Glyphs() as object
         obj.EYE         = chr(&he002)
 
         ' Constants Aliases
-        obj.SCROBBLE    = obj.CIR_CHECK
-        obj.UNSCROBBLE  = obj.CIR_MINUS
         obj.MORE        = obj.ELLIPSIS
         obj.BACKSPACE   = obj.DEL_LABEL
         obj.EXTRAS      = obj.FILM_STRIP

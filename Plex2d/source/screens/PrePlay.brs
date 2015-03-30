@@ -506,11 +506,8 @@ function preplayGetButtons() as object
         buttons.Push({text: Glyphs().EQ, command: "settings", useIndicator: true})
     end if
 
-    if m.item.IsUnwatched() or m.item.InProgress() then
-        buttons.Push({text: Glyphs().SCROBBLE, command: "scrobble"})
-    else
-        buttons.Push({text: Glyphs().UNSCROBBLE, command: "unscrobble"})
-    end if
+    command = iif(m.item.IsUnwatched() or m.item.InProgress(), "scrobble", "unscrobble")
+    buttons.Push({text: Glyphs().EYE, command: command})
 
     ' Shared prefs for any dropdown
     buttonHeight = 50
