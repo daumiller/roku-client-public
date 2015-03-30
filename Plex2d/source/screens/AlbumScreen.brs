@@ -51,8 +51,9 @@ sub albumInit()
 
     ' Intialize custom fonts for this screen
     m.customFonts = {
-        glyphs: FontRegistry().GetIconFont(32)
-        trackStatus: FontRegistry().GetIconFont(20)
+        glyphs: FontRegistry().GetIconFont(32),
+        trackStatus: FontRegistry().GetIconFont(20),
+        trackActions: FontRegistry().GetIconFont(18)
     }
 
     m.ResetInit(m.path)
@@ -261,7 +262,7 @@ sub albumGetComponents()
     moreOptions.Push({text: "Play music video", command: "play_music_video"})
     moreOptions.Push({text: "Plex Mix", command: "play_plex_mix"})
 
-    actions.Push({text: ".", type: "dropDown", position: "down", options: moreOptions})
+    actions.Push({text: Glyphs().ELLIPSIS, type: "dropDown", position: "down", options: moreOptions, font: m.customFonts.trackActions})
 
     buttonFields = {trackAction: true}
     m.trackActions.AddButtons(actions, buttonFields, m)

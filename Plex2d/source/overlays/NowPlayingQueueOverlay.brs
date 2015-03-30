@@ -45,8 +45,9 @@ sub npqoInit()
     m.enableOverlay = false
 
     m.customFonts = {
-        glyphs: FontRegistry().GetIconFont(32)
-        trackStatus: FontRegistry().GetIconFont(20)
+        glyphs: FontRegistry().GetIconFont(32),
+        trackStatus: FontRegistry().GetIconFont(20),
+        trackActions: FontRegistry().GetIconFont(18)
     }
 
     ' Set up audio player listeners
@@ -131,10 +132,10 @@ sub npqoGetComponents()
     moreOptions.Push({text: "Play music video", command: "play_music_video"})
     moreOptions.Push({text: "Plex Mix", command: "play_plex_mix"})
 
-    actions.Push({text: ".", type: "dropDown", position: "down", options: moreOptions})
-    actions.Push({text: "^", command: "move_item_up"})
-    actions.Push({text: "x", command: "remove_item"})
-    actions.Push({text: "v", command: "move_item_down"})
+    actions.Push({text: Glyphs().ELLIPSIS, type: "dropDown", position: "down", options: moreOptions, font: m.customFonts.trackActions})
+    actions.Push({text: Glyphs().ARROW_UP, command: "move_item_up", font: m.customFonts.trackActions})
+    actions.Push({text: Glyphs().CIR_X, command: "remove_item", font: m.customFonts.trackActions})
+    actions.Push({text: Glyphs().ARROW_DOWN, command: "move_item_down", font: m.customFonts.trackActions})
 
     buttonFields = {
         ' A little unorthodox, but we want our overlay to be able to handle

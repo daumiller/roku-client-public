@@ -87,7 +87,7 @@ sub buttonGridAddButtons(actions as object, buttonFields as object, screen as ob
         if action.type = "dropDown" then
             ' TODO(schuyler): Either switch this to a well known glyph font or
             ' allow the caller to specify.
-            btn = createDropDownButton(action.text, FontRegistry().NORMAL, 50 * action.options.Count(), screen, false)
+            btn = createDropDownButton(action.text, action.font, 50 * action.options.Count(), screen, false)
             btn.SetDropDownPosition(action.position)
 
             for each option in action.options
@@ -101,7 +101,7 @@ sub buttonGridAddButtons(actions as object, buttonFields as object, screen as ob
 
             if btnZOrder <> invalid then btn.zOrder = btnZOrder
         else
-            btn = createButton(action.text, FontRegistry().NORMAL, action.command)
+            btn = createButton(action.text, action.font, action.command)
             btn.Append(buttonFields)
         end if
 
