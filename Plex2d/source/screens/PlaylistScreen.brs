@@ -104,7 +104,10 @@ sub playlistGetComponents()
     m.itemList.scrollOverflow = true
 
     ' Initialize our track actions and save room for them
-    if m.playlistType = "audio" then
+    if m.item.GetBool("smart") then
+        ' Smart playlists can't be reordered, so they have but one lonely action
+        m.trackActions = createButtonGrid(1, 1, 36)
+    else if m.playlistType = "audio" then
         m.trackActions = createButtonGrid(2, 2, 36)
     else
         m.trackActions = createButtonGrid(4, 1, 30)
@@ -145,14 +148,21 @@ sub playlistGetComponents()
         moreOptions.Push({text: "Go to Album", command: "go_to_album"})
 
         actions.Push({text: Glyphs().ELLIPSIS, type: "dropDown", position: "down", options: moreOptions, font: m.customFonts.trackActions})
-        actions.Push({text: Glyphs().ARROW_UP, command: "move_item_up", font: m.customFonts.trackActions})
-        actions.Push({text: Glyphs().CIR_X, command: "remove_item", font: m.customFonts.trackActions})
-        actions.Push({text: Glyphs().ARROW_DOWN, command: "move_item_down", font: m.customFonts.trackActions})
+
+        if not m.item.GetBool("smart") then
+            actions.Push({text: Glyphs().ARROW_UP, command: "move_item_up", font: m.customFonts.trackActions})
+            actions.Push({text: Glyphs().CIR_X, command: "remove_item", font: m.customFonts.trackActions})
+            actions.Push({text: Glyphs().ARROW_DOWN, command: "move_item_down", font: m.customFonts.trackActions})
+        end if
     else
-        actions.Push({text: Glyphs().ARROW_UP, command: "move_item_up", font: m.customFonts.trackActions})
-        actions.Push({text: Glyphs().EYE, command: "toggle_watched", font: m.customFonts.trackActions, commandCallback: createCallable("Refresh", m.item, invalid, [false, true])})
-        actions.Push({text: Glyphs().CIR_X, command: "remove_item", font: m.customFonts.trackActions})
-        actions.Push({text: Glyphs().ARROW_DOWN, command: "move_item_down", font: m.customFonts.trackActions})
+        if m.item.GetBool("smart") then
+            actions.Push({text: Glyphs().ARROW_UP, command: "move_item_up", font: m.customFonts.trackActions})
+            actions.Push({text: Glyphs().EYE, command: "toggle_watched", font: m.customFonts.trackActions, commandCallback: createCallable("Refresh", m.item, invalid, [false, true])})
+            actions.Push({text: Glyphs().CIR_X, command: "remove_item", font: m.customFonts.trackActions})
+            actions.Push({text: Glyphs().ARROW_DOWN, command: "move_item_down", font: m.customFonts.trackActions})
+        else
+            actions.Push({text: Glyphs().EYE, command: "toggle_watched", font: m.customFonts.trackActions, commandCallback: createCallable("Refresh", m.item, invalid, [false, true])})
+        end if
     end if
 
     buttonFields = {trackAction: true}
