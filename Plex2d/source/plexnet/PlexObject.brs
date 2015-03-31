@@ -302,6 +302,8 @@ function createPlexObjectFromElement(container as object, xml as object) as obje
         return createPlexResource(container, xml)
     else if xml.GetName() = "Hub" then
         return createPlexHub(container, xml)
+    else if xml.GetName() = "Playlist" then
+        return createPlaylist(container, xml)
     else if xml.GetNamedElements("Media").Count() > 0 or container.Get("identifier") = "com.plexapp.plugins.itunes" then
         return createPlexItem(container, xml)
     end if

@@ -22,17 +22,39 @@ function DescriptionBoxClass() as object
 end function
 
 function createStaticDescriptionBox(title as string, subtitle as string)
-    obj = CreateObject("roAssociativeArray")
-    obj.Append(DescriptionBoxClass())
+    obj = createVBox(false, false, false, 0)
+
+    dbox = DescriptionBoxClass()
+
+    obj.titlePrefs = dbox.titlePrefs
+    obj.subtitlePrefs = dbox.subtitlePrefs
+
+    obj.Build = dbox.Build
+    obj.SetText = dboxSetText
 
     obj.title = title
     obj.subtitle = subtitle
 
-    return obj.Build()
+    return obj.Build(false)
 end function
 
-function dboxBuild()
-    vbox = createVBox(false, false, false, m.spacing)
+sub dboxSetText(title as string, subtitle as string)
+    if m.titleLabel = invalid or m.titleLabel.sprite = invalid then return
+
+    m.titleLabel.text = title
+    m.titleLabel.Draw(true)
+
+    m.subtitleLabel.text = subtitle
+    m.subtitleLabel.Draw(true)
+    m.subtitleLabel.Redraw()
+end sub
+
+function dboxBuild(createBox as boolean)
+    if createBox then
+        vbox = createVBox(false, false, false, m.spacing)
+    else
+        vbox = m
+    end if
 
     title = createLabel(m.title, m.titlePrefs.font)
     title.halign = title.JUSTIFY_LEFT
@@ -47,6 +69,9 @@ function dboxBuild()
     subtitle.zOrder = m.zOrder
     subtitle.SetColor(m.subtitlePrefs.color)
     vbox.AddComponent(subtitle)
+
+    m.titleLabel = title
+    m.subtitleLabel = subtitle
 
     return vbox
 end function
@@ -129,7 +154,7 @@ function dboxShow(item as object) as boolean
     m.title = title
     m.subtitle = joinArray(subtitle, " / ")
 
-    dbox = m.Build()
+    dbox = m.Build(true)
     dbox.SetFrame(m.x, m.y, m.width, m.height)
     m.components.push(dbox)
 

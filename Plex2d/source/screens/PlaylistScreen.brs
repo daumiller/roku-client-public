@@ -19,6 +19,8 @@ function PlaylistScreen() as object
         obj.OnStop = playlistOnStop
         obj.OnPause = playlistOnPause
         obj.OnResume = playlistOnResume
+        obj.OnRefreshMetadata = playlistOnRefreshMetadata
+        obj.OnRefreshItems = playlistOnRefreshItems
 
         m.PlaylistScreen = obj
     end if
@@ -148,7 +150,7 @@ sub playlistGetComponents()
         actions.Push({text: Glyphs().ARROW_DOWN, command: "move_item_down", font: m.customFonts.trackActions})
     else
         actions.Push({text: Glyphs().ARROW_UP, command: "move_item_up", font: m.customFonts.trackActions})
-        actions.Push({text: Glyphs().EYE, command: "toggle_watched", font: m.customFonts.trackActions})
+        actions.Push({text: Glyphs().EYE, command: "toggle_watched", font: m.customFonts.trackActions, commandCallback: createCallable("Refresh", m.item, invalid, [false, true])})
         actions.Push({text: Glyphs().CIR_X, command: "remove_item", font: m.customFonts.trackActions})
         actions.Push({text: Glyphs().ARROW_DOWN, command: "move_item_down", font: m.customFonts.trackActions})
     end if
@@ -176,14 +178,19 @@ sub playlistGetComponents()
     m.focusBG.zOrderInit = -1
     m.components.Push(m.focusBG)
 
-    ' Static description box
-    descBox = createStaticDescriptionBox(m.item.GetChildCountString(), m.item.GetDuration())
-    descBox.setFrame(50, 630, 1280-50, 100)
-    m.components.Push(descBox)
+    ' Description box
+    m.descBox = createStaticDescriptionBox(m.item.GetChildCountString(), m.item.GetDuration())
+    m.descBox.setFrame(50, 630, 1280-50, 100)
+    m.components.Push(m.descBox)
 end sub
 
 sub playlistInitItem()
     ApplyFunc(ContextListScreen().InitItem, m)
+
+    m.item.items = m.children
+
+    m.AddListener(m.item, "change:metadata", CreateCallable("OnRefreshMetadata", m))
+    m.AddListener(m.item, "change:items", CreateCallable("OnRefreshItems", m))
 
     m.playlistType = m.item.Get("playlistType", "video")
 
@@ -257,6 +264,8 @@ function playlistGetListComponent(plexObject as dynamic) as dynamic
 end function
 
 function playlistHandleCommand(command as string, item as dynamic) as boolean
+    handled = true
+
     ' If it was a track action, make sure it has the last focused track set as its item
     if item <> invalid and item.trackAction = true then
         item.plexObject = m.focusedListItem.plexObject
@@ -266,18 +275,23 @@ function playlistHandleCommand(command as string, item as dynamic) as boolean
 
     swapIndex = invalid
     focusItem = invalid
+    refreshMetadata = false
+    refreshItems = false
 
-    ' TODO(schuyler): We're pretending to move the items, but not actually doing
-    ' it yet. And we're not even pretending to remove items.
     if command = "move_item_down" then
-        swapIndex = m.focusedListItem.trackIndex
-        focusItem = m.focusedListItem
+        if m.item.MoveItemDown(m.focusedListItem.plexObject) then
+            swapIndex = m.focusedListItem.trackIndex
+            focusItem = m.focusedListItem
+        end if
     else if command = "move_item_up" then
-        swapIndex = m.focusedListItem.trackIndex - 1
-        focusItem = m.focusedListItem
+        if m.item.MoveItemUp(m.focusedListItem.plexObject) then
+            swapIndex = m.focusedListItem.trackIndex - 1
+            focusItem = m.focusedListItem
+        end if
     else if command = "remove_item" then
+        m.item.RemoveItem(m.focusedListItem.plexObject)
     else
-        return ApplyFunc(ContextListScreen().HandleCommand, m, [command, item])
+        handled = ApplyFunc(ContextListScreen().HandleCommand, m, [command, item])
     end if
 
     if swapIndex <> invalid and swapIndex >= 0 then
@@ -306,5 +320,19 @@ function playlistHandleCommand(command as string, item as dynamic) as boolean
         m.OnFocus(item, focusItem, "right")
     end if
 
+    m.item.Refresh(refreshMetadata, refreshItems)
+
     return true
 end function
+
+sub playlistOnRefreshMetadata(playlist as object)
+    m.item = playlist
+    m.descBox.SetText(m.item.GetChildCountString(), m.item.GetDuration())
+end sub
+
+sub playlistOnRefreshItems(playlist as object)
+    m.children = playlist.items
+    m.Show()
+
+    ' TODO(schuyler): Find a reasonable way to refocus whatever we used to be on.
+end sub

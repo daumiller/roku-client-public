@@ -14,13 +14,14 @@ function CallableClass() as object
     return m.CallableClass
 end function
 
-function createCallable(func as dynamic, context as dynamic, id=invalid as dynamic) as object
+function createCallable(func as dynamic, context as dynamic, id=invalid as dynamic, forcedArgs=invalid as dynamic) as object
     obj = CreateObject("roAssociativeArray")
 
     obj.Append(CallableClass())
 
     obj.func = func
     obj.context = context
+    obj.forcedArgs = forcedArgs
 
     ' Since we can't do a reference equality check on context, if a particular
     ' callable wants to allow equality checks, it can pass an ID. If no ID is
@@ -45,6 +46,7 @@ end function
 
 function callableCall(args=[] as object) as dynamic
     this = firstOf(m.context, m)
+    if m.forcedArgs <> invalid then args = m.forcedArgs
 
     if isstr(m.func) then
         methodName = m.func

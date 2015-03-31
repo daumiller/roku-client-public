@@ -103,6 +103,7 @@ sub buttonGridAddButtons(actions as object, buttonFields as object, screen as ob
         else
             btn = createButton(action.text, action.font, action.command)
             btn.Append(buttonFields)
+            btn.commandCallback = action.commandCallback
         end if
 
         btn.bgColor = buttonColor
