@@ -25,7 +25,12 @@ function createCallable(func as dynamic, context as dynamic, id=invalid as dynam
     ' Since we can't do a reference equality check on context, if a particular
     ' callable wants to allow equality checks, it can pass an ID. If no ID is
     ' passed, try to default to the context's ID.
-    obj.id = firstOf(id, context.uniqId, context.id, context.screenId)
+    if context = invalid then
+        obj.id = id
+    else
+        obj.id = firstOf(id, context.uniqId, context.id, context.screenId)
+    end if
+
     if obj.id = invalid then
         GetGlobalAA()["nextCallableId"] = GetGlobalAA()["nextCallableId"] + 1
         obj.id = GetGlobalAA()["nextCallableId"]

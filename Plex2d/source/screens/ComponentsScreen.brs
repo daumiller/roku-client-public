@@ -559,34 +559,11 @@ function compHandleCommand(command as string, item as dynamic) as boolean
         foundExtra = false
 
         if plexItem <> invalid then
-            ' The track may or may not have been fetched with extras already.
-            ' But if it has a music video then it should have a primaryExtraKey.
-            ' If that's present and we find a matching extra, then we play it
-            ' immediately. If not, we fetch that key and play the result.
+            extraItem = plexItem.GetPrimaryExtra()
 
-            extraKey = plexItem.Get("primaryExtraKey")
-            extraItem = invalid
-
-            if extraKey <> invalid then
-                if plexItem.extraItems <> invalid then
-                    for each extra in plexItem.extraItems
-                        if extraKey = extra.Get("key") then
-                            extraItem = extra
-                            exit for
-                        end if
-                    next
-                end if
-
-                if extraItem = invalid then
-                    request = createPlexRequest(plexItem.GetServer(), plexItem.GetAbsolutePath("primaryExtraKey"))
-                    response = request.DoRequestWithTimeout(10)
-                    extraItem = response.items[0]
-                end if
-
-                if extraItem <> invalid then
-                    foundExtra = true
-                    m.CreatePlayerForItem(extraItem)
-                end if
+            if extraItem <> invalid then
+                foundExtra = true
+                m.CreatePlayerForItem(extraItem)
             end if
         end if
 
@@ -604,19 +581,16 @@ function compHandleCommand(command as string, item as dynamic) as boolean
             ' relatedItems is invalid, but since we think we already have the
             ' details we're not bothering.
 
-            if plexItem.relatedItems <> invalid then
-                for each relatedItem in plexItem.relatedItems
-                    if relatedItem.type = "plexmix" then
-                        ' TODO(schuyler): This works, but the screen updates are less than ideal.
-                        ' TODO(schuyler): Also, if we create a Plex Mix for the currently playing track, it restarts the track.
-                        pq = createPlayQueueForItem(relatedItem)
-                        player = GetPlayerForType(pq.type)
-                        if player <> invalid then
-                            player.SetPlayQueue(pq, true)
-                            foundPlexMix = true
-                        end if
-                    end if
-                next
+            relatedItem = plexItem.GetRelatedItem("plexmix")
+            if relatedItem <> invalid then
+                ' TODO(schuyler): This works, but the screen updates are less than ideal.
+                ' TODO(schuyler): Also, if we create a Plex Mix for the currently playing track, it restarts the track.
+                pq = createPlayQueueForItem(relatedItem)
+                player = GetPlayerForType(pq.type)
+                if player <> invalid then
+                    player.SetPlayQueue(pq, true)
+                    foundPlexMix = true
+                end if
             end if
         end if
 

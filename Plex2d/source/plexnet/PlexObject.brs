@@ -60,6 +60,9 @@ function PlexObjectClass() as object
         obj.GetLibrarySectionUuid = pnoGetLibrarySectionUuid
         obj.GetItemUri = pnoGetItemUri
 
+        obj.GetPrimaryExtra = pnoGetPrimaryExtra
+        obj.GetRelatedItem = pnoGetRelatedItem
+
         obj.GetAbsolutePath = pnoGetAbsolutePath
         obj.GetItemPath = pnoGetItemPath
         obj.GetContextPath = pnoGetContextPath
@@ -600,4 +603,45 @@ function pnoIsDateBased() as boolean
     end if
 
     return false
+end function
+
+function pnoGetPrimaryExtra(fetchIfNecessary=true as boolean) as dynamic
+    ' We may or may not have been fetched with extras, but we should have the
+    ' primary extra key regardless. So if that doesn't exist, then there's no
+    ' need to fetch anything.
+
+    extraKey = m.Get("primaryExtraKey")
+    if extraKey = invalid then return invalid
+
+    haveExtras = (m.extraItems <> invalid and m.extraItems.Count() > 0)
+    extraItem = invalid
+
+    if m.extraItems <> invalid then
+        for each extra in m.extraItems
+            if extraKey = extra.Get("key") then
+                extraItem = extra
+                exit for
+            end if
+        next
+    end if
+
+    if extraItem = invalid and fetchIfNecessary and not haveExtras then
+        request = createPlexRequest(m.GetServer(), m.GetAbsolutePath("primaryExtraKey"))
+        response = request.DoRequestWithTimeout(10)
+        if response.items <> invalid then extraItem = response.items[0]
+    end if
+
+    return extraItem
+end function
+
+function pnoGetRelatedItem(itemType as string) as dynamic
+    if m.relatedItems = invalid then return invalid
+
+    for each relatedItem in m.relatedItems
+        if relatedItem.type = itemType then
+            return relatedItem
+        end if
+    next
+
+    return invalid
 end function

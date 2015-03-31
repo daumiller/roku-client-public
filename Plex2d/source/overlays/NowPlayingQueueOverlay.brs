@@ -129,8 +129,8 @@ sub npqoGetComponents()
     actions = createObject("roList")
     moreOptions = createObject("roList")
 
-    moreOptions.Push({text: "Play music video", command: "play_music_video"})
-    moreOptions.Push({text: "Plex Mix", command: "play_plex_mix"})
+    moreOptions.Push({text: "Play Music Video", command: "play_music_video", visibleCallable: createCallable(ItemHasMusicVideo, invalid)})
+    moreOptions.Push({text: "Plex Mix", command: "play_plex_mix", visibleCallable: createCallable(ItemHasPlexMix, invalid)})
     moreOptions.Push({text: "Go to Artist", command: "go_to_artist"})
     moreOptions.Push({text: "Go to Album", command: "go_to_album"})
 
@@ -215,6 +215,9 @@ sub npqoOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
         rect = computeRect(toFocus)
         overlay.trackActions.SetPosition(rect.right + 1, rect.up + int((rect.height - overlay.trackActions.GetPreferredHeight()) / 2))
         overlay.focusedTrack = toFocus
+
+        ' Toggle some of our track actions based on the current track
+        overlay.trackActions.SetPlexObject(toFocus.plexObject)
     else
         overlay.trackActions.SetVisibility(false)
     end if
@@ -383,3 +386,15 @@ sub npqoHandleButton()
         screen.OnFocus(btn, focusItem, "right")
     end if
 end sub
+
+function ItemHasMusicVideo(item as dynamic) as boolean
+    if item = invalid then return false
+    musicVideo = item.GetPrimaryExtra()
+    return (musicVideo <> invalid)
+end function
+
+function ItemHasPlexMix(item as dynamic) as boolean
+    if item = invalid then return false
+    plexMix = item.GetRelatedItem("plexmix")
+    return (plexMix <> invalid)
+end function

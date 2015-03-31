@@ -104,7 +104,9 @@ sub ddoverlayGetComponents()
     vbox.stopShiftIfInView = true
 
     for each option in m.button.GetOptions()
-        if option.component <> invalid then
+        if option.visibleCallable <> invalid and option.visibleCallable.Call([firstOf(option.plexObject, m.plexObject)]) = false then
+            comp = invalid
+        else if option.component <> invalid then
             comp = option.component
         else
             comp = createButton(option.text, option.font, option.command)
@@ -129,7 +131,9 @@ sub ddoverlayGetComponents()
             if m.screen.focusedItem = invalid then m.screen.focusedItem = comp
         end if
 
-        vbox.AddComponent(comp)
+        if comp <> invalid then
+            vbox.AddComponent(comp)
+        end if
     end for
 
     m.CalculatePosition(vbox)

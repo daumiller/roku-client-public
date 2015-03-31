@@ -10,6 +10,7 @@ function ButtonGridClass() as object
         obj.GetPreferredHeight = buttonGridGetPreferredHeight
 
         obj.AddButtons = buttonGridAddButtons
+        obj.SetPlexObject = buttonGridSetPlexObject
 
         m.ButtonGridClass = obj
     end if
@@ -109,5 +110,17 @@ sub buttonGridAddButtons(actions as object, buttonFields as object, screen as ob
         btn.SetFocusMethod(btn.FOCUS_BACKGROUND, Colors().OrangeLight)
 
         m.AddComponent(btn)
+    next
+end sub
+
+sub buttonGridSetPlexObject(plexObject as dynamic)
+    for each comp in m.components
+        if comp.options <> invalid then
+            for each option in comp.options
+                option.plexObject = plexObject
+            next
+        else
+            comp.plexObject = plexObject
+        end if
     next
 end sub
