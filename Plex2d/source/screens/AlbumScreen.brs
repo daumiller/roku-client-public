@@ -213,7 +213,8 @@ sub albumGetComponents()
         fixed: false,
         focusBG: true,
         disallowExit: { down: true },
-        zOrder: 2
+        zOrder: 2,
+        hasTrackActions: true
     }
 
     m.trackBG = createBlock(trackPrefs.background)
@@ -419,11 +420,10 @@ end function
 sub albumOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
     ApplyFunc(ComponentsScreen().OnFocusIn, m, [toFocus, lastFocus])
 
-    ' TODO(schuyler): Figure out how to actually handle focus. When we focus
-    ' the button grid we want the track to continue to appear focused.
+    ' Ignore further processing if we are focused on a track action
+    if toFocus <> invalid and toFocus.parent <> invalid and toFocus.parent.ClassName = "ButtonGrid" then return
 
-    if toFocus = invalid or toFocus.ClassName <> "Track" then return
-
+    ' Focus background (anti-alias workaround)
     if toFocus <> invalid and toFocus.focusBG = true then
         m.focusBG.sprite.MoveTo(toFocus.x, toFocus.y)
         m.focusBG.sprite.SetZ(1)
@@ -431,12 +431,14 @@ sub albumOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
         m.focusBG.sprite.SetZ(-1)
     end if
 
-    if toFocus <> invalid then
+    ' Track Actions visibility
+    if toFocus <> invalid and toFocus.hasTrackActions = true then
         rect = computeRect(toFocus)
         m.trackActions.SetPosition(rect.right + 1, rect.up + int((rect.height - m.trackActions.GetPreferredHeight()) / 2))
+        m.trackActions.SetVisible(true)
         m.focusedTrack = toFocus
     else
-        m.trackActions.SetVisibility(false)
+        m.trackActions.SetVisible(false)
     end if
 end sub
 

@@ -86,7 +86,8 @@ sub npqoGetComponents()
         fixed: false,
         focusBG: true,
         disallowExit: { down: true },
-        zOrder: m.zOrderOverlay
+        zOrder: m.zOrderOverlay,
+        hasTrackActions: true
     }
 
     m.trackBG = createBlock(trackPrefs.background)
@@ -198,11 +199,10 @@ end function
 sub npqoOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
     ApplyFunc(ComponentsScreen().OnFocusIn, m, [toFocus, lastFocus])
 
-    ' TODO(schuyler): Figure out how to actually handle focus. When we focus
-    ' the button grid we want the track to continue to appear focused.
+    ' Ignore further processing if we are focused on a track action
+    if toFocus <> invalid and toFocus.parent <> invalid and toFocus.parent.ClassName = "ButtonGrid" then return
 
-    if toFocus = invalid or toFocus.ClassName <> "Track" then return
-
+    ' Focus background (anti-alias workaround)
     overlay = m.overlayScreen[0]
     if toFocus <> invalid and toFocus.focusBG = true and overlay.focusBG <> invalid then
         overlay.focusBG.sprite.MoveTo(toFocus.x, toFocus.y)
@@ -211,15 +211,17 @@ sub npqoOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
         overlay.focusBG.sprite.SetZ(-1)
     end if
 
-    if toFocus <> invalid then
+    ' Track Actions visibility
+    if toFocus <> invalid and toFocus.hasTrackActions = true then
         rect = computeRect(toFocus)
         overlay.trackActions.SetPosition(rect.right + 1, rect.up + int((rect.height - overlay.trackActions.GetPreferredHeight()) / 2))
+        overlay.trackActions.SetVisible(true)
         overlay.focusedTrack = toFocus
 
         ' Toggle some of our track actions based on the current track
         overlay.trackActions.SetPlexObject(toFocus.plexObject)
     else
-        overlay.trackActions.SetVisibility(false)
+        overlay.trackActions.SetVisible(false)
     end if
 end sub
 

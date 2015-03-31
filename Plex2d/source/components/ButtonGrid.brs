@@ -11,6 +11,7 @@ function ButtonGridClass() as object
 
         obj.AddButtons = buttonGridAddButtons
         obj.SetPlexObject = buttonGridSetPlexObject
+        obj.SetVisible = buttonGridSetVisible
 
         m.ButtonGridClass = obj
     end if
@@ -121,4 +122,10 @@ sub buttonGridSetPlexObject(plexObject as dynamic)
             comp.plexObject = plexObject
         end if
     next
+end sub
+
+sub buttonGridSetVisible(visible=true as boolean)
+    for each component in m.components
+        component.SetVisible(visible)
+    end for
 end sub
