@@ -86,8 +86,6 @@ sub buttonGridAddButtons(actions as object, buttonFields as object, screen as ob
 
     for each action in actions
         if action.type = "dropDown" then
-            ' TODO(schuyler): Either switch this to a well known glyph font or
-            ' allow the caller to specify.
             btn = createDropDownButton(action.text, action.font, 50 * action.options.Count(), screen, false)
             btn.SetDropDownPosition(action.position)
 
