@@ -278,9 +278,12 @@ sub compSetDimensions(width as integer, height as integer)
     m.height = height
 end sub
 
-sub compSetFocusSibling(direction as string, component as dynamic)
+sub compSetFocusSibling(direction as string, component as dynamic, reciprocal=false as boolean)
     if component <> invalid then
         m.focusSiblings[direction] = component
+        if reciprocal then
+            component.SetFocusSibling(OppositeDirection(direction), m)
+        end if
     else
         m.focusSiblings.Delete(direction)
     end if

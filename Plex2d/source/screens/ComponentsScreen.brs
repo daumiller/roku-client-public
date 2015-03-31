@@ -598,6 +598,20 @@ function compHandleCommand(command as string, item as dynamic) as boolean
             dialog = createDialog("Unable to create Plex Mix", "We're unable to create a Plex Mix for this track", m)
             dialog.Show()
         end if
+    else if command = "go_to_artist" then
+        plexItem = firstOf(item.plexObject, m.item)
+        Application().PushScreen(createArtistScreen(plexItem, plexItem.Get("grandparentKey")))
+    else if command = "go_to_album" then
+        plexItem = firstOf(item.plexObject, m.item)
+        Application().PushScreen(createAlbumScreen(plexItem, plexItem.Get("parentKey")))
+    else if command = "toggle_watched" then
+        plexItem = firstOf(item.plexObject, m.item)
+
+        if plexItem.IsUnwatched() or plexItem.InProgress() then
+            plexItem.Scrobble(item.commandCallback)
+        else
+            plexItem.Unscrobble(item.commandCallback)
+        end if
     else
         handled = false
     end if

@@ -46,7 +46,7 @@ sub buttonGridPerformLayout()
 
     for i = 0 to numChildren - 1
         button = m.components[i]
-        row = int(i / m.rows)
+        row = int(i / m.cols)
         col = i mod m.cols
 
         button.SetFrame(m.x + col * offsetSize, m.y + row * offsetSize, m.buttonSize, m.buttonSize)

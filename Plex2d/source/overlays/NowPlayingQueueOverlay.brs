@@ -345,7 +345,7 @@ sub npqoHandleButton()
         ' end if
 
         player.playQueue.RemoveItem(focusedTrack)
-    else if command = "play_music_video" or command = "play_plex_mix" then
+    else if command = "play_music_video" or command = "play_plex_mix" or command = "go_to_artist" or command = "go_to_album" then
         screen.overlayScreen.Peek().Close()
 
         ' We'll let the usual command handling do these, but we need to make
@@ -353,10 +353,6 @@ sub npqoHandleButton()
 
         btn.plexObject = focusedTrack
         screen.HandleCommand(command, btn)
-    else if command = "go_to_artist" then
-        Application().PushScreen(createArtistScreen(focusedTrack, focusedTrack.Get("grandparentKey")))
-    else if command = "go_to_album" then
-        Application().PushScreen(createAlbumScreen(focusedTrack, focusedTrack.Get("parentKey")))
     end if
 
     if swapIndex <> invalid and swapIndex >= 0 then
@@ -374,6 +370,10 @@ sub npqoHandleButton()
 
         firstComponent.trackIndex = firstComponent.trackIndex + 1
         secondComponent.trackIndex = secondComponent.trackIndex - 1
+
+        firstComponent.SetFocusSibling("down", secondComponent.GetFocusSibling("down"), true)
+        secondComponent.SetFocusSibling("up", firstComponent.GetFocusSibling("up"), true)
+        secondComponent.SetFocusSibling("down", firstComponent, true)
     end if
 
     if focusItem <> invalid then

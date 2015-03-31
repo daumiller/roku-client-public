@@ -42,8 +42,9 @@ sub clInit()
 
     ' Intialize custom fonts for this screen
     m.customFonts = {
-        glyphs: FontRegistry().GetIconFont(32)
-        trackStatus: FontRegistry().GetIconFont(20)
+        glyphs: FontRegistry().GetIconFont(32),
+        trackStatus: FontRegistry().GetIconFont(20),
+        trackActions: FontRegistry().GetIconFont(18)
     }
 
     m.ResetInit(m.path)
@@ -212,11 +213,25 @@ end function
 sub clOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
     ApplyFunc(ComponentsScreen().OnFocusIn, m, [toFocus, lastFocus])
 
+    ' TODO(schuyler): Figure out focus and button grid stuff
+
+    if toFocus = invalid or toFocus.ClassName <> "Track" then return
+
     if toFocus <> invalid and toFocus.focusBG = true then
         m.focusBG.sprite.MoveTo(toFocus.x, toFocus.y)
         m.focusBG.sprite.SetZ(1)
     else
         m.focusBG.sprite.SetZ(-1)
+    end if
+
+    if m.trackActions <> invalid then
+        if toFocus <> invalid then
+            rect = computeRect(toFocus)
+            m.trackActions.SetPosition(rect.right + 1, rect.up + int((rect.height - m.trackActions.GetPreferredHeight()) / 2))
+            m.focusedListItem = toFocus
+        else
+            m.trackActions.SetVisibility(false)
+        end if
     end if
 end sub
 

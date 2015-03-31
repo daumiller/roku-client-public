@@ -209,10 +209,6 @@ function preplayHandleCommand(command as string, item as dynamic) as boolean
         if dialog.result = true then
             m.item.DeleteItem(createCallable("OnDelete", m))
         end if
-    else if command = "scrobble" then
-        m.item.Scrobble(createCallable("Refresh", m))
-    else if command = "unscrobble" then
-        m.item.Unscrobble(createCallable("Refresh", m))
     else if command = "settings" then
         if m.localPrefs = invalid then m.localPrefs = {}
         settings = createSettings(m)
@@ -506,8 +502,7 @@ function preplayGetButtons() as object
         buttons.Push({text: Glyphs().EQ, command: "settings", useIndicator: true})
     end if
 
-    command = iif(m.item.IsUnwatched() or m.item.InProgress(), "scrobble", "unscrobble")
-    buttons.Push({text: Glyphs().EYE, command: command})
+    buttons.Push({text: Glyphs().EYE, command: "toggle_watched", commandCallback: createCallable("Refresh", m)})
 
     ' Shared prefs for any dropdown
     buttonHeight = 50
@@ -582,6 +577,7 @@ function preplayGetButtons() as object
             end for
         else
             btn = createButton(button.text, m.customFonts.glyphs, button.command, (button.useIndicator = true))
+            btn.commandCallback = button.commandCallback
         end if
 
         btn.SetColor(Colors().Text, Colors().Button)

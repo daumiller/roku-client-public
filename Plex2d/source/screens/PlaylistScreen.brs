@@ -8,6 +8,7 @@ function PlaylistScreen() as object
         ' Methods
         obj.InitItem = playlistInitItem
         obj.GetComponents = playlistGetComponents
+        obj.HandleCommand = playlistHandleCommand
 
         ' Methods for playlists
         obj.GetListComponent = playlistGetListComponent
@@ -100,6 +101,15 @@ sub playlistGetComponents()
     m.itemList.stopShiftIfInView = true
     m.itemList.scrollOverflow = true
 
+    ' Initialize our track actions and save room for them
+    if m.playlistType = "audio" then
+        m.trackActions = createButtonGrid(2, 2, 36)
+    else
+        m.trackActions = createButtonGrid(4, 1, 30)
+    end if
+
+    m.listPrefs.width = m.listPrefs.width - m.trackActions.GetPreferredWidth()
+
     ' *** Playlist Items *** '
     trackCount = m.children.Count()
     ' create a shared region for the separator
@@ -120,6 +130,32 @@ sub playlistGetComponents()
         end if
     end for
     m.components.Push(m.itemList)
+
+    ' *** Track actions ***
+    actions = CreateObject("roList")
+
+    if m.playlistType = "audio" then
+        moreOptions = CreateObject("roList")
+
+        moreOptions.Push({text: "Play Music Video", command: "play_music_video", visibleCallable: createCallable(ItemHasMusicVideo, invalid)})
+        moreOptions.Push({text: "Plex Mix", command: "play_plex_mix", visibleCallable: createCallable(ItemHasPlexMix, invalid)})
+        moreOptions.Push({text: "Go to Artist", command: "go_to_artist"})
+        moreOptions.Push({text: "Go to Album", command: "go_to_album"})
+
+        actions.Push({text: Glyphs().ELLIPSIS, type: "dropDown", position: "down", options: moreOptions, font: m.customFonts.trackActions})
+        actions.Push({text: Glyphs().ARROW_UP, command: "move_item_up", font: m.customFonts.trackActions})
+        actions.Push({text: Glyphs().CIR_X, command: "remove_item", font: m.customFonts.trackActions})
+        actions.Push({text: Glyphs().ARROW_DOWN, command: "move_item_down", font: m.customFonts.trackActions})
+    else
+        actions.Push({text: Glyphs().ARROW_UP, command: "move_item_up", font: m.customFonts.trackActions})
+        actions.Push({text: Glyphs().EYE, command: "toggle_watched", font: m.customFonts.trackActions})
+        actions.Push({text: Glyphs().CIR_X, command: "remove_item", font: m.customFonts.trackActions})
+        actions.Push({text: Glyphs().ARROW_DOWN, command: "move_item_down", font: m.customFonts.trackActions})
+    end if
+
+    buttonFields = {trackAction: true}
+    m.trackActions.AddButtons(actions, buttonFields, m)
+    m.components.Push(m.trackActions)
 
     ' Set the focus to the current AudioPlayer track, if applicable.
     component = m.GetListComponent(m.player.GetCurrentItem())
@@ -149,7 +185,9 @@ end sub
 sub playlistInitItem()
     ApplyFunc(ContextListScreen().InitItem, m)
 
-    if m.item.Get("playlistType") = "audio" then
+    m.playlistType = m.item.Get("playlistType", "video")
+
+    if m.playlistType = "audio" then
         m.player = AudioPlayer()
 
         m.listPrefs.width = 635
@@ -216,4 +254,57 @@ function playlistGetListComponent(plexObject as dynamic) as dynamic
     end for
 
     return invalid
+end function
+
+function playlistHandleCommand(command as string, item as dynamic) as boolean
+    ' If it was a track action, make sure it has the last focused track set as its item
+    if item <> invalid and item.trackAction = true then
+        item.plexObject = m.focusedListItem.plexObject
+        overlay = m.overlayScreen.Peek()
+        if overlay <> invalid then overlay.Close()
+    end if
+
+    swapIndex = invalid
+    focusItem = invalid
+
+    ' TODO(schuyler): We're pretending to move the items, but not actually doing
+    ' it yet. And we're not even pretending to remove items.
+    if command = "move_item_down" then
+        swapIndex = m.focusedListItem.trackIndex
+        focusItem = m.focusedListItem
+    else if command = "move_item_up" then
+        swapIndex = m.focusedListItem.trackIndex - 1
+        focusItem = m.focusedListItem
+    else if command = "remove_item" then
+    else
+        return ApplyFunc(ContextListScreen().HandleCommand, m, [command, item])
+    end if
+
+    if swapIndex <> invalid and swapIndex >= 0 then
+        firstComponent = m.itemList.components[swapIndex]
+        secondComponent = m.itemList.components[swapIndex + 1]
+
+        firstX = firstComponent.x
+        firstY = firstComponent.y
+
+        firstComponent.SetPosition(secondComponent.x, secondComponent.y)
+        secondComponent.SetPosition(firstX, firstY)
+
+        m.itemList.components[swapIndex] = secondComponent
+        m.itemList.components[swapIndex + 1] = firstComponent
+
+        firstComponent.trackIndex = firstComponent.trackIndex + 1
+        secondComponent.trackIndex = secondComponent.trackIndex - 1
+
+        firstComponent.SetFocusSibling("down", secondComponent.GetFocusSibling("down"), true)
+        secondComponent.SetFocusSibling("up", firstComponent.GetFocusSibling("up"), true)
+        secondComponent.SetFocusSibling("down", firstComponent, true)
+    end if
+
+    if focusItem <> invalid then
+        m.OnFocus(focusItem, focusItem, "up")
+        m.OnFocus(item, focusItem, "right")
+    end if
+
+    return true
 end function

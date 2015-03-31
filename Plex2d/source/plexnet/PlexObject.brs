@@ -358,6 +358,15 @@ function pnoGetIdentifier() as dynamic
         identifier = m.container.Get("identifier")
     end if
 
+    ' HACK
+    ' PMS doesn't return an identifier for playlist items. If we haven't found
+    ' an identifier and the key looks like a library item, then we pretend like
+    ' the identifier was set.
+    '
+    if identifier = invalid and instr(1, m.Get("key", ""), "/library/metadata") = 1 then
+        identifier = "com.plexapp.plugins.library"
+    end if
+
     return identifier
 end function
 
@@ -517,7 +526,7 @@ sub pnoScrobble(callback=invalid as dynamic)
 end sub
 
 sub pnoUnscrobble(callback=invalid as dynamic)
-    server = m.GetServer():
+    server = m.GetServer()
     ratingKey = m.Get("ratingKey")
     identifier = m.GetIdentifier()
     if server <> invalid and ratingKey <> invalid and identifier <> invalid then
