@@ -263,7 +263,7 @@ sub albumGetComponents()
     moreOptions.Push({text: "Play music video", command: "play_music_video", visibleCallable: createCallable(ItemHasMusicVideo, invalid)})
     moreOptions.Push({text: "Plex Mix", command: "play_plex_mix", visibleCallable: createCallable(ItemHasPlexMix, invalid)})
 
-    actions.Push({text: Glyphs().ELLIPSIS, type: "dropDown", position: "down", options: moreOptions, font: m.customFonts.trackActions})
+    actions.Push({text: Glyphs().ELLIPSIS, type: "dropDown", position: "down", options: moreOptions, font: m.customFonts.trackActions, zorderInit: -1})
 
     buttonFields = {trackAction: true}
     m.trackActions.AddButtons(actions, buttonFields, m)

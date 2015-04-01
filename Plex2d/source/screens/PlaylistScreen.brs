@@ -147,23 +147,27 @@ sub playlistGetComponents()
         moreOptions.Push({text: "Go to Artist", command: "go_to_artist"})
         moreOptions.Push({text: "Go to Album", command: "go_to_album"})
 
-        actions.Push({text: Glyphs().ELLIPSIS, type: "dropDown", position: "down", options: moreOptions, font: m.customFonts.trackActions})
+        actions.Push({text: Glyphs().ELLIPSIS, type: "dropDown", position: "down", options: moreOptions})
 
         if not m.item.GetBool("smart") then
-            actions.Push({text: Glyphs().ARROW_UP, command: "move_item_up", font: m.customFonts.trackActions})
-            actions.Push({text: Glyphs().CIR_X, command: "remove_item", font: m.customFonts.trackActions})
-            actions.Push({text: Glyphs().ARROW_DOWN, command: "move_item_down", font: m.customFonts.trackActions})
+            actions.Push({text: Glyphs().ARROW_UP, command: "move_item_up"})
+            actions.Push({text: Glyphs().CIR_X, command: "remove_item"})
+            actions.Push({text: Glyphs().ARROW_DOWN, command: "move_item_down"})
         end if
     else
         if m.item.GetBool("smart") then
-            actions.Push({text: Glyphs().ARROW_UP, command: "move_item_up", font: m.customFonts.trackActions})
-            actions.Push({text: Glyphs().EYE, command: "toggle_watched", font: m.customFonts.trackActions, commandCallback: createCallable("Refresh", m.item, invalid, [false, true])})
-            actions.Push({text: Glyphs().CIR_X, command: "remove_item", font: m.customFonts.trackActions})
-            actions.Push({text: Glyphs().ARROW_DOWN, command: "move_item_down", font: m.customFonts.trackActions})
+            actions.Push({text: Glyphs().ARROW_UP, command: "move_item_up"})
+            actions.Push({text: Glyphs().EYE, command: "toggle_watched", commandCallback: createCallable("Refresh", m.item, invalid, [false, true])})
+            actions.Push({text: Glyphs().CIR_X, command: "remove_item"})
+            actions.Push({text: Glyphs().ARROW_DOWN, command: "move_item_down"})
         else
-            actions.Push({text: Glyphs().EYE, command: "toggle_watched", font: m.customFonts.trackActions, commandCallback: createCallable("Refresh", m.item, invalid, [false, true])})
+            actions.Push({text: Glyphs().EYE, command: "toggle_watched", commandCallback: createCallable("Refresh", m.item, invalid, [false, true])})
         end if
     end if
+
+    for each action in actions
+        action.Append({font: m.customFonts.trackActions, zOrderInit: -1})
+    end for
 
     buttonFields = {trackAction: true}
     m.trackActions.AddButtons(actions, buttonFields, m)

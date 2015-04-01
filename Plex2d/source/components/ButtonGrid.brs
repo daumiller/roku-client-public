@@ -106,6 +106,7 @@ sub buttonGridAddButtons(actions as object, buttonFields as object, screen as ob
             btn.commandCallback = action.commandCallback
         end if
 
+        btn.zOrderInit = action.zOrderInit
         btn.bgColor = buttonColor
         btn.SetFocusMethod(btn.FOCUS_BACKGROUND, Colors().OrangeLight)
 
