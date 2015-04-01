@@ -279,6 +279,7 @@ sub bpUpdateNowPlaying(force=false as boolean, refreshQueue=false as boolean)
 
     item = m.GetCurrentItem()
 
+    if item = invalid then return
     if not m.ShouldSendTimeline(item) then return
 
     ' Avoid duplicates

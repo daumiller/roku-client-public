@@ -225,6 +225,10 @@ sub apSetRepeat(mode as integer)
 
     if mode = m.REPEAT_ONE then
         m.player.SetNext(m.curIndex)
+    else if mode = m.REPEAT_NONE then
+        m.player.SetNext(m.curIndex + 1)
+    else
+        m.player.SetNext(m.AdvanceIndex(1, false))
     end if
 end sub
 
