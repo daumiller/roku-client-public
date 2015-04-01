@@ -82,7 +82,7 @@ sub buttonOnBlur(toFocus=invalid as dynamic)
     ApplyFunc(LabelClass().OnBlur, m, [toFocus])
 
     if m.focusMethod = m.FOCUS_FOREGROUND then
-        m.fgColor = m.blurColor
+        m.SetColor(firstOf(m.statusColor, m.blurColor))
         m.Draw(true)
         m.Redraw()
     else if m.focusMethod = m.FOCUS_BACKGROUND then
