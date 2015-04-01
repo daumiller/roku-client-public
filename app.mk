@@ -28,7 +28,6 @@ SOURCEREL = ..
 ROKU_DEV_USERNAME ?= rokudev
 ROKU_DEV_PASSWORD ?= plex
 CURL = curl -v --anyauth -u $(ROKU_DEV_USERNAME):$(ROKU_DEV_PASSWORD) -H"Expect:"
-HTTP = http -v --auth-type digest --auth $(ROKU_DEV_USERNAME):$(ROKU_DEV_PASSWORD)
 
 
 .PHONY: all $(APPNAME)
@@ -71,6 +70,7 @@ install: $(APPNAME)
 	@echo "Installing $(APPTITLE) to host $(ROKU_DEV_TARGET)"
 	@$(CURL) -s -S -F "mysubmit=Install" -F "archive=@$(ZIPREL)/$(APPNAME).zip" -F "passwd=" http://$(ROKU_DEV_TARGET)/plugin_install | grep "<font color" | sed "s/<font color=\"red\">//"
 
+pkg: ROKU_PKG_PASSWORD ?= "$(shell read -p "Roku packaging password: " REPLY; echo $$REPLY)"
 pkg: install
 	@echo "*** Creating Package ***"
 
@@ -87,9 +87,57 @@ pkg: install
 	fi
 
 	@echo "Packaging  $(APPNAME) on host $(ROKU_DEV_TARGET)"
-	@read -p "Password: " REPLY ; echo $$REPLY | xargs -I{} $(CURL) -s -S -Fmysubmit=Package -Fapp_name=$(APPNAME)/$(VERSION) -Fpasswd={} -Fpkg_time=`date +%s` "http://$(ROKU_DEV_TARGET)/plugin_package" | grep 'pkgs' | sed 's/.*href=\"\([^\"]*\)\".*/\1/' | sed 's#pkgs//##' | xargs -I{} $(HTTP) -o $(PKGREL)/$(APPTITLE)_{} -d http://$(ROKU_DEV_TARGET)/pkgs/{}
+	$(CURL) -s -S -Fmysubmit=Package -Fapp_name=$(APPNAME)/$(VERSION) -Fpasswd=$(ROKU_PKG_PASSWORD) -Fpkg_time=`date +%s` "http://$(ROKU_DEV_TARGET)/plugin_package" | grep 'pkgs' | sed 's/.*href=\"\([^\"]*\)\".*/\1/' | sed 's#pkgs//##' | xargs -I{} http -v --auth-type digest --auth $(ROKU_DEV_USERNAME):$(ROKU_DEV_PASSWORD) -o $(PKGREL)/$(APPTITLE)_{} -d http://$(ROKU_DEV_TARGET)/pkgs/{}
 
 	@echo "*** Package  $(APPTITLE) complete ***"
+
 remove:
 	@echo "Removing $(APPNAME) from host $(ROKU_DEV_TARGET)"
 	@$(CURL) -s -S -F "mysubmit=Delete" -F "archive=" -F "passwd=" http://$(ROKU_DEV_TARGET)/plugin_install | grep "<font color" | sed "s/<font color=\"red\">//"
+
+upload: ROKU_PORTAL_USERNAME ?= "$(shell read -p "Roku email: " REPLY; echo $$REPLY)"
+upload: ROKU_PORTAL_PASSWORD ?= "$(shell read -p "Roku password: " REPLY; echo $$REPLY)"
+upload: ROKU_PKG_VERSION ?= 1.1
+upload: ROKU_PKG_FIRMWARE ?= 50101050
+upload: SESSIONID ?= $(shell date +%s)
+upload: ROKU_OUTPUT ?= /tmp/roku_output.html
+upload: HTTP := http -p hb -o $(ROKU_OUTPUT) --session $(SESSIONID)
+upload: pkg
+	@if [ -z $(APPID) ]; \
+	then \
+		echo "APPID must be set, try making a target that sets it"; \
+		exit 1; \
+	fi
+
+	@echo "*** Uploading Package for $(APPTITLE) ($(APPID)) ***"
+
+# Step 1: Load the signin page in a new httpie session to get
+# whatever cookies and session info we need.
+	@echo "Loading signin page to establish cookies and session"
+	@$(HTTP) https://my.roku.com/signin
+	@head -1 $(ROKU_OUTPUT) | grep '200 OK' || exit 2
+
+# Step 2: Sign in using our portal credentials.
+	@echo "Authenticating to owner.roku.com"
+	@$(HTTP) -f POST https://owner.roku.com/Login api==json r==`date +%s`000 Origin:https://owner.roku.com email="$(ROKU_PORTAL_USERNAME)" password="$(ROKU_PORTAL_PASSWORD)" remember="false"
+	@head -1 $(ROKU_OUTPUT) | grep '200 OK' || exit 3
+
+# Step 3: Navigate to our package page
+	@echo "Navigating to package page for $(APPTITLE) ($(APPID))"
+	$(HTTP) https://owner.roku.com/Developer/Apps/Packages/$(APPID)
+	@head -1 $(ROKU_OUTPUT) | grep '200 OK' || exit 4
+	sed -n -e 's/^.*RequestVerificationToken.*value="\([^"]*\)".*$$/\1/p' $(ROKU_OUTPUT)
+	$(eval TOKEN := $(shell sed -n -e 's/^.*RequestVerificationToken.*value="\([^"]*\)".*$$/\1/p' $(ROKU_OUTPUT)))
+
+# Step 4: Upload our package
+	$(eval PKGFILE := $(shell ls -t $(PKGREL)/$(APPTITLE)_* | head -1))
+	@echo "Uploading package at $(PKGFILE)..."
+	$(HTTP) -f POST https://owner.roku.com/Developer/Apps/SavePackage/$(APPID) Origin:https://owner.roku.com AppUpload@$(PKGFILE) Unpublished.Version=$(ROKU_PKG_VERSION) Unpublished.MinFirmwareRevision=$(ROKU_PKG_FIRMWARE) __RequestVerificationToken="`sed -n -e 's/^.*RequestVerificationToken.*value="\([^"]*\)".*$$/\1/p' $(ROKU_OUTPUT)`"
+	@head -1 $(ROKU_OUTPUT) | grep '200 OK' || exit 5
+
+# Step 5: Figure out the code for the new package
+	@echo "Navigating back to package page for $(APPTITLE) ($(APPID))"
+	$(HTTP) https://owner.roku.com/Developer/Apps/Packages/$(APPID)
+	@head -1 $(ROKU_OUTPUT) | grep '200 OK' || exit 6
+	@echo "Uploaded package is available at:"
+	@sed -n -e 's/^.*href="\(\/add\/.*\)".*$$/https:\/\/owner.roku.com\1/p' /tmp/roku_output.html | head -1

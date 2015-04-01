@@ -31,22 +31,25 @@ dev: $(APPNAME)
 pass: APPTITLE = $(APPNAME)Pass
 pass: $(APPNAME)
 	$(eval APPTITLE := $(APPNAME)Pass)
+	$(eval APPID := 55188)
 
 ninja: APPTITLE = $(APPNAME)Ninja
 ninja: $(APPNAME)
 	$(eval APPTITLE := $(APPNAME)Ninja)
+	$(eval APPID := 49627)
 
 public: APPTITLE = $(APPNAME)
 public: $(APPNAME)
 	$(eval APPTITLE := $(APPNAME))
+	$(eval APPID := 13535)
 
 manifest:
 	$(eval LC_APPTITLE := $(shell tr '[A-Z]' '[a-z]' <<< $(APPTITLE)))
-	echo "Creating manifest for $(APPTITLE)"
-	sed 's/LC_APPTITLE/$(LC_APPTITLE)/;s/APPTITLE/$(APPTITLE)/' < manifest.template > manifest
+	@echo "Creating manifest for $(APPTITLE)"
+	@sed 's/LC_APPTITLE/$(LC_APPTITLE)/;s/APPTITLE/$(APPTITLE)/' < manifest.template > manifest
 
 count_functions:
-	echo "Counting functions for $(APPTITLE), some Rokus limit to 65536"
+	@echo "Counting functions for $(APPTITLE), some Rokus limit to 65536"
 	test $(num_functions) -le 65536
 
 screenshot:
