@@ -51,13 +51,13 @@ sub overlayInit()
     m.screen.OrigOnKeyboardRelease = firstOf(m.screen.OrigOnKeyboardRelease, m.screen.OnKeyboardRelease)
     m.screen.OnKeyboardRelease = m.OnKeyboardRelease
     m.screen.OrigOnFocusIn = firstOf(m.screen.OrigOnFocusIn, m.screen.OnFocusIn)
-    m.screen.OnFocusIn = compOnFocusIn
+    m.screen.OnFocusIn = firstOf(m.OnFocusIn, compOnFocusIn)
     m.screen.OrigOnFocusOut = firstOf(m.screen.OrigOnFocusOut, m.screen.OnFocusOut)
-    m.screen.OnFocusOut = compOnFocusOut
+    m.screen.OnFocusOut = firstOf(m.OnFocusOut, compOnFocusOut)
     m.screen.OrigOnRevButton = firstOf(m.screen.OrigOnRevButton, m.screen.OnRevButton)
-    m.screen.OnRevButton = compOnRevButton
+    m.screen.OnRevButton = firstOf(m.OnRevButton, compOnRevButton)
     m.screen.OrigOnFwdButton = firstOf(m.screen.OrigOnFwdButton, m.screen.OnFwdButton)
-    m.screen.OnFwdButton = compOnFwdButton
+    m.screen.OnFwdButton = firstOf(m.OnFwdButton, compOnFwdButton)
 
     m.components = m.screen.GetManualComponents(m.ClassName)
     m.buttons = CreateObject("roList")
