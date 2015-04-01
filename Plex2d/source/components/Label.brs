@@ -283,7 +283,7 @@ sub labelDrawIndicator()
 end sub
 
 sub labelSetText(text as string, redraw=false as boolean, resize=false as boolean)
-    if m.text = text then return
+    if m.text = text or m.font = invalid then return
 
     m.text = text
 
