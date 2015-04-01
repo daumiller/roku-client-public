@@ -27,6 +27,7 @@ timestamp := $(shell date +'%Y-%m-%d-%H:%M:%S')
 .PHONY: manifest count_functions dev pass ninja public
 
 dev: $(APPNAME)
+	$(eval APPID := 20517)
 
 pass: APPTITLE = $(APPNAME)Pass
 pass: $(APPNAME)

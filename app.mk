@@ -126,8 +126,6 @@ upload: pkg
 	@echo "Navigating to package page for $(APPTITLE) ($(APPID))"
 	$(HTTP) https://owner.roku.com/Developer/Apps/Packages/$(APPID)
 	@head -1 $(ROKU_OUTPUT) | grep '200 OK' || exit 4
-	sed -n -e 's/^.*RequestVerificationToken.*value="\([^"]*\)".*$$/\1/p' $(ROKU_OUTPUT)
-	$(eval TOKEN := $(shell sed -n -e 's/^.*RequestVerificationToken.*value="\([^"]*\)".*$$/\1/p' $(ROKU_OUTPUT)))
 
 # Step 4: Upload our package
 	$(eval PKGFILE := $(shell ls -t $(PKGREL)/$(APPTITLE)_* | head -1))
@@ -141,3 +139,41 @@ upload: pkg
 	@head -1 $(ROKU_OUTPUT) | grep '200 OK' || exit 6
 	@echo "Uploaded package is available at:"
 	@sed -n -e 's/^.*href="\(\/add\/.*\)".*$$/https:\/\/owner.roku.com\1/p' /tmp/roku_output.html | head -1
+
+publish: ROKU_PORTAL_USERNAME ?= "$(shell read -p "Roku email: " REPLY; echo $$REPLY)"
+publish: ROKU_PORTAL_PASSWORD ?= "$(shell read -p "Roku password: " REPLY; echo $$REPLY)"
+publish: SESSIONID ?= $(shell date +%s)
+publish: ROKU_OUTPUT ?= /tmp/roku_output.html
+publish: HTTP := http -p hb -o $(ROKU_OUTPUT) --session $(SESSIONID)
+publish:
+	@if [ -z $(APPID) ]; \
+	then \
+		echo "APPID must be set, try making a target that sets it"; \
+		exit 1; \
+	fi
+
+	@echo "*** Publishing Package for $(APPTITLE) ($(APPID)) ***"
+
+# Step 1: Load the signin page in a new httpie session to get
+# whatever cookies and session info we need.
+	@echo "Loading signin page to establish cookies and session"
+	@$(HTTP) https://my.roku.com/signin
+	@head -1 $(ROKU_OUTPUT) | grep '200 OK' || exit 2
+
+# Step 2: Sign in using our portal credentials.
+	@echo "Authenticating to owner.roku.com"
+	@$(HTTP) -f POST https://owner.roku.com/Login api==json r==`date +%s`000 Origin:https://owner.roku.com email="$(ROKU_PORTAL_USERNAME)" password="$(ROKU_PORTAL_PASSWORD)" remember="false"
+	@head -1 $(ROKU_OUTPUT) | grep '200 OK' || exit 3
+
+# Step 3: Navigate to our package page
+	@echo "Navigating to package page for $(APPTITLE) ($(APPID))"
+	$(HTTP) https://owner.roku.com/Developer/Apps/Packages/$(APPID)
+	@head -1 $(ROKU_OUTPUT) | grep '200 OK' || exit 4
+
+# Step 4: Publish our package
+	@echo "Publishing package..."
+	$(HTTP) https://owner.roku.com/Developer/Apps/Publish/$(APPID) Origin:https://owner.roku.com
+	@head -1 $(ROKU_OUTPUT) | grep '302 Found' || exit 5
+	@grep 'Location: /Developer/Apps/Packages/$(APPID)' $(ROKU_OUTPUT) || exit 6
+
+	@echo "Published package!"
