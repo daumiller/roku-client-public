@@ -11,6 +11,9 @@ function CompositorScreen() as object
         obj.DrawFocus = compositorDrawFocus
         obj.focusSprite = invalid
 
+        obj.DrawLock = compositorDrawLock
+        obj.DrawUnlock = compositorDrawUnlock
+
         obj.DrawDebugRect = compositorDrawDebugRect
         obj.ClearDebugSprites = compositorClearDebugSprites
         obj.debugSprites = CreateObject("roList")
@@ -55,6 +58,7 @@ sub compositorReset()
 end sub
 
 sub compositorDrawAll(shift=false as boolean)
+    if Locks().IsLocked("DrawAll") then return
     m.compositor.DrawAll()
     m.screen.SwapBuffers()
 end sub
@@ -62,6 +66,7 @@ end sub
 ' Older units (Roku 2 XS specifically) screen may flicker without a finish
 ' call, which is not suppossed to be needed for double buffered screens.
 sub compositorLegacyDrawAll(shift=false as boolean)
+    if Locks().IsLocked("DrawAll") then return
     m.compositor.DrawAll()
     m.screen.SwapBuffers()
     if shift then m.screen.finish()
@@ -221,4 +226,13 @@ sub compositorDrawDebugRect(x, y, width, height, color, drawNow=false)
     region = CreateObject("roRegion", bmp, 0, 0, width, height)
     m.debugSprites.Push(m.compositor.NewSprite(x - int(width/2), y - int(height / 2), region, 999))
     if drawNow then m.DrawAll()
+end sub
+
+sub compositorDrawLock()
+    Locks().Lock("DrawAll")
+end sub
+
+sub compositorDrawUnlock(drawAll=true as boolean)
+    Locks().Unlock("DrawAll")
+    m.DrawAll()
 end sub

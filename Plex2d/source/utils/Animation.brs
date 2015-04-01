@@ -1,13 +1,13 @@
 ' shifting animation used by Components screen, Grid screen, and VBox scrollable
 sub AnimateShift(shift as object, components as object, screen as object)
-    if appSettings().GetGlobal("animationSupport") = false then
+    totalShift = iif(abs(shift.x) > abs(shift.y), abs(shift.x), abs(shift.y))
+    if Locks().IsLocked("DrawAll") or appSettings().GetGlobal("animationSupport") = false then
         fps = 1
     else
         ' calculate the desired FPS ( use totalShift if the calulation fps > total )
         minFps = 10
         maxFps = 15
 
-        totalShift = iif(abs(shift.x) > abs(shift.y), abs(shift.x), abs(shift.y))
         fps = iif(totalShift / maxFps < minFps, minFps, maxFps)
         if totalShift < fps then fps = totalShift
 
