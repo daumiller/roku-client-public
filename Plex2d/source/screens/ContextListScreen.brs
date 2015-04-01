@@ -231,6 +231,9 @@ sub clOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
             m.trackActions.SetPosition(rect.right + 1, rect.up + int((rect.height - m.trackActions.GetPreferredHeight()) / 2))
             m.trackActions.SetVisible(true)
             m.focusedListItem = toFocus
+
+            ' Toggle some of our track actions based on the current track
+            m.trackActions.SetPlexObject(toFocus.plexObject)
         else
             m.trackActions.SetVisible(false)
         end if

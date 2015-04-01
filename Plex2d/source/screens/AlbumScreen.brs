@@ -260,8 +260,8 @@ sub albumGetComponents()
 
     moreOptions.Push({text: "Play next", command: "play_next"})
     moreOptions.Push({text: "Add to queue", command: "add_to_queue"})
-    moreOptions.Push({text: "Play music video", command: "play_music_video"})
-    moreOptions.Push({text: "Plex Mix", command: "play_plex_mix"})
+    moreOptions.Push({text: "Play music video", command: "play_music_video", visibleCallable: createCallable(ItemHasMusicVideo, invalid)})
+    moreOptions.Push({text: "Plex Mix", command: "play_plex_mix", visibleCallable: createCallable(ItemHasPlexMix, invalid)})
 
     actions.Push({text: Glyphs().ELLIPSIS, type: "dropDown", position: "down", options: moreOptions, font: m.customFonts.trackActions})
 
@@ -437,6 +437,9 @@ sub albumOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
         m.trackActions.SetPosition(rect.right + 1, rect.up + int((rect.height - m.trackActions.GetPreferredHeight()) / 2))
         m.trackActions.SetVisible(true)
         m.focusedTrack = toFocus
+
+        ' Toggle some of our track actions based on the current track
+        m.trackActions.SetPlexObject(toFocus.plexObject)
     else
         m.trackActions.SetVisible(false)
     end if
