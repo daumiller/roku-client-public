@@ -330,8 +330,12 @@ function playlistHandleCommand(command as string, item as dynamic) as boolean
     end if
 
     if focusItem <> invalid then
+        m.screen.DrawLock()
+
         m.OnFocus(focusItem, focusItem, "up")
         m.OnFocus(item, focusItem, "right")
+
+        m.screen.DrawUnlock()
     end if
 
     m.item.Refresh(refreshMetadata, refreshItems)
