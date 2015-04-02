@@ -26,23 +26,24 @@ timestamp := $(shell date +'%Y-%m-%d-%H:%M:%S')
 
 .PHONY: manifest count_functions dev pass ninja public
 
-dev: $(APPNAME)
+dev:
 	$(eval APPID := 20517)
+	@echo "Building $(APPTITLE) ($(APPID))"
 
-pass: APPTITLE = $(APPNAME)Pass
-pass: $(APPNAME)
+pass:
 	$(eval APPTITLE := $(APPNAME)Pass)
 	$(eval APPID := 55188)
+	@echo "Building $(APPTITLE) ($(APPID))"
 
-ninja: APPTITLE = $(APPNAME)Ninja
-ninja: $(APPNAME)
+ninja:
 	$(eval APPTITLE := $(APPNAME)Ninja)
 	$(eval APPID := 49627)
+	@echo "Building $(APPTITLE) ($(APPID))"
 
-public: APPTITLE = $(APPNAME)
-public: $(APPNAME)
+public:
 	$(eval APPTITLE := $(APPNAME))
 	$(eval APPID := 13535)
+	@echo "Building $(APPTITLE) ($(APPID))"
 
 manifest:
 	$(eval LC_APPTITLE := $(shell tr '[A-Z]' '[a-z]' <<< $(APPTITLE)))
