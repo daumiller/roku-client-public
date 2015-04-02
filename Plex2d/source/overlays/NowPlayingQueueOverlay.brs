@@ -339,7 +339,7 @@ sub npqoOnChange(player as object, item as object)
 end sub
 
 sub npqoRefresh()
-    if m.refreshTimer <> invalid then return
+    if not m.IsActive() or m.refreshTimer <> invalid then return
 
     TextureManager().DeleteCache()
 
