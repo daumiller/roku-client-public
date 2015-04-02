@@ -234,5 +234,5 @@ end sub
 
 sub compositorDrawUnlock(drawAll=true as boolean)
     Locks().Unlock("DrawAll")
-    m.DrawAll()
+    if drawAll then m.DrawAll()
 end sub
