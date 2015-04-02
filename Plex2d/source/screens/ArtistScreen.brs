@@ -245,6 +245,7 @@ function artistGetButtons() as object
     btn.SetColor(Colors().Text, Colors().Button)
     btn.width = 100
     btn.height = buttonHeight
+    btn.fixed = false
     if m.focusedItem = invalid then m.focusedItem = btn
 
     ' manual pivots and commands
