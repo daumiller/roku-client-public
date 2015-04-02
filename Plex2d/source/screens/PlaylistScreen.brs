@@ -155,7 +155,7 @@ sub playlistGetComponents()
             actions.Push({text: Glyphs().ARROW_DOWN, command: "move_item_down"})
         end if
     else
-        if m.item.GetBool("smart") then
+        if not m.item.GetBool("smart") then
             actions.Push({text: Glyphs().ARROW_UP, command: "move_item_up"})
             actions.Push({text: Glyphs().EYE, command: "toggle_watched", commandCallback: createCallable("Refresh", m.item, invalid, [false, true])})
             actions.Push({text: Glyphs().CIR_X, command: "remove_item"})
