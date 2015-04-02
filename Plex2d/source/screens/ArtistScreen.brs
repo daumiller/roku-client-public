@@ -305,6 +305,8 @@ sub artistToggleSummary()
         end for
     end for
 
+    m.ResetOnScreenComponents()
+
     ' invalidate focus sibling and last focus item
     m.focusedItem.SetFocusSibling("right", invalid)
     m.lastFocusedItem = invalid

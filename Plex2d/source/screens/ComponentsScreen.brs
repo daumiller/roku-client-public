@@ -50,6 +50,7 @@ function ComponentsScreen() as object
         obj.GetManualComponents = compGetManualComponents
         obj.DestroyComponents = compDestroyComponents
         obj.CloseOverlays = compCloseOverlays
+        obj.ResetOnScreenComponents = compResetOnScreenComponents
 
         ' Manual focus methods
         obj.GetFocusManual = compGetFocusManual
@@ -133,10 +134,10 @@ sub compShow()
     end if
 
     ' clear any components references (refreshing a screen)
-    m.onscreenComponents.clear()
-    m.shiftableComponents.clear()
-    m.fixedComponents.clear()
-    m.animatedComponents.clear()
+    m.onscreenComponents.Clear()
+    m.shiftableComponents.Clear()
+    m.fixedComponents.Clear()
+    m.animatedComponents.Clear()
 
     m.screen.HideFocus(true)
 
@@ -237,17 +238,17 @@ sub compDeactivate(screen = invalid as dynamic)
         for each comp in m.manualComponents[key]
             comp.Destroy()
         end for
-        m.manualComponents[key].clear()
+        m.manualComponents[key].Clear()
     end for
-    m.manualComponents.clear()
+    m.manualComponents.Clear()
 
     ' references to m.components
-    m.shiftableComponents.clear()
-    m.fixedComponents.clear()
-    m.onScreenComponents.clear()
-    m.animatedComponents.clear()
+    m.shiftableComponents.Clear()
+    m.fixedComponents.Clear()
+    m.onScreenComponents.Clear()
+    m.animatedComponents.Clear()
 
-    m.customFonts.clear()
+    m.customFonts.Clear()
     m.focusedItem = invalid
 
     m.DisableListeners()
@@ -269,7 +270,7 @@ sub compDestroyComponents(clear=true as boolean)
             comp.Destroy()
         end for
         if clear then
-            m.components.clear()
+            m.components.Clear()
         end if
         Verbose("compDestroyComponents:: after: " + tostr(m.components.count()))
     end if
@@ -1001,7 +1002,7 @@ sub compShiftComponents(shift as object, refocus=invalid as dynamic)
 
         ' Pass 2
         shift.x = m.CalculateFirstOrLast(onScreen, shift)
-        onScreen.clear()
+        onScreen.Clear()
         for each comp in m.shiftableComponents
             comp.ShiftPosition(shift.x, shift.y, false)
             if comp.IsOnScreen() then
@@ -1308,4 +1309,11 @@ end sub
 
 sub compOnRevButton(item=invalid as dynamic)
     ' no-op
+end sub
+
+sub compResetOnScreenComponents()
+    m.onScreenComponents.Clear()
+    for each comp in m.components
+        comp.GetFocusableItems(m.onScreenComponents)
+    next
 end sub
