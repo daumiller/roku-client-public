@@ -260,7 +260,7 @@ sub bpOnPlayQueueUpdate(playQueue as object)
     if m.context.count() > 0 then
         changes.first = m.context[0].item.GetInt("playQueueItemID")
         changes.last = m.context.Peek().item.GetInt("playQueueItemID")
-        if (changes.first <> changes.origFirst or changes.last <> changes.origLast) then
+        if (oldSize <> m.context.Count() or changes.first <> changes.origFirst or changes.last <> changes.origLast) then
             m.Trigger("change", [m, m.GetCurrentItem()])
         end if
     end if
