@@ -86,6 +86,9 @@ sub vboxPerformLayout()
 
             ' height of all components in the container
             m.containerHeight = offset + height
+            if m.contentHeight = invalid then
+                m.contentHeight = m.containerHeight
+            end if
             m.lastShift = m.containerHeight
 
             ' calculate the exact content height that fits within m.scrollTriggerDown
@@ -148,12 +151,12 @@ sub vboxPerformLayout()
         end if
 
         ' add a scrollbar
-        if m.scrollbarPos <> invalid and m.containerHeight > m.contentHeight then
+        if m.scrollbarPosition <> invalid and m.containerHeight > m.contentHeight then
             m.scrollbar = createScrollbar(offsets[0], m.contentHeight, m.containerHeight, m.scrollInfo.zOrder, m.scrollInfo.offsetContainer)
             if m.scrollbar <> invalid
                 width = int(CompositorScreen().focusPixels * 1.5)
                 spacing = iif(m.scrollInfo.focusInside = true, CompositorScreen().focusPixels, CompositorScreen().focusPixels*2)
-                if m.scrollbarPos = "right" then
+                if m.scrollbarPosition = "right" then
                     xOffset = xOffset + m.width + spacing
                 else
                     xOffset = xOffset - width - spacing
@@ -396,12 +399,12 @@ sub vboxShiftComponents(shift as object, refocus=invalid as dynamic)
     end if
 end sub
 
-sub vboxSetScrollable(scrollTriggerHeight=invalid as dynamic, scrollAnimate=false as boolean, scrollVisible=false as boolean, scrollbarPos="right" as dynamic)
+sub vboxSetScrollable(scrollTriggerHeight=invalid as dynamic, scrollAnimate=false as boolean, scrollVisible=false as boolean, scrollbarPosition="right" as dynamic)
     m.isVScrollable = true
     m.scrollTriggerHeight = firstOf(scrollTriggerHeight, m.height)
     m.scrollAnimate = scrollAnimate
     m.scrollVisible = scrollVisible
-    m.scrollbarPos = scrollbarPos
+    m.scrollbarPosition = scrollbarPosition
 
     ' methods
     m.ShiftComponents = vboxShiftComponents
