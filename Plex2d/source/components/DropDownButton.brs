@@ -53,7 +53,11 @@ sub ddbuttonShow()
 end sub
 
 sub ddbuttonSetDropDownPosition(direction as string)
+    ' Supported: bottom, right and left. "up" is used dynamically
+    ' (for now) when we reset the position to fit on the screen.
+    '
     m.dropDownPosition = direction
+    m.scrollbarPosition = iif(direction = "left", direction, "right")
 end sub
 
 function ddbuttonGetOptions() as object

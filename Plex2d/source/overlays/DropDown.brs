@@ -41,10 +41,10 @@ end sub
 sub ddoverlayOnFailedFocus(direction as string, focusedItem=invalid as dynamic)
     if not m.IsActive() then return
     allowed = [OppositeDirection(m.button.dropDownPosition)]
-    if m.button.dropDownPosition = "down" then
+    if m.button.dropDownPosition = "down" or m.button.dropDownPosition = "up" then
         allowed.append(["left", "right"])
-    else if m.button.dropDownPosition = "right" then
-        allowed.append(["up", "right"])
+    else
+        allowed.append([m.button.dropDownPosition])
     end if
 
     if instr(1, joinArray(allowed, " "), direction) then
@@ -56,7 +56,17 @@ sub ddoverlayCalculatePosition(vbox as object)
     parent = computeRect(m.button)
     ddProp = { width: 0, height: 0, x: parent.left, y: parent.up }
 
-    ' calculate the required height and width for the homogeneous buttons
+    safeArea = {
+        down: 685,
+        up: HeaderClass().height,
+        left: 50,
+        right: 1230,
+    }
+
+    ' Assumes all dropdown components height are homogeneous
+    compHeight = vbox.components[0].height
+
+    ' Calculate the required height and width for the homogeneous buttons
     for each component in vbox.components
         if component.getPreferredWidth() > ddProp.width then
             ddProp.width = component.getPreferredWidth()
@@ -64,44 +74,79 @@ sub ddoverlayCalculatePosition(vbox as object)
         ddProp.height = ddProp.height + component.getPreferredHeight() + vbox.spacing
     end for
 
-    ' we cannot set the VBox homogeneous due to arbitary heights, but
-    ' we do need the widths to all be consistent.
+    ' Reset the buttons width based on the max width
     for each component in vbox.components
         component.width = ddProp.width
     end for
-    m.components.push(vbox)
 
-    ' set the position of the drop down (supported: bottom [default], and right)
+    ' Calculate the initial position of the dropdown. Supported: bottom, right and
+    ' left. "up" is used dynamically (for now) when we reset the position to fit
+    ' on the screen vertically. We do not support "up" as a specified option, so
+    ' we'll have to add support for it later if it's ever preferred.
+    '
+    spacing = iif(m.button.parent.spacing > 0, m.button.parent.spacing, CompositorScreen().focusPixels)
     if m.button.dropDownPosition = "right" then
-        ddProp.x = parent.right + m.button.parent.spacing
+        ddProp.x = parent.right + spacing
+    else if m.button.dropDownPosition = "left" then
+        ddProp.x = parent.left - ddProp.width - spacing
     else
-        ddProp.x = ddProp.x - (computeRect(ddProp).right - parent.right)
-        ddProp.y = parent.down + m.button.parent.spacing
+        ddProp.x = parent.right - ddProp.width
+        ddProp.y = parent.down + spacing
     end if
 
-    ' verify the xOffset+width is not off the screen (safe area)
-    if ddProp.x + ddProp.width > 1230 then
-        ddProp.x = 1230 - ddProp.width
+    ' Handle dynamic horizontal placement
+    if ddProp.x < safeArea.left then
+        ddProp.x = parent.right + spacing
+        if m.button.dropDownPosition = "left" then
+            m.button.SetDropDownPosition("right")
+        end if
+    else if ddProp.x + ddProp.width > safeArea.right then
+        ddProp.x = safeArea.right - ddProp.width
     end if
 
-    ' verify the yOffset+height is not off the screen (safe area)
-    if ddProp.y + ddProp.height > 670 then
-        ddProp.height = 670 - ddProp.y
+    ' Handle dynamic vertical placement
+    if ddProp.y + ddProp.height > safeArea.down then
+        override = { up: {}, down: {} }
+
+        ' Placement above button
+        override.up.y = iif(m.button.dropDownPosition = "down" or m.button.dropDownPosition = "up", parent.up - spacing, parent.down)
+        if override.up.y - ddProp.height < safeArea.up then
+            override.up.height = compHeight * int( (override.up.y - safeArea.up) / compHeight)
+            override.up.y = override.up.y - override.up.height
+        else
+            override.up.y = override.up.y - ddProp.height
+            override.up.height = ddProp.height
+        end if
+
+        ' Placement below button
+        override.down.y = ddProp.y
+        override.down.height = safeArea.down - ddProp.y
+
+        ' Use the direction allowing the most items (height)
+        if override.up.height > override.down.height then
+            ddProp.Append(override.up)
+            if m.button.dropDownPosition = "down" then
+                m.button.SetDropDownPosition("up")
+            end if
+        else
+            ddProp.Append(override.down)
+            if m.button.dropDownPosition = "up" then
+                m.button.SetDropDownPosition("down")
+            end if
+        end if
     end if
 
     vbox.SetFrame(ddProp.x, ddProp.y, ddProp.width, ddProp.height)
 
-    ' make sure that our scrolling starts within the safe area
-    maxScrollHeight = ddProp.height - parent.height
-    if maxScrollHeight < m.button.maxHeight then
-        vbox.SetScrollable(maxScrollHeight)
-    end if
+    ' Always set the scroll in the middle
+    vbox.SetScrollable(ddProp.height / 2 + compHeight, false, false, m.button.scrollBarPosition)
+    vbox.stopShiftIfInView = true
+
+    m.components.Push(vbox)
 end sub
 
 sub ddoverlayGetComponents()
     vbox = createVBox(false, false, false, 0)
-    vbox.SetScrollable(m.button.maxHeight)
-    vbox.stopShiftIfInView = true
 
     for each option in m.button.GetOptions()
         if option.visibleCallable <> invalid and option.visibleCallable.Call([firstOf(option.plexObject, m.plexObject)]) = false then
