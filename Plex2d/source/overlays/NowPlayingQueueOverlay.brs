@@ -6,6 +6,7 @@ function NowPlayingQueueOverlayClass() as object
         obj.ClassName = "NowPlaying Overlay"
 
         ' Methods
+        obj.Show = npqoShow
         obj.Init = npqoInit
         obj.GetComponents = npqoGetComponents
         obj.GetTrackComponent = npqoGetTrackComponent
@@ -13,6 +14,7 @@ function NowPlayingQueueOverlayClass() as object
         obj.Refresh = npqoRefresh
         obj.DeferRefresh = npqoDeferRefresh
         obj.OnRefreshTimer = npqoOnRefreshTimer
+        obj.SetControlSiblings = npqoSetControlSiblings
 
         ' Listener Methods
         obj.OnPlay = npqoOnPlay
@@ -20,7 +22,11 @@ function NowPlayingQueueOverlayClass() as object
         obj.OnPause = npqoOnPause
         obj.OnResume = npqoOnResume
         obj.OnChange = npqoOnChange
-        obj.OnFailedFocus = npqoOnFailedFocus
+
+        ' Import a few now playing screen methods
+        obj.OnPlayButton = nowplayingOnPlayButton
+        obj.OnFwdButton = nowplayingOnFwdButton
+        obj.OnRevButton = nowplayingOnRevButton
 
         m.NowPlayingQueueOverlayClass = obj
     end if
@@ -44,11 +50,12 @@ sub npqoInit()
     m.screen.OnFocusIn = npqoOnFocusIn
     m.enableOverlay = false
 
-    m.customFonts = {
-        glyphs: FontRegistry().GetIconFont(32),
+    m.customFonts = CreateObject("roAssociativeArray")
+    m.customFonts.Append(m.screen.customFonts)
+    m.customFonts.Append({
         trackStatus: FontRegistry().GetIconFont(20),
         trackActions: FontRegistry().GetIconFont(18)
-    }
+    })
 
     ' Set up audio player listeners
     m.DisableListeners()
@@ -58,31 +65,92 @@ sub npqoInit()
     m.AddListener(m.player, "paused", CreateCallable("OnPause", m))
     m.AddListener(m.player, "resumed", CreateCallable("OnResume", m))
     m.AddListener(m.player, "change", CreateCallable("OnChange", m))
+end sub
 
-    ' Setup the screen listener
-    m.AddListener(m.screen, "OnFailedFocus", CreateCallable("OnFailedFocus", m))
+sub npqoShow(refocusCommand=invalid as dynamic)
+    ' Lock the screen updates
+    m.screen.screen.DrawLock()
+
+    ApplyFunc(OverlayClass().Show, m)
+
+    ' Update the track component and shift the track list based on the item playing
+    trackComp = m.GetTrackComponent(m.player.GetCurrentItem())
+    if trackComp <> invalid then
+        m.screen.CalculateShift(trackComp)
+
+        if m.player.isPlaying then
+            m.SetNowPlaying(trackComp.plexObject, true)
+        else if m.player.isPaused then
+            m.OnPause(m.player, trackComp.plexObject)
+        end if
+    end if
+
+    ' Refocus the last control button if applicable
+    toFocus = invalid
+    if refocusCommand <> invalid then
+        candidates = CreateObject("roList")
+        m.controls.GetFocusableItems(candidates)
+        for each candidate in candidates
+            if refocusCommand = candidate.command then
+                toFocus = candidate
+                exit for
+            end if
+        end for
+    end if
+
+    ' TODO(rob): how do we want to handle queue updates when a user has scrolled
+    ' away from the current playing item. As of now, we just move the focus to the
+    ' current playing track, if focus is on the track list.
+
+    ' Focus the current track or screens focused item if we didn't overrride
+    m.screen.FocusItemManually(firstOf(toFocus, trackComp, m.screen.focusedItem))
+
+    ' Unlock the screen and draw the updates
+    m.screen.screen.DrawUnlock()
 end sub
 
 sub npqoGetComponents()
     isMixed = (m.player.playQueue.isMixed = true)
-    ' TODO(schuyler): Padding of 40 exposes a sort of worst case scenario when
-    ' scrolling a mixed now playing area. A space just about the size of a single
-    ' track ends up vacant and never used at the bottom of the trackBG area. It's
-    ' not really a problem with the padding though, I suspect the scrollable vbox
-    ' needs to be more sophisticated.
 
-    padding = 40
-    spacing = 40
+    ' *** Buttons *** '
+    yOffset = m.screen.controlButtons.y
+    buttonSpacing = 40
+    buttonWidth = m.screen.queueProgress.width
+    buttonHeight = AppSettings().GetHeight() - yOffset
+
+    m.controls = createHBox(false, false, false, buttonSpacing)
+    m.controls.SetFrame(0, yOffset, buttonWidth, buttonHeight)
+    components = m.screen.GetButtons()
+    for each key in components.keys
+        controlsGroup = createHBox(false, false, false, 0)
+        for each comp in components[key]
+            controlsGroup.AddComponent(comp)
+        end for
+        m.controls.AddComponent(controlsGroup)
+    end for
+
+    ' Align the buttons in the middle of the content area
+    m.controls.PerformLayout()
+    width = m.controls.spacing * (m.controls.components.Count()-1)
+    for each group in m.controls.components
+        width = width + group.GetPreferredWidth()
+    end for
+    m.controls.SetFrame(int(buttonWidth/2 - width/2), yOffset, width, m.controls.GetPreferredHeight())
+    m.components.Push(m.controls)
+
+    ' Now Playing list
+    padding = 20
+    spacing = 0
     yOffset = 0
-    xOffset = computeRect(m.screen.queueImage).right + spacing
-    height = m.screen.progress.y
+    xOffset = computeRect(m.screen.queueProgress).right
+    height = AppSettings().GetHeight()
 
     m.trackActions = createButtonGrid(2, 2)
 
     trackPrefs = {
         background: Colors().GetAlpha(&hffffffff, 10),
         width: 1230 - xOffset - spacing - m.trackActions.GetPreferredWidth(),
-        height: iif(isMixed, 80, 60),
+        height: 80,
         fixed: false,
         focusBG: true,
         disallowExit: { down: true },
@@ -97,8 +165,9 @@ sub npqoGetComponents()
 
     m.trackList = createVBox(false, false, false, 0)
     m.trackList.SetFrame(xOffset + padding, padding, trackPrefs.width + m.trackActions.GetPreferredWidth(), height - padding)
-    m.trackList.SetScrollable(AppSettings().GetHeight() / 2, false, false, "right")
+    m.trackList.SetScrollable(height / 2, true, true, invalid)
     m.trackList.stopShiftIfInView = true
+    m.trackList.scrollOverflow = true
 
     ' *** Tracks *** '
     items = m.player.context
@@ -116,8 +185,6 @@ sub npqoGetComponents()
         track.overlay = m
         m.trackList.AddComponent(track)
 
-        ' not very intuitive to use m.screen.focuseditem here.. maybe we should make the
-        ' overlay component more friendly and handle m.focusedItem.
         if m.screen.focusedItem = invalid then m.screen.focusedItem = track
 
         if index < trackCount - 1 then
@@ -153,18 +220,6 @@ sub npqoGetComponents()
 
     m.trackActions.AddButtons(actions, buttonFields, m.screen, m.zOrderOverlay)
     m.components.Push(m.trackActions)
-
-    ' Set the focus to the current AudioPlayer track, if applicable.
-    component = m.GetTrackComponent(m.player.GetCurrentItem())
-    if component <> invalid then
-        m.screen.focusedItem = component
-
-        if m.player.isPlaying then
-            m.OnPlay(m.player, component.plexObject)
-        else if m.player.isPaused then
-            m.OnPause(m.player, component.plexObject)
-        end if
-    end if
 
     ' Background of focused item. We have to use a separate background
     ' component due to the aliasing issue.
@@ -221,6 +276,7 @@ sub npqoOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
         overlay.trackActions.SetPosition(rect.right + 1, rect.up + int((rect.height - overlay.trackActions.GetPreferredHeight()) / 2))
         overlay.trackActions.SetVisible(true)
         overlay.focusedTrack = toFocus
+        overlay.SetControlSiblings(toFocus)
 
         ' Toggle some of our track actions based on the current track
         overlay.trackActions.SetPlexObject(toFocus.plexObject)
@@ -241,14 +297,27 @@ sub npqoSetNowPlaying(plexObject as object, status=true as boolean)
     end if
 
     component = m.GetTrackComponent(plexObject)
-    if component <> invalid then
+    if component <> invalid and not component.Equals(m.playing) then
         component.SetPlaying(status)
         m.playing = iif(status, component, invalid)
+    end if
+
+    ' Set the now playing track as the controls focus sibling. We'll also update this
+    ' if the user scrolls the list during playback.
+    '
+    if m.playing <> invalid then
+        m.SetControlSiblings(m.playing)
     end if
 end sub
 
 sub npqoOnPlay(player as object, item as object)
+    m.screen.screen.DrawLock()
+
+    currentTrack = m.GetTrackComponent(item)
+    m.screen.CalculateShift(currentTrack, computeRect(currentTrack))
     m.SetNowPlaying(item, true)
+
+    m.screen.screen.DrawUnlock()
 end sub
 
 sub npqoOnStop(player as object, item as object)
@@ -275,7 +344,7 @@ sub npqoRefresh()
     TextureManager().DeleteCache()
 
     m.DestroyComponents()
-    m.Show()
+    m.Show(m.screen.focusedItem.command)
 
     TextureManager().ClearCache()
 end sub
@@ -293,13 +362,6 @@ end sub
 sub npqoOnRefreshTimer(timer)
     m.refreshTimer = invalid
     m.Refresh()
-end sub
-
-sub npqoOnFailedFocus(direction as string, focusedItem=invalid as dynamic)
-    if not m.IsActive() then return
-    if direction = "right" or direction = "left" then
-        m.Close(true)
-    end if
 end sub
 
 sub npqoHandleButton()
@@ -383,14 +445,22 @@ sub npqoHandleButton()
     end if
 
     if focusItem <> invalid then
-        ' TODO(schuyler): This approach has the benefit of keeping lots of things
-        ' accurate, including moving the track actions along for the ride. But
-        ' it has the major disadvantage of flashing the focus border and scroll
-        ' bars.
+        screen.screen.DrawLock()
 
         screen.OnFocus(focusItem, focusItem, "up")
         screen.OnFocus(btn, focusItem, "right")
+
+        screen.screen.DrawUnlock()
     end if
+end sub
+
+sub npqoSetControlSiblings(component as object)
+    candidates = CreateObject("roList")
+    m.controls.GetFocusableItems(candidates)
+    for each comp in candidates
+        comp.SetFocusSibling("up", component)
+    end for
+    candidates.Peek().SetFocusSibling("right", component)
 end sub
 
 function ItemHasMusicVideo(item as dynamic) as boolean

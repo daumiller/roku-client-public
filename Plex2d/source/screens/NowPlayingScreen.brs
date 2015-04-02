@@ -26,6 +26,7 @@ function NowPlayingScreen() as object
         ' Methods to refresh screen info
         obj.Refresh = nowplayingRefresh
         obj.UpdateTracks = nowplayingUpdateTracks
+        obj.UpdatePlayButton = nowplayingUpdatePlayButton
         obj.SetTitle = nowplayingSetTitle
         obj.SetProgress = nowplayingSetProgress
         obj.SetImage = nowplayingSetImage
@@ -67,7 +68,7 @@ sub nowplayingInit()
 
     ' Intialize custom fonts for this screen
     m.customFonts = {
-        glyphs: FontRegistry().GetIconFont(32)
+        glyphs: FontRegistry().GetIconFont(28)
         title: FontRegistry().GetTextFont(32)
         titleStrong: FontRegistry().GetTextFont(32, True)
     }
@@ -105,13 +106,13 @@ sub nowplayingGetComponents()
     yOffset = 50
     xOffset = 50
 
-    parentSpacing = 30
+    parentSpacing = 23
     childSpacing = 10
     buttonSpacing = 100
 
     progressHeight = 6
-    albumLarge = 504
-    albumSmall = 350
+    albumLarge = 503
+    albumSmall = 373
 
     ' *** Background Artwork *** '
     m.background = createBackgroundImage(m.item)
@@ -120,37 +121,40 @@ sub nowplayingGetComponents()
 
     ' *** image *** '
     border = cint(albumLarge * .02)
-    imageBorder = createBlock(&hffffff60)
-    imageBorder.SetFrame(xOffset - border, yOffset - border, albumLarge + border*2, albumLarge + border*2)
+    m.imageBorder = createBlock(&hffffff60)
+    m.imageBorder.SetFrame(xOffset, yOffset, albumLarge + border*2, albumLarge + border*2)
     m.image = createImage(m.item, albumLarge, albumLarge)
-    m.image.SetFrame(xOffset, yOffset, albumLarge, albumLarge)
+    m.image.SetFrame(xOffset + border, yOffset + border, albumLarge, albumLarge)
     m.image.SetOrientation(m.image.ORIENTATION_SQUARE)
     m.image.cache = true
     m.image.fade = true
-    m.components.push(imageBorder)
+    m.components.push(m.imageBorder)
     m.components.push(m.image)
-    m.nowplayingView.Push(imageBorder)
+    m.nowplayingView.Push(m.imageBorder)
     m.nowplayingView.Push(m.image)
 
     ' *** image *** '
     border = cint(albumSmall * .02)
-    queueImageBorder = createBlock(&hffffff60)
-    queueImageBorder.SetFrame(xOffset - border, yOffset - border, albumSmall + border*2, albumSmall + border*2)
-    queueImageBorder.zOrderInit = -1
+    m.queueImageBorder = createBlock(&hffffff60)
+    m.queueImageBorder.SetFrame(xOffset, yOffset, albumSmall + border*2, albumSmall + border*2)
+    m.queueImageBorder.zOrderInit = -1
     m.queueImage = createImage(m.item, albumSmall, albumSmall)
-    m.queueImage.SetFrame(xOffset, yOffset, albumSmall, albumSmall)
+    m.queueImage.SetFrame(xOffset + border, yOffset + border, albumSmall, albumSmall)
     m.queueImage.SetOrientation(m.queueImage.ORIENTATION_SQUARE)
     m.queueImage.zOrderInit = -1
     m.queueImage.cache = true
     m.queueImage.fade = true
-    m.components.push(queueImageBorder)
+    m.components.push(m.queueImageBorder)
     m.components.push(m.queueImage)
-    m.queueView.Push(queueImageBorder)
-    m.queueView.Push(m.QueueImage)
+    m.queueView.Push(m.queueImageBorder)
+    m.queueView.Push(m.queueImage)
+
+    ' Compute image rects for variable sizing
+    queueImageRect = computeRect(m.queueImageBorder)
+    imageRect = computeRect(m.imageBorder)
 
     ' *** Current track info while queue overlay is shown *** '
     vbox = createVBox(false, false, false, 0)
-    queueImageRect = computeRect(queueImageBorder)
     vbox.SetFrame(queueImageRect.left, queueImageRect.down + parentSpacing, queueImageRect.width, albumLarge - albumSmall)
 
     font = FontRegistry().LARGE
@@ -183,9 +187,9 @@ sub nowplayingGetComponents()
     m.queueView.Push(vbox)
 
     ' *** Current track info: grandparentTitle/parentTitle/Title and track progress/duration *** '
-    xOffset = xOffset + albumLarge + parentSpacing
+    xOffset = xOffset + imageRect.height + parentSpacing
     vbox = createVBox(false, false, false, 0)
-    vbox.SetFrame(xOffset, yOffset, 1230 - xOffset, albumLarge)
+    vbox.SetFrame(xOffset, yOffset, 1230 - xOffset, imageRect.height)
 
     m.grandparentTitle = createLabel(m.item.Get("grandparentTitle"), m.customFonts.title)
     m.grandparentTitle.width = vbox.width
@@ -216,7 +220,7 @@ sub nowplayingGetComponents()
     height = m.customFonts.title.GetOneLineHeight()*2
 
     vbox = createVBox(false, false, false, 0)
-    vbox.SetFrame(xOffset, yOffset + albumLarge - height, 1230 - xOffset, height)
+    vbox.SetFrame(xOffset, yOffset + imageRect.height - height, 1230 - xOffset, height)
 
     nextTrack = m.GetNextTrack()
     m.nextGrandparentTitle = createLabel(firstOf(nextTrack.grandparentTitle, ""), m.customFonts.title)
@@ -237,34 +241,44 @@ sub nowplayingGetComponents()
     m.nowplayingView.Push(vbox)
 
     ' *** Progress bar ****
-    yOffset = yOffset + albumLarge + border*2 + parentSpacing
+    yOffset = imageRect.down + 50
     m.Progress = createBlock(Colors().OverlayDark)
     m.Progress.SetFrame(0, yOffset, 1280, progressHeight)
     m.components.push(m.Progress)
+    m.nowplayingView.Push(m.Progress)
+
+    ' *** Queue Progress bar ****
+    queueProgressWidth = queueImageRect.right + 50
+    m.queueProgress = createBlock(Colors().OverlayDark)
+    m.queueProgress.SetFrame(0, yOffset, queueProgressWidth, progressHeight)
+    m.queueProgress.zOrderInit = -1
+    m.components.push(m.queueProgress)
+    m.queueView.Push(m.queueProgress)
 
     ' *** Buttons *** '
-    hbButtons = createHBox(false, false, false, buttonSpacing)
+    m.controlButtons = createHBox(false, false, false, buttonSpacing)
     yOffset = m.Progress.y + m.Progress.height + parentSpacing
-    hbButtons.SetFrame(0, yOffset, 1280, 720 - yOffset)
+    m.controlButtons.SetFrame(0, yOffset, 1280, 720 - yOffset)
 
     components = m.GetButtons()
     for each key in components.keys
-        hbButtonGroup = createHBox(false, false, false, 0)
+        controlsGroup = createHBox(false, false, false, 0)
         for each comp in components[key]
-            hbButtonGroup.AddComponent(comp)
+            controlsGroup.AddComponent(comp)
         end for
-        hbButtons.AddComponent(hbButtonGroup)
+        m.controlButtons.AddComponent(controlsGroup)
     end for
 
     ' Align the buttons in the middle of the screen
-    hbButtons.PerformLayout()
-    width = hbButtons.spacing * (hbButtons.components.Count()-1)
-    for each group in hbButtons.components
+    m.controlButtons.PerformLayout()
+    width = m.controlButtons.spacing * (m.controlButtons.components.Count()-1)
+    for each group in m.controlButtons.components
         width = width + group.GetPreferredWidth()
     end for
-    hbButtons.SetFrame(int(1280/2 - width/2), yOffset, width, height)
+    m.controlButtons.SetFrame(int(1280/2 - width/2), yOffset, width, height)
 
-    m.components.Push(hbButtons)
+    m.components.Push(m.controlButtons)
+    m.nowplayingView.Push(m.controlButtons)
 end sub
 
 function nowplayingHandleCommand(command as string, item=invalid as dynamic) as boolean
@@ -332,17 +346,19 @@ function nowplayingGetButtons() as object
     buttons["right"].push({text: Glyphs().STOP, command: "stop", componentKey: "stopButton"})
     buttons["right"].push({text: Glyphs().LIST, command: "queue", componentKey: "queueButton"})
 
+    padding = cint(m.customFonts.glyphs.GetOneLineHeight() / 3)
     for each key in components.keys
         for each button in buttons[key]
             if components[key] = invalid then components[key] = createObject("roList")
             btn = createButton(button.text, m.customFonts.glyphs, button.command)
             btn.SetColor(firstOf(button.statusColor, Colors().TextDim))
             btn.SetFocusMethod(btn.FOCUS_FOREGROUND, Colors().OrangeLight)
-            btn.width = 50
-            btn.height = 50
+            btn.SetPadding(0, 0, 0, padding)
             if m.focusedItem = invalid or button.defaultFocus = true then m.focusedItem = btn
             components[key].push(btn)
-            m[button.componentKey] = btn
+            ' use unique key reference for the screen and overlay
+            componentKey = iif(m.showQueue = true, "queue" + button.componentKey, button.componentKey)
+            m[componentKey] = btn
         end for
     end for
 
@@ -396,7 +412,7 @@ end sub
 sub nowplayingAddToggleTimer(component as object)
     if component.Equals(m.focusedItem) then
         toggleTimer = createTimer("toggleTimer")
-        toggleTimer.SetDuration(800)
+        toggleTimer.SetDuration(2000)
         toggleTimer.component = component
         Application().AddTimer(toggleTimer, createCallable("OnToggleTimer", m))
     end if
@@ -405,7 +421,6 @@ end sub
 sub nowplayingOnToggleTimer(timer as object)
     if timer.component.Equals(m.focusedItem) then
         if m.focusTimer <> invalid then m.focusTimer.mark()
-        timer.component = timer.component
         timer.component.SetColor(Colors().OrangeLight)
         timer.component.Draw(true)
         m.Refresh()
@@ -439,21 +454,24 @@ sub nowplayingSetImage(item as object, component as object)
 end sub
 
 function nowplayingSetProgress(time as integer, duration as integer) as boolean
-    if m.Progress.sprite = invalid or duration = 0 then return false
+    if m.showQueue = true then
+        progressComp = m.queueProgress
+        timeComp = m.queueTime
+    else
+        progressComp = m.progress
+        timeComp = m.time
+    end if
 
-    region = m.Progress.sprite.GetRegion()
-    region.Clear(m.Progress.bgColor)
+    if progressComp.sprite = invalid or duration = 0 then return false
+
+    region = progressComp.sprite.GetRegion()
+    region.Clear(progressComp.bgColor)
     progressPercent = int(time/1000) / int(duration/1000)
-    region.DrawRect(0, 0, cint(m.Progress.width * progressPercent), m.Progress.height, Colors().OrangeLight)
+    region.DrawRect(0, 0, cint(progressComp.width * progressPercent), progressComp.height, Colors().OrangeLight)
 
     m.time.text = GetTimeString(time/1000) +" / " + GetTimeString(duration/1000)
     m.queueTime.text = m.time.text
-
-    if m.showQueue = true then
-        m.queueTime.Draw(true)
-    else
-        m.time.Draw(true)
-    end if
+    timeComp.Draw(true)
 
     return true
 end function
@@ -470,7 +488,7 @@ sub nowplayingOnPlay(player as object, item as object)
     m.OnRepeat(player, item, player.repeat)
     m.OnShuffle(player, item, player.isShuffled)
     m.SetProgress(0, item.GetInt("duration"))
-    m.SetTitle(Glyphs().PAUSE, m.playButton)
+    m.UpdatePlayButton(Glyphs().PAUSE)
     m.UpdateTracks(item)
 
     m.item = item
@@ -482,17 +500,24 @@ sub nowplayingOnPlay(player as object, item as object)
     end if
 end sub
 
+sub nowplayingUpdatePlayButton(text as string)
+    m.SetTitle(text, m.playButton)
+    if m.showQueue = true then
+        m.SetTitle(text, m.queuePlayButton)
+    end if
+end sub
+
 sub nowplayingOnStop(player as object, item as object)
     Application().popScreen(m)
 end sub
 
 sub nowplayingOnPause(player as object, item as object)
-    m.SetTitle(Glyphs().PLAY, m.playButton)
+    m.UpdatePlayButton(Glyphs().PLAY)
     m.Refresh()
 end sub
 
 sub nowplayingOnResume(player as object, item as object)
-    m.SetTitle(Glyphs().PAUSE, m.playButton)
+    m.UpdatePlayButton(Glyphs().PAUSE)
     m.Refresh()
 end sub
 
@@ -506,30 +531,48 @@ sub nowplayingOnProgress(player as object, item as object, time as integer, forc
 end sub
 
 sub nowplayingOnShuffle(player as object, item as object, shuffle as boolean)
-    if m.shuffleButton = invalid then return
-
-    if shuffle then
-        m.shuffleButton.statusColor = Colors().Orange
-    else
-        m.shuffleButton.statusColor = Colors().TextDim
+    ' Update shuffle button, including the underlying screen if applicable
+    buttons = CreateObject("roList")
+    buttons.Push(m.shuffleButton)
+    if m.showQueue = true then
+        buttons.Push(m.queueshuffleButton)
     end if
-    m.shuffleButton.SetColor(m.shuffleButton.statusColor)
-    m.shuffleButton.Draw(true)
+
+    if buttons.Peek() = invalid then return
+
+    for each button in buttons
+        if shuffle then
+            button.statusColor = Colors().Orange
+        else
+            button.statusColor = Colors().TextDim
+        end if
+        button.SetColor(button.statusColor)
+        button.Draw(true)
+    end for
 
     m.UpdateTracks(item)
 
-    m.AddToggleTimer(m.shuffleButton)
+    m.AddToggleTimer(buttons.Peek())
 end sub
 
 sub nowplayingOnRepeat(player as object, item as object, repeat as integer)
-    m.repeatButton.text = iif(player.repeat = player.REPEAT_ONE, Glyphs().REPEAT_ONE, Glyphs().REPEAT)
-    m.repeatButton.statusColor = iif(player.repeat = player.REPEAT_NONE, Colors().TextDim, Colors().Orange)
-    m.repeatButton.SetColor(m.repeatButton.statusColor)
-    m.repeatButton.Draw(true)
+    ' Update repeat button, including the underlying screen if applicable
+    buttons = CreateObject("roList")
+    buttons.Push(m.repeatButton)
+    if m.showQueue = true then
+        buttons.Push(m.queueRepeatButton)
+    end if
+
+    for each button in buttons
+        button.text = iif(player.repeat = player.REPEAT_ONE, Glyphs().REPEAT_ONE, Glyphs().REPEAT)
+        button.statusColor = iif(player.repeat = player.REPEAT_NONE, Colors().TextDim, Colors().Orange)
+        button.SetColor(button.statusColor)
+        button.Draw(true)
+    end for
 
     m.UpdateTracks(item)
 
-    m.AddToggleTimer(m.repeatButton)
+    m.AddToggleTimer(buttons.Peek())
 end sub
 
 sub nowplayingOnPlayButton(item=invalid as dynamic)
@@ -545,6 +588,11 @@ sub nowplayingOnRevButton(item=invalid as dynamic)
 end sub
 
 sub nowplayingToggleQueue()
+    if m.showQueue = true and m.overlayScreen.Count() > 0 then
+        m.overlayScreen.Peek().Close()
+        return
+    end if
+
     m.showQueue = not (m.showQueue = true)
 
     showNowPlaying = not m.showQueue
@@ -566,6 +614,7 @@ sub nowplayingToggleQueue()
             m.focusTimer = invalid
         end if
         queueOverlay = createNowPlayingQueueOverlay(m)
+        queueOverlay.enableOverlay = true
         queueOverlay.Show()
         queueOverlay.On("close", createCallable("OnOverlayClose", m))
     else
