@@ -319,7 +319,9 @@ function nowplayingGetButtons() as object
     if m.player.playQueue <> invalid and m.player.playQueue.supportsShuffle = true then
         buttons["left"].push({text: Glyphs().SHUFFLE, command: "shuffle", componentKey: "shuffleButton", statusColor: iif(m.player.isShuffled, Colors().Orange, invalid) })
     end if
-    buttons["left"].push({text: Glyphs().REPEAT, command: "repeat", componentKey: "repeatButton", statusColor: iif(m.player.repeat <> m.player.REPEAT_NONE, Colors().Orange, invalid) })
+    repeatGlyph = iif(m.player.repeat = m.player.REPEAT_ONE, Glyphs().REPEAT_ONE, Glyphs().REPEAT)
+    repeatColor = iif(m.player.repeat <> m.player.REPEAT_NONE, Colors().Orange, invalid)
+    buttons["left"].push({text: repeatGlyph, command: "repeat", componentKey: "repeatButton", statusColor: repeatColor})
 
     buttons["middle"] = createObject("roList")
     buttons["middle"].push({text: Glyphs().STEP_REV, command: "prev_track", componentKey: "prevTrackButton"})
