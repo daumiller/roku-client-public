@@ -137,8 +137,9 @@ upload: pkg
 	@echo "Navigating back to package page for $(APPTITLE) ($(APPID))"
 	$(HTTP) https://owner.roku.com/Developer/Apps/Packages/$(APPID)
 	@head -1 $(ROKU_OUTPUT) | grep '200 OK' || exit 6
+	@curl -X POST --data-urlencode "payload={\"attachments\": [{\"fallback\": \"A package has been uploaded to the $(APPTITLE) channel\", \"color\": \"good\", \"pretext\": \"A new package has been uploaded to the Roku store\", \"fields\": [{\"title\": \"Channel\", \"value\": \"$(APPTITLE)\", \"short\": true}, {\"title\": \"Link\", \"value\": \"<`sed -n -e 's#^.*href="\(/add/\(.*\)\)".*$$#https://owner.roku.com\1\|\2#p' $(ROKU_OUTPUT) | head -1`>\", \"short\": true}]}]}" https://hooks.slack.com/services/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
 	@echo "Uploaded package is available at:"
-	@sed -n -e 's/^.*href="\(\/add\/.*\)".*$$/https:\/\/owner.roku.com\1/p' /tmp/roku_output.html | head -1
+	@sed -n -e 's/^.*href="\(\/add\/.*\)".*$$/https:\/\/owner.roku.com\1/p' $(ROKU_OUTPUT) | head -1
 
 publish: ROKU_PORTAL_USERNAME ?= "$(shell read -p "Roku email: " REPLY; echo $$REPLY)"
 publish: ROKU_PORTAL_PASSWORD ?= "$(shell read -p "Roku password: " REPLY; echo $$REPLY)"
@@ -175,5 +176,7 @@ publish:
 	$(HTTP) https://owner.roku.com/Developer/Apps/Publish/$(APPID) Origin:https://owner.roku.com
 	@head -1 $(ROKU_OUTPUT) | grep '302 Found' || exit 5
 	@grep 'Location: /Developer/Apps/Packages/$(APPID)' $(ROKU_OUTPUT) || exit 6
+
+	@curl -X POST --data-urlencode "payload={\"attachments\": [{\"fallback\": \"A package has been published to the $(APPTITLE) channel\", \"color\": \"good\", \"pretext\": \"A new package has been published in the Roku store\", \"fields\": [{\"title\": \"Channel\", \"value\": \"$(APPTITLE)\", \"short\": true}]}]}" https://hooks.slack.com/services/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
 
 	@echo "Published package!"
