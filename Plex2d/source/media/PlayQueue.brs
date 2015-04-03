@@ -23,6 +23,7 @@ function PlayQueueClass() as object
         obj.MoveItemUp = pqMoveItemUp
         obj.MoveItemDown = pqMoveItemDown
         obj.MoveItem = pqMoveItem
+        obj.SwapItem = pqSwapItem
         obj.RemoveItem = pqRemoveItem
         obj.AddItem = pqAddItem
 
@@ -272,6 +273,7 @@ function pqMoveItemUp(item as object) as boolean
                 after = invalid
             end if
 
+            m.SwapItem(index, -1)
             m.MoveItem(item, after)
             return true
         end if
@@ -284,6 +286,7 @@ function pqMoveItemDown(item as object) as boolean
     for index = 0 to m.items.Count() - 2
         if m.items[index].Get("playQueueItemID") = item.Get("playQueueItemID") then
             after = m.items[index + 1]
+            m.SwapItem(index)
             m.MoveItem(item, after)
             return true
         end if
@@ -303,6 +306,14 @@ sub pqMoveItem(item as object, after as object)
     request.AddParam("includeRelated", "1")
     context = request.CreateRequestContext("move", createCallable("OnResponse", m))
     Application().StartRequest(request, context, "")
+end sub
+
+sub pqSwapItem(index as integer, delta=1 as integer)
+    before = m.items[index]
+    after = m.items[index + delta]
+
+    m.items[index] = after
+    m.items[index + delta] = before
 end sub
 
 sub pqRemoveItem(item as object)

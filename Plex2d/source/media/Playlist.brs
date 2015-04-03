@@ -14,6 +14,7 @@ function PlaylistClass() as object
         obj.MoveItemUp = plMoveItemUp
         obj.MoveItemDown = plMoveItemDown
         obj.MoveItem = plMoveItem
+        obj.SwapItem = plSwapItem
         obj.RemoveItem = plRemoveItem
 
         m.PlaylistClass = obj
@@ -63,6 +64,7 @@ function plMoveItemUp(item as object) as boolean
                 after = invalid
             end if
 
+            m.SwapItem(index, -1)
             m.MoveItem(item, after)
             return true
         end if
@@ -75,6 +77,7 @@ function plMoveItemDown(item as object) as boolean
     for index = 0 to m.items.Count() - 2
         if m.items[index].Get("playlistItemID") = item.Get("playlistItemID") then
             after = m.items[index + 1]
+            m.SwapItem(index)
             m.MoveItem(item, after)
             return true
         end if
@@ -92,6 +95,14 @@ sub plMoveItem(item as object, after as dynamic)
     ' have changed, we don't even bother listening for the response.
     context = request.CreateRequestContext("move", invalid)
     Application().StartRequest(request, context, "")
+end sub
+
+sub plSwapItem(index as integer, delta=1 as integer)
+    before = m.items[index]
+    after = m.items[index + delta]
+
+    m.items[index] = after
+    m.items[index + delta] = before
 end sub
 
 sub plRemoveItem(item as object)
