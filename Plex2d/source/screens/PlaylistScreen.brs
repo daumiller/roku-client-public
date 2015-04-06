@@ -106,11 +106,11 @@ sub playlistGetComponents()
     ' Initialize our track actions and save room for them
     if m.item.GetBool("smart") then
         ' Smart playlists can't be reordered, so they have but one lonely action
-        m.trackActions = createButtonGrid(1, 1, 36)
+        m.trackActions = createButtonGrid(1, 1, 35)
     else if m.playlistType = "audio" then
-        m.trackActions = createButtonGrid(2, 2, 36)
+        m.trackActions = createButtonGrid(2, 2, 35)
     else
-        m.trackActions = createButtonGrid(4, 1, 30)
+        m.trackActions = createButtonGrid(4, 1, 29)
     end if
 
     m.listPrefs.width = m.listPrefs.width - m.trackActions.GetPreferredWidth()
@@ -212,7 +212,7 @@ sub playlistInitItem()
         m.player = AudioPlayer()
 
         m.listPrefs.width = 635
-        m.listPrefs.height = 73
+        m.listPrefs.height = 72
 
         m.AddListener(m.player, "playing", CreateCallable("OnPlay", m))
         m.AddListener(m.player, "stopped", CreateCallable("OnStop", m))
