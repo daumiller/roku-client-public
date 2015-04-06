@@ -485,6 +485,7 @@ sub compToggleFocusable(visible=true as boolean)
         m.wasFocusable = true
     else if visible and m.wasFocusable = true then
         m.SetFocusable(m.command, visible)
+        m.Delete("wasFocusable")
     end if
 end sub
 

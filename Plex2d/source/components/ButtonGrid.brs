@@ -129,5 +129,6 @@ end sub
 sub buttonGridSetVisible(visible=true as boolean)
     for each component in m.components
         component.SetVisible(visible)
+        component.ToggleFocusable(visible)
     end for
 end sub
