@@ -290,22 +290,6 @@ sub settingsInitPrefs()
         prefType: "bool"
     }
 
-    ' Menu Volume
-    options = [
-        {title: "High", value: "100" },
-        {title: "Medium", value: "80" },
-        {title: "Low", value: "60" },
-        {title: "Off", value: "0" },
-    ]
-    m.prefs["menu_volume"] = {
-        key: "menu_volume",
-        title: "Menu Volume",
-        default: "0",
-        section: "preferences",
-        prefType: "enum",
-        options: options
-    }
-
     ' Non user facing per-user preferences
     m.prefs["lastServerId"] = { section: "user" }
     m.prefs["local_mediaId"] = { section: "Transient" }
@@ -605,9 +589,6 @@ function settingsGetGlobalSettings() as object
         m.prefs["playback_transcode"],
     ]
     advanced.Push({key: "playback", title: "Direct Play", options: options, prefType: "bool"})
-
-    ' Menu Volume
-    advanced.Push(m.prefs["menu_volume"])
 
     ' Log level
     advanced.Push(m.prefs["log_level"])

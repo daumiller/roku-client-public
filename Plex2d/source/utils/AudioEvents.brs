@@ -6,41 +6,35 @@ function AudioEvents() as object
         obj.OnKeyPress = audioeventsOnKeyPress
         obj.OnPress = audioeventsOnPress
         obj.OnRelease = audioeventsOnRelease
-        obj.SetVolume = audioSetVolume
 
         ' Audio clips
         obj.clips = {}
-        obj.clips.cursor = CreateObject("roAudioResource", "pkg:/audio/Cursor.wav")
-        obj.clips.click = CreateObject("roAudioResource", "pkg:/audio/Click.wav")
-        obj.clips.back = CreateObject("roAudioResource", "pkg:/audio/Back.wav")
+        obj.clips.select = CreateObject("roAudioResource", "select")
+        obj.clips.navsingle = CreateObject("roAudioResource", "navsingle")
+        obj.clips.navmulti = CreateObject("roAudioResource", "navmulti")
+        obj.clips.deadend = CreateObject("roAudioResource", "deadend")
 
         ' Key press mappings
         obj.keyPress = {}
-        obj.keyPress["right"] = obj.clips.cursor
-        obj.keyPress["left"] = obj.clips.cursor
-        obj.keyPress["up"] = obj.clips.cursor
-        obj.keyPress["down"] = obj.clips.cursor
+        obj.keyPress["right"] = obj.clips.navsingle
+        obj.keyPress["left"] = obj.clips.navsingle
+        obj.keyPress["up"] = obj.clips.navsingle
+        obj.keyPress["down"] = obj.clips.navsingle
+        obj.keyPress["back"] = obj.clips.navsingle
 
-        obj.keyPress["fwd"] = obj.clips.cursor
-        obj.keyPress["rev"] = obj.clips.cursor
+        obj.keyPress["fwd"] = obj.clips.navmulti
+        obj.keyPress["rev"] = obj.clips.navmulti
 
-        obj.keyPress["ok"] = obj.clips.click
-        obj.keyPress["play"] = obj.clips.click
-
-        obj.keyPress["back"] = obj.clips.back
+        obj.keyPress["ok"] = obj.clips.select
+        obj.keyPress["play"] = obj.clips.select
 
         ' Key release mappings
         obj.keyRelease = {}
 
         ' Unused mappings
         ' obj.keyCodes["replay"] = obj.clips.click
-        ' obj.keyCodes["rev"] = obj.clips.click
-        ' obj.keyCodes["fwd"] = obj.clips.click
         ' obj.keyCodes["info"] = obj.clips.click
 
-        obj.SetVolume(AppSettings().GetIntPreference("menu_volume"))
-
-        Application().On("change:menu_volume", createCallable("SetVolume", obj))
         m.AudioEvents = obj
     end if
 
@@ -48,7 +42,7 @@ function AudioEvents() as object
 end function
 
 sub audioeventsOnKeyPress(keyCode as integer)
-    if m.volume = 0 or AudioPlayer().isPlaying = true then return
+    if AudioPlayer().isPlaying = true then return
 
     if keyCode >= 100 then
         m.OnRelease(KeyCodeToString(keyCode - 100))
@@ -59,17 +53,12 @@ end sub
 
 sub audioeventsOnPress(key as string)
     if type(m.keyPress[key]) = "roAudioResource" then
-        m.keyPress[key].Trigger(m.volume)
+        m.keyPress[key].Trigger(50)
     end if
 end sub
 
 sub audioeventsOnRelease(key as string)
     if type(m.keyRelease[key]) = "roAudioResource" then
-        m.keyRelease[key].Trigger(m.volume)
+        m.keyRelease[key].Trigger(50)
     end if
-end sub
-
-sub audioSetVolume(volume as dynamic)
-    if not isint(volume) then volume = volume.toint()
-    m.volume = volume
 end sub
