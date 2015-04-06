@@ -185,7 +185,7 @@ function hubsCreateHub(container) as dynamic
     ' PMS expects this HUB to have > 5 items. Do we show more? Maybe we will have a layout for
     ' any count up to 5? If we end up having the HUB class calculate the orientation/layout,
     ' I'd expect it will also be able to calculate the more button status as well.
-    if container.items.count()-1 > hub.MaxChildrenForLayout() then
+    if container.items.Count() > hub.MaxChildrenForLayout() then
         hub.ShowMoreButton("show_grid")
     else if container.get("more") <> "0" then
         hub.ShowMoreButton("show_grid")
