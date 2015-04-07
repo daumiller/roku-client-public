@@ -80,6 +80,9 @@ function ComponentsScreen() as object
         obj.OnFocusIn = compOnFocusIn
         obj.OnFocusOut = compOnFocusOut
         obj.FocusItemManually = compFocusItemManually
+        obj.SetRefocusItem = compSetRefocusItem
+        obj.HasRefocusItem = compHasRefocusItem
+        obj.IsRefocusItem = compIsRefocusItem
 
         ' Playback methods
         obj.CreatePlayerForItem = compCreatePlayerForItem
@@ -174,23 +177,33 @@ sub compShow()
         m.focusedItem = candidates[0]
     end if
 
-    ' try to refocus if applicable
-    if m.refocus <> invalid then
+    ' Try to refocus if applicable
+    if m.refocus <> invalid or m.HasRefocusItem() then
         ' Try onScreen components before any shifteable components. Screens like
         ' the preplay do not have any shiftable components.
         candidates = CreateObject("roList")
         candidates.push(m.onscreenComponents)
         candidates.push(m.shiftableComponents)
+
         for each candidate in candidates
             for each component in candidate
-                if component.id = m.refocus.id and component.focusable = true then
-                    m.focusedItem = component
-                    exit for
+                if component.focusable = true then
+                    if m.IsRefocusItem(component) then
+                        m.focusedItem = component
+                        exit for
+                    else if m.refocus <> invalid and component.id = m.refocus.id then
+                        m.focusedItem = component
+                        exit for
+                    end if
                 end if
             end for
         end for
-        ' invalidate any refocus if we didn't find a match
-        if m.focusedItem <> invalid and m.focusedItem.id <> m.refocus.id then m.refocus = invalid
+
+        ' Invalidate any refocus if we didn't find a match
+        if m.refocus <> invalid and m.focusedItem <> invalid and m.focusedItem.id <> m.refocus.id then
+            m.refocus = invalid
+        end if
+        m.Delete("refocusKey")
     end if
 
     if m.focusedItem <> invalid then
@@ -1239,7 +1252,7 @@ sub compOnFocus(toFocus as object, lastFocus=invalid as dynamic, direction=inval
     m.OnFocusOut(lastFocus, toFocus)
 
     m.CalculateShift(toFocus, m.refocus)
-    m.refocus = invalid
+    m.Delete("refocus")
 
     ' reset the focus point after shifting
     if direction <> invalid then
@@ -1326,3 +1339,31 @@ sub compResetOnScreenComponents()
         comp.GetFocusableItems(m.onScreenComponents)
     next
 end sub
+
+function compHasRefocusItem() as boolean
+    return IsAssociativeArray(m.refocusKey)
+end function
+
+sub compSetRefocusItem(item=invalid as dynamic, key="ratingKey" as string)
+    if not IsAssociativeArray(item) then return
+
+    plexObject = iif(item.plexObject <> invalid, item.plexObject, item)
+    if IsFunction(plexObject.Has) and plexObject.Has(key) then
+        m.refocusKey = {key: key, value: plexObject.Get(key)}
+    else if item[key] <> invalid then
+        m.refocusKey = {key: key, value: item[key]}
+    end if
+end sub
+
+function compIsRefocusItem(item=invalid as dynamic) as boolean
+    if not m.HasRefocusItem() or not IsAssociativeArray(item) then return false
+
+    plexObject = iif(item.plexObject <> invalid, item.plexObject, item)
+    if IsFunction(plexObject.Get) and m.refocusKey.value = plexObject.Get(m.refocusKey.key) then
+        return true
+    else if m.refocusKey.value = item[m.refocusKey.key] then
+        return true
+    end if
+
+    return false
+end function
