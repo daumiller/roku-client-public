@@ -8,6 +8,7 @@ function SeasonScreen() as object
         ' Methods
         obj.InitItem = seasonInitItem
         obj.GetComponents = seasonGetComponents
+        obj.HandleCommand = seasonHandleCommand
 
         ' Methods overrides
         obj.LoadContext = seasonLoadContext
@@ -93,6 +94,9 @@ sub seasonGetComponents()
     m.itemList.stopShiftIfInView = true
     m.itemList.scrollOverflow = true
 
+    m.trackActions = createButtonGrid(1, 1)
+    m.listPrefs.width = m.listPrefs.width - m.trackActions.GetPreferredWidth()
+
     ' *** season Items *** '
     trackCount = m.children.Count()
     ' create a shared region for the separator
@@ -116,6 +120,13 @@ sub seasonGetComponents()
     end for
     m.components.Push(m.itemList)
 
+    ' *** Track actions ***
+    actions = CreateObject("roList")
+    actions.Push({text: Glyphs().EYE, command: "toggle_watched", font: m.customFonts.trackActions, zOrderInit: -1, commandCallback: createCallable("Refresh", m) })
+    buttonFields = {trackAction: true}
+    m.trackActions.AddButtons(actions, buttonFields, m)
+    m.components.Push(m.trackActions)
+
     ' Background of focused item. We cannot just change the background
     ' of the track composite due to the aliasing issues.
     m.focusBG = createBlock(Colors().GetAlpha("Black", 60))
@@ -129,59 +140,6 @@ sub seasonGetComponents()
     descBox.setFrame(50, 630, 1280-50, 100)
     m.components.Push(descBox)
 end sub
-
-function seasonGetButtons() as object
-    components = createObject("roList")
-
-    buttons = createObject("roList")
-    buttons.Push({text: Glyphs().PLAY, command: "play"})
-    buttons.Push({text: Glyphs().SHUFFLE, command: "shuffle"})
-
-    buttonHeight = 50
-    for each button in buttons
-        btn = createButton(button.text, m.customFonts.glyphs, button.command)
-        btn.SetColor(Colors().Text, Colors().Button)
-        btn.width = 100
-        btn.height = buttonHeight
-        btn.fixed = false
-        btn.DisableNonParentExit("down")
-        if m.focusedItem = invalid then m.focusedItem = btn
-        components.Push(btn)
-    end for
-
-    ' more/pivots drop down
-    optionPrefs = {
-        halign: "JUSTIFY_LEFT",
-        height: buttonHeight
-        padding: { right: 10, left: 10, top: 0, bottom: 0 }
-        font: FontRegistry().NORMAL,
-    }
-
-    btn = createDropDownButton(Glyphs().MORE, m.customFonts.glyphs, buttonHeight * 5, m)
-    btn.SetDropDownPosition("right")
-    btn.SetColor(Colors().Text, Colors().Button)
-    btn.width = 100
-    btn.height = buttonHeight
-    if m.focusedItem = invalid then m.focusedItem = btn
-
-    if m.item.relatedItems <> invalid then
-        for each item in m.item.relatedItems
-            option = {
-                text: item.GetSingleLineTitle(),
-                command: "show_grid",
-                plexObject: item,
-            }
-            option.Append(optionPrefs)
-            btn.options.Push(option)
-        end for
-    end if
-
-    if btn.options.Count() > 0 then
-        components.Push(btn)
-    end if
-
-    return components
-end function
 
 sub seasonInitItem()
     ApplyFunc(ContextListScreen().InitItem, m)
@@ -206,3 +164,20 @@ sub seasonLoadContext()
         end if
     end if
 end sub
+
+function seasonHandleCommand(command as string, item as dynamic) as boolean
+    ' If it was a track action, make sure it has the last focused track set as its item
+    if item <> invalid and item.trackAction = true then
+        item.plexObject = m.focusedListItem.plexObject
+    end if
+
+    if command = "go_to_show" then
+        Application().PushScreen(createPreplayContextScreen(m.item, m.item.Get("parentKey")))
+        return true
+    else if command = "toggle_watched" then
+        m.SetRefocusItem(item.plexObject)
+        m.itemPath = m.item.GetItemPath()
+    end if
+
+    return ApplyFunc(ContextListScreen().HandleCommand, m, [command, item])
+end function

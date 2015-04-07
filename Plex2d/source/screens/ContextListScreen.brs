@@ -98,7 +98,9 @@ sub clShow()
         if m.item <> invalid then
             m.InitItem()
 
+            m.screen.DrawLock()
             ApplyFunc(ComponentsScreen().Show, m)
+            m.screen.DrawUnlock()
 
             ' TODO(rob): This works just like the other preplay screens, but do we want
             ' the << >> buttons to scroll quicker through the vertical list? We might
@@ -168,6 +170,19 @@ function clGetButtons() as object
     btn.width = 100
     btn.height = buttonHeight
     if m.focusedItem = invalid then m.focusedItem = btn
+
+    ' manual pivots and commands
+    if m.item.Get("type", "") = "season" then
+        manualPivotsAndCommands = [
+            {command: "go_to_show", text: "Go to show"}
+        ]
+        for each pivot in manualPivotsAndCommands
+            option = {}
+            option.Append(pivot)
+            option.Append(optionPrefs)
+            btn.options.push(option)
+        end for
+    end if
 
     if m.item.relatedItems <> invalid then
         for each item in m.item.relatedItems
