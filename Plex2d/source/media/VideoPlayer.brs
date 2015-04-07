@@ -341,6 +341,9 @@ sub vpPlay()
     ' Show the existing video player if it's the screen on top, otherwise
     ' push the video player to the stack.
     if Application().IsActiveScreen(m) then
+        ' Workaround to clear memory before playback for Roku 2 XS, Roku HD(2500)
+        ' and other models possibly affected by this bug.
+        m.ClearMemory()
         m.screen.Show()
     else
         Application().PushScreen(m)
