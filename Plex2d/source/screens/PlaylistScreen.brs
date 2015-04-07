@@ -279,6 +279,7 @@ end function
 
 function playlistHandleCommand(command as string, item as dynamic) as boolean
     handled = true
+    m.screen.DrawLock()
 
     ' If it was a track action, make sure it has the last focused track set as its item
     if item <> invalid and item.trackAction = true then
@@ -303,8 +304,19 @@ function playlistHandleCommand(command as string, item as dynamic) as boolean
             focusItem = m.focusedListItem
         end if
     else if command = "remove_item" then
+        ' Refocus to the next/previous list item
+        for each delta in [1, -1]
+            if m.itemList.components[m.focusedListItem.trackIndex + delta] <> invalid then
+                m.SetRefocusItem(m.itemList.components[m.focusedListItem.trackIndex + delta])
+                exit for
+            end if
+        end for
+
         m.item.RemoveItem(m.focusedListItem.plexObject)
     else
+        ' Refocus on the list item after a scrobble
+        if command = "toggle_watched" then m.SetRefocusItem(m.focusedListItem)
+
         handled = ApplyFunc(ContextListScreen().HandleCommand, m, [command, item])
     end if
 
@@ -330,16 +342,13 @@ function playlistHandleCommand(command as string, item as dynamic) as boolean
     end if
 
     if focusItem <> invalid then
-        m.screen.DrawLock()
-
         m.OnFocus(focusItem, focusItem, "up")
         m.OnFocus(item, focusItem, "right")
-
-        m.screen.DrawUnlock()
     end if
 
     m.item.Refresh(refreshMetadata, refreshItems)
 
+    m.screen.DrawUnlock()
     return true
 end function
 
@@ -350,7 +359,7 @@ end sub
 
 sub playlistOnRefreshItems(playlist as object)
     m.children = playlist.items
+    m.screen.DrawLock()
     m.Show()
-
-    ' TODO(schuyler): Find a reasonable way to refocus whatever we used to be on.
+    m.screen.DrawUnlock()
 end sub
