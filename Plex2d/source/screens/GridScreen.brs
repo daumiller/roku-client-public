@@ -276,8 +276,8 @@ sub gsGetComponents()
 
     ' Grid Chunks / Placeholders
     chunks = m.GetGridChunks()
-    if chunks.count() > 0 then
-        for index = 0 to chunks.count()-1
+    if chunks.Count() > 0 then
+        for index = 0 to chunks.Count()-1
             hbox.AddComponent(chunks[index])
         end for
     end if
@@ -285,7 +285,7 @@ sub gsGetComponents()
 
     ' TODO(rob) determine how many chunks to initially load (xml data)
     if m.chunkLoadLimit = invalid then
-        m.LoadGridChunk(chunks, 0, chunks.count())
+        m.LoadGridChunk(chunks, 0, chunks.Count())
     else
         m.LoadGridChunk(chunks, 0, m.chunkLoadLimit)
     end if
@@ -467,7 +467,7 @@ sub gsShiftComponents(shift as object, refocus=invalid as dynamic)
             fullShift.push(component)
         end if
     end for
-    perfTimer().Log("Determined shiftable items: " + "onscreen=" + tostr(partShift.count()) + ", offScreen=" + tostr(fullShift.count()))
+    perfTimer().Log("Determined shiftable items: " + "onscreen=" + tostr(partShift.Count()) + ", offScreen=" + tostr(fullShift.Count()))
 
     ' set the onScreen components (helper for the manual Focus)
     m.onScreenComponents = partShift
@@ -521,13 +521,13 @@ sub gsShiftComponents(shift as object, refocus=invalid as dynamic)
                 lazyLoad.Push(candidate)
             end if
         end for
-        perfTimer().Log("Determined lazy load components (off screen): total=" + tostr(lazyLoad.count()))
+        perfTimer().Log("Determined lazy load components (off screen): total=" + tostr(lazyLoad.Count()))
     end if
 
-    if lazyLoad.count() > 0 or chunksToLoad.count() > 0 then
+    if lazyLoad.Count() > 0 or chunksToLoad.Count() > 0 then
         m.lazyLoadTimer.active = true
         m.lazyLoadTimer.components = lazyLoad
-        if chunksToLoad.count() > 0 then
+        if chunksToLoad.Count() > 0 then
             m.lazyLoadTimer.chunks = chunksToLoad
             m.lazyLoadTimer.SetDuration(100)
         else
@@ -544,7 +544,7 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
 
     ' replace the gridChunk component objects with valid data
     gridChunk = context.gridChunk
-    for index = 0 to items.count()-1
+    for index = 0 to items.Count()-1
         item = items[index]
         gridItem = gridChunk.components[index]
         if item <> invalid and gridItem <> invalid then
