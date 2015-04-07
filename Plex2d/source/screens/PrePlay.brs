@@ -757,9 +757,9 @@ sub preplayRefresh(request=invalid as dynamic, response=invalid as dynamic, cont
     m.item = invalid
 
     ' sticky buttons
-    GetGlobalAA().AddReplace("nextComponentId", 1)
-    m.refocus = computeRect(m.focusedItem)
-    m.refocus.id = m.focusedItem.id
+    if not m.HasRefocusItem() and m.focusedItem.trackAction <> true then
+        m.SetRefocusItem(m.focusedItem, "command")
+    end if
 
     Application().ShowLoadingModal(m)
     m.Show()
