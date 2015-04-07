@@ -70,6 +70,58 @@ play nicely), but you may need to set environment variables for
 `ROKU_DEV_USERNAME` and `ROKU_DEV_PASSWORD`, which default to `rokudev`
 and `plex` respectively.
 
+### Publishing
+
+The Makefile also has some targets that automate publishing packages to
+Roku's channel store. All of these targets require [httpie](http://httpie.org)
+to be installed locally and executable as `http`.
+
+- `make pkg` - Installs a package onto the local Roku and downloads it
+  in `.pkg` format from the application packager.
+- `make upload` - Uploads a package to the Roku store **without** publishing
+  it. The installation code will be echoed so that it can be tested before
+  publishing. This target executes `pkg` as a dependency, so a new package
+  will always be created before uploading.
+- `make publish` - Publishes a pending package in the Roku store. This
+  target does **not** depend on `upload`, since you will often upload,
+  then test, then publish, as discrete steps.
+
+These targets all take the usual phony targets to build a particular
+version of the channel. So to upload a Ninja build you'd use
+`make ninja upload` and to upload a Plex Pass build you'd use
+`make pass upload`. These targets also require additional credentials
+for packaging and uploading. They should be prompted for if not
+provided, but you can also set environment variables if you'd like to
+automate the process further. The environment variables are:
+
+- `ROKU_PKG_PASSWORD` - The password used for the local application packager.
+- `ROKU_PORTAL_USERNAME` - The email address used to login to owner.roku.com
+- `ROKU_PORTAL_PASSWORD` - The password used to login to owner.roku.com.
+- `ROKU_PKG_VERSION` - The version to assign to an uploaded package. This
+  is currently defaulted to 1.1 during our preview period since we can't
+  use numbers less than 1.0. Once we release, we can probably read this
+  from the manifest.
+
+Here are some common specific examples:
+
+#### Upload Ninja build
+
+    make ninja upload
+
+(Note that we haven't been publishing ninja builds, only uploading!)
+
+#### Upload Plex Pass build
+
+    make pass upload
+
+#### Publish Plex Pass build
+
+    make pass publish
+
+#### Upload Public build
+
+    make public upload
+
 ### Debugging
 
 The Roku doesn't have logging per se, but dev channels are able to write
