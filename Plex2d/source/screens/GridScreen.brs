@@ -39,6 +39,10 @@ sub gsInit()
 
     m.spacing = 10
     m.height = 445
+    m.xPadding = 50
+    m.yOffset = 125
+    m.displayWidth = AppSettings().GetWidth()
+    m.displayHeight = AppSettings().GetHeight()
 
     ' use default path if not overridden
     if m.path = invalid then
@@ -262,13 +266,13 @@ sub gsGetComponents()
     end if
     label = createLabel(ucase(title), FontRegistry().NORMAL)
     label.height = FontRegistry().NORMAL.getOneLineHeight()
-    label.width = FontRegistry().NORMAL.getOneLineWidth(label.text, 1280)
-    label.SetFrame(50, 125 - m.spacing - label.height, label.width, label.height)
+    label.width = FontRegistry().NORMAL.getOneLineWidth(label.text, m.displayWidth)
+    label.SetFrame(m.xPadding, m.yOffset - m.spacing - label.height, label.width, label.height)
     m.components.Push(label)
 
     ' *** Grid *** '
-    hbox = createHBox(false, false, false, 10)
-    hbox.SetFrame(50, 125, 2000*2000, m.height)
+    hbox = createHBox(false, false, false, m.spacing)
+    hbox.SetFrame(m.xPadding, m.yOffset, 2000*2000, m.height)
 
     ' Grid Chunks / Placeholders
     chunks = m.GetGridChunks()
@@ -292,7 +296,7 @@ sub gsGetComponents()
 
     ' set the placement of the description box (manualComponent)
     m.DescriptionBox = createDescriptionBox(m)
-    m.DescriptionBox.setFrame(50, 630, 1280-50, 100)
+    m.DescriptionBox.setFrame(m.xPadding, 630, m.displayWidth - m.xPadding, m.displayHeight - 630)
 end sub
 
 function gsCreateGridChunk(placeholder as object) as dynamic
@@ -346,9 +350,9 @@ sub gsCalculateShift(toFocus as object, refocus=invalid as dynamic)
     ' TODO(rob): safeRight/safeLeft should be global/appsettings
     if m.shift = invalid then
         m.shift = {
-            safeRight: 1230
-            safeLeft: 50
-            demandX: int(AppSettings().GetWidth()/2 - toFocus.width/2)
+            safeRight: m.displayWidth - m.xPadding,
+            safeLeft: m.xPadding,
+            demandX: int(m.displayWidth/2 - toFocus.width/2)
         }
     end if
     shift = { x: 0, y:0 }
@@ -635,7 +639,7 @@ sub gsOnRevButton(item=invalid as dynamic)
 end sub
 
 sub gsAdvancePage(delta as integer)
-    ' focus to the first of last item if current focus is fixec
+    ' focus to the first of last item if current focus is fixed
     if m.focusedItem.fixed then
         delta = delta * -1
         total = m.shiftableComponents.Count() - 1
@@ -651,7 +655,7 @@ sub gsAdvancePage(delta as integer)
     end if
 
     ' Locate the closest component 1 screen away
-    xOffset = m.focusedItem.x + (AppSettings().GetWidth() * delta)
+    xOffset = m.focusedItem.x + ( (m.displayWidth - m.xPadding*2) * delta)
     for each comp in m.shiftableComponents
         if comp.focusable = true then
             lastComponent = comp
@@ -659,7 +663,7 @@ sub gsAdvancePage(delta as integer)
                 m.FocusItemManually(comp)
                 return
             else if delta < 0 and comp.x >= xOffset then
-                m.FocusItemManually(lastComponent)
+                m.FocusItemManually(comp)
                 return
             end if
         end if
