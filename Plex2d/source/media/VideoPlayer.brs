@@ -485,7 +485,7 @@ sub vpOnTranscodeInfoResponse(request as object, response as object, context as 
             video = iif(session.Get("videoDecision") = "transcode", "convert", "copy")
             audio = iif(session.Get("audioDecision") = "transcode", "convert", "copy")
 
-            videoItem.ReleaseDate = videoItem.OrigReleaseDate + "   video: " + video + " audio: " + audio + curState
+            videoItem.ReleaseDate = videoItem.OrigReleaseDate + chr(10) + chr(10) + "video: " + video + " audio: " + audio + curState
             m.Screen.SetContent(videoItem)
         end if
     end if
