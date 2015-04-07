@@ -29,6 +29,7 @@ function PreplayScreen() as object
         obj.GetMainInfo = preplayGetMainInfo
         obj.UpdatePrefOptions = preplayUpdatePrefOptions
         obj.SetRefreshCache = preplaySetRefreshCache
+        obj.InitRefreshCache = preplayInitRefreshCache
 
         obj.OnSettingsClosed = preplayOnSettingsClosed
 
@@ -743,11 +744,7 @@ function preplayGetPrefs() as object
 end function
 
 sub preplayRefresh(request=invalid as dynamic, response=invalid as dynamic, context=invalid as dynamic)
-    for each toCache in m.refreshCache
-        if m[toCache] <> invalid then
-            m.refreshCache[toCache] = m[toCache].region
-        end if
-    end for
+    m.InitRefreshCache()
 
     TextureManager().RemoveTextureByScreenId(m.screenID)
     m.CancelRequests()
@@ -939,4 +936,12 @@ sub preplaySetRefreshCache(key as string, component as object)
 
     ' Invalidate the cache and retain the key to cache the response.
     m.refreshCache[key] = invalid
+end sub
+
+sub preplayInitRefreshCache()
+    for each toCache in m.refreshCache
+        if m[toCache] <> invalid then
+            m.refreshCache[toCache] = m[toCache].region
+        end if
+    end for
 end sub

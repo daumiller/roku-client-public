@@ -358,6 +358,7 @@ sub playlistOnRefreshMetadata(playlist as object)
 end sub
 
 sub playlistOnRefreshItems(playlist as object)
+    m.InitRefreshCache()
     m.children = playlist.items
     m.screen.DrawLock()
     m.Show()
