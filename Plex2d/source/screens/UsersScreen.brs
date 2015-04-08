@@ -58,10 +58,11 @@ sub usersGetComponents()
     m.buttons.cols = iif(homeUsers.Count() > m.buttons.maxCols, m.buttons.maxCols, homeUsers.Count())
     m.buttons.x = int(1280/2 - (m.buttons.width*m.buttons.cols)/2)
     m.buttons.y = int(720/2 - m.buttons.height/2)
+    width = (m.buttons.width * m.buttons.cols) + (m.buttons.spacing * (m.buttons.cols-1))
 
     ' show all rows, and scroll on every row
     userBox = createVBox(false, false, false, m.buttons.spacing)
-    userBox.SetFrame(m.buttons.x, m.buttons.y, m.buttons.width * m.buttons.cols, m.buttons.height * m.buttons.rows)
+    userBox.SetFrame(m.buttons.x, m.buttons.y, width, m.buttons.height * m.buttons.rows)
     userBox.SetScrollable(m.buttons.height, true, true, invalid)
 
     ' User Buttons

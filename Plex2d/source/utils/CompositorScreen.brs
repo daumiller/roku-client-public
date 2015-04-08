@@ -9,6 +9,7 @@ function CompositorScreen() as object
 
         obj.HideFocus = compositorHideFocus
         obj.DrawFocus = compositorDrawFocus
+        obj.GetFocusData = compositorGetFocusData
         obj.focusSprite = invalid
 
         obj.DrawLock = compositorDrawLock
@@ -207,7 +208,19 @@ sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
         m.focusSprite = m.compositor.NewSprite(focus.x, focus.y, region, focus.zOrder)
     end if
 
+    ' Save data to the current focus sprite
+    m.focusSprite.SetData({rect: computeRect(component)})
+
     if drawAllNow then m.DrawAll()
+end sub
+
+sub compositorGetFocusData(key=invalid as string) as dynamic
+    data = m.focusSprite.GetData()
+    if data = invalid or key = invalid then
+        return data
+    end if
+
+    return data[key]
 end sub
 
 sub compositorClearDebugSprites()
