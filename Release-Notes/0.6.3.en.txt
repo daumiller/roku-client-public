@@ -1,0 +1,36 @@
+NEW:
+ - List actions: Mark (Un)Watched, reorder, pivots/play queue actions, remove
+ - Use Roku system sounds: global menu volume and fixes lag issues
+ - Updated Now Playing screen (Play Queue list)
+ - Playlist and Play Queue reordering
+ - Artist/Album pivots for tracks
+ - Show pivot on Season screen
+ - Tweak display for Mark as (Un)Watched action
+
+FIXES:
+ - Use the correct repeat icon on re-entry
+ - Fix grid paging
+ - Fix showing more button when On Deck has 6 items
+ - Fix focus issues to and from "More" button
+ - Fix focus issues when PMS has 7+ libraries
+ - Fix focus issues on the now playing screen
+ - Fix focus issues after viewing artists biography
+ - Fix focus issues after viewing album review
+ - Fix playing next track after setting repeat mode
+ - Fix play queue creation for playlists
+ - Fix episode index in vertical episode list
+ - Fix possible reboot on 2nd-gen Rokus during continuous playback
+
+INTERNAL:
+ - `X-Plex-Provides: player` to plex.tv
+ - Add a more specific refocus method
+ - Refactor dropdown positioning
+ - Slack release bot!
+ - Add support to lock/unlock compositor DrawAll
+ - Add a makefile target for publishing channels
+ - Add makefile target for uploading packages to Roku
+ - Hide music video and Plex Mix actions when they don't exist
+ - Glyphs for track actions
+ - Refactor focus methods
+ - Music videos (Vevo) support
+ - Plex Mix support
