@@ -215,6 +215,8 @@ sub compositorDrawFocus(component as object, drawAllNow=false as boolean)
 end sub
 
 sub compositorGetFocusData(key=invalid as string) as dynamic
+    if m.focusSprite = invalid then return invalid
+
     data = m.focusSprite.GetData()
     if data = invalid or key = invalid then
         return data
