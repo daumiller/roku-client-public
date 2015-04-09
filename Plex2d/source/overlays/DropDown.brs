@@ -84,7 +84,11 @@ sub ddoverlayCalculatePosition(vbox as object)
     ' on the screen vertically. We do not support "up" as a specified option, so
     ' we'll have to add support for it later if it's ever preferred.
     '
-    spacing = iif(m.button.parent.spacing > 0, m.button.parent.spacing, CompositorScreen().focusPixels)
+    if m.button.dropdownSpacing <> invalid then
+        spacing = m.button.dropdownSpacing
+    else
+        spacing = iif(m.button.parent.spacing > 0, m.button.parent.spacing, CompositorScreen().focusPixels)
+    end if
     if m.button.dropDownPosition = "right" then
         ddProp.x = parent.right + spacing
     else if m.button.dropDownPosition = "left" then
@@ -155,7 +159,12 @@ sub ddoverlayGetComponents()
             comp = option.component
         else
             comp = createButton(option.text, option.font, option.command)
-            comp.focusInside = true
+            comp.setColor(Colors().Text, Colors().Button)
+            if option.focus_background <> invalid then
+                comp.SetFocusMethod(comp.FOCUS_BACKGROUND, option.focus_background)
+            else
+                comp.focusInside = true
+            end if
             if option.padding <> invalid then
                 comp.setPadding(option.padding.top, option.padding.right, option.padding.bottom, option.padding.left)
             else
@@ -164,7 +173,6 @@ sub ddoverlayGetComponents()
             if option.halign <> invalid then comp.halign = m[option.halign]
             if option.width  <> invalid then comp.width  = option.width
             if option.height <> invalid then comp.height = option.height
-            comp.setColor(Colors().Text, Colors().Button)
             comp.zOrder = ZOrders().DROPDOWN
             comp.fixed = (option.fixed = true)
             comp.SetMetadata(option.metadata)

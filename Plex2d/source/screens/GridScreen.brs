@@ -50,6 +50,9 @@ sub gsInit()
     end if
     m.server = m.item.GetServer()
 
+    ' Init filters
+    m.filters = CreateFilters(m.item)
+
     m.gridContainer = CreateObject("roAssociativeArray")
     m.jumpContainer = CreateObject("roAssociativeArray")
     m.placeholders = CreateObject("roList")
@@ -269,6 +272,93 @@ sub gsGetComponents()
     label.width = FontRegistry().NORMAL.getOneLineWidth(label.text, m.displayWidth)
     label.SetFrame(m.xPadding, m.yOffset - m.spacing - label.height, label.width, label.height)
     m.components.Push(label)
+
+    ' *** start temporary filter testing ***
+    ' TODO(rob): this should probably be some hybrid component. Similar to the header?
+
+    ' TODO(rob): this will need to probably be included/shown with a listener. It's
+    ' possible we are still waiting for a response from the filters/sorts endpoint.
+    if m.filters.IsAvailable() then
+        yOffset = label.y
+        xOffset = 1230 ' variable based on filterBox width
+
+        optionPrefs = {
+            halign: "JUSTIFY_LEFT",
+            height: 50,
+            padding: { right: 10, left: 10, top: 0, bottom: 0 }
+            font: FontRegistry().NORMAL,
+            focus_background: Colors().Orange
+        }
+
+        filterBox = createHBox(false, false, false, 50)
+
+        ' Filters
+        title = "ALL"
+        filterButton = createDropDownButton(title, FontRegistry().NORMAL, 400, m, false)
+        filterButton.SetPadding(0, 10, 0, 10)
+        filterButton.SetDropDownPosition("down")
+        ' TODO(rob): make this part of the standard dropdown.
+        filterButton.dropdownSpacing = 0
+        filterBox.AddComponent(filterButton)
+
+        ' Types [optional]
+        if m.filters.HasTypes() and m.filters.GetSelectedType() <> invalid then
+            title = m.filters.GetSelectedType().title
+            typesButton = createDropDownButton(ucase(title), FontRegistry().NORMAL, 400, m, false)
+            typesButton.SetPadding(0, 10, 0, 10)
+            typesButton.SetDropDownPosition("down")
+            ' TODO(rob): make this part of the standard dropdown.
+            typesButton.dropdownSpacing = 0
+            for each fType in m.filters.GetTypes()
+                option = {text: fType.title, item: fType, command: "filterType"}
+                option.Append(optionPrefs)
+                typesButton.options.Push(option)
+            end for
+            filterBox.AddComponent(typesButton)
+        end if
+
+        ' Sorts
+        title = "BY NAME"
+        sortButton = createDropDownButton(title, FontRegistry().NORMAL, 400, m, false)
+        sortButton.SetPadding(0, 10, 0, 10)
+        sortButton.SetDropDownPosition("down")
+        ' TODO(rob): make this part of the standard dropdown.
+        sortButton.dropdownSpacing = 0
+        filterBox.AddComponent(sortButton)
+
+        ' DropDown options
+
+        ' Filter boolean options
+        for each filter in m.filters.filters
+            if filter.Get("filterType") = "boolean" then
+                option = {text: filter.Get("title"), item: filter, command: "filter", filterType: filter.Get("filterType")}
+                option.Append(optionPrefs)
+                filterButton.options.Push(option)
+            end if
+        end for
+
+        ' Filter: non-boolean options
+        for each filter in m.filters.filters
+            if filter.Get("filterType") <> "boolean" then
+                option = {text: filter.Get("title"), item: filter, command: "filter", filterType: filter.Get("filterType")}
+                option.Append(optionPrefs)
+                filterButton.options.Push(option)
+            end if
+        end for
+
+        ' Sort options
+        for each sort in m.filters.sorts
+            ' <Directory defaultDirection="desc" descKey="originallyAvailableAt:desc" key="originallyAvailableAt" title="First Aired"/>
+            option = {text: sort.Get("title"), item: sort, command: "sort"}
+            option.Append(optionPrefs)
+            sortButton.options.Push(option)
+        end for
+
+        filterBoxWidth = filterBox.GetPreferredWidth()
+        filterBox.setFrame(xOffset - filterBoxWidth, yOffset, filterBoxWidth, filterBox.GetPreferredHeight())
+        m.components.Push(filterBox)
+    end if
+    ' *** end temporary filter testing ***
 
     ' *** Grid *** '
     hbox = createHBox(false, false, false, m.spacing)

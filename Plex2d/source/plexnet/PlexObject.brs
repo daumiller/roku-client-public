@@ -64,6 +64,7 @@ function PlexObjectClass() as object
         obj.GetRelatedItem = pnoGetRelatedItem
 
         obj.GetAbsolutePath = pnoGetAbsolutePath
+        obj.GetSectionPath = pnoGetSectionPath
         obj.GetItemPath = pnoGetItemPath
         obj.GetContextPath = pnoGetContextPath
         obj.GetServer = pnoGetServer
@@ -545,6 +546,10 @@ function pnoGetAbsolutePath(attr) as dynamic
     else
         return m.container.GetAbsolutePath(path)
     end if
+end function
+
+function pnoGetSectionPath() as dynamic
+    return CreateObject("roRegex", "/library\/sections\/\d+", "").Match(m.GetItemPath())[0]
 end function
 
 ' TODO(rob): checkFiles is now disabled by default. We should be deferring
