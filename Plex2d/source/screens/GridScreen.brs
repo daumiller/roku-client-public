@@ -159,8 +159,21 @@ sub gsOnJumpResponse(request as object, response as object, context as object)
     context.response = response
 
     m.jumpItems.clear()
+
+    if response.items.Count() < 2 then return
+
+    ' Reverse the jump list for descending title sort
+    if instr(1, request.GetUrl(), "titleSort:desc") > 0 then
+        items = CreateObject("roList")
+        for each item in response.items
+            items.Unshift(item)
+        end for
+    else
+        items = response.items
+    end if
+
     incr = 0
-    for each item in response.items
+    for each item in items
         m.jumpItems.push({
             index: incr,
             key: item.Get("key")
