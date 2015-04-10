@@ -232,8 +232,18 @@ function gsHandleCommand(command as string, item as dynamic) as boolean
                 exit for
             end if
         next
-    else if not ApplyFunc(ComponentsScreen().HandleCommand, m, [command, item])
-        handled = false
+    else if command = "sort" or command = "filter_boolean" or command = "filterType" then
+        if command = "sort" then
+            m.filters.SetSort(item.plexObject.Get("key"))
+        else if command = "filter_boolean" then
+            m.filters.ToggleFilter(item.plexObject.Get("filter"))
+        else if command = "filterType" then
+            m.filters.SetType(item.metadata)
+        end if
+        newPath = m.filters.BuildPath()
+        m.Refresh(newPath, false)
+    else
+        return ApplyFunc(ComponentsScreen().HandleCommand, m, [command, item])
     end if
 
     return handled
@@ -280,13 +290,33 @@ sub gsGetComponents()
         filterBox = createHBox(false, false, false, 50)
 
         ' Filters
-        title = "ALL"
-        filterButton = createDropDownButton(title, FontRegistry().NORMAL, 400, m, false)
-        filterButton.SetPadding(0, 10, 0, 10)
-        filterButton.SetDropDownPosition("down")
-        ' TODO(rob): make this part of the standard dropdown.
-        filterButton.dropdownSpacing = 0
-        filterBox.AddComponent(filterButton)
+        if m.filters.HasFilters() then
+            title = firstOf(m.filters.GetFilterTitle(), "ALL")
+            filterButton = createDropDownButton(ucase(title), FontRegistry().NORMAL, 400, m, false)
+            filterButton.SetPadding(0, 10, 0, 10)
+            filterButton.SetDropDownPosition("down")
+            ' TODO(rob): make this part of the standard dropdown.
+            filterButton.dropdownSpacing = 0
+            filterBox.AddComponent(filterButton)
+
+            ' Filter boolean options
+            for each filter in m.filters.GetFilterOptions()
+                if filter.Get("filterType") = "boolean" then
+                    option = {text: filter.Get("title"), plexObject: filter, command: "filter_" + filter.Get("filterType")}
+                    option.Append(optionPrefs)
+                    filterButton.options.Push(option)
+                end if
+            end for
+
+            ' Filter: non-boolean options
+            for each filter in m.filters.GetFilterOptions()
+                if filter.Get("filterType") <> "boolean" then
+                    option = {text: filter.Get("title"), plexObject: filter, command: "filter_" + filter.Get("filterType")}
+                    option.Append(optionPrefs)
+                    filterButton.options.Push(option)
+                end if
+            end for
+        end if
 
         ' Types [optional]
         if m.filters.HasTypes() and m.filters.GetSelectedType() <> invalid then
@@ -296,8 +326,8 @@ sub gsGetComponents()
             typesButton.SetDropDownPosition("down")
             ' TODO(rob): make this part of the standard dropdown.
             typesButton.dropdownSpacing = 0
-            for each fType in m.filters.GetTypes()
-                option = {text: fType.title, item: fType, command: "filterType"}
+            for each fType in m.filters.GetTypeOptions()
+                option = {text: fType.title, metadata: fType, command: "filterType"}
                 option.Append(optionPrefs)
                 typesButton.options.Push(option)
             end for
@@ -305,41 +335,23 @@ sub gsGetComponents()
         end if
 
         ' Sorts
-        title = "BY NAME"
-        sortButton = createDropDownButton(title, FontRegistry().NORMAL, 400, m, false)
-        sortButton.SetPadding(0, 10, 0, 10)
-        sortButton.SetDropDownPosition("down")
-        ' TODO(rob): make this part of the standard dropdown.
-        sortButton.dropdownSpacing = 0
-        filterBox.AddComponent(sortButton)
+        if m.filters.HasSorts() then
+            title = firstOf(m.filters.GetSortTitle(), "SORT")
+            sortButton = createDropDownButton(ucase(title), FontRegistry().NORMAL, 400, m, false)
+            sortButton.SetPadding(0, 10, 0, 10)
+            sortButton.SetDropDownPosition("down")
+            ' TODO(rob): make this part of the standard dropdown.
+            sortButton.dropdownSpacing = 0
+            filterBox.AddComponent(sortButton)
 
-        ' DropDown options
-
-        ' Filter boolean options
-        for each filter in m.filters.filters
-            if filter.Get("filterType") = "boolean" then
-                option = {text: filter.Get("title"), item: filter, command: "filter", filterType: filter.Get("filterType")}
+            ' Sort options
+            for each sort in m.filters.GetSortOptions()
+                ' <Directory defaultDirection="desc" descKey="originallyAvailableAt:desc" key="originallyAvailableAt" title="First Aired"/>
+                option = {text: sort.Get("title"), plexObject: sort, command: "sort"}
                 option.Append(optionPrefs)
-                filterButton.options.Push(option)
-            end if
-        end for
-
-        ' Filter: non-boolean options
-        for each filter in m.filters.filters
-            if filter.Get("filterType") <> "boolean" then
-                option = {text: filter.Get("title"), item: filter, command: "filter", filterType: filter.Get("filterType")}
-                option.Append(optionPrefs)
-                filterButton.options.Push(option)
-            end if
-        end for
-
-        ' Sort options
-        for each sort in m.filters.sorts
-            ' <Directory defaultDirection="desc" descKey="originallyAvailableAt:desc" key="originallyAvailableAt" title="First Aired"/>
-            option = {text: sort.Get("title"), item: sort, command: "sort"}
-            option.Append(optionPrefs)
-            sortButton.options.Push(option)
-        end for
+                sortButton.options.Push(option)
+            end for
+        end if
 
         filterBoxWidth = filterBox.GetPreferredWidth()
         filterBox.setFrame(xOffset - filterBoxWidth, yOffset, filterBoxWidth, filterBox.GetPreferredHeight())
