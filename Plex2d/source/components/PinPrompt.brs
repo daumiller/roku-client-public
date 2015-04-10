@@ -204,7 +204,7 @@ sub pinpromptOnBlur(toFocus as object)
     m.draw(true)
 end sub
 
-sub pinpromptOnSelected()
+sub pinpromptOnSelected(screen as object)
     m.overlay.HandleButton(m)
 end sub
 

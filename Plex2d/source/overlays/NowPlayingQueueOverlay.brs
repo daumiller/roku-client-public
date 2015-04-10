@@ -230,7 +230,7 @@ sub npqoGetComponents()
     m.components.Push(m.focusBG)
 end sub
 
-sub npqoOnSelected()
+sub npqoOnSelected(screen as object)
     AudioPlayer().PlayItemAtPQIID(m.plexObject.GetInt("playQueueItemID"))
 end sub
 

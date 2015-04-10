@@ -196,7 +196,7 @@ function settingsGetPrefs() as object
     return AppSettings().GetGlobalSettings()
 end function
 
-sub settingsOnSelected()
+sub settingsOnSelected(screen as object)
     m.screen.OnKeyPress(m.screen.kp_RT, false)
 end sub
 

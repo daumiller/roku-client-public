@@ -492,7 +492,7 @@ sub compOnItemSelected(item as object)
 
     if item.OnSelected <> invalid then
         Debug("Defer to items OnSelected method")
-        item.OnSelected()
+        item.OnSelected(m)
     else if item.command <> invalid then
         if not m.HandleCommand(item.command, item) then
             dialog = createDialog("Command not defined", "command: " + tostr(item.command), m)

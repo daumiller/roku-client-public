@@ -179,7 +179,7 @@ sub dialogAddButton(text as string, command=invalid as dynamic, bgColor=invalid 
     m.buttons.push({text: text, command: command, bgColor: bgColor})
 end sub
 
-sub dialogButtonOnSelected()
+sub dialogButtonOnSelected(screen as object)
     m.dialog.HandleButton(m)
 end sub
 

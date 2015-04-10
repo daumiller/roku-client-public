@@ -92,7 +92,7 @@ function settingsbuttonDraw(redraw=false as boolean) as object
     return [m]
 end function
 
-sub settingsbuttonOnSelected()
+sub settingsbuttonOnSelected(screen as object)
     prefKey = m.command
 
     if m.prefType = "bool" then
