@@ -3,8 +3,6 @@ sub sddoverlayGetComponents()
     MyPlexManager().RefreshResources()
 
     vbox = createVBox(false, false, false, 0)
-    vbox.SetScrollable(m.button.maxHeight)
-    vbox.stopShiftIfInView = true
 
     ' server containers for ordering. This may be better handles inside of
     ' `PlexServerManager().GetServers()`

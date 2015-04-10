@@ -572,7 +572,7 @@ function preplayGetButtons() as object
 
     for each button in buttons
         if button.type = "dropDown" then
-            btn = createDropDownButton(button.text, m.customFonts.glyphs, buttonHeight * 5, m)
+            btn = createDropDownButton(button.text, m.customFonts.glyphs, m)
             btn.SetDropDownPosition(button.position)
             for each option in button.options
                 option.Append(optionPrefs)

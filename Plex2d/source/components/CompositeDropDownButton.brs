@@ -19,8 +19,8 @@ function CompositeDropDownButtonClass() as object
     return m.CompositeDropDownButtonClass
 end function
 
-sub cddbuttonInit(text as string, font as object, maxHeight as integer)
-    ApplyFunc(DropDownButtonClass().Init, m, [text, font, maxHeight])
+sub cddbuttonInit(text as string, font as object)
+    ApplyFunc(DropDownButtonClass().Init, m, [text, font])
     ApplyFunc(CompositeClass().Init, m)
 
     ' Set default padding

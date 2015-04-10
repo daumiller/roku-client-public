@@ -14,19 +14,19 @@ function OptionsDropDownButtonClass() as object
     return m.OptionsDropDownButtonClass
 end function
 
-function createOptionsDropDownButton(text as string, font as object, maxHeight as integer, screen as object) as object
+function createOptionsDropDownButton(text as string, font as object, screen as object) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(OptionsDropDownButtonClass())
 
     obj.screen = screen
 
-    obj.Init(text, font, maxHeight)
+    obj.Init(text, font)
 
     return obj
 end function
 
-sub oddbuttonInit(text as string, font as object,  maxHeight as integer)
-    ApplyFunc(CompositeDropDownButtonClass().Init, m, [text, font, maxHeight])
+sub oddbuttonInit(text as string, font as object)
+    ApplyFunc(CompositeDropDownButtonClass().Init, m, [text, font])
 
     ' Custom fonts for the drop down options. These need to be references at this
     ' this level to conserve memory. Each drop down item will have a reference.

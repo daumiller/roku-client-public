@@ -20,23 +20,22 @@ function DropDownButtonClass() as object
     return m.DropDownButtonClass
 end function
 
-function createDropDownButton(text as string, font as object, maxHeight as integer, screen as object, useIndicator=true as boolean) as object
+function createDropDownButton(text as string, font as object, screen as object, useIndicator=true as boolean) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(DropDownButtonClass())
 
     obj.screen = screen
 
-    obj.Init(text, font, maxHeight)
+    obj.Init(text, font)
 
     obj.useIndicator = useIndicator
 
     return obj
 end function
 
-sub ddbuttonInit(text as string, font as object, maxHeight as integer)
+sub ddbuttonInit(text as string, font as object)
     ApplyFunc(ButtonClass().Init, m, [text, font])
 
-    m.maxHeight = maxHeight
     m.command = "show_dropdown"
 
     ' options roList of AA to build components

@@ -87,7 +87,7 @@ sub buttonGridAddButtons(actions as object, buttonFields as object, screen as ob
 
     for each action in actions
         if action.type = "dropDown" then
-            btn = createDropDownButton(action.text, action.font, 50 * action.options.Count(), screen, false)
+            btn = createDropDownButton(action.text, action.font, screen, false)
             btn.SetDropDownPosition(action.position)
 
             for each option in action.options

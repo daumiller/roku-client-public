@@ -18,20 +18,20 @@ function ServerDropDownButtonClass() as object
     return m.ServerDropDownButtonClass
 end function
 
-function createServerDropDownButton(server as object, font as object, maxHeight as integer, screen as object) as object
+function createServerDropDownButton(server as object, font as object, screen as object) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(ServerDropDownButtonClass())
 
     obj.screen = screen
     obj.server = server
 
-    obj.Init(server.name, font, maxHeight)
+    obj.Init(server.name, font)
 
     return obj
 end function
 
-sub sddbuttonInit(text as string, font as object,  maxHeight as integer)
-    ApplyFunc(CompositeDropDownButtonClass().Init, m, [text, font, maxHeight])
+sub sddbuttonInit(text as string, font as object)
+    ApplyFunc(CompositeDropDownButtonClass().Init, m, [text, font])
 
     ' Custom fonts for the drop down options. These need to be references at this
     ' this level to conserve memory. Each drop down item will have a reference.
