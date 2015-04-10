@@ -50,7 +50,6 @@ function ComponentsScreen() as object
         obj.GetManualComponents = compGetManualComponents
         obj.DestroyComponents = compDestroyComponents
         obj.CloseOverlays = compCloseOverlays
-        obj.ResetOnScreenComponents = compResetOnScreenComponents
 
         ' Manual focus methods
         obj.GetFocusManual = compGetFocusManual
@@ -83,6 +82,7 @@ function ComponentsScreen() as object
         obj.SetRefocusItem = compSetRefocusItem
         obj.HasRefocusItem = compHasRefocusItem
         obj.IsRefocusItem = compIsRefocusItem
+        obj.RefreshAvailableComponents = compRefreshAvailableComponents
 
         ' Playback methods
         obj.CreatePlayerForItem = compCreatePlayerForItem
@@ -165,7 +165,7 @@ sub compShow()
     ' will only include non-fixed (shiftable) components.
     for each comp in m.onScreenComponents
         if comp.fixed = true then
-            m.FixedComponents.push(comp)
+            m.fixedComponents.push(comp)
         end if
     end for
 
@@ -711,7 +711,7 @@ function compGetFocusManual(direction as string, focusableComponenents=invalid a
         for each component in m.onScreenComponents
             if component.focusable then candidates.push(component)
         next
-        for each component in m.FixedComponents
+        for each component in m.fixedComponents
             if component.focusable then candidates.push(component)
         next
 
@@ -1334,11 +1334,21 @@ sub compOnRevButton(item=invalid as dynamic)
     ' no-op
 end sub
 
-sub compResetOnScreenComponents()
+sub compRefreshAvailableComponents()
     m.onScreenComponents.Clear()
+    m.shiftableComponents.Clear()
+    m.fixedComponents.Clear()
+
     for each comp in m.components
         comp.GetFocusableItems(m.onScreenComponents)
-    next
+        comp.GetShiftableItems(m.shiftableComponents, m.shiftableComponents)
+    end for
+
+    for each comp in m.onScreenComponents
+        if comp.fixed = true then
+            m.fixedComponents.push(comp)
+        end if
+    end for
 end sub
 
 function compHasRefocusItem() as boolean

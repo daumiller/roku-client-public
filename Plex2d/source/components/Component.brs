@@ -321,7 +321,7 @@ end sub
 
 sub compGetFocusableItems(arr as object)
     ' check if the component is focusable and on the screen (or off by a little)
-    if m.focusable and m.IsOnScreen(0, 0, int(AppSettings().GetWidth()/4)) then
+    if (m.focusable or m.wasFocusable = true) and m.IsOnScreen(0, 0, int(AppSettings().GetWidth()/4)) then
         arr.Push(m)
     end if
 end sub

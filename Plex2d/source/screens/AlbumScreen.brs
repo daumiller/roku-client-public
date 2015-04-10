@@ -515,7 +515,7 @@ sub albumToggleSummary()
         if component.IsOnScreen() then component.SetVisible(visible)
     end for
 
-    m.ResetOnScreenComponents()
+    m.RefreshAvailableComponents()
 
     ' invalidate focus sibling and last focus item
     m.focusedItem.SetFocusSibling("right", invalid)
