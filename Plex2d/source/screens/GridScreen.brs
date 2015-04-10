@@ -28,6 +28,10 @@ function GridScreen() as object
         obj.OnLoadGridChunk = gsOnLoadGridChunk
         obj.ChunkIsLoaded = gsChunkIsLoaded
 
+        ' Refresh methods
+        obj.Refresh = gsRefresh
+        obj.ResetInit = gsResetInit
+
         m.GridScreen = obj
     end if
 
@@ -37,26 +41,15 @@ end function
 sub gsInit()
     ApplyFunc(ComponentsScreen().Init, m)
 
+    ' Init filters
+    m.filters = CreateFilters(m.item)
+
     m.spacing = 10
     m.height = 445
     m.xPadding = 50
     m.yOffset = 125
     m.displayWidth = AppSettings().GetWidth()
     m.displayHeight = AppSettings().GetHeight()
-
-    ' use default path if not overridden
-    if m.path = invalid then
-        m.path = m.item.GetAbsolutePath("key")
-    end if
-    m.server = m.item.GetServer()
-
-    ' Init filters
-    m.filters = CreateFilters(m.item)
-
-    m.gridContainer = CreateObject("roAssociativeArray")
-    m.jumpContainer = CreateObject("roAssociativeArray")
-    m.placeholders = CreateObject("roList")
-    m.jumpItems = CreateObject("roList")
 
     ' lazy style loading. We might allow the user to modify this, but the different platforms
     ' seem to need a different style to make them work a little better. The Roku 3 is about
@@ -73,9 +66,7 @@ sub gsInit()
         m.chunkLoadLimit = 5
     end if
 
-    ' use a smaller chunk for the inital load size. This may need to vary
-    ' depending on the grid type (artwork, poster)
-    m.chunkSizeInitial = 16
+    m.ResetInit(m.path)
 end sub
 
 function createGridScreen(item as object, path=invalid as dynamic, rows=2 as integer, orientation=invalid as dynamic) as object
@@ -136,21 +127,12 @@ sub gsShow()
         Application().StartRequest(request, context)
         m.gridContainer = context
 
-        ' TODO(schuyler): This is a bit of a hack to allow jump lists for Unwatched.
-        ' We can find a better solution when we solve filtering/browsing more generally.
-        ' create requests for the jump items (only if we are using the ALL endpoint)
-        if m.jumpContainer.request = invalid and (instr(1, m.path, "/all") > 0 or instr(1, m.path, "/unwatched") > 0) and not instr(1, m.path, "sort=") > 0 then
+        ' Create requests for the jump items (only if we are using the ALL endpoint)
+        jumpSortSupported = instr(1, m.path, "/all") > 0 and (instr(1, m.path, "sort=") = 0 or instr(1, m.path, "sort=titleSort") > 0)
+        if m.jumpContainer.request = invalid and jumpSortSupported then
             ' support filtered endpoints (replace /all with /firstCharacter)
             regex = CreateObject("roRegex", "/(\w+)(\?|$)", "")
             jumpUrl = regex.Replace(m.path, "/firstCharacter\2")
-            match = regex.Match(m.path)
-            if match[1] = "unwatched" then
-                if instr(1, jumpUrl, "?") then
-                    jumpUrl = jumpUrl + "&unwatched=1"
-                else
-                    jumpUrl = jumpUrl + "?unwatched=1"
-                end if
-            end if
             request = createPlexRequest(m.server, jumpUrl)
             context = request.CreateRequestContext("jump", createCallable("OnJumpResponse", m))
             Application().StartRequest(request, context)
@@ -211,7 +193,12 @@ sub gsOnGridResponse(request as object, response as object, context as object)
     m.totalSize = response.container.getint("totalSize")
     if m.totalSize < m.chunkSizeInitial then m.chunkSizeInitial = m.totalSize
     ' TODO(rob): we should use 3/4 height for landscape and square orientation
-    if m.totalSize < 20 and m.orientation = ComponentClass().ORIENTATION_PORTRAIT then m.rows = 1
+    if m.totalSize < 20 and m.orientation = ComponentClass().ORIENTATION_PORTRAIT then
+        m.gridRows = 1
+    else
+        m.gridRows = m.rows
+    end if
+
     placeholder = {
         start: 0,
         size: m.chunkSizeInitial,
@@ -392,7 +379,7 @@ end sub
 function gsCreateGridChunk(placeholder as object) as dynamic
     if placeholder = invalid or placeholder.size = invalid then return invalid
 
-    grid = createGrid(m.orientation, m.rows, m.spacing)
+    grid = createGrid(m.orientation, m.gridRows, m.spacing)
     grid.height = m.height
 
     ' set the properties needed to lazyload the chunk
@@ -759,4 +746,44 @@ sub gsAdvancePage(delta as integer)
         end if
     end for
     m.FocusItemManually(lastComponent)
+end sub
+
+sub gsRefresh(path=invalid as dynamic, stickyFocus=true as boolean)
+    TextureManager().RemoveTextureByScreenId(m.screenID)
+    m.CancelRequests()
+
+    m.ResetInit(path)
+
+    if stickyFocus then
+        m.SetRefocusItem(m.focusedItem)
+    else
+        m.Delete("refocus")
+    end if
+
+    ' Close any overlay screen (drop downs)
+    m.CloseOverlays()
+
+    Application().ShowLoadingModal(m)
+    m.Show()
+end sub
+
+sub gsResetInit(path=invalid as dynamic)
+    m.DisableListeners(true)
+    m.server = m.item.GetServer()
+
+    ' use default path if not overridden
+    if path <> invalid then
+        m.path = path
+    else
+        m.path = m.item.GetAbsolutePath("key")
+    end if
+
+    m.gridContainer = CreateObject("roAssociativeArray")
+    m.jumpContainer = CreateObject("roAssociativeArray")
+    m.placeholders = CreateObject("roList")
+    m.jumpItems = CreateObject("roList")
+
+    ' use a smaller chunk for the inital load size. This may need to vary
+    ' depending on the grid type (artwork, poster)
+    m.chunkSizeInitial = 16
 end sub
