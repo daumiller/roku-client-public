@@ -86,8 +86,10 @@ sub ddoverlayCalculatePosition(vbox as object)
     '
     if m.button.dropdownSpacing <> invalid then
         spacing = m.button.dropdownSpacing
+    else if m.button.parent <> invalid and m.button.parent.spacing > 0 then
+        spacing = m.button.parent.spacing
     else
-        spacing = iif(m.button.parent.spacing > 0, m.button.parent.spacing, CompositorScreen().focusPixels)
+        spacing = CompositorScreen().focusPixels
     end if
     if m.button.dropDownPosition = "right" then
         ddProp.x = parent.right + spacing

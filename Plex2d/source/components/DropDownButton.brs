@@ -51,12 +51,15 @@ sub ddbuttonShow()
     m.overlay.AddListener(m.screen, "OnFailedFocus", CreateCallable("OnFailedFocus", m.overlay))
 end sub
 
-sub ddbuttonSetDropDownPosition(direction as string)
+sub ddbuttonSetDropDownPosition(direction as string, dropdownSpacing=invalid as dynamic)
     ' Supported: bottom, right and left. "up" is used dynamically
     ' (for now) when we reset the position to fit on the screen.
     '
     m.dropDownPosition = direction
     m.scrollbarPosition = iif(direction = "left", direction, "right")
+    if dropdownSpacing <> invalid then
+        m.dropdownSpacing = dropdownSpacing
+    end if
 end sub
 
 function ddbuttonGetOptions() as object
