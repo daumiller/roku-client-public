@@ -1,11 +1,13 @@
 function FiltersClass() as object
     if m.FiltersClass = invalid then
         obj = CreateObject("roAssociativeArray")
+        obj.Append(ListenersMixin())
+        obj.Append(EventsMixin())
 
         ' Methods
         obj.Init = filtersInit
-        obj.OnSortsResponse = filtersOnSortsResponse
-        obj.OnFiltersResponse = filtersOnFiltersResponse
+        obj.OnResponse = filtersOnResponse
+        obj.RequestComplete = filtersRequestComplete
 
         obj.HasSorts = filtersHasSorts
         obj.HasTypes = filtersHasTypes
@@ -17,6 +19,11 @@ function FiltersClass() as object
         obj.GetSortOptions = filtersGetSortOptions
         obj.GetTypeOptions = filtersGetTypeOptions
         obj.GetFilterOptions = filtersGetFilterOptions
+
+        obj.SetParsedSort = filtersSetParsedSort
+        obj.SetParsedType = filtersSetParsedType
+        obj.SetParsedFilter = filtersSetParsedFilter
+        obj.SetDefaultSort = filtersSetDefaultSort
 
         obj.SetSort = filtersSetSort
         obj.SetType = filtersSetType
@@ -33,29 +40,30 @@ function FiltersClass() as object
         obj.GetSortTitle = filtersGetSortTitle
         obj.GetFilterTitle = filtersGetFilterTitle
 
+        obj.ParseType = filtersParseType
         obj.ParsePath = filtersParsePath
         obj.BuildPath = filtersBuildPath
 
         ' Constants
         obj.types = CreateObject("roAssociativeArray")
         obj.types["movie"] = [
-            {title: "Movie", value: "1"}
+            {title: "Movie", key: "movie", value: "1"}
         ]
 
         ' TODO(rob): Check with PMS for season filters/sorts. The PMS seems to give
         ' very little back, however the show filters/sorts work.
         obj.types["show"] = [
-            {title: "Show", value: "2"},
-            {title: "Season", value: "3"},
-            {title: "Episode", value: "4"}
+            {title: "Show", key: "show", value: "2"},
+            {title: "Season", key: "season", value: "3"},
+            {title: "Episode", key: "episode", value: "4"}
         ]
         obj.types["artist"] = [
-            {title: "Artist", value: "8"},
-            {title: "Album", value: "9"}
-            {title: "Track", value: "10"}
+            {title: "Artist", key: "artist", value: "8"},
+            {title: "Album", key: "album", value: "9"}
+            {title: "Track", key: "track", value: "10"}
         ]
         obj.types["photo"] = [
-            {title: "Photo", value: "13"}
+            {title: "Photo", key: "photo", value: "13"}
         ]
 
         m.FiltersClass = obj
@@ -68,12 +76,13 @@ function createFilters(item as object) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(FiltersClass())
 
-    obj.Init(item)
+    obj.item = item
+    obj.Init()
 
     return obj
 end function
 
-sub filtersInit(item as object)
+sub filtersInit()
     ' TODO(rob): do we want to parse the current item for filter/sorts
     ' in the url. e.g. the unwatched button button and hubs that use
     ' a compatible filterd/sorted endpoint.
@@ -84,57 +93,65 @@ sub filtersInit(item as object)
 
     ' Containers for current filters, type and sorts
     m.currentSort = CreateObject("roAssociativeArray")
-    m.currentType = CreateObject("roAssociativeArray")
     m.currentFilters = CreateObject("roList")
-
-    ' TODO(rob): handle multi value types - toggle between/use existing
-    if m.selectedTypeIndex = invalid then m.selectedTypeIndex = 0
-    m.filterTypes = firstOf(m.types[item.Get("type", "")], [])
-
-    m.sectionPath = item.GetSectionPath()
-    m.originalPath = item.GetAbsolutePath("key")
-    m.server = item.GetServer()
-
-    if m.sectionPath = invalid then return
-
-    m.Refresh()
+    m.currentFilterTypes = CreateObject("roArray", 5, true)
 end sub
 
 sub filtersRefresh()
-    m.ClearSort(true)
+    m.sectionPath = m.item.GetSectionPath()
+    m.server = m.item.GetServer()
+    m.originalPath = m.item.GetAbsolutePath("key")
+
+    if not m.ParseType() or m.sectionPath = invalid then
+        Debug("Filters are not supported for this endpoint: " + tostr(m.originalPath))
+        return
+    end if
+
+    m.ClearSort()
     m.ClearFilters()
 
-    ' Filters request
-    m.filterType = m.GetSelectedType()
-    if m.filterType = invalid then return
+    m.requests = CreateObject("roList")
+    options = ["filters", "sorts"]
+    for each option in options
+        request = createPlexRequest(m.server, m.sectionPath + "/" + option + "?type=" + m.GetSelectedType().value)
+        context = request.CreateRequestContext(option, createCallable("OnResponse", m))
+        m.requests.Push({request: request, context: context})
+    end for
 
-    request = createPlexRequest(m.server, m.sectionPath + "/filters?type=" + m.filterType.value)
-    context = request.CreateRequestContext("filters", createCallable("OnFiltersResponse", m))
-    Application().StartRequest(request, context)
-
-    ' Sorts request
-    request = createPlexRequest(m.server, m.sectionPath + "/sorts?type=" + m.filterType.value)
-    context = request.CreateRequestContext("sorts", createCallable("OnSortsResponse", m))
-    Application().StartRequest(request, context)
+    for each request in m.requests
+        Application().StartRequest(request.request, request.context)
+    end for
 end sub
 
-sub filtersOnFiltersResponse(request as object, response as object, context as object)
+sub filtersOnResponse(request as object, response as object, context as object)
     if not response.IsSuccess() then return
     response.ParseResponse()
+    context.complete = true
 
-    m.filterItems = response.items
+    if context.requestType = "sorts" then
+        m.sortItems = response.items
+    else if context.requestType = "filters" then
+        m.filterItems = response.items
+    else
+        Debug("Unknown request type: " + tostr(context.requestType))
+    end if
 
-    m.ParsePath(m.originalPath)
+    m.RequestComplete()
 end sub
 
-sub filtersOnSortsResponse(request as object, response as object, context as object)
-    if not response.IsSuccess() then return
-    response.ParseResponse()
+sub filtersRequestComplete()
+    ' Ignore futher processing until all requests are complete
+    for each request in m.requests
+        if request.context.complete <> true then
+            return
+        end if
+    end for
 
-    m.sortItems = response.items
-
-    m.ClearSort(false)
-    m.ParsePath(m.originalPath)
+    ' Parse current path for filters and sorts
+    if m.ParsePath(m.originalPath) then
+        ' Let whoever is listening know the requests are complete
+        m.Trigger("refresh", [m])
+    end if
 end sub
 
 function filtersHasFilters() as boolean
@@ -150,18 +167,20 @@ function filtersIsAvailable() as boolean
 end function
 
 function filtersHasTypes() as boolean
-    return (m.filterTypes.Count() > 1)
+    return (m.currentFilterTypes.Count() > 1)
 end function
 
 function filtersGetTypeOptions() as object
-    return m.filterTypes
+    return m.currentFilterTypes
 end function
 
 function filtersGetSelectedType() as dynamic
-    return m.filterTypes[m.selectedTypeIndex]
+    if m.selectedTypeIndex = invalid then return invalid
+
+    return m.currentFilterTypes[m.selectedTypeIndex]
 end function
 
-sub filtersParsePath(path as string)
+function filtersParsePath(path as string, parseTypeOnly=false as boolean) as boolean
     ' Parse the current filter/sort from the url. There are some caveats
     ' though. How do we handle specialized sorting/filtering?
     '
@@ -178,20 +197,38 @@ sub filtersParsePath(path as string)
         ' Ignore specialized filtering for now
         allowed = CreateObject("roRegex", "\w=\w", "")
         for each arg in args
-            if allowed.IsMatch(arg) then
+            supported = allowed.IsMatch(arg)
+            if supported then
                 av = arg.tokenize("=")
                 ' Do we need to url escape arg strings
-                if av[0] = "sort" then
-                    m.SetSort(av[1], false)
+                if parseTypeOnly or av[0] = "type" then
+                    if av[0] = "type" then
+                        m.SetParsedType(av[1])
+                    end if
                 else
-                    m.SetFilter(av[0], av[1])
+                    if av[0] = "sort" then
+                        supported = m.SetParsedSort(av[1])
+                    else
+                        supported = m.SetParsedFilter(av[0], av[1])
+                    end if
                 end if
             end if
+
+            ' Return early if the endpoint isn't supported. We could be more
+            ' fancy, and disallow a filtering or sorting separately if one
+            ' is supported while the other is not. I'm sure there are caveats
+            ' so lets keep it simple.
+            '
+            if not supported then return false
         end for
     else
-        m.ClearSort(false)
+        m.ClearSort()
         m.ClearFilters()
     end if
+
+    if parseTypeOnly then return true
+
+    m.SetDefaultSort()
 
     Debug("Parsed url for filters and sorts: " + path)
     Debug("Sort: " + tostr(m.currentSort, 1))
@@ -201,26 +238,28 @@ sub filtersParsePath(path as string)
             Debug(tostr(filter, 1))
         end for
     end if
+
+    return true
+end function
+
+sub filtersClearSort()
+    m.currentSort.Clear()
 end sub
 
-sub filtersClearSort(clearAll=false as boolean)
-    if clearAll then
-        m.Delete("defaultSortKey")
-        m.currentSort.Clear()
-        return
-    end if
+sub filtersSetDefaultSort()
+    m.Delete("defaultSortKey")
+    if not m.HasSorts() then return
 
-    ' Do not clean the sort, just set it back to the default.
-    if m.defaultSortKey = invalid then
-        for each plexObject in m.sortItems
-            if plexObject.Has("default") then
-                 m.defaultSortKey = plexObject.Get("key")
-                exit for
-            end if
-        end for
-    end if
+    for each plexObject in m.sortItems
+        if plexObject.Has("default") then
+             m.defaultSortKey = plexObject.Get("key")
+            exit for
+        end if
+    end for
 
-    m.SetSort(m.defaultSortKey, false)
+    if m.GetSort() = invalid then
+        m.SetParsedSort(m.defaultSortKey)
+    end if
 end sub
 
 sub filtersClearFilters()
@@ -247,7 +286,9 @@ function filtersGetFilterTitle() as dynamic
     filterStringArr = []
 
     for each filter in m.currentFilters
-        filterStringArr.Push(filter.plexObject.Get("title"))
+        if filter.plexObject <> invalid then
+            filterStringArr.Push(filter.plexObject.Get("title"))
+        end if
     end for
 
     if filterStringArr.Count() > 0 then
@@ -263,26 +304,44 @@ function filtersGetFilters() as dynamic
     return m.currentFilters
 end function
 
-sub filtersSetType(filterType as object)
-    m.currentType.Clear()
-    typeOptions = m.GetTypeOptions()
-    for index = 0 to typeOptions.Count() - 1
-        option = typeOptions[index]
-        if filterType.value = option.value then
-            m.selectedTypeIndex = index
-            exit for
+sub filtersSetType(value=invalid as dynamic, disableTriggers=false as boolean)
+    if value = invalid then return
+
+    ' value can be an object or string (key|value)
+    match = {key: "value"}
+    if IsString(value) then
+        match.value = value
+        if tostr(value.toInt()) <> value then
+            match.key = "key"
         end if
-    end for
-
-    m.Refresh()
-end sub
-
-sub filtersSetSort(key=invalid as dynamic, toggle=true as boolean)
-    if key = invalid or key <> m.currentSort.defaultKey or toggle = false then
-        m.ClearSort(true)
+    else
+        match.value = value.value
     end if
 
-    if key = invalid or not m.HasSorts() then return
+    m.currentFilterTypes.Clear()
+    m.Delete("selectedTypeIndex")
+    for each key in m.types
+        filterTypes = m.types[key]
+        for index = 0 to filterTypes.Count() - 1
+            if lcase(filterTypes[index][match.key]) = lcase(match.value) then
+                m.currentFilterTypes.Append(filterTypes)
+                m.selectedTypeIndex = index
+                exit for
+            end if
+        end for
+    end for
+
+    if not disableTriggers then
+        m.Trigger("set_type", [m])
+    end if
+end sub
+
+function filtersSetSort(key=invalid as dynamic, toggle=true as boolean, disableTriggers=false) as boolean
+    if key = invalid or key <> m.currentSort.defaultKey or toggle = false then
+        m.ClearSort()
+    end if
+
+    if key = invalid or not m.HasSorts() then return true
 
     for each sort in m.sortItems
         if instr(1, key, sort.Get("key")) > 0 then
@@ -290,7 +349,9 @@ sub filtersSetSort(key=invalid as dynamic, toggle=true as boolean)
             descKey = sort.Get("descKey", defaultKey)
 
             ' Set the new sort or toggle existing
-            if m.currentSort.key = invalid then
+            if toggle = false then
+                m.currentSort.key = key
+            else if m.currentSort.key = invalid then
                 m.currentSort.key = iif(sort.Get("defaultDirection", "desc") = "desc", descKey, defaultKey)
             else if defaultKey = m.currentSort.key then
                 m.currentSort.key = descKey
@@ -301,10 +362,45 @@ sub filtersSetSort(key=invalid as dynamic, toggle=true as boolean)
             m.currentSort.defaultKey = defaultKey
             m.currentSort.plexObject = sort
 
-            exit for
+            if not disableTriggers then
+                m.Trigger("set_sort", [m])
+            end if
+
+            return true
         end if
     end for
+
+    return false
+end function
+
+' Wrapper to always disabled triggers when automatically setting a filter
+function filtersSetParsedFilter(key as string, value=invalid as dynamic) as boolean
+    return m.SetFilter(key, value, false, true)
+end function
+
+' Wrapper to always disabled triggers when automatically setting a sort
+function filtersSetParsedSort(key=invalid as dynamic) as boolean
+    return m.SetSort(key, false, true)
+end function
+
+' Wrapper to always disabled triggers when automatically setting a sort
+sub filtersSetParsedType(key=invalid as dynamic)
+    m.SetType(key, true)
 end sub
+
+function filtersParseType() as boolean
+    ' Try parsing the type from the path
+    if m.ParsePath(m.originalPath, true) then
+        ' Fall back to setting the type based on the item
+        if m.GetSelectedType() = invalid then
+            m.SetParsedType(m.item.Get("type"))
+        end if
+
+        return (m.GetSelectedType() <> invalid)
+    end if
+
+    return false
+end function
 
 sub filtersToggleFilter(key as string)
     ' Logic to toggle is part of SetFilter, but this wrapper
@@ -312,8 +408,8 @@ sub filtersToggleFilter(key as string)
     m.SetFilter(key, "1", true)
 end sub
 
-sub filtersSetFilter(key as string, value=invalid as dynamic, toggle=false as boolean)
-    if not m.HasFilters() then return
+function filtersSetFilter(key as string, value=invalid as dynamic, toggle=false as boolean, disableTriggers=false as boolean) as boolean
+    if not m.HasFilters() then return true
 
     curfilters = m.currentFilters
 
@@ -342,13 +438,24 @@ sub filtersSetFilter(key as string, value=invalid as dynamic, toggle=false as bo
                 filter.isBoolean = (plexObject.Get("filterType") = "boolean")
                 filter.plexObject = plexObject
                 newFilters.Push(filter)
+                value = invalid
                 exit for
             end if
         end for
+
+        ' Handle unsupported filters. There are a few things we could do, but
+        ' for now, let's just consider this as an unsupported endpoint.
+        if value <> invalid then return false
     end if
 
     m.currentFilters = newFilters
-end sub
+
+    if not disableTriggers then
+        m.Trigger("set_filter", [m])
+    end if
+
+    return true
+end function
 
 function filtersBuildPath() as string
     args = []

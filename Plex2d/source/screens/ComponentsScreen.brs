@@ -225,6 +225,11 @@ sub compShow()
     ' Enable listeners once we completed drawing the screen
     m.EnableListeners()
 
+    ' Hook to show the filter box if it exists
+    if m.FilterBox <> invalid then
+        m.FilterBox.Show()
+    end if
+
     ' Clear any unused cache
     TextureManager().ClearCache()
 end sub
