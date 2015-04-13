@@ -359,6 +359,15 @@ end sub
 sub gsCalculateShift(toFocus as object, refocus=invalid as dynamic)
     if toFocus.fixed = true then return
 
+    ' allow the component to override the method. e.g. VBox vertical scrolling
+    ' * shiftableParent for containers in containers (e.g. users screen: vbox -> hbox -> component)
+    ' * continue with the standard container shift (horizontal scroll), after override
+    if toFocus.shiftableParent <> invalid and type(toFocus.shiftableParent.CalculateShift) = "roFunction" then
+        toFocus.shiftableParent.CalculateShift(toFocus, refocus, m)
+    else if toFocus.parent <> invalid and type(toFocus.parent.CalculateShift) = "roFunction" then
+        toFocus.parent.CalculateShift(toFocus, refocus, m)
+    end if
+
     ' load the grid chunk if the focused items chunk isn't loaded yet
     if m.lazyStyle = 1 and m.ChunkIsLoaded(tofocus.parent) = false then
         m.LoadGridChunk([tofocus.parent])
