@@ -1303,9 +1303,9 @@ sub compOnFocusOut(lastFocus=invalid as dynamic, toFocus=invalid as dynamic)
 end sub
 
 sub compCloseOverlays(redraw=true as boolean)
-    for each overlay in m.overlayScreen
-        overlay.Close(false, redraw)
-    end for
+    while m.overlayScreen.Peek() <> invalid
+        m.overlayScreen.Peek().Close(false, redraw)
+    end while
 end sub
 
 sub compShowFailure(title=invalid as dynamic, text=invalid as dynamic, popScreen=true as boolean)
