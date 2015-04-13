@@ -71,8 +71,10 @@ end sub
 
 function pnrDoRequestWithTimeout(timeout=10 as integer) as object
     ' non async request/response
+    Info("Starting request (with timeout " + tostr(timeout) + "): GET " + m.request.GetUrl())
     xml = CreateObject("roXMLElement")
     xml.Parse(m.GetToStringWithTimeout(timeout))
+    Info("Got a " + tostr(m.responseCode) + " from " + m.request.GetUrl())
     response = createPlexResult(m.server, m.path)
     response.ParseFakeXMLResponse(xml)
     return response
