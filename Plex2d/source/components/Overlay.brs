@@ -9,6 +9,7 @@ function OverlayClass() as object
         obj.OnKeyRelease = overlayOnKeyRelease
         obj.Close = overlayClose
         obj.IsActive = overlayIsActive
+        obj.AssignOverlayID = overlayAssignOverlayID
 
         m.OverlayClass = obj
     end if
@@ -16,12 +17,26 @@ function OverlayClass() as object
     return m.OverlayClass
 end function
 
+sub overlayAssignOverlayID()
+    if m.overlayID = invalid then
+        m.overlayID = m.screen.overlayScreen.Count()
+    end if
+
+    m.zOrderOverlay = ZOrders().OVERLAY + m.overlayID
+    m.components = m.screen.GetManualComponents(m.ClassName + tostr(m.overlayID))
+
+    for each overlay in m.screen.overlayScreen
+        if overlay.overlayID = m.overlayID then return
+    end for
+
+    m.screen.overlayScreen.Push(m)
+end sub
+
 sub overlayInit()
     ApplyFunc(ComponentClass().Init, m)
 
-    ' support for multiple overlay screens
-    m.zOrderOverlay = ZOrders().OVERLAY + m.screen.overlayScreen.count()
-    m.screen.overlayScreen.Push(m)
+    ' Support for multiple overlay screens
+    m.AssignOverlayID()
 
     m.enableBackButton = true
     m.enableOverlay = false
@@ -59,7 +74,6 @@ sub overlayInit()
     m.screen.OrigOnFwdButton = firstOf(m.screen.OrigOnFwdButton, m.screen.OnFwdButton)
     m.screen.OnFwdButton = firstOf(m.OnFwdButton, compOnFwdButton)
 
-    m.components = m.screen.GetManualComponents(m.ClassName)
     m.buttons = CreateObject("roList")
     m.customFonts = CreateObject("roAssociativeArray")
 end sub
