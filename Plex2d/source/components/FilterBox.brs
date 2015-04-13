@@ -63,7 +63,7 @@ sub filterboxOnFilterRefresh(filters as object)
         optionPrefs = {
             halign: "JUSTIFY_LEFT",
             height: 50,
-            padding: {right: 10, left: 10, top: 0, bottom: 0}
+            padding: {right: 50, left: 20, top: 0, bottom: 0}
             font: FontRegistry().NORMAL,
             focus_background: Colors().Orange
         }
@@ -85,6 +85,17 @@ sub filterboxOnFilterRefresh(filters as object)
             for each filter in filters.GetFilterOptions()
                 if filter.Get("filterType") = "boolean" then
                     option = {text: filter.Get("title"), plexObject: filter, command: "filter_" + filter.Get("filterType")}
+
+                    ' TODO(rob): use a better method to set the boolean value. I'm not aware
+                    ' of any other boolean filters, than unwatched, which will end up having
+                    ' it's own logic since it's special.
+                    option.isBoolean = true
+                    for each curFilter in m.filters.currentFilters
+                        if curFilter.isBoolean = true and curFilter.key = filter.Get("filter") then
+                            option.booleanValue = true
+                        end if
+                    end for
+
                     option.Append(optionPrefs)
                     filterButton.options.Push(option)
                 end if

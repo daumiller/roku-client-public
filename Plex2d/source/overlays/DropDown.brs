@@ -160,7 +160,11 @@ sub ddoverlayGetComponents()
         else if option.component <> invalid then
             comp = option.component
         else
-            comp = createButton(option.text, option.font, option.command)
+            if option.isBoolean = true then
+                comp = createBoolButton(option.text, option.font, option.command, (option.booleanValue = true))
+            else
+                comp = createButton(option.text, option.font, option.command)
+            end if
             comp.setColor(Colors().Text, Colors().Button)
             if option.focus_background <> invalid then
                 comp.SetFocusMethod(comp.FOCUS_BACKGROUND, option.focus_background)
