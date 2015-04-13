@@ -114,33 +114,41 @@ end function
 sub gsShow()
     if NOT Application().IsActiveScreen(m) then return
 
-    ' create requests for the size of the endpoint
+    requests = CreateObject("roList")
+
+    ' Create requests for the size of the endpoint
     if m.gridContainer.request = invalid then
         request = createPlexRequest(m.server, m.path)
         request.AddHeader("X-Plex-Container-Start", "0")
         request.AddHeader("X-Plex-Container-Size", "0")
 
-        context = request.CreateRequestContext("grid", createCallable("OnGridResponse", m))
-        Application().StartRequest(request, context)
-        m.gridContainer = context
+        m.gridContainer = request.CreateRequestContext("grid", createCallable("OnGridResponse", m))
+        requests.Push({request: request, context: m.gridContainer})
+    end if
 
-        ' Create requests for the jump items (only if we are using the ALL endpoint)
+    ' Create requests for the jump items (only if we are using the ALL endpoint)
+    if m.jumpContainer.request = invalid then
         jumpSortSupported = instr(1, m.path, "/all") > 0 and (instr(1, m.path, "sort=") = 0 or instr(1, m.path, "sort=titleSort") > 0)
-        if m.jumpContainer.request = invalid and jumpSortSupported then
+        if jumpSortSupported then
             ' support filtered endpoints (replace /all with /firstCharacter)
             regex = CreateObject("roRegex", "/(\w+)(\?|$)", "")
             jumpUrl = regex.Replace(m.path, "/firstCharacter\2")
             request = createPlexRequest(m.server, jumpUrl)
-            context = request.CreateRequestContext("jump", createCallable("OnJumpResponse", m))
-            Application().StartRequest(request, context)
-            m.jumpContainer = context
+            m.jumpContainer = request.CreateRequestContext("jump", createCallable("OnJumpResponse", m))
+            requests.Push({request: request, context: m.jumpContainer})
         else
             m.jumpContainer.response = {}
         end if
     end if
 
+    for each request in requests
+        Application().StartRequest(request.request, request.context)
+    end for
+
     if m.gridContainer.response <> invalid and m.jumpContainer.response <> invalid then
         if m.gridContainer.response.container.GetFirst(["totalSize", "size", "0"]).toInt() = 0 then
+            ' TODO(rob): change this error based on the current filters. It's possible the library
+            ' contains content, but the filter is to limiting. Clear filters and reinit.
             title = "No content available in this library"
             text = "Please add content and/or check that " + chr(34) + "Include in dashboard" + chr(34) + " is enabled.".
             m.ShowFailure(title, text)
@@ -155,30 +163,34 @@ sub gsOnJumpResponse(request as object, response as object, context as object)
     response.ParseResponse()
     context.response = response
 
-    m.jumpItems.clear()
+    m.jumpItems.Clear()
 
-    if response.items.Count() < 2 then return
+    ' Ignore jump list if we only have 1 item.
+    ' TODO(rob): We may want to ignore the jump list based
+    ' on the `incr` count (total items)
+    '
+    if response.items.Count() > 1
+        ' Reverse the jump list for descending title sort
+        if instr(1, request.GetUrl(), "titleSort:desc") > 0 then
+            items = CreateObject("roList")
+            for each item in response.items
+                items.Unshift(item)
+            end for
+        else
+            items = response.items
+        end if
 
-    ' Reverse the jump list for descending title sort
-    if instr(1, request.GetUrl(), "titleSort:desc") > 0 then
-        items = CreateObject("roList")
-        for each item in response.items
-            items.Unshift(item)
+        incr = 0
+        for each item in items
+            m.jumpItems.push({
+                index: incr,
+                key: item.Get("key")
+                title: item.Get("title")
+                size: item.GetInt("size")
+            })
+            incr = incr + item.GetInt("size")
         end for
-    else
-        items = response.items
     end if
-
-    incr = 0
-    for each item in items
-        m.jumpItems.push({
-            index: incr,
-            key: item.Get("key")
-            title: item.Get("title")
-            size: item.GetInt("size")
-        })
-        incr = incr + item.GetInt("size")
-    end for
 
     m.Show()
 end sub
@@ -200,7 +212,7 @@ sub gsOnGridResponse(request as object, response as object, context as object)
     m.viewGroup = m.container.Get("viewGroup", "")
     m.hasMixedParents = (m.container.Get("mixedParents", "") = "1")
 
-    m.totalSize = response.container.getint("totalSize")
+    m.totalSize = response.container.GetInt("totalSize")
     if m.totalSize < m.chunkSizeInitial then m.chunkSizeInitial = m.totalSize
     ' TODO(rob): we should use 3/4 height for landscape and square orientation
     if m.totalSize < 20 and m.orientation = ComponentClass().ORIENTATION_PORTRAIT then
