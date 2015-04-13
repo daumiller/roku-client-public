@@ -653,7 +653,7 @@ function gsChunkIsLoaded(grid as object) as boolean
     ' 0: not loaded
     ' 1: loading/pending
     ' 2: loaded
-    return (grid.loadStatus = 2)
+    return (grid.loadStatus = invalid or grid.loadStatus = 2)
 end function
 
 sub gsOnFwdButton(item=invalid as dynamic)
