@@ -167,6 +167,8 @@ sub filtersRequestComplete(context as object)
     if m.ParsePath(m.originalPath) then
         ' Let whoever is listening know the requests are complete
         m.Trigger("refresh", [m])
+    else
+        Debug("Filters are not supported for this endpoint: " + tostr(m.originalPath))
     end if
 end sub
 
@@ -350,6 +352,7 @@ sub filtersSetType(value=invalid as dynamic, disableTriggers=false as boolean)
         match.value = value.value
     end if
 
+    curIndex = m.selectedTypeIndex
     m.Delete("selectedTypeIndex")
     m.typeItems.Clear()
     for each key in m.types
@@ -362,6 +365,12 @@ sub filtersSetType(value=invalid as dynamic, disableTriggers=false as boolean)
             end if
         end for
     end for
+
+    ' Clear any filters and sorts when the type changes
+    if m.selectedTypeIndex <> curIndex then
+        m.ClearSort()
+        m.ClearFilters()
+    end if
 
     if not disableTriggers then
         m.Trigger("set_type", [m])
