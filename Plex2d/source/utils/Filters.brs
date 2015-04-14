@@ -263,8 +263,11 @@ sub filtersSetDefaultSort()
     end if
 end sub
 
-sub filtersClearFilters()
+sub filtersClearFilters(trigger=false as boolean)
     m.currentFilters.Clear()
+    if trigger then
+        m.Trigger("set_filter", [m])
+    end if
 end sub
 
 function filtersGetSort() as dynamic

@@ -114,6 +114,13 @@ sub filterboxOnFilterRefresh(filters as object)
                 end if
             end for
 
+            ' Clear Filters
+            if filters.GetFilters() <> invalid then
+                option = {text: "CLEAR FILTER", command: "filter_clear"}
+                option.Append(m.optionPrefs)
+                filterButton.options.Push(option)
+            end if
+
             ' Filter: non-boolean options
             for each filter in filters.GetFilterOptions()
                 if filter.Get("filterType") <> "boolean" then
