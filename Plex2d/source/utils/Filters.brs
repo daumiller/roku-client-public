@@ -100,6 +100,8 @@ sub filtersInit()
 
     ' Containers for current filters, type and sorts
     m.currentSort = CreateObject("roAssociativeArray")
+    ' We don't support compound filters, so this could be an AA,
+    ' but we'll leave it as is in case we do add support some day.
     m.currentFilters = CreateObject("roList")
     m.currentFilterTypes = CreateObject("roArray", 5, true)
 end sub
@@ -463,14 +465,11 @@ end function
 function filtersSetFilter(key as string, value=invalid as dynamic, toggle=false as boolean, disableTriggers=false as boolean) as boolean
     if not m.HasFilters() then return true
 
-    curfilters = m.currentFilters
     newFilters = CreateObject("roList")
 
-    for each filter in curfilters
-        if filter.key <> key then
-            newFilters.Push(filter)
-        else if filter.isBoolean and filter.value = "1" and toggle then
-            value = invalid
+    ' Handle toggling boolean filters
+    if toggle then
+        for each filter in m.currentFilters
             ' TODO(rob): how do we handle the boolean=false? e.g. unwatched=0
             ' would filter by "watched", but we don't have a good way to show
             ' that. For now, lets just remove the boolean filter if false.
@@ -480,8 +479,12 @@ function filtersSetFilter(key as string, value=invalid as dynamic, toggle=false 
             ' expected it's set to on, and off means we are not filtering at
             ' all.
             ' value = iif(filter.value = "1", "0", "1")
-        end if
-    end for
+            if filter.isBoolean and filter.value = "1" then
+                value = invalid
+                exit for
+            end if
+        end for
+    end if
 
     if value <> invalid then
         for each plexObject in m.filterItems
