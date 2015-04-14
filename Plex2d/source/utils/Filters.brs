@@ -97,13 +97,13 @@ sub filtersInit()
     m.unwatchedItem = CreateObject("roAssociativeArray")
     m.filterItems = CreateObject("roList")
     m.sortItems = CreateObject("roList")
+    m.typeItems = CreateObject("roArray", 5, true)
 
     ' Containers for current filters, type and sorts
     m.currentSort = CreateObject("roAssociativeArray")
     ' We don't support compound filters, so this could be an AA,
     ' but we'll leave it as is in case we do add support some day.
     m.currentFilters = CreateObject("roList")
-    m.currentFilterTypes = CreateObject("roArray", 5, true)
 end sub
 
 sub filtersRefresh()
@@ -183,17 +183,17 @@ function filtersIsAvailable() as boolean
 end function
 
 function filtersHasTypes() as boolean
-    return (m.currentFilterTypes.Count() > 1)
+    return (m.typeItems.Count() > 1)
 end function
 
 function filtersGetTypeOptions() as object
-    return m.currentFilterTypes
+    return m.typeItems
 end function
 
-function filtersGetSelectedType() as dynamic
+function filtersGetSelectedType(useOverride=false as boolean) as dynamic
     if m.selectedTypeIndex = invalid then return invalid
 
-    return m.currentFilterTypes[m.selectedTypeIndex]
+    return m.typeItems[m.selectedTypeIndex]
 end function
 
 function filtersParsePath(path as string, parseTypeOnly=false as boolean) as boolean
@@ -350,13 +350,13 @@ sub filtersSetType(value=invalid as dynamic, disableTriggers=false as boolean)
         match.value = value.value
     end if
 
-    m.currentFilterTypes.Clear()
     m.Delete("selectedTypeIndex")
+    m.typeItems.Clear()
     for each key in m.types
-        filterTypes = m.types[key]
-        for index = 0 to filterTypes.Count() - 1
-            if lcase(filterTypes[index][match.key]) = lcase(match.value) then
-                m.currentFilterTypes.Append(filterTypes)
+        itemTypes = m.types[key]
+        for index = 0 to itemTypes.Count() - 1
+            if lcase(itemTypes[index][match.key]) = lcase(match.value) then
+                m.typeItems.Append(itemTypes)
                 m.selectedTypeIndex = index
                 exit for
             end if
@@ -527,9 +527,9 @@ function filtersBuildPath() as string
         end for
     end if
 
-    filterType = m.GetSelectedType()
-    if filterType <> invalid then
-        args.Push("type=" + filterType.value)
+    itemType = m.GetSelectedType()
+    if itemType <> invalid then
+        args.Push("type=" + itemType.value)
     end if
 
     unwatched = m.GetUnwatched()
