@@ -17,8 +17,9 @@ function Colors() as object
         obj.Empty = &h1f1f1fff
         obj.Card = &h1f1f1fff
         obj.Button = &h1f1f1fff
-        obj.Indicator = &h999999ff
         obj.ButtonDark = &h171717ff
+        obj.ButtonLht = &h353535ff
+        obj.Indicator = &h999999ff
         obj.Text = &hffffffff
         obj.Subtitle = &h999999ff
 

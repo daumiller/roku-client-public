@@ -19,6 +19,7 @@ function FiltersClass() as object
         obj.GetSortOptions = filtersGetSortOptions
         obj.GetTypeOptions = filtersGetTypeOptions
         obj.GetFilterOptions = filtersGetFilterOptions
+        obj.GetFilterOptionValues = filtersGetFilterOptionValues
 
         obj.SetParsedSort = filtersSetParsedSort
         obj.SetParsedType = filtersSetParsedType
@@ -279,10 +280,10 @@ function filtersGetSortTitle() as dynamic
 end function
 
 function filtersGetFilterTitle() as dynamic
-    ' TODO(rob): how do we handle this when it's too long? Obviously
-    ' the component can truncate... but that's probably ugly.
-    '   if m.currentFilters.Count() > 1 then return "MULTI FILTER"
-
+    ' TODO(rob): this was initially created thinking we'd allow
+    ' compound filters. This is a bit more simple, and trick now
+    ' that we are not. We will have to save the filter title
+    ' value, to preset the single filter selected.
     filterStringArr = []
 
     for each filter in m.currentFilters
@@ -412,8 +413,8 @@ function filtersSetFilter(key as string, value=invalid as dynamic, toggle=false 
     if not m.HasFilters() then return true
 
     curfilters = m.currentFilters
-
     newFilters = CreateObject("roList")
+
     for each filter in curfilters
         if filter.key <> key then
             newFilters.Push(filter)
@@ -492,4 +493,14 @@ end function
 
 function filtersGetFilterOptions()
     return m.filterItems
+end function
+
+function filtersGetFilterOptionValues(plexObject as object, refresh=false as boolean) as object
+    if plexObject.items = invalid then
+        request = createPlexRequest(plexObject.GetServer(), plexObject.GetItemPath())
+        response = request.DoRequestWithTimeout(30)
+        plexObject.items = response.items
+    end if
+
+    return plexObject.items
 end function
