@@ -285,7 +285,7 @@ sub filtersClearFilters(trigger=false as boolean)
 end sub
 
 function filtersGetSort() as dynamic
-    if m.currentSort.key = invalid  then return invalid
+    if m.currentSort.key = invalid then return invalid
 
     return m.currentSort
 end function
@@ -403,7 +403,7 @@ function filtersSetSort(key=invalid as dynamic, toggle=true as boolean, disableT
     return false
 end function
 
-' Wrapper to always disabled triggers when automatically setting a filter
+' Wrapper to always disable triggers when automatically setting a filter
 function filtersSetParsedFilter(key as string, value=invalid as dynamic) as boolean
     if instr(1, key, "unwatched") > 0 then
         return m.SetUnwatched(key, true, true)
@@ -412,12 +412,12 @@ function filtersSetParsedFilter(key as string, value=invalid as dynamic) as bool
     return m.SetFilter(key, value, false, true)
 end function
 
-' Wrapper to always disabled triggers when automatically setting a sort
+' Wrapper to always disable triggers when automatically setting a sort
 function filtersSetParsedSort(key=invalid as dynamic) as boolean
     return m.SetSort(key, false, true)
 end function
 
-' Wrapper to always disabled triggers when automatically setting a sort
+' Wrapper to always disable triggers when automatically setting a sort
 sub filtersSetParsedType(key=invalid as dynamic)
     m.SetType(key, true)
 end sub
@@ -543,11 +543,11 @@ function filtersBuildPath() as string
     return path
 end function
 
-function filtersGetSortOptions()
+function filtersGetSortOptions() as object
     return m.sortItems
 end function
 
-function filtersGetFilterOptions()
+function filtersGetFilterOptions() as object
     return m.filterItems
 end function
 

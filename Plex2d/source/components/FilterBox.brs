@@ -39,7 +39,7 @@ function createFilterBox(font as object, item as object, screen as object, spaci
     return obj
 end function
 
-function filterboxInit(item)
+sub filterboxInit(item as object)
     ApplyFunc(HBoxClass().Init, m)
 
     m.item = item
@@ -56,8 +56,7 @@ function filterboxInit(item)
         highlight: Colors().ButtonLht,
         focused: Colors().Orange
     }
-
-end function
+end sub
 
 sub filterboxShow()
     m.AddListener(m.filters, "refresh", CreateCallable("OnFilterRefresh", m))
@@ -106,6 +105,7 @@ sub filterboxOnFilterRefresh(filters as object)
 
             ' Clear Filters
             if filters.GetFilters() <> invalid then
+                ' TODO(rob): use a custom composite button to include the X glyph
                 option = {text: "CLEAR FILTER", command: "filter_clear"}
                 option.Append(m.optionPrefs)
                 filterButton.options.Push(option)
