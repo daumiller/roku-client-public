@@ -167,7 +167,13 @@ sub ddoverlayGetComponents()
         else if option.component <> invalid then
             comp = option.component
         else
-            if option.isBoolean = true then
+            if option.isDropDown = true then
+                comp = createDropDownButton(option.text, option.font, m.screen, false)
+                comp.SetDropDownPosition(firstOf(option.dropdownPosition, "down"), option.dropdownSpacing)
+                if option.options <> invalid then
+                    comp.options = option.options
+                end if
+            else if option.isBoolean = true then
                 comp = createBoolButton(option.text, option.font, option.command, (option.booleanValue = true))
             else
                 comp = createButton(option.text, option.font, option.command)
