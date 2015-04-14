@@ -82,7 +82,17 @@ sub vboxPerformLayout()
         if m.scrollTriggerDown <> invalid then
             if m.scrollInfo = invalid then m.scrollInfo = { zOrder: 2 }
             if m.origScrollTriggerDown = invalid then m.origScrollTriggerDown = m.scrollTriggerDown
-            if component.focusInside = true then m.scrollInfo.focusInside = true
+
+            ' Calculate the spacing from the xOffset for the scrollbar
+            if m.scrollInfo.spacing = invalid then
+                if component.focusMethod <> invalid and component.focusMethod <> ButtonClass().FOCUS_BORDER then
+                    m.scrollInfo.spacing = 2
+                else if m.scrollInfo.focusInside = true then
+                    m.scrollInfo.spacing = CompositorScreen().focusPixels
+                else
+                    m.scrollInfo.spacing = CompositorScreen().focusPixels * 2
+                end if
+            end if
 
             ' height of all components in the container
             m.containerHeight = offset + height
@@ -155,7 +165,7 @@ sub vboxPerformLayout()
             m.scrollbar = createScrollbar(offsets[0], m.contentHeight, m.containerHeight, m.scrollInfo.zOrder, m.scrollInfo.offsetContainer)
             if m.scrollbar <> invalid
                 width = int(CompositorScreen().focusPixels * 1.5)
-                spacing = iif(m.scrollInfo.focusInside = true, CompositorScreen().focusPixels, CompositorScreen().focusPixels*2)
+                spacing = firstOf(m.scrollInfo.spacing, CompositorScreen().focusPixels * 2)
                 if m.scrollbarPosition = "right" then
                     xOffset = xOffset + m.width + spacing
                 else
