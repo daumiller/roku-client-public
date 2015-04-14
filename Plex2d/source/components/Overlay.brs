@@ -42,10 +42,13 @@ sub overlayInit()
     m.enableOverlay = false
     m.blocking = false
 
-    ' remember the current focus and invalidate it
+    ' Remember the current focus and invalidate it
     m.fromFocusedItem = m.screen.focusedItem
     m.screen.lastFocusedItem = invalid
     m.screen.FocusedItem = invalid
+
+    ' Hide any scrollbar associated to the current focused item
+    m.screen.ToggleScrollbar(false, invalid, m.fromFocusedItem)
 
     m.OrigScreenFunctions = {
         OnKeyRelease: m.screen.OnKeyRelease,
