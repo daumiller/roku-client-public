@@ -56,11 +56,13 @@ function FiltersClass() as object
             {title: "Movie", key: "movie", value: "1"}
         ]
 
-        ' TODO(rob): Check with PMS for season filters/sorts. The PMS seems to give
-        ' very little back, however the show filters/sorts work.
+        ' TODO(rob): removing the season type for now. It doesn't have any supported
+        ' filters or useful sorts. The endpoint doesn't contain leafCount/viewedLeafCount
+        ' either, so we may have to wait until the PMS has proper support
+        '
         obj.types["show"] = [
             {title: "Show", key: "show", value: "2"},
-            {title: "Season", key: "season", value: "3"},
+            ' {title: "Season", key: "season", value: "3"},
             {title: "Episode", key: "episode", value: "4"}
         ]
         obj.types["artist"] = [
