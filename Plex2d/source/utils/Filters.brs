@@ -265,6 +265,7 @@ end sub
 
 sub filtersClearFilters(trigger=false as boolean)
     m.currentFilters.Clear()
+
     if trigger then
         m.Trigger("set_filter", [m])
     end if

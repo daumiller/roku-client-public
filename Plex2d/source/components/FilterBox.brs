@@ -192,7 +192,9 @@ sub filterboxOnSelected(screen as object)
     plexObject = m.plexObject
     command = m.command
 
-    if command = "filter_set" then
+    if command = "filter_clear" then
+        m.filters.ClearFilters(true)
+    else if command = "filter_set" then
         m.filters.SetFilter(m.metadata.filter, m.metadata.key)
     else if m.command = "filter_type" then
         m.filters.SetType(m.metadata)
