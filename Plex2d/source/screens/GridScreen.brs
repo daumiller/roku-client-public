@@ -149,8 +149,13 @@ sub gsShow()
         if m.gridContainer.response.container.GetFirst(["totalSize", "size", "0"]).toInt() = 0 then
             ' TODO(rob): change this error based on the current filters. It's possible the library
             ' contains content, but the filter is to limiting. Clear filters and reinit.
-            title = "No content available in this library"
-            text = "Please add content and/or check that " + chr(34) + "Include in dashboard" + chr(34) + " is enabled.".
+            if m.filterBox <> invalid then
+                title = "No matching content"
+                text = "There is no content matching your active filter."
+            else
+                title = "No content available in this library"
+                text = "Please add content and/or check that " + chr(34) + "Include in dashboard" + chr(34) + " is enabled.".
+            end if
             m.ShowFailure(title, text)
         else
             ApplyFunc(ComponentsScreen().Show, m)
