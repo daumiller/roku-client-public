@@ -43,6 +43,7 @@ function FiltersClass() as object
         obj.GetFilters = filtersGetFilters
         obj.GetUnwatched = filtersGetUnwatched
         obj.IsUnwatched = filtersIsUnwatched
+        obj.HadFilterSet = filtersHadFilterSet
 
         obj.GetSortTitle = filtersGetSortTitle
         obj.GetFilterTitle = filtersGetFilterTitle
@@ -293,6 +294,7 @@ sub filtersClearFilters(trigger=false as boolean)
     m.currentFilters.Clear()
 
     if trigger then
+        m.filterWasSet = true
         m.Trigger("set_filter", [m])
     end if
 end sub
@@ -528,6 +530,7 @@ function filtersSetFilter(key as string, value=invalid as dynamic, title=invalid
     m.currentFilters = newFilters
 
     if not disableTriggers then
+        m.filterWasSet = true
         m.Trigger("set_filter", [m])
     end if
 
@@ -593,3 +596,9 @@ end function
 sub filtersClearUnwatched()
     m.SetUnwatched("", false, true)
 end sub
+
+' Helper to differentiate if the filter was set or parsed. This will stay
+' true when we clear the filters.
+function filtersHadFilterSet() as boolean
+    return (m.filterWasSet = true)
+end function

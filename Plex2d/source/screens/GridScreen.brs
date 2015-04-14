@@ -274,7 +274,9 @@ sub gsGetComponents()
     m.components.Push(createHeader(m))
 
     ' *** Grid Header *** '
-    if m.item.Get("key", "") = "all" and m.container.Get("librarySectionTitle") <> invalid then
+    if m.filterBox <> invalid and m.filterBox.filters.HadFilterSet() then
+        title = m.container.GetFirst(["librarySectionTitle"], "Custom Filter")
+    else if m.item.Get("key", "") = "all" and m.container.Get("librarySectionTitle") <> invalid then
         title = m.container.Get("librarySectionTitle")
     else if m.viewGroup = "episode" and not m.hasMixedParents then
         title = m.container.Get("title1", "") + " / " + m.container.Get("title2", "")
