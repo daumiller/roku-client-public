@@ -36,6 +36,7 @@ function FiltersClass() as object
 
         obj.ClearSort = filtersClearSort
         obj.ClearFilters = filtersClearFilters
+        obj.ClearUnwatched = filtersClearUnwatched
         obj.Refresh = filtersRefresh
 
         obj.GetSort = filtersGetSort
@@ -96,7 +97,6 @@ sub filtersInit()
     ' a compatible filterd/sorted endpoint.
 
     ' Containers for available filters and sorts
-    m.unwatchedItem = CreateObject("roAssociativeArray")
     m.filterItems = CreateObject("roList")
     m.sortItems = CreateObject("roList")
     m.typeItems = CreateObject("roArray", 5, true)
@@ -109,6 +109,13 @@ sub filtersInit()
 end sub
 
 sub filtersRefresh()
+    ' Try to use the existing filters object
+    if m.forceRefresh <> true and m.IsAvailable() then
+        m.Trigger("refresh", [m])
+        return
+    end if
+    m.Delete("forceRefresh")
+
     m.sectionPath = m.item.GetSectionPath()
     m.server = m.item.GetServer()
     m.originalPath = m.item.GetAbsolutePath("key")
@@ -135,23 +142,23 @@ sub filtersRefresh()
 end sub
 
 sub filtersOnResponse(request as object, response as object, context as object)
-    if response.IsSuccess() then
-        response.ParseResponse()
+    response.ParseResponse()
 
-        if context.requestType = "sorts" then
-            m.sortItems = response.items
-        else if context.requestType = "filters" then
-            ' Separate unwatched filter from the rest
-            for each item in response.items
-                if instr(1, item.Get("key"), "unwatched") > 0 then
-                    m.unwatchedItem = item
-                else
-                    m.filterItems.Push(item)
-                end if
-            end for
-        else
-            Debug("Unknown request type: " + tostr(context.requestType))
-        end if
+    if context.requestType = "sorts" then
+        m.sortItems = response.items
+    else if context.requestType = "filters" then
+        ' Separate unwatched filter from the rest
+        m.filterItems.Clear()
+        m.Delete("unwatchedItem")
+        for each item in response.items
+            if instr(1, item.Get("key"), "unwatched") > 0 then
+                m.unwatchedItem = item
+            else
+                m.filterItems.Push(item)
+            end if
+        end for
+    else
+        Debug("Unknown request type: " + tostr(context.requestType))
     end if
 
     m.RequestComplete(context)
@@ -322,13 +329,15 @@ function filtersGetFilterTitle() as dynamic
     end if
 
     for each filter in m.currentFilters
-        if filter.plexObject <> invalid then
+        if filter.title <> invalid then
+            filterStringArr.Push(filter.title)
+        else if filter.plexObject <> invalid then
             filterStringArr.Push(ucase(filter.plexObject.Get("title")))
         end if
     end for
 
     if filterStringArr.Count() > 0 then
-        return JoinArray(filterStringArr, " / ")
+        return ucase(JoinArray(filterStringArr, " / "))
     end if
 
     return invalid
@@ -368,13 +377,15 @@ sub filtersSetType(value=invalid as dynamic, disableTriggers=false as boolean)
         end for
     end for
 
-    ' Clear any filters and sorts when the type changes
-    if m.selectedTypeIndex <> curIndex then
-        m.ClearSort()
-        m.ClearFilters()
-    end if
-
     if not disableTriggers then
+        ' Clear filters, sorts and unwatched status on type change
+        if curIndex <> invalid and m.selectedTypeIndex <> curIndex then
+            m.forceRefresh = true
+            m.ClearUnwatched()
+            m.ClearSort()
+            m.ClearFilters()
+        end if
+
         m.Trigger("set_type", [m])
     end if
 end sub
@@ -422,7 +433,7 @@ function filtersSetParsedFilter(key as string, value=invalid as dynamic) as bool
         return m.SetUnwatched(key, true, true)
     end if
 
-    return m.SetFilter(key, value, false, true)
+    return m.SetFilter(key, value, invalid, false, true)
 end function
 
 ' Wrapper to always disable triggers when automatically setting a sort
@@ -473,7 +484,7 @@ function filtersSetUnwatched(key as string, unwatched=true as boolean, disableTr
     return true
 end function
 
-function filtersSetFilter(key as string, value=invalid as dynamic, toggle=false as boolean, disableTriggers=false as boolean) as boolean
+function filtersSetFilter(key as string, value=invalid as dynamic, title=invalid as dynamic, toggle=false as boolean, disableTriggers=false as boolean) as boolean
     if not m.HasFilters() then return true
 
     newFilters = CreateObject("roList")
@@ -500,7 +511,7 @@ function filtersSetFilter(key as string, value=invalid as dynamic, toggle=false 
     if value <> invalid then
         for each plexObject in m.filterItems
             if instr(1, key, plexObject.Get("filter")) > 0 then
-                filter = {key: key, value: value}
+                filter = {key: key, value: value, title: title}
                 filter.isBoolean = (plexObject.Get("filterType") = "boolean")
                 filter.plexObject = plexObject
                 newFilters.Push(filter)
@@ -566,8 +577,6 @@ function filtersGetFilterOptions() as object
 end function
 
 function filtersGetUnwatchedOption() as dynamic
-    if not IsFunction(m.unwatchedItem.Get) then return invalid
-
     return m.unwatchedItem
 end function
 
@@ -580,3 +589,7 @@ function filtersGetFilterOptionValues(plexObject as object, refresh=false as boo
 
     return plexObject.items
 end function
+
+sub filtersClearUnwatched()
+    m.SetUnwatched("", false, true)
+end sub

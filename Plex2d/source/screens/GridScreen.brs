@@ -725,7 +725,7 @@ sub gsResetInit(path=invalid as dynamic)
     m.DisableListeners(true)
     m.server = m.item.GetServer()
 
-    ' use default path if not overridden
+    ' Update the items key if path is specified
     if path <> invalid then
         m.item.Set("key", path)
     end if

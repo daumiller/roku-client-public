@@ -43,7 +43,13 @@ sub filterboxInit(item as object)
     ApplyFunc(HBoxClass().Init, m)
 
     m.item = item
-    m.filters = CreateFilters(m.item)
+
+    ' Try to reuse the existing filters object
+    if m.screen.filterBox <> invalid then
+        m.filters = m.screen.filterBox.filters
+    else
+        m.filters = CreateFilters(m.item)
+    end if
 
     ' This is a sneaky way to make sure that the screen always has
     ' the filterBox object
@@ -195,7 +201,7 @@ sub filterboxOnSelected(screen as object)
     if command = "filter_clear" then
         m.filters.ClearFilters(true)
     else if command = "filter_set" then
-        m.filters.SetFilter(m.metadata.filter, m.metadata.key)
+        m.filters.SetFilter(m.metadata.filter, m.metadata.key, m.metadata.title)
     else if command = "filter_unwatched" then
         m.filters.ToggleUnwatched(plexObject.Get("filter"))
     else if m.command = "filter_type" then
@@ -219,7 +225,7 @@ sub filterboxOnSelected(screen as object)
             m.options = CreateObject("roList")
             for each item in values
                 option = {text: item.Get("title"), command: "filter_set"}
-                option.metadata = { filter: filterKey, key: item.Get("key")}
+                option.metadata = { filter: filterKey, key: item.Get("key"), title: item.Get("title")}
                 option.Append(filterBox.optionPrefs)
                 m.options.Push(option)
             end for
