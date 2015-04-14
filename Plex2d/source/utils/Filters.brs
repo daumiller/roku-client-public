@@ -212,42 +212,30 @@ function filtersParsePath(path as string, parseTypeOnly=false as boolean) as boo
     ' Parse the current filter/sort from the url. There are some caveats
     ' though. How do we handle specialized sorting/filtering?
     '
-    ' We may need to see if we are aware of the specialized sort/filter
-    ' and hide the filtering options if do not support them.
+    ' Update: Now that we do not support compound filters, we can simply
+    ' include specialized filters and sorts. Any new filter or sort will
+    ' be replaced, and we'll use the existing specialized filter/sort if
+    ' it's not specifically overridden.
     '
     ' * sort=viewUpdatedAt:desc&viewOffset>=300
     ' * originallyAvailableAt>=-1y
     '
     parts = path.Tokenize("?")
     if parts.Count() = 2 then
-        args = parts.Peek().Tokenize("&")
-
-        ' Ignore specialized filtering for now
-        allowed = CreateObject("roRegex", "\w=\w", "")
-        for each arg in args
-            supported = allowed.IsMatch(arg)
-            if supported then
-                av = arg.tokenize("=")
-                ' Do we need to url escape arg strings
-                if parseTypeOnly or av[0] = "type" then
-                    if av[0] = "type" then
-                        m.SetParsedType(av[1])
-                    end if
+        for each arg in parts.Peek().Tokenize("&")
+            av = arg.tokenize("=")
+            ' Do we need to url escape arg strings
+            if parseTypeOnly or av[0] = "type" then
+                if av[0] = "type" then
+                    m.SetParsedType(av[1])
+                end if
+            else
+                if av[0] = "sort" then
+                    supported = m.SetParsedSort(av[1])
                 else
-                    if av[0] = "sort" then
-                        supported = m.SetParsedSort(av[1])
-                    else
-                        supported = m.SetParsedFilter(av[0], av[1])
-                    end if
+                    supported = m.SetParsedFilter(av[0], av[1])
                 end if
             end if
-
-            ' Return early if the endpoint isn't supported. We could be more
-            ' fancy, and disallow a filtering or sorting separately if one
-            ' is supported while the other is not. I'm sure there are caveats
-            ' so lets keep it simple.
-            '
-            if not supported then return false
         end for
     else
         m.ClearSort()
@@ -320,23 +308,22 @@ function filtersGetSortTitle() as dynamic
 end function
 
 function filtersGetFilterTitle() as dynamic
-    ' TODO(rob): this was initially created thinking we'd allow
-    ' compound filters. This is a bit more simple, and trick now
-    ' that we are not. We will have to save the filter title
-    ' value, to preset the single filter selected.
     filterStringArr = []
-
-    if m.IsUnwatched() then
-        filterStringArr.Push("UNWATCHED")
-    end if
 
     for each filter in m.currentFilters
         if filter.title <> invalid then
             filterStringArr.Push(filter.title)
         else if filter.plexObject <> invalid then
-            filterStringArr.Push(ucase(filter.plexObject.Get("title")))
+            filterStringArr.Push(filter.plexObject.Get("title"))
+        else
+            filterStringArr = ["custom"]
+            exit for
         end if
     end for
+
+    if m.IsUnwatched() then
+        filterStringArr.Unshift("UNWATCHED")
+    end if
 
     if filterStringArr.Count() > 0 then
         return ucase(JoinArray(filterStringArr, " / "))
@@ -399,6 +386,7 @@ function filtersSetSort(key=invalid as dynamic, toggle=true as boolean, disableT
 
     if key = invalid or not m.HasSorts() then return true
 
+    m.currentSort.Delete("plexObject")
     for each sort in m.sortItems
         if instr(1, key, sort.Get("key")) > 0 then
             defaultKey = sort.Get("key")
@@ -417,16 +405,20 @@ function filtersSetSort(key=invalid as dynamic, toggle=true as boolean, disableT
 
             m.currentSort.defaultKey = defaultKey
             m.currentSort.plexObject = sort
-
-            if not disableTriggers then
-                m.Trigger("set_sort", [m])
-            end if
-
-            return true
         end if
     end for
 
-    return false
+    ' Handle custom sorts (specialized endpoints)
+    if not m.currentSort.DoesExist("plexObject") then
+        m.ClearSort()
+        m.currentSort.key = key
+    end if
+
+    if not disableTriggers then
+        m.Trigger("set_sort", [m])
+    end if
+
+    return (m.currentSort.plexObject <> invalid)
 end function
 
 ' Wrapper to always disable triggers when automatically setting a filter
@@ -511,20 +503,21 @@ function filtersSetFilter(key as string, value=invalid as dynamic, title=invalid
     end if
 
     if value <> invalid then
+        filter = {key: key, value: value, title: title}
         for each plexObject in m.filterItems
             if instr(1, key, plexObject.Get("filter")) > 0 then
-                filter = {key: key, value: value, title: title}
                 filter.isBoolean = (plexObject.Get("filterType") = "boolean")
                 filter.plexObject = plexObject
-                newFilters.Push(filter)
-                value = invalid
                 exit for
             end if
         end for
+        newFilters.Push(filter)
 
-        ' Handle unsupported filters. There are a few things we could do, but
-        ' for now, let's just consider this as an unsupported endpoint.
-        if value <> invalid then return false
+        ' Verify the filter is supported. This is more of a non-issue now that
+        ' we do not allow compound filters.
+        supported = (filter.plexObject <> invalid)
+    else
+        supported = true
     end if
 
     m.currentFilters = newFilters
@@ -534,7 +527,7 @@ function filtersSetFilter(key as string, value=invalid as dynamic, title=invalid
         m.Trigger("set_filter", [m])
     end if
 
-    return true
+    return supported
 end function
 
 function filtersBuildPath() as string
