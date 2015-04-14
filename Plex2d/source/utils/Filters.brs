@@ -131,34 +131,34 @@ sub filtersRefresh()
 end sub
 
 sub filtersOnResponse(request as object, response as object, context as object)
-    if not response.IsSuccess() then return
-    response.ParseResponse()
-    context.complete = true
+    if response.IsSuccess() then
+        response.ParseResponse()
 
-    if context.requestType = "sorts" then
-        m.sortItems = response.items
-    else if context.requestType = "filters" then
-        ' Separate unwatched filter from the rest
-        for each item in response.items
-            if instr(1, item.Get("key"), "unwatched") > 0 then
-                m.unwatchedItem = item
-            else
-                m.filterItems.Push(item)
-            end if
-        end for
-    else
-        Debug("Unknown request type: " + tostr(context.requestType))
+        if context.requestType = "sorts" then
+            m.sortItems = response.items
+        else if context.requestType = "filters" then
+            ' Separate unwatched filter from the rest
+            for each item in response.items
+                if instr(1, item.Get("key"), "unwatched") > 0 then
+                    m.unwatchedItem = item
+                else
+                    m.filterItems.Push(item)
+                end if
+            end for
+        else
+            Debug("Unknown request type: " + tostr(context.requestType))
+        end if
     end if
 
-    m.RequestComplete()
+    m.RequestComplete(context)
 end sub
 
-sub filtersRequestComplete()
+sub filtersRequestComplete(context as object)
+    context.isProcessed = true
+
     ' Ignore futher processing until all requests are complete
     for each request in m.requests
-        if request.context.complete <> true then
-            return
-        end if
+        if request.context.isProcessed <> true then return
     end for
 
     ' Parse current path for filters and sorts
