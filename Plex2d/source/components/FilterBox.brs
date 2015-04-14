@@ -94,25 +94,15 @@ sub filterboxOnFilterRefresh(filters as object)
             filterButton.SetDropDownPosition("down", 0)
             m.AddComponent(filterButton)
 
-            ' Filter boolean options
-            for each filter in filters.GetFilterOptions()
-                if filter.Get("filterType") = "boolean" then
-                    option = {text: filter.Get("title"), plexObject: filter, command: "filter_" + filter.Get("filterType")}
-
-                    ' TODO(rob): use a better method to set the boolean value. I'm not aware
-                    ' of any other boolean filters, than unwatched, which will end up having
-                    ' it's own logic since it's special.
-                    option.isBoolean = true
-                    for each curFilter in m.filters.currentFilters
-                        if curFilter.isBoolean = true and curFilter.key = filter.Get("filter") then
-                            option.booleanValue = true
-                        end if
-                    end for
-
-                    option.Append(m.optionPrefs)
-                    filterButton.options.Push(option)
-                end if
-            end for
+            ' Unwatched filter option
+            filter = filters.GetUnwatchedOption()
+            if filter <> invalid then
+                option = {text: filter.Get("title"), plexObject: filter, command: "filter_unwatched"}
+                option.isBoolean = true
+                option.booleanValue = filters.IsUnwatched()
+                option.Append(m.optionPrefs)
+                filterButton.options.Push(option)
+            end if
 
             ' Clear Filters
             if filters.GetFilters() <> invalid then
@@ -121,16 +111,26 @@ sub filterboxOnFilterRefresh(filters as object)
                 filterButton.options.Push(option)
             end if
 
-            ' Filter: non-boolean options
+            ' Filters
             for each filter in filters.GetFilterOptions()
-                if filter.Get("filterType") <> "boolean" then
-                    option = {text: filter.Get("title"), plexObject: filter}
+                option = {text: filter.Get("title"), plexObject: filter}
+                if filter.Get("filterType") = "boolean" then
+                    option.command = "filter_boolean"
+                    option.isBoolean = true
+                    for each curFilter in m.filters.currentFilters
+                        if curFilter.key = filter.Get("filter") then
+                            option.booleanValue = true
+                            exit for
+                        end if
+                    end for
+                else
                     option.isDropDown = true
                     option.dropdownSpacing = 1
                     option.dropdownPosition = "right"
-                    option.Append(m.optionPrefs)
-                    filterButton.options.Push(option)
                 end if
+
+                option.Append(m.optionPrefs)
+                filterButton.options.Push(option)
             end for
         end if
 
@@ -196,6 +196,8 @@ sub filterboxOnSelected(screen as object)
         m.filters.ClearFilters(true)
     else if command = "filter_set" then
         m.filters.SetFilter(m.metadata.filter, m.metadata.key)
+    else if command = "filter_unwatched" then
+        m.filters.ToggleUnwatched(plexObject.Get("filter"))
     else if m.command = "filter_type" then
         m.filters.SetType(m.metadata)
     else if command = "filter_boolean" then
