@@ -102,12 +102,19 @@ sub ddoverlayCalculatePosition(vbox as object)
 
     ' Handle dynamic horizontal placement
     if ddProp.x < safeArea.left then
-        ddProp.x = parent.right + spacing
         if m.button.dropDownPosition = "left" then
+            ddProp.x = parent.right + spacing
             m.button.SetDropDownPosition("right")
+        else
+            ddProp.x = safeArea.left
         end if
     else if ddProp.x + ddProp.width > safeArea.right then
-        ddProp.x = safeArea.right - ddProp.width
+        if m.button.dropDownPosition = "right" then
+            ddProp.x = parent.left - spacing - ddProp.width
+            m.button.SetDropDownPosition("left")
+        else
+            ddProp.x = safeArea.right - ddProp.width
+        end if
     end if
 
     ' Handle dynamic vertical placement
