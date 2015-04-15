@@ -59,6 +59,8 @@ sub buttonSetFocusMethod(focusMethod as string, color=invalid as dynamic)
         m.focusBorder = false
         m.focusColor = color
         m.blurColor = m.bgColor
+        m.focusColorText = firstOf(m.fgColorFocus, m.fgColor)
+        m.blurColorText = m.fgColor
     else
         m.focusBorder = false
     end if
@@ -68,11 +70,11 @@ sub buttonOnFocus()
     ApplyFunc(LabelClass().OnFocus, m)
 
     if m.focusMethod = m.FOCUS_FOREGROUND then
-        m.fgColor = m.focusColor
+        m.SetColor(m.focusColor, m.bgColor)
         m.Draw(true)
         m.Redraw()
     else if m.focusMethod = m.FOCUS_BACKGROUND then
-        m.bgColor = m.focusColor
+        m.SetColor(m.focusColorText, m.focusColor)
         m.Draw(true)
         m.Redraw()
     end if
@@ -82,11 +84,11 @@ sub buttonOnBlur(toFocus=invalid as dynamic)
     ApplyFunc(LabelClass().OnBlur, m, [toFocus])
 
     if m.focusMethod = m.FOCUS_FOREGROUND then
-        m.SetColor(firstOf(m.statusColor, m.blurColor))
+        m.SetColor(firstOf(m.statusColor, m.blurColor), m.bgColor)
         m.Draw(true)
         m.Redraw()
     else if m.focusMethod = m.FOCUS_BACKGROUND then
-        m.bgColor = m.blurColor
+        m.SetColor(m.blurColorText, m.blurColor)
         m.Draw(true)
         m.Redraw()
     end if

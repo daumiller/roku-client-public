@@ -132,13 +132,14 @@ function labelDraw(redraw=false as boolean) as object
     return [m]
 end function
 
-sub labelSetColor(fgColor as integer, bgColor=invalid as dynamic)
+sub labelSetColor(fgColor as integer, bgColor=invalid as dynamic, fgColorFocus=invalid as dynamic)
     ' We commonly want a transparent background, but in order for antialiasing
     ' to work well we have to set the background to be the same as the
     ' foreground apart from the alpha channel. So we allow the background to
     ' be omitted as a convenience for transparent.
 
     m.fgColor = fgColor
+    m.fgColorFocus = fgColorFocus
 
     if bgColor = invalid then
         m.bgColor = (fgColor and &hffffff00)
