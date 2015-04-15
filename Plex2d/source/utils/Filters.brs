@@ -43,6 +43,7 @@ function FiltersClass() as object
         obj.GetFilters = filtersGetFilters
         obj.GetUnwatched = filtersGetUnwatched
         obj.IsUnwatched = filtersIsUnwatched
+        obj.IsFilteredByKey = filtersIsFilteredByKey
 
         obj.IsModified = filtersIsModified
         obj.SetModified = filtersSetModified
@@ -615,3 +616,13 @@ end function
 sub filtersSetModified()
     m.filtersIsModifed = true
 end sub
+
+function filtersIsFilteredByKey(key as string) as boolean
+    for each filter in m.currentFilters
+        if key = filter.key
+            return true
+        end if
+    end for
+
+    return false
+end function

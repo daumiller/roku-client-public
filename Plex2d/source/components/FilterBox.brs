@@ -56,6 +56,10 @@ sub filterboxInit(item as object)
     '
     m.screen.filterBox = m
 
+    m.customFonts = {
+        glyph: FontRegistry().GetIconFont(20)
+    }
+
     m.colors = {
         text: Colors().Text,
         textFocus: Colors().Black,
@@ -102,47 +106,41 @@ sub filterboxOnFilterRefresh(filters as object)
             filterButton.SetDropDownPosition("down", 0)
             m.AddComponent(filterButton)
 
-            ' Unwatched filter option
+            ' Unwatched filter button
             filter = filters.GetUnwatchedOption()
             if filter <> invalid then
-                option = {text: ucase(filter.Get("title")), plexObject: filter, command: "filter_unwatched"}
-                option.isBoolean = true
-                option.booleanValue = filters.IsUnwatched()
+                option = filterButton.AddCallableButton(createBoolButton, [ucase(filter.Get("title")), m.optionPrefs.font, "filter_unwatched", filters.IsUnwatched()])
+                option.plexObject = filter
                 option.bgColor = Colors().ButtonDark
                 option.Append(m.optionPrefs)
-                filterButton.options.Push(option)
             end if
 
-            ' Clear Filters
+            ' Clear Filters button
             if filters.GetFilters() <> invalid then
-                ' TODO(rob): use a custom composite button to include the X glyph
-                option = {text: "CLEAR FILTER", command: "filter_clear", glyphText: Glyphs().CIR_X, glyphFont: FontRegistry().GetIconFont(20)}
-                option.isGlyphButton = true
+                option = filterButton.AddCallableButton(createGlyphButton, ["CLEAR FILTER", m.optionPrefs.font, Glyphs().CIR_X, m.customFonts.glyph, "filter_clear"])
                 option.bgColor = Colors().ButtonDark
                 option.Append(m.optionPrefs)
-                filterButton.options.Push(option)
             end if
 
-            ' Filters
+            ' Filter buttons
             for each filter in filters.GetFilterOptions()
-                option = {text: filter.Get("title"), plexObject: filter}
+                title = filter.Get("title")
+
+                ' This will be used by all filter types
+                isEnabled = filters.IsFilteredByKey(filter.Get("filter"))
+
                 if filter.Get("filterType") = "boolean" then
-                    option.command = "filter_boolean"
-                    option.isBoolean = true
-                    for each curFilter in m.filters.currentFilters
-                        if curFilter.key = filter.Get("filter") then
-                            option.booleanValue = true
-                            exit for
-                        end if
-                    end for
+                    option = filterButton.AddCallableButton(createBoolButton, [title, m.optionPrefs.font, "filter_boolean", isEnabled])
                 else
-                    option.isDropDown = true
-                    option.dropdownSpacing = 1
+                    ' TODO(rob): modify button to handle a check mark, to reflect status of isEnabled
+                    option = filterButton.AddCallableButton(createDropDownButton, [title, m.optionPrefs.font, m.screen, false])
                     option.dropdownPosition = "right"
+                    option.dropdownSpacing = 1
                 end if
 
+                ' Augment the options for both boolean and dropdown option
+                option.plexObject = filter
                 option.Append(m.optionPrefs)
-                filterButton.options.Push(option)
             end for
         end if
 

@@ -167,20 +167,15 @@ sub ddoverlayGetComponents()
         else if option.component <> invalid then
             comp = option.component
         else
-            if option.isDropDown = true then
-                comp = createDropDownButton(option.text, option.font, m.screen, false)
-                comp.SetDropDownPosition(firstOf(option.dropdownPosition, "down"), option.dropdownSpacing)
-                if option.options <> invalid then
-                    comp.options = option.options
-                end if
-            else if option.isBoolean = true then
-                comp = createBoolButton(option.text, option.font, option.command, (option.booleanValue = true))
-            else if option.isGlyphButton = true then
-                comp = createGlyphButton(option.text, option.font, option.glyphText, option.glyphFont, option.command, (option.useIndicator = true))
+            if option.callableButton <> invalid then
+                comp = option.callableButton.Call()
             else
                 comp = createButton(option.text, option.font, option.command)
             end if
             comp.setColor(firstOf(option.fgColor, Colors().Text), firstOf(option.bgColor, Colors().Button), option.fgColorFocus)
+            if option.dropdownPosition <> invalid and IsFunction(comp.SetDropDownPosition) then
+                comp.SetDropDownPosition(option.dropdownPosition, option.dropdownSpacing)
+            end if
             if option.focusMethod <> invalid then
                 comp.SetFocusMethod(option.focusMethod, option.focusMethodColor)
             else

@@ -63,6 +63,10 @@ function callableCall(args=[] as object) as dynamic
         result = this[methodName](args[0], args[1])
     else if args.Count() = 3 then
         result = this[methodName](args[0], args[1], args[2])
+    else if args.Count() = 4 then
+        result = this[methodName](args[0], args[1], args[2], args[3])
+    else if args.Count() = 5 then
+        result = this[methodName](args[0], args[1], args[2], args[3], args[4])
     else
         Fatal("Callable doesn't currently support " + tostr(args.Count()) + " arguments!")
     end if

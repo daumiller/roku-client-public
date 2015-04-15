@@ -9,6 +9,7 @@ function DropDownButtonClass() as object
         obj.Show = ddbuttonShow
         obj.SetDropDownPosition = ddbuttonSetDropDownPosition
         obj.GetOptions = ddbuttonGetOptions
+        obj.AddCallableButton = ddbuttonAddCallableButton
 
         ' ddbutton overlay
         obj.CreateOverlay = ddoverlayCreateOverlay
@@ -64,4 +65,12 @@ end sub
 
 function ddbuttonGetOptions() as object
     return m.options
+end function
+
+function ddbuttonAddCallableButton(func as object, args=[] as object) as object
+    callable = CreateCallable(func, invalid, invalid, args)
+    option = {callableButton: callable}
+    m.options.Push(option)
+
+    return option
 end function
