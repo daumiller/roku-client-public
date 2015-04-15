@@ -12,6 +12,8 @@ function LoadingScreen() as object
         obj.OnWaitTimer = loadingOnWaitTimer
         obj.ShowFailureDialog = loadingShowFailureDialog
 
+        obj.disableLoadingModal = true
+
         m.LoadingScreen = obj
     end if
 

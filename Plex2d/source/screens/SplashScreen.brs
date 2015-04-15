@@ -8,6 +8,8 @@ function SplashScreen() as object
         obj.Show = splashShow
         obj.GetComponents = splashGetComponents
 
+        obj.disableLoadingModal = true
+
         m.SplashScreen = obj
     end if
 
