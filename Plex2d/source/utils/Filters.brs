@@ -338,7 +338,7 @@ function filtersGetFilters() as dynamic
     return m.currentFilters
 end function
 
-sub filtersSetType(value=invalid as dynamic, disableTriggers=false as boolean)
+sub filtersSetType(value=invalid as dynamic, trigger=true as boolean)
     if value = invalid then return
 
     ' value can be an object or string (key|value)
@@ -366,7 +366,7 @@ sub filtersSetType(value=invalid as dynamic, disableTriggers=false as boolean)
         end for
     end for
 
-    if not disableTriggers then
+    if trigger then
         ' Clear filters, sorts and unwatched status on type change
         if curIndex <> invalid and m.selectedTypeIndex <> curIndex then
             m.forceRefresh = true
@@ -379,7 +379,7 @@ sub filtersSetType(value=invalid as dynamic, disableTriggers=false as boolean)
     end if
 end sub
 
-function filtersSetSort(key=invalid as dynamic, toggle=true as boolean, disableTriggers=false) as boolean
+function filtersSetSort(key=invalid as dynamic, toggle=true as boolean, trigger=true as boolean) as boolean
     if key = invalid or key <> m.currentSort.defaultKey or toggle = false then
         m.ClearSort()
     end if
@@ -414,7 +414,7 @@ function filtersSetSort(key=invalid as dynamic, toggle=true as boolean, disableT
         m.currentSort.key = key
     end if
 
-    if not disableTriggers then
+    if trigger then
         m.Trigger("set_sort", [m])
     end if
 
@@ -424,20 +424,20 @@ end function
 ' Wrapper to always disable triggers when automatically setting a filter
 function filtersSetParsedFilter(key as string, value=invalid as dynamic) as boolean
     if instr(1, key, "unwatched") > 0 then
-        return m.SetUnwatched(key, true, true)
+        return m.SetUnwatched(key, true, false)
     end if
 
-    return m.SetFilter(key, value, invalid, false, true)
+    return m.SetFilter(key, value, invalid, false, false)
 end function
 
 ' Wrapper to always disable triggers when automatically setting a sort
 function filtersSetParsedSort(key=invalid as dynamic) as boolean
-    return m.SetSort(key, false, true)
+    return m.SetSort(key, false, false)
 end function
 
 ' Wrapper to always disable triggers when automatically setting a sort
 sub filtersSetParsedType(key=invalid as dynamic)
-    m.SetType(key, true)
+    m.SetType(key, false)
 end sub
 
 function filtersParseType() as boolean
@@ -464,21 +464,21 @@ sub filtersToggleUnwatched(key as string)
     m.SetUnwatched(key, (m.IsUnwatched() = false))
 end sub
 
-function filtersSetUnwatched(key as string, unwatched=true as boolean, disableTriggers=false as boolean) as boolean
+function filtersSetUnwatched(key as string, unwatched=true as boolean, trigger=true as boolean) as boolean
     if unwatched = false then
         m.Delete("currentUnwatched")
     else
         m.currentUnwatched = {key: key, value: "1", isBoolean: true}
     end if
 
-    if not disableTriggers then
+    if trigger then
         m.Trigger("set_filter", [m])
     end if
 
     return true
 end function
 
-function filtersSetFilter(key as string, value=invalid as dynamic, title=invalid as dynamic, toggle=false as boolean, disableTriggers=false as boolean) as boolean
+function filtersSetFilter(key as string, value=invalid as dynamic, title=invalid as dynamic, toggle=false as boolean, trigger=true as boolean) as boolean
     if not m.HasFilters() then return true
 
     newFilters = CreateObject("roList")
@@ -522,7 +522,7 @@ function filtersSetFilter(key as string, value=invalid as dynamic, title=invalid
 
     m.currentFilters = newFilters
 
-    if not disableTriggers then
+    if trigger then
         m.filterWasSet = true
         m.Trigger("set_filter", [m])
     end if
