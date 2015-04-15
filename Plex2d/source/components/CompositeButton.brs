@@ -38,6 +38,9 @@ sub cbuttonPerformLayout()
 end sub
 
 function cbuttonGetPreferredWidth() as integer
+    ' If someone specifically set our width, then prefer that.
+    if validint(m.width) > 0 then return m.width
+
     width = m.padding.left
     for each comp in m.components
         width = width + comp.GetPreferredWidth() + m.padding.right
