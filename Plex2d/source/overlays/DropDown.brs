@@ -179,8 +179,8 @@ sub ddoverlayGetComponents()
                 comp = createButton(option.text, option.font, option.command)
             end if
             comp.setColor(Colors().Text, Colors().Button)
-            if option.focus_background <> invalid then
-                comp.SetFocusMethod(comp.FOCUS_BACKGROUND, option.focus_background)
+            if option.focusMethod <> invalid then
+                comp.SetFocusMethod(option.focusMethod, option.focusMethodColor)
             else
                 comp.focusInside = true
             end if

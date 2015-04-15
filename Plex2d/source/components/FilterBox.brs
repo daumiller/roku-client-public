@@ -60,7 +60,7 @@ sub filterboxInit(item as object)
         text: Colors().Text,
         button: Colors().Button,
         highlight: Colors().ButtonLht,
-        focused: Colors().Orange
+        buttonFocus: Colors().Orange,
     }
 end sub
 
@@ -82,7 +82,8 @@ sub filterboxOnFilterRefresh(filters as object)
         height: 50,
         padding: {right: 50, left: 20, top: 0, bottom: 0}
         font: FontRegistry().NORMAL,
-        focus_background: m.colors.focused
+        focusMethod: ButtonClass().FOCUS_BACKGROUND,
+        focusMethodColor: m.colors.buttonFocus,
     }
 
     m.optionPrefs.fields = {
