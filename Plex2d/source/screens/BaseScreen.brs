@@ -13,6 +13,7 @@ function BaseScreen()
         obj.Deactivate = bsDeactivate
         obj.Destroy = bsDestroy
         obj.HandleMessage = bsHandleMessage
+        obj.ToString = bsToString
 
         ' debugging
         obj.OnInfoButton = bsNoOp
@@ -64,3 +65,13 @@ end function
 sub bsNoOP(arg1=invalid as dynamic)
     ' no-op defaults
 end sub
+
+function bsToString() as string
+    if type(m.screen) = "roAssociativeArray" then
+        screenType = type(m.screen.screen)
+    else
+        screenType = type(m.screen)
+    end if
+
+    return "name="+tostr(m.screenName) + ", id=" + tostr(m.screenID) + ", type=" + screenType + ", count=" + tostr(Application().screens.Count())
+end function
