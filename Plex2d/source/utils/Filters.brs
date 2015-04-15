@@ -484,8 +484,12 @@ function filtersSetFilter(key as string, value=invalid as dynamic, title=invalid
     newFilters = CreateObject("roList")
 
     ' Handle toggling boolean filters
-    if toggle then
-        for each filter in m.currentFilters
+    for each filter in m.currentFilters
+        ' Save the current filter if trigger is disabled. At this point, we are
+        ' just saving the filter, so we'll allow multiple filters to exist.
+        if not trigger and filter.key <> key then
+            newFilters.Push(filter)
+        else if toggle and filter.isBoolean and filter.value = "1" then
             ' TODO(rob): how do we handle the boolean=false? e.g. unwatched=0
             ' would filter by "watched", but we don't have a good way to show
             ' that. For now, lets just remove the boolean filter if false.
@@ -495,12 +499,10 @@ function filtersSetFilter(key as string, value=invalid as dynamic, title=invalid
             ' expected it's set to on, and off means we are not filtering at
             ' all.
             ' value = iif(filter.value = "1", "0", "1")
-            if filter.isBoolean and filter.value = "1" then
-                value = invalid
-                exit for
-            end if
-        end for
-    end if
+            value = invalid
+            exit for
+       end if
+    end for
 
     if value <> invalid then
         filter = {key: key, value: value, title: title}
