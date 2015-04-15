@@ -43,7 +43,9 @@ function FiltersClass() as object
         obj.GetFilters = filtersGetFilters
         obj.GetUnwatched = filtersGetUnwatched
         obj.IsUnwatched = filtersIsUnwatched
-        obj.HadFilterSet = filtersHadFilterSet
+
+        obj.IsModified = filtersIsModified
+        obj.SetModified = filtersSetModified
 
         obj.GetSortTitle = filtersGetSortTitle
         obj.GetFilterTitle = filtersGetFilterTitle
@@ -93,19 +95,17 @@ function createFilters(item as object) as object
 end function
 
 sub filtersInit()
-    ' TODO(rob): do we want to parse the current item for filter/sorts
-    ' in the url. e.g. the unwatched button button and hubs that use
-    ' a compatible filterd/sorted endpoint.
+    ' Booleans for filtered endpoints
+    m.hasCustomSort = false
+    m.hasCustomFilter = false
 
-    ' Containers for available filters and sorts
+    ' Containers for available filters, sorts and types
     m.filterItems = CreateObject("roList")
     m.sortItems = CreateObject("roList")
     m.typeItems = CreateObject("roArray", 5, true)
 
     ' Containers for current filters, type and sorts
     m.currentSort = CreateObject("roAssociativeArray")
-    ' We don't support compound filters, so this could be an AA,
-    ' but we'll leave it as is in case we do add support some day.
     m.currentFilters = CreateObject("roList")
 end sub
 
@@ -231,9 +231,13 @@ function filtersParsePath(path as string, parseTypeOnly=false as boolean) as boo
                 end if
             else
                 if av[0] = "sort" then
-                    supported = m.SetParsedSort(av[1])
+                    if not m.SetParsedSort(av[1]) then
+                        m.hasCustomSort = true
+                    end if
                 else
-                    supported = m.SetParsedFilter(av[0], av[1])
+                    if not m.SetParsedFilter(av[0], av[1]) then
+                        m.hasCustomFilter = true
+                    end if
                 end if
             end if
         end for
@@ -243,6 +247,12 @@ function filtersParsePath(path as string, parseTypeOnly=false as boolean) as boo
     end if
 
     if parseTypeOnly then return true
+
+    ' Check if the endpoint only contains a sort. We'll need to
+    ' handle the user changing the sort (reset the grid title)
+    if m.GetFilters() = invalid and m.GetSort() <> invalid then
+        m.hasCustomSort = true
+    end if
 
     m.SetDefaultSort()
 
@@ -282,7 +292,7 @@ sub filtersClearFilters(trigger=false as boolean)
     m.currentFilters.Clear()
 
     if trigger then
-        m.filterWasSet = true
+        m.SetModified()
         m.Trigger("set_filter", [m])
     end if
 end sub
@@ -375,7 +385,7 @@ sub filtersSetType(value=invalid as dynamic, trigger=true as boolean)
             m.ClearFilters()
         end if
 
-        m.filterWasSet = true
+        m.SetModified()
         m.Trigger("set_type", [m])
     end if
 end sub
@@ -416,6 +426,9 @@ function filtersSetSort(key=invalid as dynamic, toggle=true as boolean, trigger=
     end if
 
     if trigger then
+        if m.hasCustomSort = true then
+            m.SetModified()
+        end if
         m.Trigger("set_sort", [m])
     end if
 
@@ -526,7 +539,7 @@ function filtersSetFilter(key as string, value=invalid as dynamic, title=invalid
     m.currentFilters = newFilters
 
     if trigger then
-        m.filterWasSet = true
+        m.SetModified()
         m.Trigger("set_filter", [m])
     end if
 
@@ -593,8 +606,12 @@ sub filtersClearUnwatched()
     m.SetUnwatched("", false, true)
 end sub
 
-' Helper to differentiate if the filter was set or parsed. This will stay
-' true when we clear the filters.
-function filtersHadFilterSet() as boolean
-    return (m.filterWasSet = true)
+' Helpers to differentiate if the filter/sort was set or parsed. This
+' will stay true when we clear the filters.
+function filtersIsModified() as boolean
+    return (m.filtersIsModifed = true)
 end function
+
+sub filtersSetModified()
+    m.filtersIsModifed = true
+end sub

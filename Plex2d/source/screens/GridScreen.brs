@@ -274,7 +274,7 @@ sub gsGetComponents()
     m.components.Push(createHeader(m))
 
     ' *** Grid Header *** '
-    if m.filterBox <> invalid and m.filterBox.filters.HadFilterSet() then
+    if m.filterBox <> invalid and m.filterBox.filters.IsModified() then
         title = m.container.GetFirst(["librarySectionTitle"], "Custom Filter")
     else if m.item.Get("key", "") = "all" and m.container.Get("librarySectionTitle") <> invalid then
         title = m.container.Get("librarySectionTitle")
