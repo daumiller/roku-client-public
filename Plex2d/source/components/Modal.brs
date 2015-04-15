@@ -6,6 +6,7 @@ function ModalClass() as object
         obj.ClassName = "Modal"
         obj.Init = modalInit
         obj.Show = modalShow
+        obj.Close = modalClose
 
         m.ModalClass = obj
     end if
@@ -65,7 +66,8 @@ sub modalShow()
 
     ' Draw the modal to the screen
     m.screen.screen.DrawAll()
+end sub
 
-    ' Destroy the modal components now (one-time use)
-    m.destroy()
+sub modalClose()
+    m.Destroy()
 end sub

@@ -501,8 +501,8 @@ sub appOnLoadingModalTimeout(timer as object)
 
     ' Loading Modal for roScreens
     if type(screen.screen) = "roAssociativeArray" and type(screen.screen.screen) = "roScreen" then
-        loadingModal = createLoadingModal(screen)
-        loadingModal.show()
+        m.loadingModal = createLoadingModal(screen)
+        m.loadingModal.Show()
     end if
 
     ' Modals for other screen types?
@@ -521,6 +521,11 @@ sub appCheckLoadingModal()
 end sub
 
 sub appCloseLoadingModal()
+    if m.loadingModal <> invalid then
+        m.loadingModal.Close()
+        m.Delete("loadingModal")
+    end if
+
     if m.LoadingModalTimer = invalid then return
 
     if m.LoadingModalTimer.screenCallBack <> invalid then
