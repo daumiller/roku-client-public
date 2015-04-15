@@ -108,6 +108,7 @@ sub filterboxOnFilterRefresh(filters as object)
                 option = {text: ucase(filter.Get("title")), plexObject: filter, command: "filter_unwatched"}
                 option.isBoolean = true
                 option.booleanValue = filters.IsUnwatched()
+                option.bgColor = Colors().ButtonDark
                 option.Append(m.optionPrefs)
                 filterButton.options.Push(option)
             end if
@@ -116,6 +117,7 @@ sub filterboxOnFilterRefresh(filters as object)
             if filters.GetFilters() <> invalid then
                 ' TODO(rob): use a custom composite button to include the X glyph
                 option = {text: "CLEAR FILTER", command: "filter_clear"}
+                option.bgColor = Colors().ButtonDark
                 option.Append(m.optionPrefs)
                 filterButton.options.Push(option)
             end if
