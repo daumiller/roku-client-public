@@ -101,14 +101,6 @@ sub clShow()
             m.screen.DrawLock()
             ApplyFunc(ComponentsScreen().Show, m)
             m.screen.DrawUnlock()
-
-            ' TODO(rob): This works just like the other preplay screens, but do we want
-            ' the << >> buttons to scroll quicker through the vertical list? We might
-            ' just want to keep this consistent, and it may be irrelevant once we have
-            ' support for scrolling acceleration.
-
-            ' Load context for << >> navigation
-            m.LoadContext()
         else
             dialog = createDialog("Unable to load", "Sorry, we couldn't load the requested item.", m)
             dialog.AddButton("OK", "close_screen")

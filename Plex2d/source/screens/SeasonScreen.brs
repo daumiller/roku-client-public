@@ -154,14 +154,10 @@ sub seasonInitItem()
     m.listPrefs.height = 120
 end sub
 
-sub seasonLoadContext()
-    if m.context = invalid then
-        if m.item.GetContextPath(false) <> invalid then
-            request = createPlexRequest(m.server, m.item.GetContextPath(false))
-            context = request.CreateRequestContext("preplay_context", createCallable("OnContextResponse", m))
-            context.hubIdentifier = m.requestItem.container.Get("hubIdentifier")
-            Application().StartRequest(request, context)
-        end if
+sub seasonLoadContext(delta as integer)
+    path = m.item.GetContextPath(false)
+    if path <> invalid then
+        ApplyFunc(ContextListScreen().LoadContext, m, [delta, path])
     end if
 end sub
 

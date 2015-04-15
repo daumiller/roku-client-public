@@ -42,6 +42,9 @@ end function
 sub preplayActivate()
     ApplyFunc(ComponentsScreen().Activate, m)
 
+    ' Clear any contextRequest if we don't have any context
+    if m.context = invalid then m.Delete("contextRequest")
+
     ' set any temporary preplay setting overrides
     m.OnSettingsClosed({}, false)
 end sub
@@ -84,9 +87,6 @@ sub preplayShow()
         request = createPlexRequest(m.server, m.item.GetItemPath(true))
         context = request.CreateRequestContext("preplay_item", createCallable("OnDetailsResponse", m))
         Application().StartRequest(request, context)
-
-        ' Load context for << >> navigation
-        m.LoadContext()
     else
         dialog = createDialog("Unable to load", "Sorry, we couldn't load the requested item.", m)
         dialog.AddButton("OK", "close_screen")
@@ -111,19 +111,22 @@ end sub
 
 sub preplayOnContextResponse(request as object, response as object, context as object)
     response.ParseResponse()
-    if response.items = invalid then return
+    if response.items.Count() > 0 then
+        ' Handle the Continue Watching hub differently as it has no container key.
+        if tostr(context.hubIdentifier) = "home.continue" then
+            for each hub in response.items
+                if hub.Get("hubIdentifier", "") = context.hubIdentifier then
+                    m.SetContext(hub.items)
+                end if
+            end for
+        end if
 
-    ' Handle the Continue Watching hub differently as it has no container key.
-    if tostr(context.hubIdentifier) = "home.continue" then
-        for each hub in response.items
-            if hub.Get("hubIdentifier", "") = context.hubIdentifier then
-                m.SetContext(hub.items)
-                return
-            end if
-        end for
+        if m.context = invalid then
+            m.SetContext(response.items)
+        end if
     end if
 
-    m.SetContext(response.items)
+    m.AdvanceContext(context.delta)
 end sub
 
 sub preplaySetContext(items=invalid as dynamic, curIndex=invalid as dynamic)
@@ -892,19 +895,36 @@ sub preplayUpdatePrefOptions(settings as object, prefKey as string, prefValue=in
     end if
 end sub
 
-sub preplayLoadContext()
+sub preplayLoadContext(delta as integer, path=invalid as dynamic)
+    Debug("Loading context for " + m.ToString())
     if m.context = invalid then
-        item = iif(m.item.type = "episode", m.item, m.requestItem)
-        if item.GetContextPath() <> invalid then
-            request = createPlexRequest(m.server, item.GetContextPath())
-            context = request.CreateRequestContext("preplay_context", createCallable("OnContextResponse", m))
-            context.hubIdentifier = m.requestItem.container.Get("hubIdentifier")
-            Application().StartRequest(request, context)
+        if path = invalid then
+            item = iif(m.item.type = "episode", m.item, m.requestItem)
+            path = item.GetContextPath()
         end if
+
+        if path <> invalid then
+            request = createPlexRequest(m.server, path)
+            m.contextRequest = request.CreateRequestContext("preplay_context", createCallable("OnContextResponse", m))
+            m.contextRequest.hubIdentifier = m.requestItem.container.Get("hubIdentifier")
+            m.contextRequest.delta = delta
+            Application().StartRequest(request, m.contextRequest)
+        end if
+    else
+        Application().CloseLoadingModal()
     end if
 end sub
 
 sub preplayAdvanceContext(delta as integer)
+    ' Load context for << >> navigation
+    if m.contextRequest = invalid then
+        Application().ShowLoadingModal(m)
+        m.LoadContext(delta)
+        return
+    end if
+
+    Application().CloseLoadingModal()
+
     if m.curIndex = invalid or m.context = invalid then return
 
     newIndex = (m.curIndex + delta) mod m.context.Count()

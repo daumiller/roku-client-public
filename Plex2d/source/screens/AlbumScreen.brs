@@ -112,9 +112,6 @@ sub albumShow()
         if m.item <> invalid then
             ApplyFunc(ComponentsScreen().Show, m)
             m.ToggleSummary()
-
-            ' Load context for << >> navigation
-            m.LoadContext()
         else
             dialog = createDialog("Unable to load", "Sorry, we couldn't load the requested item.", m)
             dialog.AddButton("OK", "close_screen")
