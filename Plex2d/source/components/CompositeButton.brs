@@ -6,6 +6,14 @@ function CompositeButtonClass() as object
 
         obj.ClassName = "CompositeButton"
 
+        ' Override a few methods we need to function as a button that were
+        ' reset by inheriting CompositeClass after ButtonClass. This is
+        ' why inheriting from two classes classes isn't optimal.
+        '
+        obj.SetFocusMethod = ButtonClass().SetFocusMethod
+        obj.OnFocus = ButtonClass().OnFocus
+        obj.OnBlur = ButtonClass().OnBlur
+
         ' Method overrides
         obj.Init = cbuttonInit
         obj.PerformLayout = cbuttonPerformLayout
