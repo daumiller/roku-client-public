@@ -175,6 +175,8 @@ sub ddoverlayGetComponents()
                 end if
             else if option.isBoolean = true then
                 comp = createBoolButton(option.text, option.font, option.command, (option.booleanValue = true))
+            else if option.isGlyphButton = true then
+                comp = createGlyphButton(option.text, option.font, option.glyphText, option.glyphFont, option.command, (option.useIndicator = true))
             else
                 comp = createButton(option.text, option.font, option.command)
             end if

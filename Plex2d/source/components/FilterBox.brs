@@ -116,7 +116,8 @@ sub filterboxOnFilterRefresh(filters as object)
             ' Clear Filters
             if filters.GetFilters() <> invalid then
                 ' TODO(rob): use a custom composite button to include the X glyph
-                option = {text: "CLEAR FILTER", command: "filter_clear"}
+                option = {text: "CLEAR FILTER", command: "filter_clear", glyphText: Glyphs().CIR_X, glyphFont: FontRegistry().GetIconFont(20)}
+                option.isGlyphButton = true
                 option.bgColor = Colors().ButtonDark
                 option.Append(m.optionPrefs)
                 filterButton.options.Push(option)
