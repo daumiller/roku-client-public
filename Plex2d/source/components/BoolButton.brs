@@ -83,7 +83,7 @@ function boolbuttonDraw(redraw=false as boolean) as object
         checkMark = {
             y: m.GetYOffsetAlignment(glyphPref.height)
             x: m.width - xOffset - glyphPref.width
-            color: m.fgColor
+            color: firstOf(m.blurColorText, m.fgColor)
         }
 
         m.region.DrawText(Glyphs().CHECK, checkMark.x, checkMark.y, checkMark.color, glyph)
