@@ -105,7 +105,7 @@ sub filterboxOnFilterRefresh(filters as object)
             ' Unwatched filter option
             filter = filters.GetUnwatchedOption()
             if filter <> invalid then
-                option = {text: filter.Get("title"), plexObject: filter, command: "filter_unwatched"}
+                option = {text: ucase(filter.Get("title")), plexObject: filter, command: "filter_unwatched"}
                 option.isBoolean = true
                 option.booleanValue = filters.IsUnwatched()
                 option.Append(m.optionPrefs)
