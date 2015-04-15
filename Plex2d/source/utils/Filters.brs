@@ -375,6 +375,7 @@ sub filtersSetType(value=invalid as dynamic, trigger=true as boolean)
             m.ClearFilters()
         end if
 
+        m.filterWasSet = true
         m.Trigger("set_type", [m])
     end if
 end sub
