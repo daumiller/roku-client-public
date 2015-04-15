@@ -58,9 +58,10 @@ sub filterboxInit(item as object)
 
     m.colors = {
         text: Colors().Text,
+        textFocus: Colors().Black,
         button: Colors().Button,
-        highlight: Colors().ButtonLht,
         buttonFocus: Colors().Orange,
+        buttonSelected: Colors().ButtonLht
     }
 end sub
 
@@ -84,6 +85,7 @@ sub filterboxOnFilterRefresh(filters as object)
         font: FontRegistry().NORMAL,
         focusMethod: ButtonClass().FOCUS_BACKGROUND,
         focusMethodColor: m.colors.buttonFocus,
+        fgColorFocus: m.colors.textFocus
     }
 
     m.optionPrefs.fields = {
@@ -212,7 +214,7 @@ sub filterboxOnSelected(screen as object)
     else if command = "sort" then
         m.filters.SetSort(plexObject.Get("key"))
     else if command = "show_dropdown" then
-        m.SetColor(filterBox.colors.text, filterBox.colors.highlight)
+        m.SetColor(filterBox.colors.text, filterBox.colors.buttonSelected)
         m.Draw(true)
         m.SetColor(filterBox.colors.text, filterBox.colors.button)
 

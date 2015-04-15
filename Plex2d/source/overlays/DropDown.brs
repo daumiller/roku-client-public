@@ -178,7 +178,7 @@ sub ddoverlayGetComponents()
             else
                 comp = createButton(option.text, option.font, option.command)
             end if
-            comp.setColor(Colors().Text, Colors().Button)
+            comp.setColor(firstOf(option.fgColor, Colors().Text), firstOf(option.bgColor, Colors().Button), option.fgColorFocus)
             if option.focusMethod <> invalid then
                 comp.SetFocusMethod(option.focusMethod, option.focusMethodColor)
             else
