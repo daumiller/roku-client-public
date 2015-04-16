@@ -63,6 +63,28 @@ sub ddoverlayCalculatePosition(vbox as object)
         right: 1230,
     }
 
+    ' Calculate the spacing between the dropdown button and dropdown. We will prefer
+    ' to specified spacing, parents spacing if it exists or fallback to the focus
+    ' border pixels.
+    '
+    if m.button.dropdownSpacing <> invalid then
+        spacing = m.button.dropdownSpacing
+    else if m.button.parent <> invalid and m.button.parent.spacing > 0 then
+        spacing = m.button.parent.spacing
+    else
+        spacing = CompositorScreen().focusPixels
+    end if
+
+    ' Calculate the available width for the dropdown. Prefer maxWidth if set and if
+    ' it's not greater than our available width
+    '
+    availableRight = int(safeArea.right - (parent.right + spacing))
+    availableLeft = parent.left - spacing - safeArea.left
+    availableWidth = m.button.dropdownMaxWidth
+    if availableWidth = invalid or availableWidth > availableRight and availableWidth > availableLeft then
+        availableWidth = iif(availableRight > availableLeft, availableRight, availableLeft)
+    end if
+
     ' Assumes all dropdown components height are homogeneous
     compHeight = vbox.components[0].height
 
@@ -74,6 +96,11 @@ sub ddoverlayCalculatePosition(vbox as object)
         ddProp.height = ddProp.height + component.getPreferredHeight() + vbox.spacing
     end for
 
+    ' Reset the homogeneous width if it's greater than our max
+    if ddProp.width > availableWidth then
+        ddProp.width = availableWidth
+    end if
+
     ' Reset the buttons width based on the max width
     for each component in vbox.components
         component.width = ddProp.width
@@ -84,13 +111,6 @@ sub ddoverlayCalculatePosition(vbox as object)
     ' on the screen vertically. We do not support "up" as a specified option, so
     ' we'll have to add support for it later if it's ever preferred.
     '
-    if m.button.dropdownSpacing <> invalid then
-        spacing = m.button.dropdownSpacing
-    else if m.button.parent <> invalid and m.button.parent.spacing > 0 then
-        spacing = m.button.parent.spacing
-    else
-        spacing = CompositorScreen().focusPixels
-    end if
     if m.button.dropDownPosition = "right" then
         ddProp.x = parent.right + spacing
     else if m.button.dropDownPosition = "left" then
