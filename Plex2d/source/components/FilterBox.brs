@@ -150,10 +150,14 @@ sub filterboxOnFilterRefresh(filters as object)
             typesButton = createDropDownButton(ucase(title), m.font, m.screen, false)
             typesButton.SetPadding(0, 10, 0, 10)
             typesButton.SetDropDownPosition("down", 0)
-            for each fType in filters.GetTypeOptions()
-                option = {text: fType.title, metadata: fType, command: "filter_type"}
+
+            selectedType = filters.GetSelectedType()
+            for each item in filters.GetTypeOptions()
+                glyph = iif(selectedType <> invalid and selectedType.value = item.value, Glyphs().CHECK, " ")
+
+                option = typesButton.AddCallableButton(createGlyphButton, [item.title, m.optionPrefs.font, glyph, m.customFonts.glyph, "filter_type"])
+                option.metadata = item
                 option.Append(m.optionPrefs)
-                typesButton.options.Push(option)
             end for
             m.AddComponent(typesButton)
         end if
