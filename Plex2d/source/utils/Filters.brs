@@ -50,6 +50,7 @@ function FiltersClass() as object
 
         obj.GetSortTitle = filtersGetSortTitle
         obj.GetFilterTitle = filtersGetFilterTitle
+        obj.GetSortDirection = filtersGetSortDirection
 
         obj.ParseType = filtersParseType
         obj.ParsePath = filtersParsePath
@@ -415,6 +416,7 @@ function filtersSetSort(key=invalid as dynamic, toggle=true as boolean, trigger=
                 m.currentSort.key = defaultKey
             end if
 
+            m.currentSort.direction = iif(m.currentSort.key = descKey, "desc", "asc")
             m.currentSort.defaultKey = defaultKey
             m.currentSort.plexObject = sort
         end if
@@ -616,6 +618,14 @@ end function
 sub filtersSetModified()
     m.filtersIsModifed = true
 end sub
+
+function filtersGetSortDirection(key) as dynamic
+    if key = invalid or key = m.currentSort.defaultKey then
+        return m.currentSort.direction
+    end if
+
+    return invalid
+end function
 
 function filtersIsFilteredByKey(key as string) as boolean
     for each filter in m.currentFilters

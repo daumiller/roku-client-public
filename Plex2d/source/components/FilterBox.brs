@@ -172,10 +172,11 @@ sub filterboxOnFilterRefresh(filters as object)
 
             ' Sort options
             for each sort in filters.GetSortOptions()
-                ' <Directory defaultDirection="desc" descKey="originallyAvailableAt:desc" key="originallyAvailableAt" title="First Aired"/>
-                option = {text: sort.Get("title"), plexObject: sort, command: "sort"}
+                sortDirection = filters.GetSortDirection(sort.Get("key"))
+
+                option = sortButton.AddCallableButton(createSortButton, [sort.Get("title"), sortDirection, m.optionPrefs.font, m.customFonts.glyph, "sort"])
+                option.plexObject = sort
                 option.Append(m.optionPrefs)
-                sortButton.options.Push(option)
             end for
         end if
 
