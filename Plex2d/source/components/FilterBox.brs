@@ -134,7 +134,7 @@ sub filterboxOnFilterRefresh(filters as object)
                 else
                     ' TODO(rob): modify button to handle a check mark, to reflect status of isEnabled
                     option = filterButton.AddCallableButton(createDropDownButton, [title, m.optionPrefs.font, m.screen, false])
-                    option.dropdownPosition = "right"
+                    option.dropdownPosition = "left"
                     option.dropdownSpacing = 1
                 end if
 
