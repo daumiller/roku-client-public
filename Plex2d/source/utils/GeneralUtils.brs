@@ -290,65 +290,82 @@ function OppositeDirection(direction as string) as string
     return m.OppositeDirections[direction]
 end function
 
-function GetDateTimeFromSeconds(seconds as dynamic) as dynamic
+function GetDurationFromSeconds(seconds as dynamic) as dynamic
     if IsString(seconds) then
-        sec = seconds.toint()
-    else if IsNumber(seconds) then
-        sec = seconds
-    else
+        seconds = seconds.toInt()
+    else if not IsNumber(seconds)
         return invalid
     end if
 
-    datetime = CreateObject("roDateTime")
-    datetime.FromSeconds(sec)
+    obj = CreateObject("roAssociativeArray")
+    obj.days = int(seconds / 86400)
+    obj.hours = int((seconds mod 86400) / 3600)
+    obj.minutes = int(((seconds mod 86400) mod 3600) / 60)
+    obj.seconds = int(((seconds mod 86400) mod 3600) mod 60)
+    obj.totalSeconds = seconds
 
-    return datetime
+    return obj
 end function
 
 function GetDurationString(seconds as dynamic, emptyHr=false as boolean, emptyMin=false as boolean, emptySec=false as boolean) as string
-    datetime = GetDateTimeFromSeconds(seconds)
-    if datetime = invalid then return ""
+    obj = GetDurationFromSeconds(seconds)
+    if obj = invalid then return ""
 
     duration = ""
-    hours = datetime.GetHours().toStr()
-    minutes = datetime.GetMinutes().toStr()
-    seconds = datetime.Getseconds().toStr()
 
-    if hours <> "0" or emptyHr = true then
-        duration = duration + hours + " hr "
+    if obj.days > 0 then
+        suffix = iif(obj.days > 1, " days, ", " day, ")
+        duration = duration + obj.days.toStr() + suffix
     end if
 
-    if minutes <> "0" or emptyMin = true then
-        duration = duration + minutes + " min "
+    if obj.hours > 0 or emptyHr = true then
+        duration = duration + obj.hours.toStr() + " "
+        if obj.days > 0 then
+            return duration + iif(obj.hours > 1, "hours", "hour")
+        else
+            duration = duration + " hr "
+        end if
+    end if
+
+    if obj.minutes > 0 or emptyMin = true then
+        duration = duration + obj.minutes.toStr() + " "
+        if obj.days > 0 then
+            return duration + iif(obj.minutes > 1, "minutes", "minute")
+        else
+            duration = duration + " min "
+        end if
     end if
 
     if duration = "" and seconds <> "0" or emptySec = true then
-        duration = duration + seconds + " sec"
+        duration = duration + obj.seconds.toStr() + " sec"
     end if
 
-    return duration.trim()
+    return duration.Trim()
 end function
 
-' return time string: always include minutes and seconds. Do not inlcude leading zero on first time part
-function GetTimeString(seconds as dynamic, emptyHr=false as boolean, emptyMin=true as boolean, emptySec=true as boolean) as string
-    datetime = GetDateTimeFromSeconds(seconds)
-    if datetime = invalid then return ""
+function GetTimeString(seconds as dynamic) as string
+    obj = GetDurationFromSeconds(seconds)
+    if obj = invalid then return ""
 
-    duration = ""
     parts = CreateObject("roList")
-    hours = datetime.GetHours().toStr()
-    minutes = datetime.GetMinutes().toStr()
-    seconds = datetime.Getseconds().toStr()
 
-    if hours   <> "0" or emptyHr  = true then parts.push(hours)
-    if minutes <> "0" or emptyMin = true then parts.push(minutes)
-    if seconds <> "0" or emptySec = true then parts.push(seconds)
+    ' Include days if > 0. Include hours if days or hours is > 0. Always
+    ' include the minutes and seconds. This is required to be able to
+    ' distinguish the time slots.
+    '
+    if obj.days > 0 then parts.push(obj.days)
+    if obj.days > 0 or obj.hours > 0 then parts.push(obj.hours)
+    parts.push(obj.minutes)
+    parts.push(obj.seconds)
 
+    if parts.Count() = 0 then return ""
+
+    ' Do not inlcude leading zero on first time slot
     for index = 0 to parts.Count() - 1
         if index = 0 then
-            duration = parts[index]
+            duration = parts[index].toStr()
         else
-            duration = duration + ":" + right("0" + parts[index], 2)
+            duration = duration + ":" + right("0" + parts[index].toStr(), 2)
         end if
     end for
 
