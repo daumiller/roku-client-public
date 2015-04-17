@@ -214,6 +214,7 @@ sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic, screen=inv
         triggerUp: m.scrollTriggerDown - toFocus.height
         triggerDown: m.scrollTriggerDown
         shiftAmount: toFocus.height + m.spacing
+        toFocus: toFocus
     }
 
     ' handle shifting groups (settings menu box)
@@ -296,13 +297,23 @@ end sub
 sub vboxShiftComponents(shift as object, refocus=invalid as dynamic)
     Debug("shift vbox by: " + tostr(shift.x) + "," + tostr(shift.y))
 
-    ' Disable animation for key repeats, on refocus, or if the shift is
-    ' greater than the vbox height. This fixes any possible memory issue,
-    ' unnecessary scrolling animation, and improves performance.
-    if m.screen.isKeyRepeat = true or refocus <> invalid or abs(shift.y) > m.height then
-        disableAnimation = true
-    else
-        disableAnimation = false
+    ' Disable animation for forground/background focus methods, key repeats,
+    ' on refocus, or if the shift is greater than the vbox height. This fixes
+    ' any possible memory issue, unnecessary scrolling animation, and improves
+    ' performance.
+    '
+    enableAnimation = (m.scrollAnimate = true)
+    if enableAnimation then
+        ' This ensures we don't allow animation for foreground or background
+        ' focus, otherwise it will flicker. We will have to modify these focus
+        ' methods if we need/want to animate.
+        '
+        focusMethod = shift.toFocus.focusMethod
+        if focusMethod <> invalid and (focusMethod = ButtonClass().FOCUS_FOREGROUND or focusMethod = ButtonClass().FOCUS_BACKGROUND) then
+            enableAnimation = false
+        else if m.screen.isKeyRepeat = true or refocus <> invalid or abs(shift.y) > m.height then
+            enableAnimation = false
+        end if
     end if
 
     if m.screen.lazyLoadTimer <> invalid then
@@ -358,7 +369,7 @@ sub vboxShiftComponents(shift as object, refocus=invalid as dynamic)
 
     ' Animation still needs some logic/2d code to make it work with any
     ' scrollable vbox, but this does work for the users selection screen.
-    if not disableAnimation and m.scrollAnimate = true then
+    if enableAnimation then
         AnimateShift(shift, partShift, m.screen.screen)
     else
         for each component in partShift
