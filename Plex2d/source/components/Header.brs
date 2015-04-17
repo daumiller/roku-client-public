@@ -117,10 +117,10 @@ sub headerPerformLayout()
             else if buttonWidth < m.buttons.minWidth then
                 button.width = m.buttons.minWidth
             end if
-            buttonContWidth = buttonContWidth + button.GetPreferredWidth() + hbox.spacing
+            buttonContWidth = buttonContWidth + button.GetPreferredWidth()
             hbox.addComponent(button)
         end for
-        numButtons = buttons.Count()
+        buttonContWidth = buttonContWidth + (hbox.spacing * (buttons.Count()-1))
 
         hbox.setFrame(m.right - buttonContWidth, m.buttons.yOffset, buttonContWidth, m.height)
         m.AddComponent(hbox)
