@@ -83,13 +83,19 @@ end sub
 sub buttonOnBlur(toFocus=invalid as dynamic)
     ApplyFunc(LabelClass().OnBlur, m, [toFocus])
 
-    if m.focusMethod = m.FOCUS_FOREGROUND then
-        m.SetColor(firstOf(m.statusColor, m.blurColor), m.bgColor)
+    if m.focusMethod = m.FOCUS_FOREGROUND or m.focusMethod = m.FOCUS_BACKGROUND then
+        if m.focusMethod = m.FOCUS_FOREGROUND then
+            m.SetColor(firstOf(m.statusColor, m.blurColor), m.bgColor)
+        else
+            m.SetColor(m.blurColorText, m.blurColor)
+        end if
+
         m.Draw(true)
-        m.Redraw()
-    else if m.focusMethod = m.FOCUS_BACKGROUND then
-        m.SetColor(m.blurColorText, m.blurColor)
-        m.Draw(true)
-        m.Redraw()
+
+        ' Defer drawing the screen to stop flickering if the component
+        ' next to focus uses the same method.
+        if toFocus = invalid or toFocus.focusMethod <> m.focusMethod then
+            m.Redraw()
+        end if
     end if
 end sub
