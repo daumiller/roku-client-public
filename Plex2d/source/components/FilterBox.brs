@@ -82,6 +82,9 @@ sub filterboxOnFilterRefresh(filters as object)
     m.DestroyComponents()
     m.components.Clear()
 
+    dropdownPosition = "left"
+    buttonSpacing = 10
+
     m.optionPrefs = {
         halign: "JUSTIFY_LEFT",
         height: 50,
@@ -102,7 +105,7 @@ sub filterboxOnFilterRefresh(filters as object)
         if filters.HasFilters() then
             title = firstOf(filters.GetFilterTitle(), "ALL")
             filterButton = createDropDownButton(ucase(title), m.font, m.screen, false)
-            filterButton.SetPadding(0, 10, 0, 10)
+            filterButton.SetPadding(0, buttonSpacing, 0, buttonSpacing)
             filterButton.SetDropDownPosition("down", 0)
             m.AddComponent(filterButton)
 
@@ -134,7 +137,7 @@ sub filterboxOnFilterRefresh(filters as object)
                 else
                     ' TODO(rob): modify button to handle a check mark, to reflect status of isEnabled
                     option = filterButton.AddCallableButton(createDropDownButton, [title, m.optionPrefs.font, m.screen, false])
-                    option.dropdownPosition = "left"
+                    option.dropdownPosition = dropdownPosition
                     option.dropdownSpacing = 1
                 end if
 
@@ -148,7 +151,7 @@ sub filterboxOnFilterRefresh(filters as object)
         if filters.HasTypes() and filters.GetSelectedType() <> invalid then
             title = filters.GetSelectedType().title
             typesButton = createDropDownButton(ucase(title), m.font, m.screen, false)
-            typesButton.SetPadding(0, 10, 0, 10)
+            typesButton.SetPadding(0, buttonSpacing, 0, buttonSpacing)
             typesButton.SetDropDownPosition("down", 0)
 
             selectedType = filters.GetSelectedType()
@@ -166,7 +169,7 @@ sub filterboxOnFilterRefresh(filters as object)
         if filters.HasSorts() then
             title = firstOf(filters.GetSortTitle(), "SORT")
             sortButton = createDropDownButton(ucase(title), m.font, m.screen, false)
-            sortButton.SetPadding(0, 10, 0, 10)
+            sortButton.SetPadding(0, buttonSpacing, 0, buttonSpacing)
             sortButton.SetDropDownPosition("down", 0)
             m.AddComponent(sortButton)
 
@@ -178,6 +181,11 @@ sub filterboxOnFilterRefresh(filters as object)
                 option.plexObject = sort
                 option.Append(m.optionPrefs)
             end for
+        end if
+
+        if dropdownPosition = "right" and m.components.Count() < 3 then
+            width = m.optionPrefs.font.GetOneLineWidth("NAME", 100) + buttonSpacing*2
+            m.AddSpacer(width)
         end if
 
         width = m.GetPreferredWidth()
