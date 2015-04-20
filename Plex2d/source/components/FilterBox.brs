@@ -232,21 +232,38 @@ sub filterboxOnSelected(screen as object)
         m.Draw(true)
         m.SetColor(filterBox.colors.text, filterBox.colors.button)
 
-        values = m.filters.GetFilterOptionValues(plexObject)
+        m.options = CreateObject("roList")
+        size = m.filters.GetFilterOptionSize(plexObject)
+        if size > 0 then
+            ' Show a loading flyout based on an arbitrary size
+            if size > 500 then
+                option = {text: "loading..."}
+                option.Append(filterBox.optionPrefs)
+                m.options.Push(option)
+                m.Show()
 
-        if values.Count() = 0 then
-            createDialog(plexObject.Get("title", "") + " filter is empty", invalid, screen).Show(true)
-            return
-        else
+                ' Clear options, lock the screen and close the loading
+                ' flyout. It will unlock once the real data is loaded.
+                m.options.Clear()
+                screen.screen.DrawLockOnce()
+                m.overlay.Close(false, false)
+            end if
+
             filterKey = plexObject.Get("filter")
-            m.options = CreateObject("roList")
-            for each item in values
+            for each item in m.filters.GetFilterOptionValues(plexObject)
                 option = {text: item.Get("title"), command: "filter_set"}
-                option.metadata = { filter: filterKey, key: item.Get("key"), title: item.Get("title")}
+                option.metadata = {filter: filterKey, key: item.Get("key"), title: option.text}
                 option.Append(filterBox.optionPrefs)
                 m.options.Push(option)
             end for
-            screen.HandleCommand(m.command, m)
+        end if
+
+        if m.options.Count() > 0 then
+            m.Show()
+        else
+            createDialog(plexObject.Get("title", "") + " filter is empty", invalid, screen).Show(true)
+            screen.screen.DrawUnlock()
+            return
         end if
     end if
 end sub

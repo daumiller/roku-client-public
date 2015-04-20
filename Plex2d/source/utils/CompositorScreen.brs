@@ -14,6 +14,7 @@ function CompositorScreen() as object
 
         obj.drawLockTimer = createTimer("drawLock")
         obj.DrawLock = compositorDrawLock
+        obj.DrawLockOnce = compositorDrawLockOnce
         obj.DrawUnlock = compositorDrawUnlock
 
         obj.DrawDebugRect = compositorDrawDebugRect
@@ -252,6 +253,10 @@ sub compositorDrawLock(timeout=60000 as integer)
     Application().AddTimer(m.drawLockTimer, createCallable(OnDrawLockTimer, m))
 
     Locks().Lock("DrawAll")
+end sub
+
+sub compositorDrawLockOnce()
+    Locks().LockOnce("DrawAll")
 end sub
 
 sub compositorDrawUnlock(drawAll=true as boolean)

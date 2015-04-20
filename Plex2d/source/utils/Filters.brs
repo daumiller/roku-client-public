@@ -21,6 +21,7 @@ function FiltersClass() as object
         obj.GetUnwatchedOption = filtersGetUnwatchedOption
         obj.GetFilterOptions = filtersGetFilterOptions
         obj.GetFilterOptionValues = filtersGetFilterOptionValues
+        obj.GetFilterOptionSize = filtersGetFilterOptionSize
 
         obj.SetParsedSort = filtersSetParsedSort
         obj.SetParsedType = filtersSetParsedType
@@ -593,6 +594,19 @@ end function
 
 function filtersGetUnwatchedOption() as dynamic
     return m.unwatchedItem
+end function
+
+function filtersGetFilterOptionSize(plexObject as object) as integer
+    if plexObject.items <> invalid then
+        return plexObject.items.Count()
+    end if
+
+    request = createPlexRequest(plexObject.GetServer(), plexObject.GetItemPath())
+    request.AddHeader("X-Plex-Container-Start", "0")
+    request.AddHeader("X-Plex-Container-Size", "0")
+    response = request.DoRequestWithTimeout(30)
+
+    return response.container.GetFirst(["totalSize", "size"], "0").toInt()
 end function
 
 function filtersGetFilterOptionValues(plexObject as object, refresh=false as boolean) as object
