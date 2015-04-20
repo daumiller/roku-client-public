@@ -146,7 +146,7 @@ sub gsShow()
     end for
 
     if m.gridContainer.response <> invalid and m.jumpContainer.response <> invalid then
-        if m.gridContainer.response.container.GetFirst(["totalSize", "size", "0"]).toInt() = 0 then
+        if m.gridContainer.response.container.GetFirst(["totalSize", "size"], "0").toInt() = 0 then
             ' TODO(rob): change this error based on the current filters. It's possible the library
             ' contains content, but the filter is to limiting. Clear filters and reinit.
             if m.filterBox <> invalid then
