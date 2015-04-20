@@ -13,6 +13,9 @@ function CompositorScreen() as object
         obj.focusSprite = invalid
 
         obj.drawLockTimer = createTimer("drawLock")
+        obj.AddDrawLockTimer = compositorAddDrawLockTimer
+        obj.OnDrawLockTimer = compositorOnDrawLockTimer
+
         obj.DrawLock = compositorDrawLock
         obj.DrawLockOnce = compositorDrawLockOnce
         obj.DrawUnlock = compositorDrawUnlock
@@ -246,16 +249,12 @@ sub compositorDrawDebugRect(x, y, width, height, color, drawNow=false)
 end sub
 
 sub compositorDrawLock(timeout=60000 as integer)
-    ' Add a fail-safe delay to unlock DrawAll
-    m.drawLockTimer.SetDuration(timeout)
-    m.drawLockTimer.active = true
-    m.drawLockTimer.Mark()
-    Application().AddTimer(m.drawLockTimer, createCallable(OnDrawLockTimer, m))
-
+    m.AddDrawLockTimer(timeout)
     Locks().Lock("DrawAll")
 end sub
 
-sub compositorDrawLockOnce()
+sub compositorDrawLockOnce(timeout=60000 as integer)
+    m.AddDrawLockTimer(timeout)
     Locks().LockOnce("DrawAll")
 end sub
 
@@ -266,7 +265,15 @@ sub compositorDrawUnlock(drawAll=true as boolean)
     m.drawLockTimer.active = false
 end sub
 
-sub OnDrawLockTimer(timer as object)
+sub compositorOnDrawLockTimer(timer as object)
     WARN("DrawLock timer expired")
     m.DrawUnlock()
+end sub
+
+sub compositorAddDrawLockTimer(timeout as integer)
+    ' Add a fail-safe delay to unlock DrawAll
+    m.drawLockTimer.SetDuration(timeout)
+    m.drawLockTimer.active = true
+    m.drawLockTimer.Mark()
+    Application().AddTimer(m.drawLockTimer, createCallable("OnDrawLockTimer", m))
 end sub
