@@ -414,7 +414,7 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
         end if
 
         ' fallback to manual search for focusable component
-        if toFocus = invalid then
+        if toFocus = invalid and m.focusedItem <> invalid then
             ' Try to keep the focus contained to the parent, if applicable.
             parentComponents = firstOf(m.focusedItem.shiftableParent, m.focusedItem.parent, {}).components
             if parentComponents <> invalid then
