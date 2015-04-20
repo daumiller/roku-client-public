@@ -181,7 +181,7 @@ sub npqoGetComponents()
         track.plexObject = item
         track.trackIndex = index
         track.SetFocusable("play")
-        track.OnSelected = npqoOnSelected
+        track.OnSelected = npqoTrackOnSelected
         track.overlay = m
         m.trackList.AddComponent(track)
 
@@ -215,7 +215,7 @@ sub npqoGetComponents()
         ' A little unorthodox, but we want our overlay to be able to handle
         ' the button commands instead of the screen.
         overlay: m,
-        OnSelected: npqoHandleButton,
+        OnSelected: npqoActionOnSelected
     }
 
     m.trackActions.AddButtons(actions, buttonFields, m.screen, m.zOrderOverlay)
@@ -230,7 +230,7 @@ sub npqoGetComponents()
     m.components.Push(m.focusBG)
 end sub
 
-sub npqoOnSelected(screen as object)
+sub npqoTrackOnSelected(screen as object)
     AudioPlayer().PlayItemAtPQIID(m.plexObject.GetInt("playQueueItemID"))
 end sub
 
@@ -356,14 +356,13 @@ sub npqoOnRefreshTimer(timer)
     m.Refresh()
 end sub
 
-sub npqoHandleButton()
+sub npqoActionOnSelected(screen as object)
     ' We're evaluated in the context of the button, which has a reference to the
     ' overlay, which has a reference to the screen. But we'll just avoid using
     ' m to reduce confusion.
 
     btn = m
     overlay = btn.overlay
-    screen = overlay.screen
     player = screen.player
     command = btn.command
     focusedComponent = overlay.focusedTrack
