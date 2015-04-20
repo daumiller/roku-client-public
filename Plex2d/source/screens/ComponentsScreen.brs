@@ -491,6 +491,7 @@ sub compOnItemSelected(item as object)
     Debug("component item selected with command: " + tostr(item.command))
 
     if item.OnSelected <> invalid then
+        Debug("Defer to items OnSelected method")
         item.OnSelected()
     else if item.command <> invalid then
         if not m.HandleCommand(item.command, item) then

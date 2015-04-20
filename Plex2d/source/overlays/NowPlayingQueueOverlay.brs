@@ -231,15 +231,7 @@ sub npqoGetComponents()
 end sub
 
 sub npqoOnSelected()
-    ' Pause, Resume or Play the selected track
-    player = AudioPlayer()
-    if m.Equals(m.overlay.playing) then
-        player.Pause()
-    else if m.Equals(m.overlay.paused) then
-        player.Resume()
-    else
-        player.PlayItemAtPQIID(m.plexObject.GetInt("playQueueItemID"))
-    end if
+    AudioPlayer().PlayItemAtPQIID(m.plexObject.GetInt("playQueueItemID"))
 end sub
 
 function npqoGetTrackComponent(plexObject as dynamic) as dynamic
