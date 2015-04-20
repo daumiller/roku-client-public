@@ -55,7 +55,18 @@ end sub
 sub ddbuttonSetDropDownPosition(direction as string, dropdownSpacing=invalid as dynamic)
     ' Supported: bottom, right and left. "up" is used dynamically
     ' (for now) when we reset the position to fit on the screen.
+
+    ' Support to prefer a direction, but use the opposite based
+    ' on available space. We can extend this later to up/down.
     '
+    if direction = "rightLeft" then
+        direction = "right"
+        m.dropDownDynamicPosition = true
+    else if direction = "leftRight" then
+        direction = "left"
+        m.dropDownDynamicPosition = true
+    end if
+
     m.dropDownPosition = direction
     m.scrollbarPosition = iif(direction = "left", direction, "right")
     if dropdownSpacing <> invalid then
