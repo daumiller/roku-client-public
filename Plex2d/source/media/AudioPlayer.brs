@@ -247,4 +247,5 @@ end sub
 sub apOnPlaybackStarted(player as object, item as object)
     ' If we're starting playback fresh, show the now playing screen.
     Application().PushScreen(createNowPlayingScreen(item))
+    CompositorScreen().DrawUnlock()
 end sub

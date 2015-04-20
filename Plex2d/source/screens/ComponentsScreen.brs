@@ -607,8 +607,8 @@ function compHandleCommand(command as string, item as dynamic) as boolean
 
             relatedItem = plexItem.GetRelatedItem("plexmix")
             if relatedItem <> invalid then
-                ' TODO(schuyler): This works, but the screen updates are less than ideal.
                 ' TODO(schuyler): Also, if we create a Plex Mix for the currently playing track, it restarts the track.
+                m.screen.DrawLock(5000)
                 pq = createPlayQueueForItem(relatedItem)
                 player = GetPlayerForType(pq.type)
                 if player <> invalid then
