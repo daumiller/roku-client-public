@@ -69,13 +69,13 @@ function FiltersClass() as object
         '
         obj.types["show"] = [
             {title: "Shows", key: "show", value: "2"},
-            ' {title: "Season", key: "season", value: "3"},
+            ' {title: "Seasons", key: "season", value: "3"},
             {title: "Episodes", key: "episode", value: "4"}
         ]
         obj.types["artist"] = [
             {title: "Artists", key: "artist", value: "8"},
             {title: "Albums", key: "album", value: "9"}
-            {title: "Tracks", key: "track", value: "10"}
+            ' {title: "Tracks", key: "track", value: "10"}
         ]
         obj.types["photo"] = [
             {title: "Photos", key: "photo", value: "13"}
