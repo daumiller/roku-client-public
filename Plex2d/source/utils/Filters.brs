@@ -60,7 +60,7 @@ function FiltersClass() as object
         ' Constants
         obj.types = CreateObject("roAssociativeArray")
         obj.types["movie"] = [
-            {title: "Movie", key: "movie", value: "1"}
+            {title: "Movies", key: "movie", value: "1"}
         ]
 
         ' TODO(rob): removing the season type for now. It doesn't have any supported
@@ -68,17 +68,17 @@ function FiltersClass() as object
         ' either, so we may have to wait until the PMS has proper support
         '
         obj.types["show"] = [
-            {title: "Show", key: "show", value: "2"},
+            {title: "Shows", key: "show", value: "2"},
             ' {title: "Season", key: "season", value: "3"},
-            {title: "Episode", key: "episode", value: "4"}
+            {title: "Episodes", key: "episode", value: "4"}
         ]
         obj.types["artist"] = [
-            {title: "Artist", key: "artist", value: "8"},
-            {title: "Album", key: "album", value: "9"}
-            {title: "Track", key: "track", value: "10"}
+            {title: "Artists", key: "artist", value: "8"},
+            {title: "Albums", key: "album", value: "9"}
+            {title: "Tracks", key: "track", value: "10"}
         ]
         obj.types["photo"] = [
-            {title: "Photo", key: "photo", value: "13"}
+            {title: "Photos", key: "photo", value: "13"}
         ]
 
         m.FiltersClass = obj
