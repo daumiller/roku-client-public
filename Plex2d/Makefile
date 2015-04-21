@@ -21,8 +21,10 @@ include ../app.mk
 
 APPTITLE = $(APPNAME)Dev
 
-GH_HASH := $(shell git rev-parse --short HEAD)
+APPVERSION := $(shell grep "^version=" manifest.template | cut -f2 -d=)
 GH_REV := $(shell git rev-list --count HEAD)
+GH_HASH := $(shell git rev-parse --short HEAD)
+FULLVERSION = $(APPVERSION).$(GH_REV)-$(GH_HASH)
 
 num_functions := $(shell grep -ri --include=*.brs 'end \(function\|sub\)' . | wc -l | tr -d ' ')
 timestamp := $(shell date +'%Y-%m-%d-%H:%M:%S')
@@ -31,22 +33,22 @@ timestamp := $(shell date +'%Y-%m-%d-%H:%M:%S')
 
 dev:
 	$(eval APPID := 20517)
-	@echo "Building $(APPTITLE) ($(APPID))"
+	@echo "Building $(APPTITLE) $(FULLVERSION) ($(APPID))"
 
 pass:
 	$(eval APPTITLE := $(APPNAME)Pass)
 	$(eval APPID := 55188)
-	@echo "Building $(APPTITLE) ($(APPID))"
+	@echo "Building $(APPTITLE) $(FULLVERSION) ($(APPID))"
 
 ninja:
 	$(eval APPTITLE := $(APPNAME)Ninja)
 	$(eval APPID := 49627)
-	@echo "Building $(APPTITLE) ($(APPID))"
+	@echo "Building $(APPTITLE) $(FULLVERSION) ($(APPID))"
 
 public:
 	$(eval APPTITLE := $(APPNAME))
 	$(eval APPID := 13535)
-	@echo "Building $(APPTITLE) ($(APPID))"
+	@echo "Building $(APPTITLE) $(FULLVERSION) ($(APPID))"
 
 manifest:
 	$(eval LC_APPTITLE := $(shell tr '[A-Z]' '[a-z]' <<< $(APPTITLE)))

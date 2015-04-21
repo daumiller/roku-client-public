@@ -64,11 +64,12 @@ $(APPNAME): $(APPDEPS)
 		echo "Source for $(APPNAME) not found at $(SOURCEREL)/$(APPNAME)"; \
 	fi
 
-	@echo "*** developer zip  $(APPTITLE) complete ***"
+	@echo "*** developer zip $(APPTITLE) $(FULLVERSION) complete ***"
 
 install: $(APPNAME)
 	@echo "Installing $(APPTITLE) to host $(ROKU_DEV_TARGET)"
 	@$(CURL) -s -S -F "mysubmit=Install" -F "archive=@$(ZIPREL)/$(APPNAME).zip" -F "passwd=" http://$(ROKU_DEV_TARGET)/plugin_install | grep "<font color" | sed "s/<font color=\"red\">//"
+	@echo "*** install $(APPTITLE) $(FULLVERSION) complete ***"
 
 pkg: ROKU_PKG_PASSWORD ?= "$(shell read -p "Roku packaging password: " REPLY; echo $$REPLY)"
 pkg: install
@@ -89,7 +90,7 @@ pkg: install
 	@echo "Packaging  $(APPNAME) on host $(ROKU_DEV_TARGET)"
 	$(CURL) -s -S -Fmysubmit=Package -Fapp_name=$(APPNAME)/$(VERSION) -Fpasswd=$(ROKU_PKG_PASSWORD) -Fpkg_time=`date +%s` "http://$(ROKU_DEV_TARGET)/plugin_package" | grep 'pkgs' | sed 's/.*href=\"\([^\"]*\)\".*/\1/' | sed 's#pkgs//##' | xargs -I{} http -v --auth-type digest --auth $(ROKU_DEV_USERNAME):$(ROKU_DEV_PASSWORD) -o $(PKGREL)/$(APPTITLE)_{} -d http://$(ROKU_DEV_TARGET)/pkgs/{}
 
-	@echo "*** Package  $(APPTITLE) complete ***"
+	@echo "*** Package  $(APPTITLE) $(FULLVERSION) complete ***"
 
 remove:
 	@echo "Removing $(APPNAME) from host $(ROKU_DEV_TARGET)"
@@ -109,7 +110,7 @@ upload: pkg
 		exit 1; \
 	fi
 
-	@echo "*** Uploading Package for $(APPTITLE) ($(APPID)) ***"
+	@echo "*** Uploading Package for $(APPTITLE) $(FULLVERSION) ($(APPID)) ***"
 
 # Step 1: Load the signin page in a new httpie session to get
 # whatever cookies and session info we need.
@@ -137,7 +138,7 @@ upload: pkg
 	@echo "Navigating back to package page for $(APPTITLE) ($(APPID))"
 	$(HTTP) https://owner.roku.com/Developer/Apps/Packages/$(APPID)
 	@head -1 $(ROKU_OUTPUT) | grep '200 OK' || exit 6
-	@curl -X POST --data-urlencode "payload={\"attachments\": [{\"fallback\": \"A package has been uploaded to the $(APPTITLE) channel\", \"color\": \"good\", \"pretext\": \"A new package has been uploaded to the Roku store\", \"fields\": [{\"title\": \"Channel\", \"value\": \"$(APPTITLE)\", \"short\": true}, {\"title\": \"Link\", \"value\": \"<`sed -n -e 's#^.*href="\(/add/\(.*\)\)".*$$#https://owner.roku.com\1\|\2#p' $(ROKU_OUTPUT) | head -1`>\", \"short\": true}]}]}" https://hooks.slack.com/services/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
+	@curl -X POST --data-urlencode "payload={\"attachments\": [{\"fallback\": \"A package has been uploaded to the $(APPTITLE) channel\", \"color\": \"good\", \"pretext\": \"A new package has been uploaded to the Roku store\", \"fields\": [{\"title\": \"Channel\", \"value\": \"$(APPTITLE) v$(FULLVERSION)\", \"short\": true}, {\"title\": \"Link\", \"value\": \"<`sed -n -e 's#^.*href="\(/add/\(.*\)\)".*$$#https://owner.roku.com\1\|\2#p' $(ROKU_OUTPUT) | head -1`>\", \"short\": true}]}]}" https://hooks.slack.com/services/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
 	@echo "Uploaded package is available at:"
 	@sed -n -e 's/^.*href="\(\/add\/.*\)".*$$/https:\/\/owner.roku.com\1/p' $(ROKU_OUTPUT) | head -1
 
@@ -153,7 +154,7 @@ publish:
 		exit 1; \
 	fi
 
-	@echo "*** Publishing Package for $(APPTITLE) ($(APPID)) ***"
+	@echo "*** Publishing Package for $(APPTITLE) $(FULLVERSION) ($(APPID)) ***"
 
 # Step 1: Load the signin page in a new httpie session to get
 # whatever cookies and session info we need.
@@ -177,6 +178,6 @@ publish:
 	@head -1 $(ROKU_OUTPUT) | grep '302 Found' || exit 5
 	@grep 'Location: /Developer/Apps/Packages/$(APPID)' $(ROKU_OUTPUT) || exit 6
 
-	@curl -X POST --data-urlencode "payload={\"attachments\": [{\"fallback\": \"A package has been published to the $(APPTITLE) channel\", \"color\": \"good\", \"pretext\": \"A new package has been published in the Roku store\", \"fields\": [{\"title\": \"Channel\", \"value\": \"$(APPTITLE)\", \"short\": true}]}]}" https://hooks.slack.com/services/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
+	@curl -X POST --data-urlencode "payload={\"attachments\": [{\"fallback\": \"A package has been published to the $(APPTITLE) channel\", \"color\": \"good\", \"pretext\": \"A new package has been published in the Roku store\", \"fields\": [{\"title\": \"Channel\", \"value\": \"$(APPTITLE) $(FULLVERSION)\", \"short\": true}]}]}" https://hooks.slack.com/services/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
 
-	@echo "Published package!"
+	@echo "*** Published Package! $(APPTITLE) $(FULLVERSION) ($(APPID)) ***"
