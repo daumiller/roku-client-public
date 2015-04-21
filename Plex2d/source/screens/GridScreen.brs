@@ -295,8 +295,8 @@ sub gsGetComponents()
     m.components.Push(m.filterBox)
 
     ' *** Grid *** '
-    hbox = createHBox(false, false, false, m.spacing)
-    hbox.SetFrame(m.xPadding, m.yOffset, 2000*2000, m.height)
+    hbox = createHBox(false, false, false, m.spacing, false)
+    hbox.SetFrame(m.xPadding, m.yOffset, 0, m.height)
 
     ' Grid Chunks / Placeholders
     chunks = m.GetGridChunks()

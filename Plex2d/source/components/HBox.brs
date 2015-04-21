@@ -18,7 +18,7 @@ function HBoxClass() as object
     return m.HBoxClass
 end function
 
-function createHBox(homogeneous as boolean, expand as boolean, fill as boolean, spacing=0 as integer) as object
+function createHBox(homogeneous as boolean, expand as boolean, fill as boolean, spacing=0 as integer, resizable=true as boolean) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(HBoxClass())
 
@@ -28,6 +28,7 @@ function createHBox(homogeneous as boolean, expand as boolean, fill as boolean, 
     obj.expand = expand
     obj.fill = fill
     obj.spacing = spacing
+    obj.resizable = resizable
 
     return obj
 end function

@@ -426,6 +426,7 @@ sub vboxShiftComponents(shift as object, refocus=invalid as dynamic)
 end sub
 
 sub vboxSetScrollable(scrollTriggerHeight=invalid as dynamic, scrollAnimate=false as boolean, scrollVisible=false as boolean, scrollbarPosition="right" as dynamic)
+    m.resizable = false
     m.isVScrollable = true
     m.scrollTriggerHeight = firstOf(scrollTriggerHeight, m.height)
     m.scrollAnimate = scrollAnimate
