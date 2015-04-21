@@ -317,7 +317,7 @@ end function
 function filtersGetSortTitle() as dynamic
     if m.currentSort.plexObject = invalid then return invalid
 
-    return m.currentSort.plexObject.Get("title")
+    return "By " + m.currentSort.plexObject.Get("title")
 end function
 
 function filtersGetFilterTitle() as dynamic
