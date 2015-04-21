@@ -438,6 +438,13 @@ sub settingsInitGlobals()
     m.globals["appVersionStr"] = appInfo.GetVersion()
     m.globals["appName"] = appInfo.GetTitle()
     m.globals["appID"] = appInfo.GetID()
+    m.globals["appHash"] = appInfo.GetValue("gh_hash")
+    m.globals["appRev"] = appInfo.GetValue("gh_rev")
+
+    ' Append the hash version for any build other than PlexPass and Plex (public)
+    if m.globals["appName"] <> "PlexPass" and m.globals["appName"] <> "Plex" then
+        m.globals["appVersionStr"] = m.globals["appVersionStr"] + "." + m.globals["appRev"] + "-" + m.globals["appHash"]
+    end if
 
     m.globals["rokuModelCode"] = device.GetModel()
     m.globals["rokuModel"] = device.GetModelDisplayName()

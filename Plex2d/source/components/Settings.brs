@@ -119,7 +119,7 @@ sub settingsGetComponents()
         version.valign = version.ALIGN_MIDDLE
         version.zOrder = m.zOrderOverlay
         version.SetColor(Colors().TextDim)
-        xOffset = m.x + m.width - version.GetPreferredWidth()*2
+        xOffset = m.x + m.width - version.GetPreferredWidth() - 40
         version.SetFrame(xOffset, m.y, version.GetPreferredWidth(), 70)
         m.components.push(version)
     end if

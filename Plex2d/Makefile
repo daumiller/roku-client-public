@@ -21,6 +21,9 @@ include ../app.mk
 
 APPTITLE = $(APPNAME)Dev
 
+GH_HASH := $(shell git rev-parse --short HEAD)
+GH_REV := $(shell git rev-list --count HEAD)
+
 num_functions := $(shell grep -ri --include=*.brs 'end \(function\|sub\)' . | wc -l | tr -d ' ')
 timestamp := $(shell date +'%Y-%m-%d-%H:%M:%S')
 
@@ -48,7 +51,7 @@ public:
 manifest:
 	$(eval LC_APPTITLE := $(shell tr '[A-Z]' '[a-z]' <<< $(APPTITLE)))
 	@echo "Creating manifest for $(APPTITLE)"
-	@sed 's/LC_APPTITLE/$(LC_APPTITLE)/;s/APPTITLE/$(APPTITLE)/' < manifest.template > manifest
+	@sed 's/LC_APPTITLE/$(LC_APPTITLE)/;s/APPTITLE/$(APPTITLE)/;s/GH_HASH/$(GH_HASH)/;s/GH_REV/$(GH_REV)/' < manifest.template > manifest
 
 count_functions:
 	@echo "Counting functions for $(APPTITLE), some Rokus limit to 65536"
