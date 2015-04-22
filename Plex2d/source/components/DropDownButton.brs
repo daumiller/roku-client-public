@@ -1,7 +1,7 @@
 function DropDownButtonClass() as object
     if m.DropDownButtonClass = invalid then
         obj = CreateObject("roAssociativeArray")
-        obj.Append(ButtonClass())
+        obj.Append(GlyphButtonClass())
         obj.ClassName = "DropDownButton"
 
         ' Methods
@@ -34,8 +34,21 @@ function createDropDownButton(text as string, font as object, screen as object, 
     return obj
 end function
 
-sub ddbuttonInit(text as string, font as object)
-    ApplyFunc(ButtonClass().Init, m, [text, font])
+function createGlyphDropDownButton(text as string, font as object, glyphText as string, glyphFont as object, screen as object, useIndicator=false as boolean) as object
+    obj = CreateObject("roAssociativeArray")
+    obj.Append(DropDownButtonClass())
+
+    obj.screen = screen
+
+    obj.Init(text, font, glyphText, glyphFont)
+
+    obj.useIndicator = useIndicator
+
+    return obj
+end function
+
+sub ddbuttonInit(text as string, font as object, glyphText=invalid as dynamic, glyphFont=invalid as dynamic)
+    ApplyFunc(GlyphButtonClass().Init, m, [text, font, glyphText, glyphFont])
 
     m.command = "show_dropdown"
 

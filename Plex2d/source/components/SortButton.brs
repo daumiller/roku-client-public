@@ -26,12 +26,12 @@ function createSortButton(text as string, direction as dynamic, textFont as obje
 end function
 
 sub sortbuttonInit(text as string, font as object, direction as dynamic, glyphFont as object)
-    m.SetDirection(direction)
-    ApplyFunc(GlyphButtonClass().Init, m, [text, font, m.glyphText, glyphFont])
+    ApplyFunc(GlyphButtonClass().Init, m, [text, font, " ", glyphFont])
+    m.SetDirection(direction, false)
 end sub
 
-sub sortbuttonSetDirection(direction=invalid as dynamic)
-    if m.DoesExist("direction") and direction = m.direction then return
+sub sortbuttonSetDirection(direction=invalid as dynamic, redraw=false as boolean)
+    if m.glyphLabel = invalid or m.DoesExist("direction") and direction = m.direction then return
     m.direction = direction
 
     text = {
@@ -41,10 +41,9 @@ sub sortbuttonSetDirection(direction=invalid as dynamic)
         desc: Glyphs().ARROW_DOWN
     }
 
-    m.glyphText = firstOf(text[tostr(direction)], " ")
+    m.glyphLabel.SetText(firstOf(text[tostr(direction)], " "))
 
-    if m.glyphLabel <> invalid then
-        m.glyphLabel.SetText(m.glyphText)
+    if redraw = true then
         m.Draw(true)
     end if
 end sub
