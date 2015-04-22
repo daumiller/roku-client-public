@@ -18,6 +18,7 @@ function CompositeButtonClass() as object
         obj.Init = cbuttonInit
         obj.PerformLayout = cbuttonPerformLayout
         obj.GetPreferredWidth = cbuttonGetPreferredWidth
+        obj.GetPreferredHeight = cbuttonGetPreferredHeight
 
         m.CompositeButtonClass = obj
     end if
@@ -47,4 +48,17 @@ function cbuttonGetPreferredWidth() as integer
     end for
 
     return width
+end function
+
+function cbuttonGetPreferredHeight() as integer
+    ' If someone specifically set our height, then prefer that.
+    if validint(m.height) > 0 then return m.height
+
+    maxHeight = 0
+    for each comp in m.components
+        height = comp.GetPreferredHeight()
+        if height > maxHeight then maxHeight = height
+    next
+
+    return maxHeight + m.padding.top + m.padding.bottom
 end function
