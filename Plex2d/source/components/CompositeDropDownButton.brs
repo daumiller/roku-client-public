@@ -12,6 +12,7 @@ function CompositeDropDownButtonClass() as object
         ' Methods shared between DropDown/Button composities
         obj.PerformLayout = cbuttonPerformLayout
         obj.GetPreferredWidth = cbuttonGetPreferredWidth
+        obj.GetPreferredHeight = cbuttonGetPreferredHeight
 
         m.CompositeDropDownButtonClass = obj
     end if
