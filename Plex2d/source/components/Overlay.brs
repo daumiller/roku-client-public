@@ -49,7 +49,7 @@ sub overlayInit()
     m.screen.OrigOnKeyRelease = firstOf(m.screen.OrigOnKeyRelease, m.screen.OnKeyRelease)
     m.screen.OnKeyRelease = m.OnKeyRelease
     m.screen.OrigOnKeyboardRelease = firstOf(m.screen.OrigOnKeyboardRelease, m.screen.OnKeyboardRelease)
-    m.screen.OnKeyboardRelease = m.OnKeyboardRelease
+    m.screen.OnKeyboardRelease = firstOf(m.OnKeyboardRelease, compOnKeyboardRelease)
     m.screen.OrigOnFocusIn = firstOf(m.screen.OrigOnFocusIn, m.screen.OnFocusIn)
     m.screen.OnFocusIn = firstOf(m.OnFocusIn, compOnFocusIn)
     m.screen.OrigOnFocusOut = firstOf(m.screen.OrigOnFocusOut, m.screen.OnFocusOut)
