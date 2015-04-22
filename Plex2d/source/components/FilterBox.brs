@@ -148,9 +148,9 @@ sub filterboxOnFilterRefresh(filters as object)
         end if
 
         ' Types [optional]
-        if filters.HasTypes() and filters.GetSelectedType() <> invalid then
-            title = filters.GetSelectedType().title
-            typesButton = createDropDownButton(ucase(title), m.font, m.screen, false)
+        selectedType = filters.GetSelectedType()
+        if filters.HasTypes() and selectedType <> invalid
+            typesButton = createDropDownButton(ucase(selectedType.title), m.font, m.screen, false)
             typesButton.SetPadding(0, buttonSpacing, 0, buttonSpacing)
             typesButton.SetDropDownPosition("down", 0)
 
@@ -163,6 +163,10 @@ sub filterboxOnFilterRefresh(filters as object)
                 option.Append(m.optionPrefs)
             end for
             m.AddComponent(typesButton)
+        else if selectedType <> invalid then
+            ' Add a hard coded label for spacing if there's only one type
+            label = createLabel(ucase(selectedType.title), m.optionPrefs.font)
+            m.AddComponent(label)
         end if
 
         ' Sorts
