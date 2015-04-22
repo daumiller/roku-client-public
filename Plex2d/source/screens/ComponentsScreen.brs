@@ -175,26 +175,36 @@ sub compShow()
     end if
 
     ' Try to refocus if applicable
-    if m.refocus <> invalid or m.HasRefocusItem() then
-        ' Try onScreen components before any shifteable components. Screens like
+    hasRefocusItem = m.HasRefocusItem()
+    if m.refocus <> invalid or hasRefocusItem then
+        ' Try onScreen components before any shiftable components. Screens like
         ' the preplay do not have any shiftable components.
+        found = invalid
         candidates = CreateObject("roList")
-        candidates.push(m.onscreenComponents)
-        candidates.push(m.shiftableComponents)
+        candidates.Append(m.onscreenComponents)
+        candidates.Append(m.shiftableComponents)
 
-        for each candidate in candidates
-            for each component in candidate
-                if component.focusable = true then
-                    if m.IsRefocusItem(component) then
-                        m.focusedItem = component
-                        exit for
-                    else if m.refocus <> invalid and component.id = m.refocus.id then
-                        m.focusedItem = component
-                        exit for
-                    end if
+        ' Prefer a specific refocus, but allow fallback to the id
+        for each component in candidates
+            if component.focusable = true then
+                if hasRefocusItem and m.IsRefocusItem(component) then
+                    found = component
+                    Debug("Found an exact match to refocus")
+                    exit for
+                else if m.refocus <> invalid and component.id = m.refocus.id then
+                    found = component
+                    Debug("Found possible match to refocus based on component id")
+                    ' Exit loop if we don't have a specific refocus item
+                    if not hasRefocusItem then exit for
                 end if
-            end for
+            end if
         end for
+
+        if found <> invalid then
+            m.focusedItem = found
+        else
+            Warn("Could not find a valid component to refocus. " + m.ToString())
+        end if
 
         ' Invalidate any refocus if we didn't find a match
         if m.refocus <> invalid and m.focusedItem <> invalid and m.focusedItem.id <> m.refocus.id then
@@ -1365,14 +1375,32 @@ function compHasRefocusItem() as boolean
     return IsAssociativeArray(m.refocusKey)
 end function
 
-sub compSetRefocusItem(item=invalid as dynamic, key="ratingKey" as string)
+sub compSetRefocusItem(item=invalid as dynamic, keys=["ratingKey", "uuid", "hubKey", "key"] as object)
     if not IsAssociativeArray(item) then return
 
     plexObject = iif(item.plexObject <> invalid, item.plexObject, item)
-    if IsFunction(plexObject.Has) and plexObject.Has(key) then
-        m.refocusKey = {key: key, value: plexObject.Get(key)}
-    else if item[key] <> invalid then
-        m.refocusKey = {key: key, value: item[key]}
+    if IsFunction(plexObject.GetFirst) and plexObject.GetFirst(keys) <> invalid then
+        for each key in keys
+            if plexObject.Has(key) then
+                m.refocusKey = {
+                    key: key,
+                    value: plexObject.Get(key)
+                    ' Append the container key to eliminate duplicates, and we'll
+                    ' consider the match valid if the container key is invalid.
+                    '
+                    containerKey: plexObject.Container.Get("key")
+                }
+                exit for
+            end if
+        end for
+    else
+        ' Fallback to a root key in the component
+        for each key in keys
+            if item[key] <> invalid then
+                m.refocusKey = {key: key, value: item[key]}
+                exit for
+            end if
+        end for
     end if
 end sub
 
@@ -1381,10 +1409,14 @@ function compIsRefocusItem(item=invalid as dynamic) as boolean
 
     plexObject = iif(item.plexObject <> invalid, item.plexObject, item)
     if IsFunction(plexObject.Get) and m.refocusKey.value = plexObject.Get(m.refocusKey.key) then
-        return true
-    else if m.refocusKey.value = item[m.refocusKey.key] then
-        return true
+        ' Verify the container key is the same to eliminate duplicate plexObjects,
+        ' however, we will allow the containerKey to be invalid and still match.
+        if m.refocusKey.containerKey = invalid then
+            return true
+        else if plexObject.container <> invalid and m.refocusKey.containerKey = plexObject.container.Get("key") then
+            return true
+        end if
     end if
 
-    return false
+    return (m.refocusKey.value = item[m.refocusKey.key])
 end function

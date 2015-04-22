@@ -43,7 +43,7 @@ sub AnimateShift(shift as object, components as object, screen as object)
 end sub
 
 function AnimateTest() as integer
-    ti = createObject("roTimeSpan")
+    ti = createObject("roTimespan")
     for i = 1 to 1e5: end for
     return ti.TotalMilliseconds()
 end function

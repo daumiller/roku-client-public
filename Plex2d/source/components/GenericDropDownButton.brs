@@ -30,6 +30,7 @@ sub gddbInit()
 
     m.SetDropDownPosition("down")
     m.SetIndicator(m.ALIGN_BOTTOM, m.JUSTIFY_RIGHT)
+    m.SetUniqCommand()
 end sub
 
 sub gddbShow()

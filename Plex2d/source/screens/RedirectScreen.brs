@@ -99,7 +99,7 @@ sub launchAppId(appId as string)
     url = "http://" + ip + ":8060/launch/11?contentID=" + appId
 
     ' Check for existing Plex install
-    obj = CreateObject("roURLTransfer")
+    obj = CreateObject("roUrlTransfer")
     obj.SetURL("http://" + ip + ":8060/query/apps")
     response = obj.GetToString()
     xml = CreateObject("roXMLElement")

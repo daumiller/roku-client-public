@@ -107,11 +107,15 @@ end function
 
 function glyphbuttonSetText(text as string, redraw=false as boolean, resize=false as boolean)
     ' TODO(rob): resize if we ever need it (refer to LabelClass)
+    m.text = text
     if m.label <> invalid then
-        m.label.SetText(text)
+        m.label.SetText(m.text)
 
         if redraw then
             m.Draw(redraw)
         end if
     end if
+
+    ' Update the uniq command if text changes
+    m.SetUniqCommand()
 end function

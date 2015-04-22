@@ -560,7 +560,7 @@ function GetFriendlyName() as string
     if AppSettings().GetGlobal("hasFirmware6_1") then
         return device.GetFriendlyName()
     else
-        obj = CreateObject("roURLTransfer")
+        obj = CreateObject("roUrlTransfer")
         obj.SetURL("http://" + GetFirstIPAddress() + ":8060/dial/dd.xml")
         xml = CreateObject("roXMLElement")
         xml.Parse(obj.GetToString())

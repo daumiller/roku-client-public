@@ -32,6 +32,8 @@ function GridScreen() as object
         obj.Refresh = gsRefresh
         obj.ResetInit = gsResetInit
 
+        obj.SetRefocusItem = gsSetRefocusItem
+
         m.GridScreen = obj
     end if
 
@@ -742,4 +744,9 @@ sub gsResetInit(path=invalid as dynamic)
     ' use a smaller chunk for the inital load size. This may need to vary
     ' depending on the grid type (artwork, poster)
     m.chunkSizeInitial = 16
+end sub
+
+' Use the jumpIndex to refocus a grid. It's unique and mostly accurate on refresh.
+sub gsSetRefocusItem(item=invalid as dynamic, keys=["jumpIndex"])
+    ApplyFunc(ComponentsScreen().SetRefocusItem, m, [item, keys])
 end sub

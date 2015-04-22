@@ -17,6 +17,9 @@ function ButtonClass() as object
         obj.OnFocus = buttonOnFocus
         obj.OnBlur = buttonOnBlur
 
+        obj.SetUniqCommand = buttonSetUniqCommand
+        obj.SetText = buttonSetText
+
         m.ButtonClass = obj
     end if
 
@@ -27,10 +30,10 @@ function createButton(text as string, font as object, command as dynamic, useInd
     obj = CreateObject("roAssociativeArray")
     obj.Append(ButtonClass())
 
-    obj.Init(text, font)
-
     obj.useIndicator = useIndicator
     obj.command = command
+
+    obj.Init(text, font)
 
     return obj
 end function
@@ -44,6 +47,7 @@ sub buttonInit(text as string, font as object)
     m.valign = m.ALIGN_MIDDLE
 
     m.SetIndicator(m.ALIGN_BOTTOM, m.JUSTIFY_RIGHT)
+    m.SetUniqCommand()
 end sub
 
 sub buttonSetFocusMethod(focusMethod as string, color=invalid as dynamic)
@@ -98,4 +102,15 @@ sub buttonOnBlur(toFocus=invalid as dynamic)
             m.Redraw()
         end if
     end if
+end sub
+
+sub buttonSetUniqCommand()
+    if m.command <> invalid and m.text <> invalid then
+        m.uniqCommand = m.command + m.text
+    end if
+end sub
+
+sub buttonSetText(text as string, redraw=false as boolean, resize=false as boolean)
+    ApplyFunc(LabelClass().SetText, m, [text, redraw, resize])
+    m.SetUniqCommand()
 end sub

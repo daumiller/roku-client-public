@@ -33,6 +33,8 @@ function PreplayScreen() as object
 
         obj.OnSettingsClosed = preplayOnSettingsClosed
 
+        obj.SetRefocusItem = preplaySetRefocusItem
+
         m.PreplayScreen = obj
     end if
 
@@ -756,9 +758,8 @@ sub preplayRefresh(request=invalid as dynamic, response=invalid as dynamic, cont
     m.requestContext = invalid
     m.item = invalid
 
-    ' sticky buttons
     if not m.HasRefocusItem() and m.focusedItem.trackAction <> true then
-        m.SetRefocusItem(m.focusedItem, "command")
+        m.SetRefocusItem(m.focusedItem)
     end if
 
     Application().ShowLoadingModal(m)
@@ -964,4 +965,9 @@ sub preplayInitRefreshCache()
             m.refreshCache[toCache] = m[toCache].region
         end if
     end for
+end sub
+
+' Try uniqCommand first to eliminate duplicates. e.g. show_dropdown
+sub preplaySetRefocusItem(item=invalid as dynamic, keys= ["uniqCommand", "command"])
+    ApplyFunc(ComponentsScreen().SetRefocusItem, m, [item, keys])
 end sub

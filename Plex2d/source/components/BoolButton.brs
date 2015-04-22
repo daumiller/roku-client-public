@@ -19,17 +19,18 @@ function createBoolButton(text as string, font as object, command as dynamic, is
     obj = CreateObject("roAssociativeArray")
     obj.Append(BoolButtonClass())
 
-    obj.Init(text, font, command, isSelected)
+    obj.command = command
+
+    obj.Init(text, font, isSelected)
 
     obj.prefType = "bool"
 
     return obj
 end function
 
-sub boolbuttonInit(text as string, font as object, command as dynamic, isSelected as boolean)
+sub boolbuttonInit(text as string, font as object, isSelected as boolean)
     ApplyFunc(ButtonClass().Init, m, [text, font])
 
-    m.command = command
     m.isSelected = isSelected
 
     m.focusable = true

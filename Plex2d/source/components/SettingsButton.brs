@@ -16,7 +16,9 @@ function createSettingsButton(text as string, font as object, command as dynamic
     obj = CreateObject("roAssociativeArray")
     obj.Append(SettingsButtonClass())
 
-    obj.Init(text, font, command, false)
+    obj.command = command
+
+    obj.Init(text, font, false)
 
     obj.prefType = prefType
     obj.value = value

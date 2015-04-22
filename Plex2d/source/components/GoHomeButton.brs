@@ -18,9 +18,9 @@ function createGoHomeButton(font as object) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(GoHomeButtonClass())
 
-    obj.Init("Go Home", font)
-
     obj.command = "go_home"
+
+    obj.Init("Go Home", font)
 
     return obj
 end function

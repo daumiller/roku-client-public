@@ -134,6 +134,11 @@ sub overlayClose(backButton=false as boolean, redraw=true as boolean)
         m.screen.focusedItem = m.fromFocusedItem
     end if
 
+    ' Try to refocus to the item we came from
+    if not backButton then
+        m.screen.SetRefocusItem(m.screen.focusedItem)
+    end if
+
     ' Let the parent screen know we closed
     m.Trigger("close", [m, backButton])
 end sub

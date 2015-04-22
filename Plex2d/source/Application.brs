@@ -103,6 +103,9 @@ sub appPushScreen(screen)
 
         ' Remember the last focus ID and position to refocus
         if oldScreen.focusedItem <> invalid then
+            if not oldScreen.HasRefocusItem() then
+                oldScreen.SetRefocusItem(oldScreen.focusedItem)
+            end if
             oldScreen.refocus = computeRect(oldScreen.focusedItem)
             oldScreen.refocus.id = oldScreen.focusedItem.id
         end if
