@@ -41,6 +41,7 @@ end function
 
 sub filterboxInit(item as object)
     ApplyFunc(HBoxClass().Init, m)
+    m.DisableNonParentExit("right")
 
     m.item = item
 
