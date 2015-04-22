@@ -82,34 +82,27 @@ sub headerPerformLayout()
     if tostr(m.screen.screenName) = "Home Screen" then
         ' Server List Drop Down
         button = createServerDropDownButton(m.screen.server, m.customFonts.buttons, m.screen)
-        button.SetPadding(0, m.buttons.padding, 0, m.buttons.padding)
-        button.pvalign = button[m.buttons.valign]
-        button.SetColor(Colors().Subtitle)
-        button.zOrder = m.zOrder
         buttons.push(button)
 
         ' Options Drop Down: Settings, Sign Out/In
         button = createOptionsDropDownButton(firstOf(MyPlexAccount().title, "Options"), m.customFonts.buttons, m.screen)
-        button.SetPadding(0, m.buttons.padding, 0, m.buttons.padding)
-        button.pvalign = button[m.buttons.valign]
         button.GetOptions = headerGetOptions
-        button.SetColor(Colors().Subtitle)
-        button.zOrder = m.zOrder
         buttons.push(button)
     else
         button = createGoHomeButton(m.customFonts.buttons)
-        button.SetPadding(0, m.buttons.padding, 0, m.buttons.padding)
-        button.pvalign = button[m.buttons.valign]
-        button.SetColor(Colors().Subtitle)
-        button.zOrder = m.zOrder
         buttons.push(button)
     end if
 
     ' *** Calculate the layout for the buttons *** '
     if buttons.Count() > 0 then
         hbox = createHBox(false, false, false, m.buttons.spacing)
+        hbox.DisableNonParentExit("right")
         buttonContWidth = 0
         for each button in buttons
+            button.SetPadding(0, m.buttons.padding, 0, m.buttons.padding)
+            button.pvalign = button[m.buttons.valign]
+            button.SetColor(Colors().Subtitle)
+            button.zOrder = m.zOrder
             button.height = m.buttons.height
             buttonWidth = button.GetPreferredWidth()
             if buttonWidth > m.buttons.maxWidth then
