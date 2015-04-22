@@ -28,6 +28,10 @@ function createScrollbar(yOffset as object, contentHeight as integer, containerH
     obj.contentHeight = contentHeight - yOffset
     obj.containerHeight = containerHeight - yOffset
     obj.scrollbarHeight = obj.contentHeight * obj.contentHeight / obj.containerHeight
+    ' Make sure the scrollbar is at least 15% of the content height.
+    if obj.scrollbarHeight < contentHeight * .15 then
+        obj.scrollbarHeight = int(contentHeight * .15)
+    end if
     obj.height = obj.contentHeight
 
     obj.scrollbarY = 0
