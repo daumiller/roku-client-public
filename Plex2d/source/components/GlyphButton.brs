@@ -4,6 +4,10 @@ function GlyphButtonClass() as object
         obj.Append(CompositeButtonClass())
         obj.ClassName = "GlyphButton"
 
+        ' Methods
+        obj.SetGlyph = glyphbuttonSetGlyph
+        obj.SetText = glyphbuttonSetText
+
         ' Method overrides
         obj.Init = glyphbuttonInit
         obj.PerformLayout = glyphbuttonPerformLayout
@@ -84,4 +88,30 @@ function glyphButtonDraw(redraw=false as boolean) as object
     end if
 
     return ApplyFunc(CompositeButtonClass().Draw, m)
+end function
+
+function glyphbuttonSetGlyph(text as string, redraw=false as boolean, toggle=false as boolean)
+    if m.glyphLabel <> invalid then
+        origText = m.glyphLabel.text
+        m.glyphLabel.SetText(text)
+
+        if redraw then
+            m.Draw(redraw)
+        end if
+
+        if toggle then
+            m.glyphLabel.SetText(origText)
+        end if
+    end if
+end function
+
+function glyphbuttonSetText(text as string, redraw=false as boolean, resize=false as boolean)
+    ' TODO(rob): resize if we ever need it (refer to LabelClass)
+    if m.label <> invalid then
+        m.label.SetText(text)
+
+        if redraw then
+            m.Draw(redraw)
+        end if
+    end if
 end function

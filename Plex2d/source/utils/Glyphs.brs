@@ -42,6 +42,8 @@ function Glyphs() as object
         obj.ERROR       = chr(&he197)
         obj.ARROW_DOWN  = chr(&he000)
         obj.ARROW_UP    = chr(&he001)
+        obj.ARROW_RIGHT = chr(&he224)
+        obj.ARROW_LEFT  = chr(&he225)
         obj.EYE         = chr(&he002)
 
         ' Constants Aliases

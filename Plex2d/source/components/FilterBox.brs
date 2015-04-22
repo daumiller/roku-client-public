@@ -82,7 +82,7 @@ sub filterboxOnFilterRefresh(filters as object)
     m.DestroyComponents()
     m.components.Clear()
 
-    dropdownPosition = "left"
+    dropdownPosition = "right"
     buttonSpacing = 10
 
     m.optionPrefs = {
@@ -233,8 +233,9 @@ sub filterboxOnSelected(screen as object)
     else if command = "sort" then
         m.filters.SetSort(plexObject.Get("key"))
     else if command = "show_dropdown" then
+        ' Toggle button color and glyph
         m.SetColor(filterBox.colors.text, filterBox.colors.buttonSelected)
-        m.Draw(true)
+        m.SetGlyph(Glyphs().ARROW_RIGHT, true, true)
         m.SetColor(filterBox.colors.text, filterBox.colors.button)
 
         m.options = CreateObject("roList")
