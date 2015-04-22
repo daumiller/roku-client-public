@@ -136,7 +136,8 @@ sub filterboxOnFilterRefresh(filters as object)
                     option = filterButton.AddCallableButton(createBoolButton, [title, m.optionPrefs.font, "filter_boolean", isEnabled])
                 else
                     ' TODO(rob): modify button to handle a check mark, to reflect status of isEnabled
-                    option = filterButton.AddCallableButton(createDropDownButton, [title, m.optionPrefs.font, m.screen, false])
+                    glyph = iif(isEnabled, Glyphs().CHECK, " ")
+                    option = filterButton.AddCallableButton(createGlyphDropDownButton, [title, m.optionPrefs.font, glyph, m.customFonts.glyph, m.screen])
                     option.dropdownPosition = dropdownPosition
                     option.dropdownSpacing = 1
                 end if
