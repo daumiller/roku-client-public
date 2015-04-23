@@ -67,7 +67,7 @@ sub filterboxInit(item as object)
     m.colors = {
         text: Colors().Text,
         textFocus: Colors().Black,
-        button: Colors().Button,
+        button: Colors().ButtonMed,
         buttonFocus: Colors().Orange,
         buttonSelected: Colors().ButtonLht
     }
@@ -96,7 +96,8 @@ sub filterboxOnFilterRefresh(filters as object)
         font: FontRegistry().NORMAL,
         focusMethod: ButtonClass().FOCUS_BACKGROUND,
         focusMethodColor: m.colors.buttonFocus,
-        fgColorFocus: m.colors.textFocus
+        fgColorFocus: m.colors.textFocus,
+        bgColor: m.colors.button
     }
 
     m.optionPrefs.fields = {
@@ -119,15 +120,15 @@ sub filterboxOnFilterRefresh(filters as object)
             if filter <> invalid then
                 option = filterButton.AddCallableButton(createBoolButton, [ucase(filter.Get("title")), m.optionPrefs.font, "filter_unwatched", m.IsUnwatched])
                 option.plexObject = filter
-                option.bgColor = Colors().ButtonDark
                 option.Append(m.optionPrefs)
+                option.bgColor = Colors().Button
             end if
 
             ' Clear Filters button
             if filters.GetFilters() <> invalid then
                 option = filterButton.AddCallableButton(createGlyphButton, ["CLEAR FILTER", m.optionPrefs.font, Glyphs().CIR_X, m.customFonts.glyph, "filter_clear"])
-                option.bgColor = Colors().ButtonDark
                 option.Append(m.optionPrefs)
+                option.bgColor = Colors().Button
             end if
 
             ' Filter buttons
