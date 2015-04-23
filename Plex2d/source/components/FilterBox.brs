@@ -10,6 +10,7 @@ function FilterBoxClass() as object
 
         ' Child methods
         obj.OnSelected = filterboxOnSelected
+        obj.OnClosed = filterboxOnClosed
 
         ' Filter listeners
         obj.OnFilterRefresh = filterboxOnFilterRefresh
@@ -51,6 +52,8 @@ sub filterboxInit(item as object)
     else
         m.filters = CreateFilters(m.item)
     end if
+
+    m.IsUnwatched = m.filters.IsUnwatched()
 
     ' This is a sneaky way to make sure that the screen always has
     ' the filterBox object
@@ -108,12 +111,13 @@ sub filterboxOnFilterRefresh(filters as object)
             filterButton = createDropDownButton(ucase(title), m.font, m.screen, false)
             filterButton.SetPadding(0, buttonSpacing, 0, buttonSpacing)
             filterButton.SetDropDownPosition("down", 0)
+            filterButton.OnClosed = m.OnClosed
             m.AddComponent(filterButton)
 
             ' Unwatched filter button
             filter = filters.GetUnwatchedOption()
             if filter <> invalid then
-                option = filterButton.AddCallableButton(createBoolButton, [ucase(filter.Get("title")), m.optionPrefs.font, "filter_unwatched", filters.IsUnwatched()])
+                option = filterButton.AddCallableButton(createBoolButton, [ucase(filter.Get("title")), m.optionPrefs.font, "filter_unwatched", m.IsUnwatched])
                 option.plexObject = filter
                 option.bgColor = Colors().ButtonDark
                 option.Append(m.optionPrefs)
@@ -207,12 +211,12 @@ sub filterboxOnFilterRefresh(filters as object)
     m.screen.screen.DrawAll()
 end sub
 
-sub filterboxOnFilterSet(filters as object)
-    m.screen.Refresh(filters.BuildPath(), false)
+sub filterboxOnFilterSet(subject=invalid as dynamic)
+    m.screen.Refresh(m.filters.BuildPath(), false)
 end sub
 
 sub filterboxOnSelected(screen as object)
-    ' We're evaluated in the context of a dropdown button, but we have
+    ' We're evaluated in the context of a dropdown option, but we have
     ' referenced the filters and the screen is passed as an argument, so
     ' hopefully that will alleviate any confusion.
     if m.command = invalid or m.filters = invalid then return
@@ -227,6 +231,7 @@ sub filterboxOnSelected(screen as object)
         m.filters.SetFilter(m.metadata.filter, m.metadata.key, m.metadata.title)
     else if command = "filter_unwatched" then
         m.filters.ToggleUnwatched(plexObject.Get("filter"))
+        m.SetSelected(screen)
     else if m.command = "filter_type" then
         m.filters.SetType(m.metadata)
     else if command = "filter_boolean" then
@@ -272,5 +277,24 @@ sub filterboxOnSelected(screen as object)
             screen.screen.DrawUnlock()
             return
         end if
+    end if
+end sub
+
+sub filterboxOnClosed(overlay as object, backButton as boolean)
+    ' We're evaluated in the context of a dropdown button. The button
+    ' has a reference to the parent, which is the filterBox.
+    filterBox = m.parent
+    refresh = false
+
+    ' Check for any changes (unwatched flag)
+    isUnwatched = filterBox.filters.IsUnwatched()
+    if isUnwatched <> filterBox.IsUnwatched then
+        refresh = true
+    end if
+    filterBox.IsUnwatched = isUnwatched
+
+    ' Refresh the screen if we have changes
+    if refresh then
+        filterBox.OnFilterSet()
     end if
 end sub

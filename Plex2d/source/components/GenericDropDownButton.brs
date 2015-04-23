@@ -34,6 +34,11 @@ sub gddbShow()
     m.overlay = m.CreateOverlay(m.screen)
     m.overlay.Show()
     m.overlay.AddListener(m.screen, "OnFailedFocus", CreateCallable("OnFailedFocus", m.overlay))
+
+    ' Add a listener to the button to know when it has been close
+    if IsFunction(m.OnClosed) then
+        m.AddListener(m.overlay, "close", CreateCallable("OnClosed", m))
+    end if
 end sub
 
 sub gddbSetDropDownPosition(direction as string, dropdownSpacing=invalid as dynamic)

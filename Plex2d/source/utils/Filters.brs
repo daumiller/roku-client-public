@@ -442,7 +442,7 @@ end function
 ' Wrapper to always disable triggers when automatically setting a filter
 function filtersSetParsedFilter(key as string, value=invalid as dynamic) as boolean
     if instr(1, key, "unwatched") > 0 then
-        return m.SetUnwatched(key, true, false)
+        return m.SetUnwatched(key, true)
     end if
 
     return m.SetFilter(key, value, invalid, false, false)
@@ -482,15 +482,11 @@ sub filtersToggleUnwatched(key as string)
     m.SetUnwatched(key, (m.IsUnwatched() = false))
 end sub
 
-function filtersSetUnwatched(key as string, unwatched=true as boolean, trigger=true as boolean) as boolean
+function filtersSetUnwatched(key as string, unwatched=true as boolean) as boolean
     if unwatched = false then
         m.Delete("currentUnwatched")
     else
         m.currentUnwatched = {key: key, value: "1", isBoolean: true}
-    end if
-
-    if trigger then
-        m.Trigger("set_filter", [m])
     end if
 
     return true
@@ -620,7 +616,7 @@ function filtersGetFilterOptionValues(plexObject as object, refresh=false as boo
 end function
 
 sub filtersClearUnwatched()
-    m.SetUnwatched("", false, true)
+    m.SetUnwatched("", false)
 end sub
 
 ' Helpers to differentiate if the filter/sort was set or parsed. This

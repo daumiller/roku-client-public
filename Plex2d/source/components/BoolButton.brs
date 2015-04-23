@@ -7,6 +7,7 @@ function BoolButtonClass() as object
         obj.Draw = boolbuttonDraw
         obj.Init = boolbuttonInit
         obj.OnSelected = boolbuttonOnSelected
+        obj.SetSelected = boolbuttonSetSelected
 
         m.BoolButtonClass = obj
     end if
@@ -92,11 +93,15 @@ function boolbuttonDraw(redraw=false as boolean) as object
     return [m]
 end function
 
-sub boolbuttonOnSelected(screen as object)
+sub boolbuttonSetSelected(screen as object)
     ' toggle and redraw the selected component
     m.isSelected = NOT(m.isSelected)
     m.Draw(true)
 
     ' redraw the screen
     screen.screen.DrawAll()
+end sub
+
+sub boolbuttonOnSelected(screen as object)
+    m.SetSelected(screen)
 end sub
