@@ -87,8 +87,8 @@ sub vboxPerformLayout()
             if m.scrollInfo.spacing = invalid then
                 if component.focusMethod <> invalid and component.focusMethod <> ButtonClass().FOCUS_BORDER then
                     m.scrollInfo.spacing = 2
-                else if m.scrollInfo.focusInside = true then
-                    m.scrollInfo.spacing = CompositorScreen().focusPixels
+                else if component.focusInside = true then
+                    m.scrollInfo.spacing = cint(CompositorScreen().focusPixels/2)
                 else
                     m.scrollInfo.spacing = CompositorScreen().focusPixels * 2
                 end if
