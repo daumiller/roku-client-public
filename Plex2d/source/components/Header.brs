@@ -88,6 +88,11 @@ sub headerPerformLayout()
         button = createOptionsDropDownButton(firstOf(MyPlexAccount().title, "Options"), m.customFonts.buttons, m.screen)
         button.GetOptions = headerGetOptions
         buttons.push(button)
+
+        for each comp in buttons
+            comp.SetDropDownPosition("down", 2)
+            comp.SetDropDownBorder(2)
+        end for
     else
         button = createGoHomeButton(m.customFonts.buttons)
         buttons.push(button)
