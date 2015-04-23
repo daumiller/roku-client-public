@@ -38,9 +38,9 @@ sub serverbuttonInit(titleFont as object, subtitleFont as object, glyphFont as o
         status: statusFont,
     }
 
-    m.bgColor = iif(m.server.owned, Colors().ButtonDark, Colors().Button)
-    m.titleColor = iif(m.server.isReachable(), Colors().Text, Colors().TextDim)
-    m.subtitleColor = Colors().TextDim
+    m.bgColor = iif(m.server.owned, Colors().Button, Colors().ButtonMed)
+    m.titleColor = iif(m.server.isReachable(), Colors().Text, Colors().Subtitle)
+    m.subtitleColor = Colors().Subtitle
 
     m.focusable = true
     m.selectable = true

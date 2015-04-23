@@ -130,7 +130,7 @@ function headerGetOptions() as object
 
     mpa = MyPlexAccount()
     if mpa.IsSignedIn then
-        m.options.push({text: "Switch User", command: "show_users", font: font, height: 66})
+        m.options.push({text: "Switch User", command: "show_users"})
         if MyPlexAccount().isManaged then
             connect = invalid
         else
@@ -142,11 +142,17 @@ function headerGetOptions() as object
         connect = {text: "Sign In", command: "sign_in"}
     end if
 
-    m.options.push({text: "Settings", command: "settings", font: font, height: 66})
+    m.options.push({text: "Settings", command: "settings"})
 
     if connect <> invalid then
-        m.options.push({text: connect.text, command: connect.command, font: font, height: 66})
+        m.options.push({text: connect.text, command: connect.command})
     end if
+
+    for each option in m.options
+        option.font = font
+        option.bgColor = Colors().ButtonMed
+        option.height = 66
+    end for
 
     return m.options
 end function
