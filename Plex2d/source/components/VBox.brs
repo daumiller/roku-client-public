@@ -13,6 +13,7 @@ function VBoxClass() as object
         obj.AddSpacer = vboxAddSpacer
         obj.SetScrollable = vboxSetScrollable
         obj.SetVisible = vboxSetVisible
+        obj.SetBorder = vboxSetBorder
 
         m.VBoxClass = obj
     end if
@@ -57,6 +58,7 @@ sub vboxPerformLayout()
     m.components.Reset()
     nextOffset = offsets.Next()
 
+    overlayZOrder = 2
     while offsets.IsNext() and m.components.IsNext()
         offset = nextOffset
         nextOffset = offsets.Next()
@@ -80,7 +82,7 @@ sub vboxPerformLayout()
 
         ' calculate the container height, content height and other data about the scrollable area
         if m.scrollTriggerDown <> invalid then
-            if m.scrollInfo = invalid then m.scrollInfo = { zOrder: 2 }
+            if m.scrollInfo = invalid then m.scrollInfo = CreateObject("roAssociativeArray")
             if m.origScrollTriggerDown = invalid then m.origScrollTriggerDown = m.scrollTriggerDown
 
             ' Calculate the spacing from the xOffset for the scrollbar
@@ -110,11 +112,11 @@ sub vboxPerformLayout()
             if m.containerHeight <= offsets[0] + m.height then
                 m.contentHeight = m.containerHeight
             end if
+        end if
 
-            ' determine the zOrder required for any additional components (scrollbar/opacity blocks)
-            if component.zOrder <> invalid and component.zOrder > m.scrollInfo.zOrder then
-                m.scrollInfo.zOrder = component.zOrder + 1
-            end if
+        ' determine the zOrder required for any additional components (scrollbar/opacity blocks)
+        if component.zOrder <> invalid and component.zOrder > overlayZOrder then
+            overlayZOrder = component.zOrder + 1
         end if
     end while
 
@@ -146,12 +148,12 @@ sub vboxPerformLayout()
             color = firstOf(m.scrollOverflowColor, Colors().Background and &hffffffe0)
             opacityTop = createBlock(color)
             opacityTop.setFrame(xOffset, 0, m.width, offsets[0])
-            opacityTop.zOrder = m.scrollInfo.zOrder
+            opacityTop.zOrder = overlayZOrder
             opacityTop.fixed = false
             opacityTop.fixedVertical = true
 
             opacityBot = createBlock(color)
-            opacityBot.zOrder = m.scrollInfo.zOrder
+            opacityTop.zOrder = overlayZOrder
             opacityBot.fixed = false
             opacityBot.fixedVertical = true
             opacityBot.setFrame(xOffset, m.contentHeight, m.width, 720 - m.contentHeight)
@@ -162,10 +164,13 @@ sub vboxPerformLayout()
 
         ' add a scrollbar
         if m.scrollbarPosition <> invalid and m.containerHeight > m.contentHeight then
-            m.scrollbar = createScrollbar(offsets[0], m.contentHeight, m.containerHeight, m.scrollInfo.zOrder, m.scrollInfo.offsetContainer)
+            m.scrollbar = createScrollbar(offsets[0], m.contentHeight, m.containerHeight, overlayZOrder, m.scrollInfo.offsetContainer)
             if m.scrollbar <> invalid
                 width = int(CompositorScreen().focusPixels * 1.5)
                 spacing = firstOf(m.scrollInfo.spacing, CompositorScreen().focusPixels * 2)
+                if m.border <> invalid then
+                    spacing = spacing + m.border.px
+                end if
                 if m.scrollbarPosition = "right" then
                     xOffset = xOffset + m.width + spacing
                 else
@@ -180,8 +185,43 @@ sub vboxPerformLayout()
                 m.AddComponent(m.scrollbar)
             end if
         end if
+        m.Delete("scrollInfo")
 
-        m.scrollInfo = invalid
+        ' Calculate and append the border if set. Make sure there is no
+        ' overlap in case we use an alpha color.
+        '
+        if m.border <> invalid then
+            ' We can use the current vbox rect, but we must resize our
+            ' calculations based on the content height.
+            '
+            rect = computeRect(m)
+            rect.down = m.contentHeight
+            rect.height = rect.down - rect.up
+
+            borderTop = createBlock(m.border.color)
+            borderTop.SetFrame(rect.left, rect.up - m.border.px, rect.width, m.border.px)
+            borderTop.zOrder = overlayZOrder
+            m.AddComponent(borderTop)
+
+            borderBottom = createBlock(m.border.color)
+            borderBottom.SetFrame(rect.left, rect.down, rect.width, m.border.px)
+            borderBottom.zOrder = overlayZOrder
+            m.AddComponent(borderBottom)
+
+            ' Shared dimensions between the left/right border
+            yOffset = rect.up - m.border.px
+            height = rect.height + m.border.px*2
+
+            borderLeft = createBlock(m.border.color)
+            borderLeft.SetFrame(rect.left - m.border.px, yOffset, m.border.px, height)
+            borderLeft.zOrder = overlayZOrder
+            m.AddComponent(borderLeft)
+
+            borderRight = createBlock(m.border.color)
+            borderRight.SetFrame(rect.right, yOffset, m.border.px, height)
+            borderRight.zOrder = overlayZOrder
+            m.AddComponent(borderRight)
+        end if
     end if
 end sub
 
@@ -438,6 +478,7 @@ sub vboxSetScrollable(scrollTriggerHeight=invalid as dynamic, scrollAnimate=fals
     m.CalculateShift = vboxCalculateShift
 end sub
 
+' Note: refer to contDraw() for initial visibility
 sub vboxSetVisible(visible=true as boolean)
     if visible = false then
         ApplyFunc(BoxClass().SetVisible, m, [false])
@@ -446,9 +487,18 @@ sub vboxSetVisible(visible=true as boolean)
     else
         hide = {up: m.y, down: m.contentHeight}
 
-        ' set the visibility based on the constraints
+        ' Set the visibility based on the constraints, however,
+        ' fixed components are always visible.
         for each comp in m.components
-            comp.SetVisibility(invalid, invalid, hide.up, hide.down)
+            if comp.fixed then
+                comp.SetVisible(true)
+            else
+                comp.SetVisibility(invalid, invalid, hide.up, hide.down)
+            end if
         end for
     end if
+end sub
+
+sub vboxSetBorder(px=1 as integer, color=Colors().Border as integer)
+    m.border = {px: px, color: color}
 end sub

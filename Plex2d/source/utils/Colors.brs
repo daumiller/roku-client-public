@@ -14,6 +14,7 @@ function Colors() as object
         obj.OverlayMed = obj.GetAlpha(&h000000ff, 50)
         obj.OverlayLht = obj.GetAlpha(&h000000ff, 35)
 
+        obj.Border = &h1f1f1fff
         obj.Empty = &h1f1f1fff
         obj.Card = &h1f1f1fff
         obj.Button = &h1f1f1fff

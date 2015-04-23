@@ -55,10 +55,15 @@ function contDraw() as object
             for each region in childRegions
                 ' containers of containers! we'll need to check the vertical scrolling
                 ' constraints here to override the zOrder for the sprite creation.
-                if component.isVScrollable = true and component.scrollVisible = false and (region.y < component.y or region.y + region.height > component.contentheight) then
-                    region.zOrderInit = -1
-                else if m.isVScrollable <> invalid and m.scrollVisible = false and (region.y < m.y or region.y + region.height > m.contentHeight) then
-                    region.zOrderInit = -1
+                ' Ignore hiding fixed components (e.g. vBox border, or any other comp
+                ' we may include, as we should expect those to always be visible)
+                '
+                if component.fixed <> true then
+                    if component.isVScrollable = true and component.scrollVisible = false and (region.y < component.y or region.y + region.height > component.contentHeight) then
+                        region.zOrderInit = -1
+                    else if m.isVScrollable = true and m.scrollVisible = false and (region.y < m.y or region.y + region.height > m.contentHeight) then
+                        region.zOrderInit = -1
+                    end if
                 end if
                 regions.Push(region)
             next
