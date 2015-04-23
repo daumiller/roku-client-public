@@ -45,6 +45,7 @@ sub sddoverlayGetComponents()
 
     for each server in servers
         comp = m.button.createButton(server, "selected_server", buttonWidth, buttonHeight, padding)
+        comp.zOrder = m.zOrderOverlay
         vbox.AddComponent(comp)
     end for
     comp.focusSeparator = invalid
@@ -60,7 +61,6 @@ function sddoverlayCreateButton(server as object, command as dynamic, width as i
     obj.padding = padding
     obj.innerBorderFocus = true
     obj.focusSeparator = 1
-    obj.zOrder = ZOrders().DROPDOWN
     obj.SetMetadata(server)
 
     if server.Equals(PlexServerManager().GetSelectedServer()) or m.screen.focusedItem = invalid then

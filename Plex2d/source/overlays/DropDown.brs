@@ -58,7 +58,7 @@ sub ddoverlayCalculatePosition(vbox as object)
     position = m.button.dropDownPosition
     dynamicPosition = (m.button.dropDownDynamicPosition = true)
 
-    ddProp = { width: 0, height: 0, x: buttonRect.left, y: buttonRect.up }
+    ddProp = {width: 0, height: 0, x: buttonRect.left, y: buttonRect.up}
 
     safeArea = {
         down: 685,
@@ -66,6 +66,11 @@ sub ddoverlayCalculatePosition(vbox as object)
         left: 50,
         right: 1230,
     }
+
+    ' Optional border for the dropdown, set by the dropdown button
+    if button.dropdownBorder <> invalid then
+        vbox.border = button.dropdownBorder
+    end if
 
     ' Calculate the spacing between the dropdown button and dropdown. We will prefer
     ' to specified spacing, parents spacing if it exists or fallback to the focus
@@ -220,7 +225,7 @@ sub ddoverlayGetComponents()
             if option.halign <> invalid then comp.halign = m[option.halign]
             if option.width  <> invalid then comp.width  = option.width
             if option.height <> invalid then comp.height = option.height
-            comp.zOrder = ZOrders().DROPDOWN
+            comp.zOrder = m.zOrderOverlay
             comp.fixed = (option.fixed = true)
             comp.SetMetadata(option.metadata)
             comp.plexObject = option.plexObject

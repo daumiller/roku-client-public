@@ -22,7 +22,9 @@ sub overlayAssignOverlayID()
         m.overlayID = m.screen.overlayScreen.Count()
     end if
 
-    m.zOrderOverlay = ZOrders().OVERLAY + m.overlayID
+    ' Increment the overlay zOrder based on overlay ID (multiple overlays),
+    ' and account for incrementing the zOrder within an overlay.
+    m.zOrderOverlay = ZOrders().OVERLAY + m.overlayID*5
     m.components = m.screen.GetManualComponents(m.ClassName + tostr(m.overlayID))
 
     for each overlay in m.screen.overlayScreen

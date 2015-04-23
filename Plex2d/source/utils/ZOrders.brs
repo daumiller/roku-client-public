@@ -4,7 +4,6 @@ function ZOrders() as object
 
         obj.HEADER = 10
         obj.DESCBOX = 10
-        obj.DROPDOWN = 20
         obj.OVERLAY = 30
         obj.MODAL = 900
         obj.MINIPLAYER = obj.HEADER + 1

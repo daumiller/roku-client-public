@@ -6,9 +6,11 @@ function GenericDropDownButtonClass() as object
         ' Methods
         obj.Init = gddbInit
         obj.Show = gddbShow
-        obj.SetDropDownPosition = gddbSetDropDownPosition
         obj.GetOptions = gddbGetOptions
         obj.AddCallableButton = gddbAddCallableButton
+
+        obj.SetDropDownPosition = gddbSetDropDownPosition
+        obj.SetDropDownBorder = gddbSetDropDownBorder
 
         ' Overlay methods
         obj.CreateOverlay = ddoverlayCreateOverlay
@@ -74,3 +76,7 @@ function gddbAddCallableButton(func as object, args=[] as object) as object
 
     return option
 end function
+
+sub gddbSetDropDownBorder(px=1 as integer, color=Colors().Border as integer)
+    m.dropdownBorder = {px: px, color: color}
+end sub
