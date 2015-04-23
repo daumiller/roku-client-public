@@ -86,12 +86,14 @@ sub filterboxOnFilterRefresh(filters as object)
     m.DestroyComponents()
     m.components.Clear()
 
+    ' Dropdown button properties
+    dropdownBorder = {px: 2, color: Colors().Border}
     dropdownPosition = "right"
     buttonSpacing = 10
 
+    ' Values the dropdown will verify and use for options
     m.optionPrefs = {
         halign: "JUSTIFY_LEFT",
-        height: 50,
         padding: {right: 50, left: 20, top: 0, bottom: 0}
         font: FontRegistry().NORMAL,
         focusMethod: ButtonClass().FOCUS_BACKGROUND,
@@ -100,20 +102,23 @@ sub filterboxOnFilterRefresh(filters as object)
         bgColor: m.colors.button
     }
 
+    ' Values the dropdown will blindly append to options
     m.optionPrefs.fields = {
         OnSelected: m.OnSelected,
-        filters: m.filters
+        filters: m.filters,
+        dropdownBorder: dropdownBorder,
+        height: 50
     }
 
     if filters.IsAvailable() then
+        dropdowns = CreateObject("roList")
         ' Filters
         if filters.HasFilters() then
             title = firstOf(filters.GetFilterTitle(), "ALL")
             filterButton = createDropDownButton(ucase(title), m.font, m.screen, false)
-            filterButton.SetPadding(0, buttonSpacing, 0, buttonSpacing)
-            filterButton.SetDropDownPosition("down", 0)
             filterButton.OnClosed = m.OnClosed
             m.AddComponent(filterButton)
+            dropdowns.Push(filterButton)
 
             ' Unwatched filter button
             filter = filters.GetUnwatchedOption()
@@ -141,11 +146,10 @@ sub filterboxOnFilterRefresh(filters as object)
                 if filter.Get("filterType") = "boolean" then
                     option = filterButton.AddCallableButton(createBoolButton, [title, m.optionPrefs.font, "filter_boolean", isEnabled])
                 else
-                    ' TODO(rob): modify button to handle a check mark, to reflect status of isEnabled
                     glyph = iif(isEnabled, Glyphs().CHECK, " ")
                     option = filterButton.AddCallableButton(createGlyphDropDownButton, [title, m.optionPrefs.font, glyph, m.customFonts.glyph, m.screen])
                     option.dropdownPosition = dropdownPosition
-                    option.dropdownSpacing = 1
+                    option.dropdownSpacing = dropdownBorder.px
                 end if
 
                 ' Augment the options for both boolean and dropdown option
@@ -154,12 +158,12 @@ sub filterboxOnFilterRefresh(filters as object)
             end for
         end if
 
-        ' Types [optional]
+        ' Types
         selectedType = filters.GetSelectedType()
         if filters.HasTypes() and selectedType <> invalid
             typesButton = createDropDownButton(ucase(selectedType.title), m.font, m.screen, false)
-            typesButton.SetPadding(0, buttonSpacing, 0, buttonSpacing)
-            typesButton.SetDropDownPosition("down", 0)
+            m.AddComponent(typesButton)
+            dropDowns.Push(typesButton)
 
             selectedType = filters.GetSelectedType()
             for each item in filters.GetTypeOptions()
@@ -169,7 +173,6 @@ sub filterboxOnFilterRefresh(filters as object)
                 option.metadata = item
                 option.Append(m.optionPrefs)
             end for
-            m.AddComponent(typesButton)
         else if selectedType <> invalid then
             ' Add a hard coded label for spacing if there's only one type
             label = createLabel(ucase(selectedType.title), m.optionPrefs.font)
@@ -180,9 +183,8 @@ sub filterboxOnFilterRefresh(filters as object)
         if filters.HasSorts() then
             title = firstOf(filters.GetSortTitle(), "SORT")
             sortButton = createDropDownButton(ucase(title), m.font, m.screen, false)
-            sortButton.SetPadding(0, buttonSpacing, 0, buttonSpacing)
-            sortButton.SetDropDownPosition("down", 0)
             m.AddComponent(sortButton)
+            dropdowns.Push(sortButton)
 
             ' Sort options
             for each sort in filters.GetSortOptions()
@@ -194,10 +196,12 @@ sub filterboxOnFilterRefresh(filters as object)
             end for
         end if
 
-        if dropdownPosition = "right" and m.components.Count() < 3 then
-            width = m.optionPrefs.font.GetOneLineWidth("NAME", 100) + buttonSpacing*2
-            m.AddSpacer(width)
-        end if
+        ' Common dropdown setttings
+        for each dropDown in dropDowns
+            dropdown.SetPadding(0, buttonSpacing, 0, buttonSpacing)
+            dropdown.SetDropDownPosition("down", dropdownBorder.px)
+            dropdown.SetDropDownBorder(dropdownBorder.px, dropdownBorder.color)
+        end for
 
         width = m.GetPreferredWidth()
         m.setFrame(m.x - width, m.y, width, m.GetPreferredHeight())
