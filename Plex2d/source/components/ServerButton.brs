@@ -45,6 +45,7 @@ sub serverbuttonInit(titleFont as object, subtitleFont as object, glyphFont as o
     m.focusable = true
     m.selectable = true
     m.fixed = false
+    m.focusInside = true
 
     m.halign = m.JUSTIFY_LEFT
     m.valign = m.ALIGN_MIDDLE
