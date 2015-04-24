@@ -100,9 +100,10 @@ sub ddoverlayCalculatePosition(vbox as object)
             availableRight = availableLeft
         end if
     end if
-    availableWidth = button.dropdownMaxWidth
-    if availableWidth = invalid or availableWidth > availableRight and availableWidth > availableLeft then
-        availableWidth = iif(availableRight > availableLeft, availableRight, availableLeft)
+    minWidth = button.dropdownMinWidth
+    maxWidth = button.dropdownMaxWidth
+    if maxWidth = invalid or maxWidth > availableRight and maxWidth > availableLeft then
+        maxWidth = iif(availableRight > availableLeft, availableRight, availableLeft)
     end if
 
     ' Assumes all dropdown components height are homogeneous
@@ -116,9 +117,11 @@ sub ddoverlayCalculatePosition(vbox as object)
         ddProp.height = ddProp.height + component.getPreferredHeight() + vbox.spacing
     end for
 
-    ' Reset the homogeneous width if it's greater than our max
-    if ddProp.width > availableWidth then
-        ddProp.width = availableWidth
+    ' Reset the homogeneous width (maxWidth or minWidth if applicable)
+    if ddProp.width > maxWidth then
+        ddProp.width = maxWidth
+    else if minWidth <> invalid and ddProp.width < minWidth then
+        ddProp.width = minWidth
     end if
 
     ' Reset the buttons width based on the max width
