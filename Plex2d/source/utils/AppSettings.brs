@@ -349,6 +349,13 @@ sub settingsClearRegistry(name, section="misc")
 end sub
 
 sub settingsProcessLaunchArgs(args)
+    ' I don't think this is possible, but let's be safe here.
+    if type(args) <> "roAssociativeArray" then return
+
+    if AppSettings().GetIntPreference("log_remote") > 0 then
+        args.debug = "1"
+    end if
+
     ' Process any launch args starting with "pref!"
     for each arg in args
         value = args[arg]
