@@ -106,7 +106,7 @@ end sub
 
 sub buttonSetUniqCommand()
     if m.command <> invalid and m.text <> invalid then
-        m.uniqCommand = m.command + m.text
+        m.uniqCommand = tostr(m.command) + m.text
     end if
 end sub
 
