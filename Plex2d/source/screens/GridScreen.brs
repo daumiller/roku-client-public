@@ -276,7 +276,7 @@ sub gsGetComponents()
     ' *** Grid Header *** '
     if m.filterBox <> invalid and m.filterBox.filters.IsModified() then
         title = m.container.GetFirst(["librarySectionTitle"], "Custom Filter")
-    else if m.item.Get("key", "") = "all" and m.container.Get("librarySectionTitle") <> invalid then
+    else if left(m.item.Get("key", ""), 3) = "all" and m.container.Get("librarySectionTitle") <> invalid then
         title = m.container.Get("librarySectionTitle")
     else if m.viewGroup = "episode" and not m.hasMixedParents then
         title = m.container.Get("title1", "") + " / " + m.container.Get("title2", "")
