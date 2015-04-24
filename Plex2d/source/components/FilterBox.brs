@@ -280,13 +280,14 @@ sub filterboxOnSelected(screen as object)
             end for
         end if
 
-        if m.options.Count() > 0 then
-            m.Show()
-        else
-            createDialog(plexObject.Get("title", "") + " filter is empty", invalid, screen).Show(true)
-            screen.screen.DrawUnlock()
-            return
+        if m.options.Count() = 0 then
+            option = {text: "Empty"}
+            option.Append(filterBox.optionPrefs)
+            m.options.Push(option)
         end if
+
+        m.Show()
+        screen.screen.DrawUnlock()
     end if
 end sub
 
