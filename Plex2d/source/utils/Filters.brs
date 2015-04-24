@@ -223,6 +223,10 @@ function filtersParsePath(path as string, parseTypeOnly=false as boolean) as boo
     ' * sort=viewUpdatedAt:desc&viewOffset>=300
     ' * originallyAvailableAt>=-1y
     '
+
+    ' Ignore unsupported endpoints
+    if not instr(1, path, "/all") > 0 then return false
+
     parts = path.Tokenize("?")
     if parts.Count() = 2 then
         for each arg in parts.Peek().Tokenize("&")
