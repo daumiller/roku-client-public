@@ -336,7 +336,7 @@ function GetDurationString(seconds as dynamic, emptyHr=false as boolean, emptyMi
         end if
     end if
 
-    if duration = "" and seconds <> "0" or emptySec = true then
+    if duration = "" and obj.seconds > 0 or emptySec = true then
         duration = duration + obj.seconds.toStr() + " sec"
     end if
 
