@@ -89,7 +89,6 @@ sub filterboxOnFilterRefresh(filters as object)
     ' Dropdown button properties
     dropdownBorder = {px: 2, color: Colors().Border}
     dropdownPosition = "right"
-    buttonSpacing = 10
 
     ' Values the dropdown will verify and use for options
     m.optionPrefs = {
@@ -109,6 +108,12 @@ sub filterboxOnFilterRefresh(filters as object)
         dropdownBorder: dropdownBorder,
         height: 50
     }
+
+    ' Values for the multi-leve flyouts
+    m.secondaryOptionPrefs = CreateObject("roAssociativeArray")
+    m.secondaryOptionPrefs.Append(m.optionPrefs)
+    m.secondaryOptionPrefs.Append(m.optionPrefsFields)
+    m.secondaryOptionPrefs.padding = {right: 20, left: 20, top: 0, bottom: 0}
 
     if filters.IsAvailable() then
         dropdowns = CreateObject("roList")
@@ -198,7 +203,7 @@ sub filterboxOnFilterRefresh(filters as object)
 
         ' Common dropdown setttings
         for each dropDown in dropDowns
-            dropdown.SetPadding(0, buttonSpacing, 0, buttonSpacing)
+            dropdown.SetPadding(0, 10, 0, 10)
             dropdown.SetDropDownPosition("down", dropdownBorder.px)
             dropdown.SetDropDownBorder(dropdownBorder.px, dropdownBorder.color)
         end for
@@ -270,7 +275,7 @@ sub filterboxOnSelected(screen as object)
             for each item in m.filters.GetFilterOptionValues(plexObject)
                 option = {text: item.Get("title"), command: "filter_set"}
                 option.metadata = {filter: filterKey, key: item.Get("key"), title: option.text}
-                option.Append(filterBox.optionPrefs)
+                option.Append(filterBox.secondaryOptionPrefs)
                 m.options.Push(option)
             end for
         end if

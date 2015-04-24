@@ -290,7 +290,7 @@ sub gsGetComponents()
     m.components.Push(label)
 
     ' *** Filter box *** '
-    m.filterBox = createFilterBox(FontRegistry().NORMAL, m.item, m, 50)
+    m.filterBox = createFilterBox(FontRegistry().NORMAL, m.item, m, 70)
     m.filterBox.SetPosition(1230, m.yOffset - m.spacing - FontRegistry().NORMAL.getOneLineHeight())
     m.components.Push(m.filterBox)
 
