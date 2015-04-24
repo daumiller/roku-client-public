@@ -106,6 +106,7 @@ sub filterboxOnFilterRefresh(filters as object)
         OnSelected: m.OnSelected,
         filters: m.filters,
         dropdownBorder: dropdownBorder,
+        dropdownMinWidth: 170,
         height: 50
     }
 
