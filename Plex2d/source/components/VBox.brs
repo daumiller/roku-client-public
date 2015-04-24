@@ -153,7 +153,7 @@ sub vboxPerformLayout()
             opacityTop.fixedVertical = true
 
             opacityBot = createBlock(color)
-            opacityTop.zOrder = overlayZOrder
+            opacityBot.zOrder = overlayZOrder
             opacityBot.fixed = false
             opacityBot.fixedVertical = true
             opacityBot.setFrame(xOffset, m.contentHeight, m.width, 720 - m.contentHeight)
