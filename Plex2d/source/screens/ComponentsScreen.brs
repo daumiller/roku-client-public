@@ -115,9 +115,6 @@ sub compInit()
     m.manualComponents = CreateObject("roAssociativeArray")
     m.overlayScreen = CreateObject("roList")
 
-    ' reset the nextComponentId
-    GetGlobalAA().AddReplace("nextComponentId", 1)
-
     ' quick references to m.components - clear on methods: show, deactivate
     m.onScreenComponents = CreateObject("roList")
     m.fixedComponents = CreateObject("roList")
@@ -237,7 +234,7 @@ end sub
 ' TODO(rob) screen is not required to be passed, but we might want to ignore
 ' clearing some objects depending on the screen? I.E. DialogScreen. We will
 ' also need to exclude resetting the compositor.
-sub compDeactivate(screen = invalid as dynamic)
+sub compDeactivate(screen=invalid as dynamic)
     Debug("Deactivate ComponentsScreen: clear components, texture manager, and custom fonts")
 
     ' disable any lazyLoad timer
@@ -276,6 +273,14 @@ sub compDeactivate(screen = invalid as dynamic)
 end sub
 
 sub compDestroyComponents(clear=true as boolean)
+    ' Reset the nextComponentId if we are clearing components
+    ' from the active screen. This method is inherited in a
+    ' component, so we must verify the caller.
+    '
+    if Application().IsActiveScreen(m) then
+        GetGlobalAA().AddReplace("nextComponentId", 1)
+    end if
+
     if m.focusedItem <> invalid then
         Verbose("compDestroyComponents:: focusedItem")
         m.focusedItem.Destroy()
