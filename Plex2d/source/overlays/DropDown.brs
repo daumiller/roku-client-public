@@ -53,6 +53,10 @@ sub ddoverlayOnFailedFocus(direction as string, focusedItem=invalid as dynamic)
 end sub
 
 sub ddoverlayCalculatePosition(vbox as object)
+    ' Reference the dropdown in the vBox for easier access,
+    ' when handling multi-level dropdowns.
+    vbox.dropdown = m
+
     button = m.button
     buttonRect = computeRect(button)
     position = m.button.dropDownPosition
@@ -122,6 +126,16 @@ sub ddoverlayCalculatePosition(vbox as object)
         component.width = ddProp.width
     end for
 
+    ' Multi-level flyout: reposition the flyout 10px below the parent dropdown, if
+    ' the content is greater than the parents height. Account for dynamic positions
+    ' e.g. rightLeft/leftRight
+    '
+    if instr(1, lcase(position), "left") > 0 or instr(1, lcase(position), "right") > 0 then
+        if button.parent <> invalid and button.parent.dropdown <> invalid and button.parent.height < ddProp.height then
+            ddProp.y = button.parent.y + HDtoSDheight(10)
+        end if
+    end if
+
     ' Calculate the initial position of the dropdown. Supported: bottom, right and
     ' left. "up" is used dynamically (for now) when we reset the position to fit
     ' on the screen vertically. We do not support "up" as a specified option, so
@@ -157,8 +171,15 @@ sub ddoverlayCalculatePosition(vbox as object)
     if ddProp.y + ddProp.height > safeArea.down then
         override = { up: {}, down: {} }
 
-        ' Placement above button
-        override.up.y = iif(position = "down" or position = "up", buttonRect.up - spacing, buttonRect.down)
+        ' Placement above button. Handle multi-level dropdowns by placing the
+        ' dropdown at the bottom of the parent, if it all fits.
+        '
+        if button.parent <> invalid and button.parent.dropdown <> invalid then
+            override.up.y = computeRect(button.parent).down
+        else
+            override.up.y = iif(position = "down" or position = "up", buttonRect.up - spacing, buttonRect.down)
+        end if
+
         if override.up.y - ddProp.height < safeArea.up then
             override.up.height = compHeight * int( (override.up.y - safeArea.up) / compHeight)
             override.up.y = override.up.y - override.up.height
