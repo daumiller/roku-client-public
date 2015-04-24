@@ -215,7 +215,7 @@ end sub
 
 sub loggerUpdateSyslogHeader()
     label = AppSettings().GetGlobal("rokuUniqueID")
-    if m.DoesExist("MyPlexAccount") and MyPlexAccount().title <> invalid then
+    if GetGlobalAA().DoesExist("MyPlexAccount") and MyPlexAccount().title <> invalid then
        label = MyPlexAccount().title + ":" + label
     end if
     m.syslogHeader = "<135> PlexForRoku: [" + label + "] "
