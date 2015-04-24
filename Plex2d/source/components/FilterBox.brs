@@ -53,8 +53,6 @@ sub filterboxInit(item as object)
         m.filters = CreateFilters(m.item)
     end if
 
-    m.IsUnwatched = m.filters.IsUnwatched()
-
     ' This is a sneaky way to make sure that the screen always has
     ' the filterBox object
     '
@@ -85,6 +83,9 @@ end sub
 sub filterboxOnFilterRefresh(filters as object)
     m.DestroyComponents()
     m.components.Clear()
+
+    ' Refresh our unwatched boolean
+    m.isUnwatched = m.filters.IsUnwatched()
 
     ' Dropdown button properties
     dropdownBorder = {px: 2, color: Colors().Border}
