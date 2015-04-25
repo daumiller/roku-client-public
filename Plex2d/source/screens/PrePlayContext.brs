@@ -7,12 +7,17 @@ function PreplayContextScreen() as object
 
         ' Methods
         obj.Init = ppcInit
+        obj.ResetInit = clResetInit
         obj.Show = ppcShow
         obj.OnChildResponse = ppcOnChildResponse
         obj.GetComponents = ppcGetComponents
         obj.GetMainInfo = ppcGetMainInfo
         obj.GetImages = ppcGetImages
         obj.GetButtons = ppcGetButtons
+        obj.Refresh = ppcRefresh
+
+        ' Preplay overrides
+        obj.LoadContext = ppcLoadContext
 
         m.PreplayContextScreen = obj
     end if
@@ -35,8 +40,16 @@ end function
 sub ppcInit()
     ApplyFunc(PreplayScreen().Init, m)
 
-    ' path override
-    if m.path <> invalid then
+    m.ResetInit(m.path)
+end sub
+
+sub ppcResetInit(path=invalid as dynamic)
+    m.DisableListeners(true)
+    m.server = m.requestItem.GetServer()
+
+    ' path override (optional)
+    if path <> invalid then
+        m.path = path
         m.childrenPath = m.path + "/children"
     else
         m.path = m.requestItem.GetItemPath()
@@ -45,8 +58,6 @@ sub ppcInit()
 
     m.childrenPath = m.childrenPath + "?excludeAllLeaves=1"
     m.parentPath = m.path + "?includeRelated=1&includeRelatedCount=0&includeOnDeck=1&includeExtras=1"
-
-    m.server = m.requestItem.GetServer()
 
     m.requestContext = invalid
     m.childRequestContext = invalid
@@ -306,3 +317,18 @@ function ppcGetButtons() as object
 
     return components
 end function
+
+sub ppcLoadContext(delta as integer)
+    path = m.requestItem.GetContextPath(false)
+    if path <> invalid then
+        ApplyFunc(PreplayScreen().LoadContext, m, [delta, path])
+    end if
+end sub
+
+sub ppcRefresh(request=invalid as dynamic, response=invalid as dynamic, context=invalid as dynamic)
+    if m.itemPath <> invalid then
+        m.ResetInit(m.itemPath)
+        ApplyFunc(PreplayScreen().Refresh, m)
+        m.refocus = invalid
+    end if
+end sub
