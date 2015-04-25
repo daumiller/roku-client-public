@@ -114,7 +114,6 @@ sub filterboxOnFilterRefresh(filters as object)
     ' Values for the multi-leve flyouts
     m.secondaryOptionPrefs = CreateObject("roAssociativeArray")
     m.secondaryOptionPrefs.Append(m.optionPrefs)
-    m.secondaryOptionPrefs.Append(m.optionPrefsFields)
     m.secondaryOptionPrefs.padding = {right: 20, left: 20, top: 0, bottom: 0}
 
     if filters.IsAvailable() then
