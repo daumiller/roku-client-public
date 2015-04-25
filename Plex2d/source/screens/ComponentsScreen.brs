@@ -1375,7 +1375,7 @@ function compHasRefocusItem() as boolean
     return IsAssociativeArray(m.refocusKey)
 end function
 
-sub compSetRefocusItem(item=invalid as dynamic, keys=["ratingKey", "uuid", "hubKey", "key"] as object)
+sub compSetRefocusItem(item=invalid as dynamic, keys=["ratingKey", "uuid", "hubKey", "key", "uniqCommand"] as object)
     if not IsAssociativeArray(item) then return
 
     plexObject = iif(item.plexObject <> invalid, item.plexObject, item)
