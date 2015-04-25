@@ -222,7 +222,7 @@ sub pinpromptHandleButton(button as object)
             if m.pinCode.count() = 4 and MyPlexAccount().SwitchHomeUser(m.homeUser.id, m.result) then
                 m.Close()
                 ' Close the screen if the current user unlocked it (return to previous screen)
-                if GetGlobalAA()["screenIsLocked"] = true and m.homeUser.id = MyPlexAccount().id and Application().screens.Count() > 1 then
+                if Locks().IsLocked("idleLock") and m.homeUser.id = MyPlexAccount().id and Application().screens.Count() > 1 then
                     Debug("lock screen unlocked by current user")
                     Application().popScreen(m.screen)
                 end if

@@ -28,7 +28,7 @@ function createUsersScreen(clearScreens=false as boolean) as object
 
     obj.Init()
 
-    obj.isLockScreen = (GetGlobalAA()["screenIsLocked"] = true)
+    obj.isLockScreen = (Locks().IsLocked("idleLock"))
 
     if clearScreens = true then
         Application().ClearScreens()
@@ -140,7 +140,7 @@ end function
 
 sub usersDeactivate(screen = invalid as dynamic)
     if m.isLockScreen then
-        GetGlobalAA().Delete("screenIsLocked")
+        Locks().Unlock("idleLock")
     end if
     ApplyFunc(ComponentsScreen().Deactivate, m)
 end sub

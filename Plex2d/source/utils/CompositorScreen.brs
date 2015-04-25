@@ -49,8 +49,8 @@ function CompositorScreen() as object
 end function
 
 sub compositorReset()
-    ' we cannot create/reset an roScreen if a standard screen is active
-    if Application().IsActiveScreen(VideoPlayer()) then
+    ' we cannot create/reset an roScreen if a built-in screen (roVideoPlayer) is active
+    if not Locks().IsLocked("idleLock") and Application().IsActiveScreen(VideoPlayer()) then
         Warn("Cannot create an roScreen while video is active.")
     else
         m.screen = CreateObject("roScreen", true)

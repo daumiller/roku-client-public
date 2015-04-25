@@ -285,7 +285,7 @@ function mpaSwitchHomeUser(userId as string, pin="" as dynamic) as boolean
         if xml@authenticationToken <> invalid then
             m.isAuthenticated = true
             ' validate the token (trigger change:user) on user change or channel startup
-            if userId <> m.id or not GetGlobalAA()["screenIsLocked"] = true then
+            if userId <> m.id or not Locks().IsLocked("idleLock") then
                 m.ValidateToken(xml@authenticationToken, true)
             end if
             return true

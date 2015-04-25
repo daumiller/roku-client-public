@@ -88,7 +88,7 @@ sub appAssignScreenID(screen)
 end sub
 
 sub appPushScreen(screen)
-    if Application().IsActiveScreen(VideoPlayer()) then
+    if not Locks().IsLocked("idleLock") and Application().IsActiveScreen(VideoPlayer()) then
         Warn("Cannot push a new screen while video is active.")
         return
     end if
@@ -622,22 +622,31 @@ sub appCreateLockScreen()
     if AppSettings().GetBoolPreference("auto_signin") = true or MyPlexAccount().isProtected = false then return
 
     ' do not lock if already locked or user is not authenticated (startup)
-    if GetGlobalAA()["screenIsLocked"] = true or MyPlexAccount().isAuthenticated = false then return
+    if Locks().IsLocked("idleLock") or MyPlexAccount().isAuthenticated = false then return
 
     lastKeyPress = tostr(AppSettings().GetGlobal("roDeviceInfo").TimeSinceLastKeyPress())
     idleTimeout = tostr(AppSettings().GetGlobal("idleLockTimeout"))
     Debug("Creating Lock Screen: last key press=" + lastKeyPress + ", idle timeout=" + idleTimeout)
 
-    ' add global lock and deauthenticate
-    GetGlobalAA().AddReplace("screenIsLocked", true)
-    MyPlexAccount().isAuthenticated = false
+    ' Add an idleLock (early) so we can allow an roScreen to be created
+    ' and pushed while a VideoPlayer is active. Well verify afterwards.
+    Locks().Lock("idleLock")
 
     ' lock an exising users selection screen, or create one.
-    screen = m.screens.Peek()
-    if screen <> invalid and screen.isLockScreen <> invalid then
-        screen.LockScreen(true)
+    if m.screens.Count() > 0 and m.screens.Peek().isLockScreen <> invalid then
+        m.screens.Peek().LockScreen(true)
     else
         m.pushScreen(createUsersScreen(false))
+    end if
+
+    ' Deautheticate if we have successfully create a lock screen, otherwise
+    ' remove the idleLock to we can try again.
+    if m.screens.Count() > 0 and m.screens.Peek().isLockScreen = true then
+        Info("Lock screen successfully created")
+        MyPlexAccount().isAuthenticated = false
+    else
+        Warn("Failed to create lock screen")
+        Locks().Unlock("idleLock")
     end if
 end sub
 
