@@ -1187,6 +1187,8 @@ sub compLazyLoadExec(components as object, zOrder=1 as integer)
 end sub
 
 function compCalculateFirstOrLast(components as object, shift as object, skipIgnore=false as boolean) as integer
+    if components.Count() = 0 then return 0
+
     minMax = {}
     for each comp in components
         if skipIgnore = true or comp.parent = invalid or not comp.parent.ignoreFirstLast = true then
