@@ -111,6 +111,7 @@ sub ppcGetComponents()
     if m.item.Get("art") <> invalid then
         m.background = createBackgroundImage(m.item)
         m.components.Push(m.background)
+        m.SetRefreshCache("background", m.background)
     end if
 
     overlay = createBlock(Colors().OverlayMed)
@@ -234,11 +235,12 @@ function ppcGetImages() as object
     container.height = 291
     container.width = ComponentClass().GetWidthForOrientation(orientation, container.height)
 
-    poster = createImage(m.item, container.width, container.height)
-    poster.fade = true
-    poster.cache = true
-    poster.SetOrientation(orientation)
-    container.components.push(poster)
+    m.posterThumb = createImage(m.item, container.width, container.height)
+    m.posterThumb.fade = true
+    m.posterThumb.cache = true
+    m.posterThumb.SetOrientation(orientation)
+    container.components.push(m.posterThumb)
+    m.SetRefreshCache("posterThumb", m.posterThumb)
 
     return container
 end function
