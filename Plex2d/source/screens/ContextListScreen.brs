@@ -205,6 +205,13 @@ function clHandleCommand(command as string, item as dynamic) as boolean
         options.shuffle = (command = "shuffle")
 
         if item <> invalid and item.plexObject <> invalid then
+            ' Prompt user to resume or play from beginning
+            if item.plexObject.IsVideoItem() and item.plexObject.GetInt("viewOffset") > 0 then
+                options.resume = VideoResumeDialog(item.plexObject, m)
+                if options.resume = invalid then return false
+                m.player.shouldResume = options.resume
+            end if
+
             options.key = item.plexObject.Get("key")
         end if
 

@@ -279,10 +279,12 @@ end function
 
 function playlistHandleCommand(command as string, item as dynamic) as boolean
     handled = true
-    m.screen.DrawLock()
 
     ' If it was a track action, make sure it has the last focused track set as its item
     if item <> invalid and item.trackAction = true then
+        ' Lock all screen update for track actions
+        m.screen.DrawLock()
+
         item.plexObject = m.focusedListItem.plexObject
         overlay = m.overlayScreen.Peek()
         if overlay <> invalid then overlay.Close()
