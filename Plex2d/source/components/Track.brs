@@ -177,7 +177,7 @@ sub trackInitComponents()
             m.subtitle.SetPadding(0, m.padding.right, 0, m.padding.left)
             m.AddComponent(m.subtitle)
         else
-            m.subtitle = createLabel(item.Get("year"), m.customFonts.subtitle)
+            m.subtitle = createLabel(item.Get("year", ""), m.customFonts.subtitle)
             m.subtitle.SetColor(Colors().TextMed)
             m.subtitle.SetPadding(0, m.padding.right, 0, m.padding.left)
             m.AddComponent(m.subtitle)
