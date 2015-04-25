@@ -9,6 +9,7 @@ function GridScreen() as object
         obj.Show = gsShow
         obj.Init = gsInit
         obj.OnGridResponse = gsOnGridResponse
+        obj.OnSortResponse = gsOnSortResponse
         obj.OnJumpResponse = gsOnJumpResponse
         obj.HandleCommand = gsHandleCommand
         obj.GetComponents = gsGetComponents
@@ -118,8 +119,20 @@ sub gsShow()
 
     requests = CreateObject("roList")
 
-    ' Create requests for the size of the endpoint
-    if m.gridContainer.request = invalid then
+    ' Create request for the default sort, unless we already have a sort
+    if m.sortContainer.request = invalid then
+        if m.sectionPath <> invalid and instr(1, m.path, "/all") > 0 and instr(1, m.path, "sort=") = 0 then
+            itemType = CreateObject("roRegex", "type=\d+", "").Match(m.path)[0]
+            request = createPlexRequest(m.server, m.sectionPath + JoinArray(["/sorts", itemType], "?"))
+            m.sortContainer = request.CreateRequestContext("sort", createCallable("OnSortResponse", m))
+            requests.Push({request: request, context: m.sortContainer})
+        else
+            m.sortContainer.response = {}
+        end if
+    end if
+
+    ' Create request for the size of the endpoint (after we determine the default sort)
+    if m.sortContainer.response <> invalid and m.gridContainer.request = invalid then
         request = createPlexRequest(m.server, m.path)
         request.AddHeader("X-Plex-Container-Start", "0")
         request.AddHeader("X-Plex-Container-Size", "0")
@@ -128,7 +141,7 @@ sub gsShow()
         requests.Push({request: request, context: m.gridContainer})
     end if
 
-    ' Create requests for the jump items (only if we are using the ALL endpoint)
+    ' Create request for the jump items (only if we are using the ALL endpoint)
     if m.jumpContainer.request = invalid then
         jumpSortSupported = instr(1, m.path, "/all") > 0 and (instr(1, m.path, "sort=") = 0 or instr(1, m.path, "sort=titleSort") > 0)
         if jumpSortSupported then
@@ -147,7 +160,7 @@ sub gsShow()
         Application().StartRequest(request.request, request.context)
     end for
 
-    if m.gridContainer.response <> invalid and m.jumpContainer.response <> invalid then
+    if m.gridContainer.response <> invalid and m.jumpContainer.response <> invalid and m.sortContainer.response <> invalid then
         if m.gridContainer.response.container.GetFirst(["totalSize", "size"], "0").toInt() = 0 then
             ' TODO(rob): change this error based on the current filters. It's possible the library
             ' contains content, but the filter is to limiting. Clear filters and reinit.
@@ -739,8 +752,10 @@ sub gsResetInit(path=invalid as dynamic)
     end if
 
     m.path = m.item.GetAbsolutePath("key")
+    m.sectionPath = m.item.GetSectionPath()
 
     m.gridContainer = CreateObject("roAssociativeArray")
+    m.sortContainer = CreateObject("roAssociativeArray")
     m.jumpContainer = CreateObject("roAssociativeArray")
     m.placeholders = CreateObject("roList")
     m.jumpItems = CreateObject("roList")
@@ -753,4 +768,22 @@ end sub
 ' Use the jumpIndex to refocus a grid. It's unique and mostly accurate on refresh.
 sub gsSetRefocusItem(item=invalid as dynamic, keys=["jumpIndex"])
     ApplyFunc(ComponentsScreen().SetRefocusItem, m, [item, keys])
+end sub
+
+sub gsOnSortResponse(request as object, response as object, context as object)
+    response.ParseResponse()
+    context.response = response
+
+    ' Append the default sort to the path
+    if instr(1, request.path, "sort=") = 0 then
+        for each item in response.items
+            if item.Has("default") then
+                m.path = m.path + iif(instr(1, m.path, "?") = 0, "?", "&") + "sort=" + item.Get("key")
+                Debug("Added default sort: " + m.path)
+                exit for
+            end if
+        end for
+    end if
+
+    m.Show()
 end sub
