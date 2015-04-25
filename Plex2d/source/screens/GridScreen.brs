@@ -162,16 +162,22 @@ sub gsShow()
 
     if m.gridContainer.response <> invalid and m.jumpContainer.response <> invalid and m.sortContainer.response <> invalid then
         if m.gridContainer.response.container.GetFirst(["totalSize", "size"], "0").toInt() = 0 then
-            ' TODO(rob): change this error based on the current filters. It's possible the library
-            ' contains content, but the filter is to limiting. Clear filters and reinit.
             if m.filterBox <> invalid then
+                ' If we have a filterBox, then our filter is too limited, so we'll need
+                ' to clear the filters refresh the grid
                 title = "No matching content"
                 text = "There is no content matching your active filter."
+                m.ShowFailure(title, text, false)
+
+                ' Destroy the filter box and refresh the grid using the original path
+                m.filterBox.DestroyComponents()
+                m.Delete("filterBox")
+                m.Refresh(m.originalPath)
             else
                 title = "No content available in this library"
                 text = "Please add content and/or check that " + chr(34) + "Include in dashboard" + chr(34) + " is enabled.".
+                m.ShowFailure(title, text)
             end if
-            m.ShowFailure(title, text)
         else
             ApplyFunc(ComponentsScreen().Show, m)
         end if
@@ -753,6 +759,10 @@ sub gsResetInit(path=invalid as dynamic)
 
     m.path = m.item.GetAbsolutePath("key")
     m.sectionPath = m.item.GetSectionPath()
+    ' Retain the original path for use when refreshing/resetting
+    if m.originalPath = invalid then
+        m.originalPath = m.path
+    end if
 
     m.gridContainer = CreateObject("roAssociativeArray")
     m.sortContainer = CreateObject("roAssociativeArray")
