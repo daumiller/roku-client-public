@@ -276,16 +276,20 @@ sub gsGetComponents()
     m.components.Push(createHeader(m))
 
     ' *** Grid Header *** '
-    if m.filterBox <> invalid and m.filterBox.filters.IsModified() then
-        title = m.container.GetFirst(["librarySectionTitle"], "Custom Filter")
-    else if left(m.item.Get("key", ""), 3) = "all" and m.container.Get("librarySectionTitle") <> invalid then
-        title = m.container.Get("librarySectionTitle")
-    else if m.viewGroup = "episode" and not m.hasMixedParents then
-        title = m.container.Get("title1", "") + " / " + m.container.Get("title2", "")
-    else
-        title = m.item.GetSingleLineTitle()
+
+    ' Set m.gridTitle to retain the same title on refresh
+    if m.gridTitle = invalid then
+        if m.filterBox <> invalid and m.filterBox.filters.IsModified() then
+            m.gridTitle = m.container.GetFirst(["librarySectionTitle"], "Custom Filter")
+        else if left(m.item.Get("key", ""), 3) = "all" and m.container.Get("librarySectionTitle") <> invalid then
+            m.gridTitle = m.container.Get("librarySectionTitle")
+        else if m.viewGroup = "episode" and not m.hasMixedParents then
+            title = m.container.Get("title1", "") + " / " + m.container.Get("title2", "")
+        else
+            title = m.item.GetSingleLineTitle()
+        end if
     end if
-    label = createLabel(ucase(title), FontRegistry().NORMAL)
+    label = createLabel(ucase(firstOf(m.gridTitle, title)), FontRegistry().NORMAL)
     label.height = FontRegistry().NORMAL.getOneLineHeight()
     label.width = FontRegistry().NORMAL.getOneLineWidth(label.text, m.displayWidth)
     label.SetFrame(m.xPadding, m.yOffset - m.spacing - label.height, label.width, label.height)
