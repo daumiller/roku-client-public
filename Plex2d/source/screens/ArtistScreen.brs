@@ -14,6 +14,12 @@ function ArtistScreen() as object
         obj.GetButtons = artistGetButtons
         obj.ToggleSummary = artistToggleSummary
 
+        ' Preplay overrrides
+        ' TODO(rob): page advance
+        '
+        obj.OnFwdButton = artistOnFwdButton
+        obj.OnRevButton = artistOnRevButton
+
         m.ArtistScreen = obj
     end if
 
@@ -312,4 +318,12 @@ sub artistToggleSummary()
     m.lastFocusedItem = invalid
 
     m.screen.DrawAll()
+end sub
+
+sub artistOnFwdButton(item=invalid as dynamic)
+    ' no-op
+end sub
+
+sub artistOnRevButton(item=invalid as dynamic)
+    ' no-op
 end sub
