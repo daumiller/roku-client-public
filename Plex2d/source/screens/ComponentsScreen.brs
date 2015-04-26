@@ -1157,7 +1157,7 @@ sub compLazyLoadOnTimer(timer as object)
         end if
         ' process any components last
         if timer.components <> invalid then
-            m.LazyLoadExec(timer.components, -1)
+            m.LazyLoadExec(timer.components)
         end if
     else
         ' re-mark the timer to retry when the user has stopped moving
@@ -1167,14 +1167,16 @@ sub compLazyLoadOnTimer(timer as object)
     end if
 end sub
 
-' TODO(rob) assumed we know the zOrder since we call exec the lazyLoad
-' by passing a list of components either on screen or off (which may not
-' alway be true in the future)
-sub compLazyLoadExec(components as object, zOrder=1 as integer)
-    if not Application().IsActiveScreen(m) then return
-    if components.count() = 0 then return
+sub compLazyLoadExec(components as object)
+    if not Application().IsActiveScreen(m) or components.count() = 0 then return
+
     for each comp in components
         if comp.SpriteIsLoaded() = false then
+            if comp.IsOnScreen() then
+                zOrder = firstOf(m.zOrder, 1)
+            else
+                zOrder = -1
+            end if
             Debug("Drawing (lazy-load) zOrder " + tostr(zOrder) + ", " + tostr(comp))
             comp.Draw()
             ' add the sprite placeholder to the compositors screen
