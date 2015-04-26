@@ -913,7 +913,8 @@ function compGetFocusManual(direction as string, focusableComponenents=invalid a
 end function
 
 sub compCalculateShift(toFocus as object, refocus=invalid as dynamic)
-    if toFocus.fixed = true then return
+    forceLoad = not toFocus.SpriteIsLoaded()
+    if not forceLoad and toFocus.fixed = true then return
 
     ' allow the component to override the method. e.g. VBox vertical scrolling
     ' * shiftableParent for containers in containers (e.g. users screen: vbox -> hbox -> component)
@@ -1007,13 +1008,13 @@ sub compCalculateShift(toFocus as object, refocus=invalid as dynamic)
         end if
     end if
 
-    if (shift.x <> 0 or shift.y <> 0) then
-        m.screen.hideFocus()
-        m.shiftComponents(shift, refocus)
+    if forceLoad or (shift.x <> 0 or shift.y <> 0) then
+        m.screen.HideFocus()
+        m.shiftComponents(shift, refocus, forceLoad)
     end if
 end sub
 
-sub compShiftComponents(shift as object, refocus=invalid as dynamic)
+sub compShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=false as boolean)
     ' disable any lazyLoad timer
     ' TODO(schuyler): I added this check to avoid a crash, but it just meant we
     ' crashed somewhere else. We'll need to figure this out.
@@ -1086,7 +1087,7 @@ sub compShiftComponents(shift as object, refocus=invalid as dynamic)
     shift.x = m.CalculateFirstOrLast(partShift, shift, skipIgnore)
 
     ' return if we calculated zero shift
-    if shift.x = 0 and shift.y = 0 then return
+    if not forceLoad and shift.x = 0 and shift.y = 0 then return
 
     ' lazy-load any components that will be on-screen after we shift
     ' and cancel any pending texture requests

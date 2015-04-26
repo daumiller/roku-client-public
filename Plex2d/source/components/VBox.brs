@@ -243,7 +243,9 @@ function vboxGetPreferredHeight() as integer
 end function
 
 sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic, screen=invalid as object)
-    if toFocus.fixed = true or m.scrolltriggerdown >= m.containerHeight then return
+    forceLoad = not toFocus.SpriteIsLoaded()
+    if not forceLoad and (toFocus.fixed = true or m.scrolltriggerdown >= m.containerHeight) then return
+
     m.screen = screen
 
     shift = {
@@ -324,17 +326,17 @@ sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic, screen=inv
         m.scrollbar.Move(toFocus, isFirst, isLast)
     end if
 
-    if shift.y <> 0 then
+    if forceLoad or shift.y <> 0 then
         ' Hide the focus sprite before shift if destination differs
         sourceRect = m.screen.screen.GetFocusData("rect")
         if sourceRect <> invalid and (focusRect.left <> sourceRect.left or focusRect.right <> sourceRect.right) then
             m.screen.screen.hideFocus()
         end if
-        m.shiftComponents(shift, refocus)
+        m.shiftComponents(shift, refocus, forceLoad)
     end if
 end sub
 
-sub vboxShiftComponents(shift as object, refocus=invalid as dynamic)
+sub vboxShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=false as boolean)
     Debug("shift vbox by: " + tostr(shift.x) + "," + tostr(shift.y))
 
     ' Disable animation for forground/background focus methods, key repeats,

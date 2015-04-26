@@ -389,7 +389,8 @@ end sub
 
 ' ************ shifting ****************'
 sub gsCalculateShift(toFocus as object, refocus=invalid as dynamic)
-    if toFocus.fixed = true then return
+    forceLoad = not toFocus.SpriteIsLoaded()
+    if not forceLoad and toFocus.fixed = true then return
 
     ' allow the component to override the method. e.g. VBox vertical scrolling
     ' * shiftableParent for containers in containers (e.g. users screen: vbox -> hbox -> component)
@@ -427,12 +428,12 @@ sub gsCalculateShift(toFocus as object, refocus=invalid as dynamic)
         shift.x = shift.demandX - focusRect.left
     end if
 
-    if (shift.x <> 0 or shift.y <> 0) then
-        m.shiftComponents(shift, refocus)
+    if forceLoad or (shift.x <> 0 or shift.y <> 0) then
+        m.shiftComponents(shift, refocus, forceLoad)
     end if
 end sub
 
-sub gsShiftComponents(shift as object, refocus=invalid as dynamic)
+sub gsShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=false as boolean)
     ' disable any lazyLoad timer
     m.lazyLoadTimer.active = false
     m.lazyLoadTimer.components = invalid
@@ -536,7 +537,12 @@ sub gsShiftComponents(shift as object, refocus=invalid as dynamic)
     shift.x = m.CalculateFirstOrLast(partShift, shift)
 
     ' return if we calculated zero shift, or a very minimal shift
-    if abs(shift.x) < 5 and abs(shift.y) < 5 then return
+    if abs(shift.x) < 5 and abs(shift.y) < 5 then
+        if not forceLoad then return
+        shift.x = 0
+        shift.y = 0
+    end if
+
     Debug("shift components by: " + tostr(shift.x) + "," + tostr(shift.y))
 
     ' hide the focus box before we shift
