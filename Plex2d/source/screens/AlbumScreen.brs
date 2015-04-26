@@ -222,10 +222,10 @@ sub albumGetComponents()
     ' screen. We have arbitrarily picked 50px. e.g. x=50, w=1230, so we'll assume the same
     ' for y and height, e.g. y=50, h=670.
 
-    trackListY = header.GetPreferredHeight() + padding
-    trackListH = 670 - trackListY
+    trackListY = header.GetPreferredHeight() + CompositorScreen().focusPixels
+    trackListH = AppSettings().GetHeight() - trackListY
     m.trackList = createVBox(false, false, false, 0)
-    m.trackList.SetFrame(xOffset + padding, trackListY, trackPrefs.width + m.trackActions.GetPreferredWidth(), trackListH)
+    m.trackList.SetFrame(xOffset + padding, trackListY, trackPrefs.width + m.trackActions.GetPreferredWidth(), trackListH - padding)
     m.trackList.SetScrollable(trackListH / 2, true, true, invalid)
     m.trackList.stopShiftIfInView = true
     m.trackList.scrollOverflow = true
