@@ -315,26 +315,7 @@ end sub
 function albumGetButtons() as object
     components = createObject("roList")
 
-    buttons = createObject("roList")
-    buttons.push({text: Glyphs().PLAY, command: "play"})
-    buttons.push({text: Glyphs().SHUFFLE, command: "shuffle"})
-    if m.item.Get("summary", "") <> "" then
-        buttons.push({text: Glyphs().INFO, command: "summary"})
-    end if
-
     buttonHeight = 50
-    for each button in buttons
-        btn = createButton(button.text, m.customFonts.glyphs, button.command)
-        btn.SetColor(Colors().Text, Colors().Button)
-        btn.width = 100
-        btn.height = buttonHeight
-        btn.fixed = false
-        btn.DisableNonParentExit("down")
-        if m.focusedItem = invalid then m.focusedItem = btn
-        components.push(btn)
-    end for
-
-    ' more/pivots drop down
     optionPrefs = {
         halign: "JUSTIFY_LEFT",
         height: buttonHeight
@@ -342,12 +323,22 @@ function albumGetButtons() as object
         font: FontRegistry().NORMAL,
     }
 
+    buttons = createObject("roList")
+    buttons.push({text: Glyphs().PLAY, command: "play"})
+    buttons.push({text: Glyphs().SHUFFLE, command: "shuffle"})
+    if m.item.Get("summary", "") <> "" then
+        buttons.push({text: Glyphs().INFO, command: "summary"})
+    end if
+
+    for each button in buttons
+        btn = createButton(button.text, m.customFonts.glyphs, button.command)
+        components.push(btn)
+    end for
+
+    ' more/pivots drop down
     btn = createDropDownButton(Glyphs().MORE, m.customFonts.glyphs, m)
     btn.SetDropDownPosition("right")
-    btn.SetColor(Colors().Text, Colors().Button)
-    btn.width = 100
-    btn.height = buttonHeight
-    if m.focusedItem = invalid then m.focusedItem = btn
+    components.push(btn)
 
     ' manual pivots and commands
     manualPivotsAndCommands = [
@@ -373,7 +364,14 @@ function albumGetButtons() as object
             btn.options.push(option)
         end for
     end if
-    components.push(btn)
+
+    for each component in components
+        component.SetColor(Colors().Text, Colors().Button)
+        component.width = 100
+        component.height = buttonHeight
+        component.DisableNonParentExit("down")
+        if m.focusedItem = invalid then m.focusedItem = component
+    end for
 
     return components
 end function
