@@ -758,6 +758,10 @@ sub gsRefresh(path=invalid as dynamic, stickyFocus=true as boolean)
     m.CloseOverlays()
 
     Application().ShowLoadingModal(m)
+
+    ' Encourage some extra memory cleanup
+    RunGC()
+
     m.Show()
 end sub
 

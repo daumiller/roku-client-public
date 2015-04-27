@@ -279,7 +279,7 @@ sub compDeactivate(screen=invalid as dynamic)
     m.DisableListeners()
 
     ' Encourage some extra memory cleanup
-    RunGarbageCollector()
+    RunGC()
 end sub
 
 sub compDestroyComponents(clear=true as boolean)

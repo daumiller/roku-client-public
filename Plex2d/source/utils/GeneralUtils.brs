@@ -581,3 +581,9 @@ end function
 function IsKeyReleaseMessage(msg as object) as boolean
     return (type(msg) = "roUniversalControlEvent" and msg.GetInt() >= 100)
 end function
+
+sub RunGC()
+    Verbose("Running garbage collector")
+    RunGarbageCollector()
+    Verbose("Finished running garbage collector")
+end sub

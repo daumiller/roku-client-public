@@ -761,6 +761,10 @@ sub preplayRefresh(request=invalid as dynamic, response=invalid as dynamic, cont
     end if
 
     Application().ShowLoadingModal(m)
+
+    ' Encourage some extra memory cleanup
+    RunGC()
+
     m.Show()
 end sub
 
