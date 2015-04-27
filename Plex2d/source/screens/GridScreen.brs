@@ -288,8 +288,14 @@ function gsHandleCommand(command as string, item as dynamic) as boolean
 end function
 
 sub gsGetComponents()
+    ' Calculate our grid chunks before destroying components. This will
+    ' allow us to show a loading modal for larger/slower grids. The
+    ' focused items is calculated here, so we'll need to retain it.
+    chunks = m.GetGridChunks()
+    focusedItem = m.focusedItem
+
     m.DestroyComponents()
-    m.focusedItem = invalid
+    m.focusedItem = focusedItem
 
     ' *** HEADER *** '
     m.components.Push(createHeader(m))
@@ -324,7 +330,6 @@ sub gsGetComponents()
     hbox.SetFrame(m.xPadding, m.yOffset, 0, m.height)
 
     ' Grid Chunks / Placeholders
-    chunks = m.GetGridChunks()
     if chunks.Count() > 0 then
         for index = 0 to chunks.Count()-1
             hbox.AddComponent(chunks[index])
@@ -370,9 +375,11 @@ function gsCreateGridChunk(placeholder as object) as dynamic
 end function
 
 function gsGetGridChunks() as object
-    components = []
+    m.focusedItem = invalid
 
+    components = []
     for each placeholder in m.placeholders
+        Application().CheckLoadingModal()
         gridChunk = m.CreateGridChunk(placeholder)
         if gridChunk <> invalid then
             components.push(gridChunk)
