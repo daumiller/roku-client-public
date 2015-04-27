@@ -244,6 +244,7 @@ end function
 
 sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic, screen=invalid as object)
     forceLoad = not toFocus.SpriteIsLoaded()
+    if not forceLoad and toFocus.sprite.GetZ() < 0 then m.SetVisible()
     if not forceLoad and (toFocus.fixed = true or m.scrolltriggerdown >= m.containerHeight) then return
 
     m.screen = screen
