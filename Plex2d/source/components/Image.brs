@@ -78,7 +78,12 @@ function imageDraw() as object
                 if m.orientation = m.ORIENTATION_SQUARE then
                     m.thumbAttr = ["composite", "thumb", "parentThumb", "grandparentThumb", "art"]
                 else if m.orientation = m.ORIENTATION_LANDSCAPE then
-                    m.thumbAttr = ["art", "thumb"]
+                    ' Prefer thumb over art for clips
+                    if m.sourceOrig.type = "clip" then
+                        m.thumbAttr = ["thumb", "art"]
+                    else
+                        m.thumbAttr = ["art", "thumb"]
+                    end if
                 end if
             end if
 
