@@ -913,8 +913,8 @@ function compGetFocusManual(direction as string, focusableComponenents=invalid a
 end function
 
 sub compCalculateShift(toFocus as object, refocus=invalid as dynamic)
+    if toFocus.fixed = true then return
     forceLoad = not toFocus.SpriteIsLoaded()
-    if not forceLoad and toFocus.fixed = true then return
 
     ' allow the component to override the method. e.g. VBox vertical scrolling
     ' * shiftableParent for containers in containers (e.g. users screen: vbox -> hbox -> component)
