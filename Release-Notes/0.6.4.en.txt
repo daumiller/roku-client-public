@@ -1,0 +1,52 @@
+NEW:
+ * Filters and sorting!
+
+FIXES:
+ * Fix user screen focus oddities
+ * Improve preplay loading time
+ * Support showing durations greater than 24 hours
+ * Disable loading modal on startup screen
+ * Resume support for vertical lists: playlists and episodes
+ * Lock screen when video is paused
+ * Fix a startup crash when remote logging is enabled
+ * Fix possible crash lading playlist
+ * Fix crash returning to empty grid
+ * Enable fwd/rev buttons on tv show screen
+ * Fix intermittent invisible action bar
+ * Various UI tweaks
+
+INTERNAL:
+ * Encourage some extra memory cleanup refreshing screens
+ * Fix loading modal for slow loading grids
+ * Prefer thumb before art for clips
+ * Minor tweak to header button positioning
+ * Force a debug startup if remote logging is still enabled
+ * Add support to specify a min/max width in a dropdown
+ * Longer version number (non public builds)
+ * Refactor DropDownButton to support a custom glyph
+ * Makefile updates: include version in output and slack
+ * Hide existing scrollbar when an overlay is created
+ * SortButton component
+ * BoolButton component (SettingsButton inherits)
+ * GlyphButton component
+ * Multi-level dropdowns (flyouts)
+ * Refactor custom dropdown buttons
+ * Refactor composite button
+ * Fix a few issues related to button focus methods
+ * Fix scrollbar positioning
+ * Dynamic placement when dropdown is off screen
+ * Ignore loading invalid grid chunks
+ * Add VBox scrolling support to the grid screen
+ * Log blocking request and response
+ * Close overlays in reverse order when closing all
+ * Support for reverse ordered jump list
+ * Screen DrawLock support
+ * Support to disable resizing of box containers
+ * Add support to specify a min/max width in a dropdown
+ * Better (auto) positioning of multi-level dropdowns
+ * Add support for a border in a DropDown component
+ * Add support for a border in a VBox container
+ * Fix VBox scrollbar spacing for inside focus
+ * Server dropdown should focus inside
+ * Refactor how we locate and refocus components (better precision)
+ * Add support to retain grid title on refresh.
