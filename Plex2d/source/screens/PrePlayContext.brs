@@ -7,7 +7,7 @@ function PreplayContextScreen() as object
 
         ' Methods
         obj.Init = ppcInit
-        obj.ResetInit = clResetInit
+        obj.ResetInit = ppcResetInit
         obj.Show = ppcShow
         obj.OnChildResponse = ppcOnChildResponse
         obj.GetComponents = ppcGetComponents
