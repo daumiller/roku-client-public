@@ -34,6 +34,7 @@ function AppSettings()
         obj.SupportsSurroundSound = settingsSupportsSurroundSound
         obj.SupportsAudioStream = settingsSupportsAudioStream
         obj.GetMaxResolution = settingsGetMaxResolution
+        obj.GetMaxBitrate = settingsGetMaxBitrate
         obj.GetWidth = settingsGetWidth
         obj.GetHeight = settingsGetHeight
 
@@ -683,6 +684,23 @@ function settingsGetMaxResolution(local as boolean) as integer
     else
         return 0
     end if
+end function
+
+function settingsGetMaxBitrate(local as boolean) as integer
+    if local then
+        qualityIndex = m.GetIntPreference("local_quality")
+    else
+        qualityIndex = m.GetIntPreference("remote_quality")
+    end if
+
+    qualities = m.GetGlobal("qualities")
+    for each quality in qualities
+        if quality.index = qualityIndex then
+            return validint(quality.maxBitrate)
+        end if
+    end for
+
+    return 0
 end function
 
 sub settingsSetPrefOverride(key as string, value as dynamic, screenID as integer)

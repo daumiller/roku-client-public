@@ -237,6 +237,13 @@ function mdeCanDirectPlay(media as object, part as object, videoStream as object
         return false
     end if
 
+    maxBitrate = settings.GetMaxBitrate(media.GetServer().IsLocalConnection())
+    bitrate = media.GetInt("bitrate")
+    if bitrate > maxBitrate then
+        Info("MDE: Video bitrate is greater than the allowed max: " + tostr(bitrate) + " > " + tostr(maxBitrate))
+        return false
+    end if
+
     ' TODO(schuyler): Is this a real concern? What should we do?
     if videoStream = invalid then
         Fatal("No video stream")
