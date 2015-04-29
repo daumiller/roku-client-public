@@ -164,9 +164,7 @@ function settingsCreateMenuButton(pref as object) as object
     ' special properties for the menu buttons
     btn.overlay = m
     btn.screen = m.screen
-    btn.options = pref.options
-    btn.prefType = pref.prefType
-    btn.prefDefault = pref.default
+    btn.pref = pref
 
     btn.OnSelected = settingsOnSelected
     btn.OnFocus = settingsOnFocus
@@ -217,15 +215,15 @@ sub settingsOnFocus()
     m.listBox.DestroyComponents()
     m.listBox.lastFocusableItem = invalid
 
-    if m.prefType = "enum" then
-        enumValue = m.GetEnumSettingValue(m.command, m.prefDefault)
+    if m.pref.prefType = "enum" then
+        enumValue = m.GetEnumSettingValue(m.command, m.pref.default)
     end if
 
-    for each option in m.options
-        if m.prefType = "bool" then
+    for each option in m.pref.options
+        if m.pref.prefType = "bool" then
             btn = m.overlay.createPrefButton(option.title, option.key, "", "bool")
             btn.isSelected = m.GetBoolSettingValue(option.key, option.default)
-        else if m.prefType = "enum" then
+        else if m.pref.prefType = "enum" then
             btn = m.overlay.createPrefButton(option.title, m.command, option.value, "enum")
             btn.isSelected = (option.value = enumValue)
         end if
@@ -247,7 +245,7 @@ sub settingsOnFocus()
 end sub
 
 sub settingsOnBlur(toFocus as object)
-    if toFocus.options <> invalid then
+    if toFocus.pref <> invalid then
         m.SetColor(Colors().Text)
         m.draw(true)
     end if
