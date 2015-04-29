@@ -9,6 +9,7 @@ function PlexMediaClass() as object
         obj.IsAccessible = pnmIsAccessible
         obj.IsAvailable= pnmIsAvailable
         obj.GetVideoResolution = pnmGetVideoResolution
+        obj.GetVideoResolutionString = pnmGetVideoResolutionString
         obj.IsSelected = pnmIsSelected
 
         obj.ResolveIndirect = pnmResolveIndirect
@@ -102,6 +103,15 @@ function pnmGetVideoResolution() as integer
     end if
 
     return m.GetInt("height")
+end function
+
+function pnmGetVideoResolutionString() as string
+    videoResolution = m.Get("videoResolution", "")
+    if val(videoResolution) > 0 then
+        return videoResolution + "p"
+    end if
+
+    return ucase(videoResolution)
 end function
 
 function pnmIsSelected() as boolean

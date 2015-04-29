@@ -587,3 +587,15 @@ sub RunGC()
     RunGarbageCollector()
     Verbose("Finished running garbage collector")
 end sub
+
+function BitrateToString(bits as integer) as string
+    speed = cint(bits/1000/100) / 10
+    if speed < 1 then
+        speed = cint(bits/1000)
+        format = "Kbps"
+    else
+        format = "Mbps"
+    end if
+
+    return tostr(speed) + " " + format
+end function

@@ -20,9 +20,9 @@ end function
 ' resolve an indirect. We can do it all async, we can block, or we can allow
 ' both.
 '
-function mdeChooseMedia(item as object) as object
+function mdeChooseMedia(item as object, forceUpdate=false as boolean) as object
     ' If we've already evaluated this item, use our previous choice.
-    if item.mediaChoice <> invalid then return item.mediaChoice
+    if not forceUpdate and item.mediaChoice <> invalid then return item.mediaChoice
 
     ' See if we're missing media/stream details for this item.
     if item.IsLibraryItem() and item.IsVideoItem() and item.mediaItems.Count() > 0 and not item.mediaItems[0].HasStreams() then

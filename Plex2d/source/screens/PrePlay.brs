@@ -217,6 +217,9 @@ function preplayHandleCommand(command as string, item as dynamic) as boolean
         if m.localPrefs = invalid then m.localPrefs = {}
         settings = createSettings(m)
         settings.GetPrefs = preplayGetPrefs
+        settings.GetQualityPrefs = preplayGetQualityPrefs
+        settings.GetAudioStreamPrefs = preplayGetAudioStreamPrefs
+        settings.GetSubtitleStreamPrefs = preplayGetSubtitleStreamPrefs
         settings.storage = m.localPrefs
         settings.Show()
         settings.On("selected", createCallable("UpdatePrefOptions", m))
@@ -614,7 +617,6 @@ function preplayGetPrefs() as object
     ' MDE first.
     item = m.screen.item
     mediaChoice = MediaDecisionEngine().ChooseMedia(item)
-    part = mediaChoice.media.parts[0]
 
     ' Media item selection, if we have more than one.
     if item.mediaItems.Count() > 1 then
@@ -632,96 +634,21 @@ function preplayGetPrefs() as object
         })
     end if
 
-    ' Audio stream selection.
-    streams = part.GetStreamsOfType(PlexStreamClass().TYPE_AUDIO)
-    if streams.Count() > 0 then
-        options = CreateObject("roList")
-        for each stream in streams
-            options.Push({title: stream.GetTitle(), value: stream.Get("id")})
-        next
-
-        if mediaChoice.audioStream <> invalid then
-            selectedId = mediaChoice.audioStream.Get("id")
-        else
-            selectedId = "0"
-        end if
-
-        playback.Push({
-            key: "audio_stream",
-            title: "Audio",
-            default: selectedId,
-            prefType: "enum",
-            options: options
-        })
+    ' Audio Streams
+    audioStreamPrefs = m.GetAudioStreamPrefs(mediaChoice)
+    if audioStreamPrefs <> invalid then
+        playback.Push(audioStreamPrefs)
     end if
 
-    ' Subtitle stream selection.
-    streams = part.GetStreamsOfType(PlexStreamClass().TYPE_SUBTITLE)
-    if streams.Count() > 0 then
-        options = CreateObject("roList")
-        for each stream in streams
-            options.Push({title: stream.GetTitle(), value: stream.Get("id")})
-        next
-
-        if mediaChoice.subtitleStream <> invalid then
-            selectedId = mediaChoice.subtitleStream.Get("id")
-        else
-            selectedId = "0"
-        end if
-
-        playback.Push({
-            key: "subtitle_stream",
-            title: "Subtitles",
-            default: selectedId,
-            prefType: "enum",
-            options: options
-        })
+    ' Subtitle streams
+    subtitleStreamPrefs = m.GetSubtitleStreamPrefs(mediaChoice)
+    if subtitleStreamPrefs <> invalid then
+        playback.Push(subtitleStreamPrefs)
     end if
 
-    ' Quality, capped at the current media's quality.
-    options = CreateObject("roList")
-
-    if item.GetServer().IsLocalConnection() then
-        defaultQuality = settings.GetIntPreference("local_quality")
-    else
-        defaultQuality = settings.GetIntPreference("remote_quality")
-    end if
-
-    height = mediaChoice.media.GetVideoResolution()
-    bitrate = mediaChoice.media.GetInt("bitrate")
-
-    qualities = settings.GetGlobal("qualities")
-    prevQuality = invalid
-    for each quality in qualities
-        if height >= quality.maxHeight and bitrate >= quality.maxBitrate then
-            ' add previous (higher) quality if the media bitrate > pref quality
-            if bitrate > quality.maxBitrate and options.Count() = 0 and prevQuality <> invalid then
-                options.Push({title: prevQuality.title, value: tostr(prevQuality.index), index: prevQuality.index})
-            end if
-            options.Push({title: quality.title, value: tostr(quality.index), index: quality.index})
-        else if options.Count() = 0 then
-            prevQuality = quality
-        end if
-    next
-
-    ' lets add all qualities if nothing matches the video
-    if options.Count() = 0 then
-        for each quality in qualities
-            options.Push({title: quality.title, value: tostr(quality.index), index: quality.index})
-        end for
-    else
-        if defaultQuality > options[0].index then
-            defaultQuality = options[0].index
-        end if
-    end if
-
-    playback.Push({
-        key: "quality",
-        title: "Quality",
-        default: tostr(defaultQuality),
-        prefType: "enum",
-        options: options
-    })
+    ' Quality
+    qualityPrefs = m.GetQualityPrefs(mediaChoice)
+    playback.Push(qualityPrefs)
 
     ' Direct Play
     options = [
@@ -779,50 +706,51 @@ end sub
 sub preplayOnSettingsClosed(overlay as object, backButton as boolean)
     ' If we have any local playback options, evaluate them now.
     if m.localPrefs <> invalid then
-        plexObject = m.item
         spacer = "   "
         redraw = false
 
-        selectedMedia = invalid
-        selectedAudio = invalid
-        selectedSubtitle = invalid
-
-        if m.localPrefs.media <> invalid then
-            AppSettings().SetPrefOverride("local_mediaId", m.localPrefs.media, m.screenID)
-            for each media in plexObject.mediaItems
-                media.selected = (m.localPrefs.media = media.Get("id"))
-                if media.selected then
-                    selectedMedia = media
-                    selectedAudio = selectedMedia.parts[0].GetSelectedStreamOfType(PlexStreamClass().TYPE_AUDIO)
-                    selectedSubtitle = selectedMedia.parts[0].GetSelectedStreamOfType(PlexStreamClass().TYPE_SUBTITLE)
-                end if
-            next
-
-            ' Media selection changed, let's invalidate it.
-            m.item.mediaChoice = invalid
-        end if
-
-        ' Determine the selected media item to update audio and subtitle prefs
-        if selectedMedia = invalid and m.item.mediaChoice <> invalid then
-            selectedMedia = plexObject.mediaItems[0]
-        else if m.item.mediaChoice <> invalid then
+        ' Determine the selected media to update the audio and subtitle pref, and labels
+        ' on screen. The media choice is updated on selection in UpdatePrefOptions.
+        '
+        if m.item.mediaChoice = invalid then
+            selectedMedia = m.item.mediaItems[0]
+        else
             selectedMedia = m.item.mediaChoice.media
         end if
 
+        ' Get our selected audio and subtitle stream based on the selected media item
+        mediaIsSelected = (m.localPrefs.media <> invalid)
+        if mediaIsSelected then
+            selectedAudio = selectedMedia.parts[0].GetSelectedStreamOfType(PlexStreamClass().TYPE_AUDIO)
+            selectedSubtitle = selectedMedia.parts[0].GetSelectedStreamOfType(PlexStreamClass().TYPE_SUBTITLE)
+        else
+            selectedAudio = invalid
+            selectedSubtitle = invalid
+        end if
+
+        ' Override our selected audio stream
         if m.localPrefs.audio_stream <> invalid then
             selectedAudio = selectedMedia.parts[0].SetSelectedStream(PlexStreamClass().TYPE_AUDIO, m.localPrefs.audio_stream, false)
         end if
 
+        ' Override our selected subtitle stream
         if m.localPrefs.subtitle_stream <> invalid then
             selectedSubtitle = selectedMedia.parts[0].SetSelectedStream(PlexStreamClass().TYPE_SUBTITLE, m.localPrefs.subtitle_stream, false)
         end if
 
-        if selectedAudio <> invalid then
-            m.audioLabel.SetText("AUDIO" + spacer + selectedAudio.GetTitle(), true, true)
+        ' Update the audio label if it changed
+        if selectedAudio <> invalid or mediaIsSelected then
+            if selectedAudio <> invalid then
+                audioText = selectedAudio.GetTitle()
+            else
+                audioText = "None"
+            end if
+            m.audioLabel.SetText("AUDIO" + spacer + audioText, true, true)
             redraw = true
         end if
 
-        if selectedSubtitle <> invalid or m.localPrefs.media <> invalid then
+        ' Update the subtitle label if it changed
+        if selectedSubtitle <> invalid or mediaIsSelected then
             if selectedSubtitle <> invalid then
                 subtitleText = selectedSubtitle.GetTitle()
             else
@@ -832,6 +760,7 @@ sub preplayOnSettingsClosed(overlay as object, backButton as boolean)
             redraw = true
         end if
 
+        ' Save the rest of our pref overrides
         if m.localPrefs.quality <> invalid then
             AppSettings().SetPrefOverride("local_quality", m.localPrefs.quality, m.screenID)
             AppSettings().SetPrefOverride("remote_quality", m.localPrefs.quality, m.screenID)
@@ -851,48 +780,39 @@ end sub
 sub preplayUpdatePrefOptions(settings as object, prefKey as string, prefValue=invalid as dynamic)
     ' Update the audio/subtitle options based on the media selection
     if prefKey = "media" and prefValue <> invalid then
+        screen = settings.screen
+
+        ' Update the selected media choice
+        for each media in screen.item.mediaItems
+            media.selected = (media.Get("id") = prefValue)
+        end for
+        AppSettings().SetPrefOverride("local_mediaId", prefValue, screen.screenID)
+        mediaChoice = MediaDecisionEngine().ChooseMedia(m.item, true)
+
         ' Invalidate a few dependent settings
         m.localPrefs.audio_stream = invalid
         m.localPrefs.subtitle_stream = invalid
-        selectedMedia = invalid
+        m.localPrefs.quality = invalid
 
-        for each media in m.item.mediaItems
-            if prefValue = media.Get("id") then
-                selectedMedia = media
-                exit for
-            end if
-        end for
-
-        ' iterate through the prefs reference to update the audio streams, as of now
-        ' we only have one groups to work with.
+        ' Iterate through the dependents and update their options based media selection
         for each pref in settings.prefs[0].settings
-            ' Update available audio options
-            if pref.key = "audio_stream" then
+            if pref.key = "quality" then
+                ' Update the quality options
                 pref.options.Clear()
-                if selectedMedia <> invalid then
-                    streams = selectedMedia.parts[0].GetStreamsOfType(PlexStreamClass().TYPE_AUDIO)
-                    if streams.Count() > 0 then
-                        for each stream in streams
-                            pref.options.Push({title: stream.GetTitle(), value: stream.Get("id")})
-                        next
-                    end if
-                end if
-            end if
-
-            ' Update available subtitle options
-            if pref.key = "subtitle_stream" then
+                prefs = settings.GetQualityPrefs(mediaChoice)
+                pref.Append(prefs)
+            else if pref.key = "audio_stream" then
+                ' Update available audio streams
                 pref.options.Clear()
-                if selectedMedia <> invalid then
-                    streams = selectedMedia.parts[0].GetStreamsOfType(PlexStreamClass().TYPE_SUBTITLE)
-                    if streams.Count() > 0 then
-                        for each stream in streams
-                            pref.options.Push({title: stream.GetTitle(), value: stream.Get("id")})
-                        next
-                    end if
-                end if
+                prefs = settings.GetAudioStreamPrefs(mediaChoice)
+                if prefs <> invalid then pref.Append(prefs)
+            else if pref.key = "subtitle_stream" then
+                ' Update available subtitle streams
+                pref.options.Clear()
+                prefs = settings.GetSubtitleStreamPrefs(mediaChoice)
+                if prefs <> invalid then pref.Append(prefs)
             end if
         end for
-
     end if
 end sub
 
@@ -966,3 +886,107 @@ sub preplayInitRefreshCache()
         end if
     end for
 end sub
+
+function preplayGetQualityPrefs(mediaChoice) as object
+    ' Quality, capped at the current media's quality.
+    options = CreateObject("roList")
+    settings = AppSettings()
+
+    if mediaChoice.media.GetServer().IsLocalConnection()
+        defaultQuality = settings.GetIntPreference("local_quality")
+    else
+        defaultQuality = settings.GetIntPreference("remote_quality")
+    end if
+
+    height = mediaChoice.media.GetVideoResolution()
+    bitrate = mediaChoice.media.GetInt("bitrate")
+    resolution = mediaChoice.media.GetVideoResolutionString()
+
+    qualities = settings.GetGlobal("qualities")
+    prevQuality = invalid
+    for each quality in qualities
+        if height >= firstOf(quality.height, quality.maxHeight) and bitrate >= quality.maxBitrate then
+            ' add previous (higher) quality if the media bitrate > pref quality
+            if bitrate > quality.maxBitrate and options.Count() = 0 and prevQuality <> invalid then
+                title = JoinArray([BitrateToString(bitrate * 1000), resolution, "(Original)"], " ")
+                options.Push({title: title, value: tostr(prevQuality.index), index: prevQuality.index})
+            end if
+            options.Push({title: quality.title, value: tostr(quality.index), index: quality.index})
+        else if options.Count() = 0 then
+            prevQuality = quality
+        end if
+    next
+
+    ' lets add all qualities if nothing matches the video
+    if options.Count() = 0 then
+        for each quality in qualities
+            options.Push({title: quality.title, value: tostr(quality.index), index: quality.index})
+        end for
+    else
+        if defaultQuality > options[0].index then
+            defaultQuality = options[0].index
+        end if
+    end if
+
+    return {
+        key: "quality",
+        title: "Quality",
+        default: tostr(defaultQuality),
+        prefType: "enum",
+        options: options
+    }
+end function
+
+function preplayGetAudioStreamPrefs(mediaChoice as object)
+    part = mediaChoice.media.parts[0]
+    streams = part.GetStreamsOfType(PlexStreamClass().TYPE_AUDIO)
+    if streams.Count() > 0 then
+        options = CreateObject("roList")
+        for each stream in streams
+            options.Push({title: stream.GetTitle(), value: stream.Get("id")})
+        next
+
+        if mediaChoice.audioStream <> invalid then
+            selectedId = mediaChoice.audioStream.Get("id")
+        else
+            selectedId = "0"
+        end if
+
+        return {
+            key: "audio_stream",
+            title: "Audio",
+            default: selectedId,
+            prefType: "enum",
+            options: options
+        }
+    end if
+
+    return invalid
+end function
+
+function preplayGetSubtitleStreamPrefs(mediaChoice as object) as dynamic
+    part = mediaChoice.media.parts[0]
+    streams = part.GetStreamsOfType(PlexStreamClass().TYPE_SUBTITLE)
+    if streams.Count() > 0 then
+        options = CreateObject("roList")
+        for each stream in streams
+            options.Push({title: stream.GetTitle(), value: stream.Get("id")})
+        next
+
+        if mediaChoice.subtitleStream <> invalid then
+            selectedId = mediaChoice.subtitleStream.Get("id")
+        else
+            selectedId = "0"
+        end if
+
+        return {
+            key: "subtitle_stream",
+            title: "Subtitles",
+            default: selectedId,
+            prefType: "enum",
+            options: options
+        }
+    end if
+
+    return invalid
+end function
