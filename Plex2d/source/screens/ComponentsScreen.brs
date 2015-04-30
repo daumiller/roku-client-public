@@ -530,6 +530,8 @@ function compHandleCommand(command as string, item as dynamic) as boolean
 
     if command = "go_home" then
         Application().GoHome()
+    else if command = "show_grid" then
+        Application().PushScreen(createGridScreen(item.plexObject))
     else if command = "show_dropdown" then
         item.Show()
     else if command = "show_item" and item.plexObject <> invalid then

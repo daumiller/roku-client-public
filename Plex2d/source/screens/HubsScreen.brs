@@ -51,8 +51,6 @@ function hubsHandleCommand(command as string, item as dynamic) as boolean
 
     if command = "show_section" then
         Application().PushScreen(createSectionsScreen(item.plexObject))
-    else if command = "show_grid" then
-        Application().PushScreen(createGridScreen(item.plexObject))
     else if not ApplyFunc(ComponentsScreen().HandleCommand, m, [command, item])
         handled = false
     end if

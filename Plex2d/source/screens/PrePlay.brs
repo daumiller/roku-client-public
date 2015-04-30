@@ -222,8 +222,6 @@ function preplayHandleCommand(command as string, item as dynamic) as boolean
         settings.On("selected", createCallable("UpdatePrefOptions", m))
         settings.On("close", createCallable("OnSettingsClosed", m))
         settings.AddListener(m, "OnFailedFocus", CreateCallable("OnFailedFocus", settings))
-    else if command = "show_grid" then
-        Application().PushScreen(createGridScreen(item.plexObject))
     else if command = "go_to_show" then
         Application().PushScreen(createPreplayContextScreen(m.item, m.item.Get("grandparentKey")))
     else if command = "go_to_season" then
