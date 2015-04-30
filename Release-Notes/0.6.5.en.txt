@@ -1,0 +1,3 @@
+FIXES:
+ * Fixes similar artist pivot
+ * Fix resuming On Deck episode from shows screen
