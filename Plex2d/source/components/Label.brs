@@ -174,6 +174,35 @@ function labelWrapText(includeAllLines=false as boolean) as object
 
     ' Split the text into paragraphs (performance boost)
     paragraphs = CreateObject("roRegex", "\n", "").Split(m.text)
+
+    ' Split long paragraphs to increase performance.
+    newParagraphs = CreateObject("roList")
+    charLimit = 5000
+    for each paragraph in paragraphs
+        if paragraph.len() <= charLimit then
+            newParagraphs.Push(paragraph)
+        else
+            index = charLimit
+            text = paragraph
+            while text.len() > charLimit
+                break = text.Mid(index, 1)
+                if break = " " or index >= text.Len() then
+                    newParagraphs.Push(text.left(index))
+                    text = text.right(text.Len() - index).Trim()
+                    index = charLimit
+                else
+                    index = index + 1
+                end if
+            end while
+
+            ' Push the final text
+            if text.Len() > 0 then
+                newParagraphs.Push(text)
+            end if
+        end if
+    end for
+    paragraphs = newParagraphs
+
     for each paragraph in paragraphs
         startPos = 0
 
