@@ -431,10 +431,12 @@ sub vboxShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=f
     ' Normally we would just set onScreenComponents=partShift, however we are executing
     ' this in the containers context, so we must make one more pass to get a list of all
     ' the on screen components after the shift.
-    ' This logic has been optimized instead of using the generic methods
-    ' We can safely ignore this step if an overlay is active.
+    ' This logic has been optimized instead of using the generic methods. We can safely
+    ' ignore this step if an overlay is active.
+    '
     if m.screen.overlayScreen.Count() = 0 then
         onScreenReplacment = CreateObject("roList")
+        ' Push any on screen components not in our list
         for each component in m.screen.onScreenComponents
             exclude = false
             for each comp in partShift
@@ -445,12 +447,16 @@ sub vboxShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=f
             end for
 
             if not exclude then
-               component.GetFocusableItems(onScreenReplacment)
+                onScreenReplacment.Push(component)
             end if
         next
+
+        ' Add our components to the on screen components
         for each component in partShift
             component.GetFocusableItems(onScreenReplacment)
         end for
+
+        ' Replace the on screen components with out new list
         m.screen.onScreenComponents = onScreenReplacment
     end if
 
