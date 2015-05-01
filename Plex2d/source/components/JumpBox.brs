@@ -129,6 +129,6 @@ sub jbbOnFocus()
     end for
 end sub
 
-function jbbGetFocusManual() as object
+function jbbGetFocusManual(direction as string, screen as object) as dynamic
     return m.parent.focusedItem
 end function

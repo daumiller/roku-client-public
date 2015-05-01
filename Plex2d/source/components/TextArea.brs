@@ -170,7 +170,7 @@ sub textareaSetVisible(visible=true as boolean)
     end while
 end sub
 
-function textareaGetFocusManual() as dynamic
+function textareaGetFocusManual(direction as string, screen as object) as dynamic
     return m.parent.firstFocusItem
 end function
 

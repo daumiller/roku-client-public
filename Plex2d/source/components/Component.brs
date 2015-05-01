@@ -60,6 +60,7 @@ function ComponentClass() as object
         obj.Equals = compEquals
         obj.IsPendingTexture = compIsPendingTexture
         obj.SetOrientation = compSetOrientation
+        obj.GetRootParent = compGetRootParent
 
         ' no-op methods
         obj.OnBlur = function(arg=invalid) : Verbose("OnBlur:no-op") : end function
@@ -512,3 +513,13 @@ end function
 sub compDisableNonParentExit(direction as string, disabled=true as boolean)
     m.disabledNonParentExit[direction] = disabled
 end sub
+
+function compGetRootParent() as dynamic
+    parent = m.parent
+    while parent <> invalid
+        if parent.parent = invalid then exit while
+        parent = parent.parent
+    end while
+
+    return parent
+end function

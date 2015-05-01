@@ -866,17 +866,30 @@ function compGetFocusManual(direction as string, focusableComponenents=invalid a
                     ' Debug("navOffset=" + tostr(navOffset) + " orthOffset=" + tostr(orthOffset) + " dotDistance=" + tostr(dotDistance) + " overlap=" + tostr(overlap) + " distance=" + tostr(distance))
 
                     if best.item = invalid or distance < best.distance then
-                        ' Debug("Found a new best item: " + tostr(candidate))
-                        if best.item <> invalid then
-                            m.screen.DrawDebugRect(best.x, best.y, 15, 15, &h0000ffff, true)
+                        ' If this is a focus container, we need to request the item it wants to focus and
+                        ' verify it's valid, otherwise we'll ignore it
+                        ' TODO(rob): convert the older style GetFocusManual methods (jumpbox, textarea)
+                        if candidate.isFocusContainer = true then
+                            candidate = candidate.GetFocusManual(direction, m)
+                            if candidate <> invalid then
+                                candPt.x = candidate.x
+                                candPt.y = candidate.y
+                            end if
                         end if
-                        best.navOffset = navOffset
-                        best.orthOffset = orthOffset
-                        best.distance = distance
-                        best.x = candPt.x
-                        best.y = candPt.y
-                        best.item = candidate
-                        m.screen.DrawDebugRect(candPt.x, candPt.y, 15, 15, &h00ff00ff, true)
+
+                        if candidate <> invalid then
+                            ' Debug("Found a new best item: " + tostr(candidate))
+                            if best.item <> invalid then
+                                m.screen.DrawDebugRect(best.x, best.y, 15, 15, &h0000ffff, true)
+                            end if
+                            best.navOffset = navOffset
+                            best.orthOffset = orthOffset
+                            best.distance = distance
+                            best.x = candPt.x
+                            best.y = candPt.y
+                            best.item = candidate
+                            m.screen.DrawDebugRect(candPt.x, candPt.y, 15, 15, &h00ff00ff, true)
+                        end if
                     else
                         ' Debug("Candidate " + tostr(candidate) + " turned out to be worse than " + tostr(best.item))
                         m.screen.DrawDebugRect(candPt.x, candPt.y, 15, 15, &h0000ffff, true)
@@ -894,8 +907,9 @@ function compGetFocusManual(direction as string, focusableComponenents=invalid a
     ' this handles focusing on a desired item within the parent. e.g. jumpBox: focus
     ' on the current character in use, instead of the closest character in relation
     ' to the last focused item.
+    ' TODO(rob): convert the older style GetFocusManual methods (jumpbox, textarea)
     if best.item <> invalid and type(best.item.GetFocusManual) = "roFunction" then
-        candidate = best.item.GetFocusManual()
+        candidate = best.item.GetFocusManual(direction, m)
         if candidate <> invalid then
             best.item = candidate
             best.x = best.item.x
@@ -1306,6 +1320,12 @@ end sub
 
 sub compOnFocusIn(toFocus=invalid as dynamic, lastFocus=invalid as dynamic)
     if toFocus = invalid then return
+
+    ' Update the root parent with a reference to the focused item
+    rootParent = toFocus.GetRootParent()
+    if rootParent <> invalid then
+        rootParent.focusedItem = toFocus
+    end if
 
     ' let the component know it's focus state
     toFocus.OnFocus()

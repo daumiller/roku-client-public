@@ -18,6 +18,10 @@ function BoxClass() as object
         obj.SetVisibility = boxSetVisibility
         obj.SetVisible = boxSetVisible
 
+        ' Methods to override manual focus
+        obj.SetFocusManual = boxSetFocusManual
+        obj.GetFocusManual = boxGetFocusManual
+
         m.BoxClass = obj
     end if
 
@@ -154,4 +158,30 @@ sub boxSetVisible(visible=true as boolean)
     for each component in m.components
         component.SetVisible(visible)
     end for
+end sub
+
+function boxGetFocusManual(direction as string, screen as object) as dynamic
+    toFocus = firstOf(m.manualFocusItems[direction], m.focusedItem)
+    if toFocus <> invalid then
+        if IsFunction(toFocus.GetFocusManual) then
+            return toFocus.GetFocusManual(direction, screen)
+        else if toFocus.focusable = true then
+            return toFocus
+        end if
+        return invalid
+    end if
+
+    return ApplyFunc(ComponentsScreen().GetFocusManual, screen, [direction, m.components])
+end function
+
+sub boxSetFocusManual(component=invalid as dynamic, direction=invalid as dynamic)
+    m.SetFocusable(invalid)
+    m.isFocusContainer = true
+
+    if m.manualFocusItems = invalid then m.manualFocusItems = {}
+    if direction <> invalid then
+        m.manualFocusItems[direction] = component
+    else
+        m.focusedItem = component
+    end if
 end sub
