@@ -298,7 +298,8 @@ sub gsGetComponents()
     m.focusedItem = focusedItem
 
     ' *** HEADER *** '
-    m.components.Push(createHeader(m))
+    header = createHeader(m)
+    m.components.Push(header)
 
     ' *** Grid Header *** '
 
@@ -323,19 +324,21 @@ sub gsGetComponents()
     ' *** Filter box *** '
     m.filterBox = createFilterBox(FontRegistry().NORMAL, m.item, m, 70)
     m.filterBox.SetPosition(1230, m.yOffset - m.spacing - FontRegistry().NORMAL.getOneLineHeight())
+    m.filterBox.SetFocusManual(invalid)
     m.components.Push(m.filterBox)
 
     ' *** Grid *** '
-    hbox = createHBox(false, false, false, m.spacing, false)
-    hbox.SetFrame(m.xPadding, m.yOffset, 0, m.height)
+    gridBox = createHBox(false, false, false, m.spacing, false)
+    gridBox.SetFrame(m.xPadding, m.yOffset, 0, m.height)
+    gridBox.SetFocusManual(invalid)
 
     ' Grid Chunks / Placeholders
     if chunks.Count() > 0 then
         for index = 0 to chunks.Count()-1
-            hbox.AddComponent(chunks[index])
+            gridBox.AddComponent(chunks[index])
         end for
     end if
-    m.components.Push(hbox)
+    m.components.Push(gridBox)
 
     ' TODO(rob) determine how many chunks to initially load (xml data)
     if m.chunkLoadLimit = invalid then
@@ -345,12 +348,39 @@ sub gsGetComponents()
     end if
 
     ' *** Jump Box *** '
-    m.jumpBox = createJumpBox(m.jumpItems, FontRegistry().MEDIUM, hbox.y + m.height, m.spacing)
+    m.jumpBox = createJumpBox(m.jumpItems, FontRegistry().MEDIUM, gridBox.y + m.height, m.spacing)
     m.components.Push(m.jumpBox)
 
     ' set the placement of the description box (manualComponent)
     m.DescriptionBox = createDescriptionBox(m)
     m.DescriptionBox.setFrame(m.xPadding, 630, m.displayWidth - m.xPadding, m.displayHeight - 630)
+
+    ' *** Focus layer helpers *** '
+
+    ' Focus layer between the header and filter box. This will ensure we always go
+    ' to the filterbox when pressing down from the headers
+    '
+    focusBox = createHBox(true, true, true, 0, false)
+    focusBox.SetFrame(0, computeRect(header).down, m.displayWidth, 1)
+    focusBox.SetFocusManual(m.filterBox, "down")
+    m.components.Push(focusBox)
+
+    ' Focus layer between the filter box and grid. We always want to retain where
+    ' we came from in both directions (up/down)
+    '
+    focusBox = createHBox(true, true, true, 0, false)
+    focusBox.SetFrame(0, gridBox.y - 1, m.displayWidth, 1)
+    focusBox.SetFocusManual(m.filterBox, "up")
+    focusBox.SetFocusManual(gridBox, "down")
+    m.components.Push(focusBox)
+
+    ' Focus layer between the grid and the jump box. This will ensure we always return
+    ' to the grid item we came from. The jumpbox has its own focus logic (for now).
+    '
+    focusBox = createHBox(true, true, true, 0, false)
+    focusBox.SetFrame(0, computeRect(gridBox).down + 1, m.displayWidth, 1)
+    focusBox.SetFocusManual(gridBox, "up")
+    m.components.Push(focusBox)
 end sub
 
 function gsCreateGridChunk(placeholder as object) as dynamic
