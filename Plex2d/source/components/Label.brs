@@ -166,50 +166,50 @@ end sub
 function labelWrapText(includeAllLines=false as boolean) as object
     contentArea = m.GetContentArea()
     lines = []
-    lineNum = 0
     if includeAllLines then
         maxLines = invalid
     else
         maxLines = int(contentArea.height / m.font.GetOneLineHeight())
     end if
 
-    startPos = 0
+    ' Split the text into paragraphs (performance boost)
+    paragraphs = CreateObject("roRegex", "\n", "").Split(m.text)
+    for each paragraph in paragraphs
+        startPos = 0
 
-    while (maxLines <> invalid and lines.Count() < maxLines and startPos < m.text.len())  or (maxLines = invalid and startPos < m.text.len())
-        ' If this is the last allowed line, then just truncate the string
-        if maxLines <> invalid and lines.Count() = maxLines-1 then
-            lines.Push(m.TruncateText(m.text.Mid(startPos)))
-        else
-            ' Try to break on spaces and newlines. If the first whole
-            ' word won't fit, then force a break mid-word.
-            newline = CreateObject("roRegex", "\n", "")
-
-            breakPos = startPos
-            for index = startPos+1 to m.text.len()
-                text = m.text.mid(index, 1)
-                if newline.IsMatch(text) then
-                    breakPos = index
-                    exit for
-                else if text = " " or index >= m.text.len() then
-                    if m.font.GetOneLineWidth(m.text.mid(startPos, index - startPos), 1280) > contentArea.width then
-                        exit for
-                    else
-                        breakPos = index
-                    end if
-                end if
-            end for
-
-            ' If we found a word break that fits, use it.
-            if breakPos <> startPos then
-                lines.Push(m.text.mid(startPos, breakPos - startPos))
-                startPos = breakPos + 1
+        while paragraph.len() > 0
+            ' If this is the last allowed line, then just truncate the string
+            if maxLines <> invalid and lines.Count() = maxLines-1 then
+                lines.Push(m.TruncateText(paragraph.Mid(startPos)))
+                exit while
             else
-                breakPos = m.MaxLineLength(m.text.mid(startPos))
-                lines.Push(m.text.mid(startPos, breakPos - startPos))
-                startPos = breakPos
+                ' Try to break on spaces. If the first whole word won't fit,
+                ' then force a break mid-word.
+
+                breakPos = startPos
+                for index = startPos+1 to paragraph.len()
+                    text = paragraph.Mid(index, 1)
+                    if text = " " or index >= paragraph.Len() then
+                        if m.font.GetOneLineWidth(paragraph.Left(index - startPos), 1280) > contentArea.width then
+                            exit for
+                        else
+                            breakPos = index
+                        end if
+                    end if
+                end for
+
+                ' Exit loop if we didn't find a break point
+                if breakPos = startPos then exit while
+
+                ' If we found a word break that fits, use it.
+                lines.Push(paragraph.Left(breakPos))
+                paragraph = paragraph.Right(paragraph.Len() - breakPos).Trim()
+                startPos = 0
             end if
-        end if
-    end while
+        end while
+
+        if maxLines <> invalid and lines.Count() >= maxLines then exit for
+    end for
 
     return lines
 end function
