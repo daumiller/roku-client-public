@@ -222,13 +222,13 @@ sub albumGetComponents()
     ' screen. We have arbitrarily picked 50px. e.g. x=50, w=1230, so we'll assume the same
     ' for y and height, e.g. y=50, h=670.
 
-    trackListY = header.GetPreferredHeight() + CompositorScreen().focusPixels
-    trackListH = AppSettings().GetHeight() - trackListY
-    m.trackList = createVBox(false, false, false, 0)
-    m.trackList.SetFrame(xOffset + padding, trackListY, trackPrefs.width + m.trackActions.GetPreferredWidth(), trackListH - padding)
-    m.trackList.SetScrollable(trackListH / 2, true, true, invalid)
-    m.trackList.stopShiftIfInView = true
-    m.trackList.scrollOverflow = true
+    itemListY = header.GetPreferredHeight() + CompositorScreen().focusPixels
+    itemListH = AppSettings().GetHeight() - itemListY
+    m.itemList = createVBox(false, false, false, 0)
+    m.itemList.SetFrame(xOffset + padding, itemListY, trackPrefs.width + m.trackActions.GetPreferredWidth(), itemListH - padding)
+    m.itemList.SetScrollable(itemListH / 2, true, true, invalid)
+    m.itemList.stopShiftIfInView = true
+    m.itemList.scrollOverflow = true
 
     ' *** Tracks *** '
     trackCount = m.children.Count()
@@ -242,14 +242,18 @@ sub albumGetComponents()
         track.plexObject = item
         track.trackIndex = index
         track.SetFocusable("play")
-        m.trackList.AddComponent(track)
+        m.itemList.AddComponent(track)
         if m.focusedItem = invalid then m.focusedItem = track
+
+        if index = 0 then
+            m.itemList.SetFocusManual(track)
+        end if
 
         if index < trackCount - 1 then
             track.AddSeparator(sepRegion)
         end if
     end for
-    m.components.Push(m.trackList)
+    m.components.Push(m.itemList)
 
     ' *** Track actions *** '
     actions = createObject("roList")
@@ -485,7 +489,7 @@ function albumGetTrackComponent(plexObject as dynamic) as dynamic
     if m.item.Get("ratingKey") <> plexObject.Get("parentRatingKey") then return invalid
 
     ' locate the component by the plexObect and return
-    for each track in m.trackList.components
+    for each track in m.itemList.components
         if track.plexObject <> invalid and plexObject.Get("key") = track.plexObject.Get("key") then
             return track
         end if
@@ -508,7 +512,7 @@ sub albumToggleSummary()
     ' toggle track list
     visible = m.summaryVisible = false
     m.trackBG.SetVisible(visible)
-    for each component in m.trackList.components
+    for each component in m.itemList.components
         component.ToggleFocusable(visible)
         if component.IsOnScreen() then component.SetVisible(visible)
     end for

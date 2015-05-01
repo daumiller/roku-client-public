@@ -114,6 +114,10 @@ sub seasonGetComponents()
         m.itemList.AddComponent(track)
         if m.focusedItem = invalid then m.focusedItem = track
 
+        if index = 0 then
+            m.itemList.SetFocusManual(track)
+        end if
+
         if index < trackCount - 1 then
             track.AddSeparator(sepRegion)
         end if
