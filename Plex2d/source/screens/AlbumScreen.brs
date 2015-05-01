@@ -150,6 +150,7 @@ sub albumGetComponents()
     ' *** Buttons *** '
     vbButtons = createVBox(false, false, false, childSpacing)
     vbButtons.SetFrame(xOffset, yOffset, 100, 720 - yOffset)
+    vbButtons.SetFocusManual(invalid)
     vbButtons.ignoreFirstLast = true
     for each comp in m.GetButtons()
         vbButtons.AddComponent(comp)
@@ -295,6 +296,14 @@ sub albumGetComponents()
     descBox = createStaticDescriptionBox(title, m.item.GetDuration())
     descBox.setFrame(50, 630, 1280-50, 100)
     m.components.Push(descBox)
+
+    ' Focus layer between album buttons and anything to the right. This will ensure we
+    ' always return to the button we came from, when returning from the right.
+    '
+    focusBox = createHBox(true, true, true, 0, false)
+    focusBox.SetFrame(computeRect(vbButtons).right + 1, 0, 1, 720)
+    focusBox.SetFocusManual(vbButtons, "left")
+    m.components.Push(focusBox)
 end sub
 
 sub albumOnChildResponse(request as object, response as object, context as object)
