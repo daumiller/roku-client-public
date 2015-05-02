@@ -338,14 +338,15 @@ sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic, screen=inv
 end sub
 
 sub vboxShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=false as boolean)
-    Debug("shift vbox by: " + tostr(shift.x) + "," + tostr(shift.y))
+    ' Ignore any shift, but continue to verify everything is loaded (forceLoad)
+    ignoreShift = (shift.y = 0 and forceLoad)
 
     ' Disable animation for forground/background focus methods, key repeats,
     ' on refocus, or if the shift is greater than the vbox height. This fixes
     ' any possible memory issue, unnecessary scrolling animation, and improves
     ' performance.
     '
-    enableAnimation = (m.scrollAnimate = true)
+    enableAnimation = (m.scrollAnimate = true and not forceLoad)
     if enableAnimation then
         ' This ensures we don't allow animation for foreground or background
         ' focus, otherwise it will flicker. We will have to modify these focus
@@ -410,54 +411,60 @@ sub vboxShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=f
     end for
     m.screen.LazyLoadExec(partShift)
 
-    ' Animation still needs some logic/2d code to make it work with any
-    ' scrollable vbox, but this does work for the users selection screen.
-    if enableAnimation then
-        AnimateShift(shift, partShift, m.screen.screen)
+    if ignoreShift then
+        m.screen.LazyLoadExec([shift.toFocus])
     else
-        for each component in partShift
-            component.ShiftPosition(shift.x, shift.y, true)
+        Debug("shift vbox by: " + tostr(shift.x) + "," + tostr(shift.y))
+
+        ' Animation still needs some logic/2d code to make it work with any
+        ' scrollable vbox, but this does work for the users selection screen.
+        if enableAnimation then
+            AnimateShift(shift, partShift, m.screen.screen)
+        else
+            for each component in partShift
+                component.ShiftPosition(shift.x, shift.y, true)
+            end for
+        end if
+
+        ' shift all the off screen components (ignore shifting the sprite)
+        for each comp in fullShift
+            comp.ShiftPosition(shift.x, shift.y, false)
         end for
-    end if
 
-    ' shift all the off screen components (ignore shifting the sprite)
-    for each comp in fullShift
-        comp.ShiftPosition(shift.x, shift.y, false)
-    end for
+        ' Set the visibility after shifting (special case for vbox)
+        m.SetVisible()
 
-    ' Set the visibility after shifting (special case for vbox)
-    m.SetVisible()
+        ' Normally we would just set onScreenComponents=partShift, however we are executing
+        ' this in the containers context, so we must make one more pass to get a list of all
+        ' the on screen components after the shift.
+        ' This logic has been optimized instead of using the generic methods. We can safely
+        ' ignore this step if an overlay is active.
+        '
+        if m.screen.overlayScreen.Count() = 0 then
+            onScreenReplacment = CreateObject("roList")
+            ' Push any on screen components not in our list
+            for each component in m.screen.onScreenComponents
+                exclude = false
+                for each comp in partShift
+                    if component.Equals(comp) then
+                        exclude = true
+                        exit for
+                    end if
+                end for
 
-    ' Normally we would just set onScreenComponents=partShift, however we are executing
-    ' this in the containers context, so we must make one more pass to get a list of all
-    ' the on screen components after the shift.
-    ' This logic has been optimized instead of using the generic methods. We can safely
-    ' ignore this step if an overlay is active.
-    '
-    if m.screen.overlayScreen.Count() = 0 then
-        onScreenReplacment = CreateObject("roList")
-        ' Push any on screen components not in our list
-        for each component in m.screen.onScreenComponents
-            exclude = false
-            for each comp in partShift
-                if component.Equals(comp) then
-                    exclude = true
-                    exit for
+                if not exclude then
+                    onScreenReplacment.Push(component)
                 end if
+            next
+
+            ' Add our components to the on screen components
+            for each component in partShift
+                component.GetFocusableItems(onScreenReplacment)
             end for
 
-            if not exclude then
-                onScreenReplacment.Push(component)
-            end if
-        next
-
-        ' Add our components to the on screen components
-        for each component in partShift
-            component.GetFocusableItems(onScreenReplacment)
-        end for
-
-        ' Replace the on screen components with out new list
-        m.screen.onScreenComponents = onScreenReplacment
+            ' Replace the on screen components with out new list
+            m.screen.onScreenComponents = onScreenReplacment
+        end if
     end if
 
     ' lazyload off screen components within our range. Remember we need to execute the
@@ -467,7 +474,7 @@ sub vboxShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=f
         m.screen.lazyLoadTimer.active = true
         m.screen.lazyLoadTimer.components = lazyLoad
         Application().AddTimer(m.screen.lazyLoadTimer, createCallable("LazyLoadOnTimer", m.screen))
-        m.screen.lazyLoadTimer.mark()
+        m.screen.lazyLoadTimer.Mark()
     else
         m.screen.lazyLoadTimer.active = false
         m.screen.lazyLoadTimer.components = invalid

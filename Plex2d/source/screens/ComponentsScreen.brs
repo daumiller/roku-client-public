@@ -930,10 +930,11 @@ sub compCalculateShift(toFocus as object, refocus=invalid as dynamic)
     ' TODO(rob) handle vertical shifting. revisit safeLeft/safeRight - we can't
     ' just assume these arbitary numbers are right.
     shift = {
-        x: 0
-        y: 0
-        safeRight: 1230
-        safeLeft: 50
+        x: 0,
+        y: 0,
+        safeRight: 1230,
+        safeLeft: 50,
+        toFocus: toFocus
     }
 
     ' Improve our caculation time. We can safely ignore the parent checks if the
@@ -1017,6 +1018,9 @@ sub compCalculateShift(toFocus as object, refocus=invalid as dynamic)
 end sub
 
 sub compShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=false as boolean)
+    ' Ignore any shift, but continue to verify everything is loaded (forceLoad)
+    ignoreShift = (shift.x = 0 and forceLoad)
+
     ' disable any lazyLoad timer
     ' TODO(schuyler): I added this check to avoid a crash, but it just meant we
     ' crashed somewhere else. We'll need to figure this out.
@@ -1065,10 +1069,6 @@ sub compShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=f
         return
     end if
 
-    ' TODO(rob) the logic below has only been testing shifting the x axis.
-    Debug("shift components by: " + tostr(shift.x) + "," + tostr(shift.y))
-    perfTimer().mark()
-
     ' partShift: on screen or will be after shift (animate/scroll, partial shifting)
     ' fullShift: off screen before/after shifting (no animation, shift in full)
     partShift = CreateObject("roList")
@@ -1077,42 +1077,45 @@ sub compShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=f
     for each component in m.components
         component.GetShiftableItems(partShift, fullShift, lazyLoad, shift.x, shift.y)
     next
-    perfTimer().Log("Determined shiftable items: " + "onscreen=" + tostr(partShift.count()) + ", offScreen=" + tostr(fullShift.count()))
+    Debug("Determined shiftable items: " + "onscreen=" + tostr(partShift.count()) + ", offScreen=" + tostr(fullShift.count()))
 
     ' set the onScreen components (helper for the manual Focus)
     m.onScreenComponents = partShift
-
-    ' verify we are not shifting the components to far (first or last component). This
-    ' will modify shift.x based on the first or last component viewable on screen. It
-    ' should be quick to iterate partShift (on screen components after shifting).
-    skipIgnore = (m.focusedItem.parent <> invalid and m.focusedItem.parent.ignoreFirstLast = true)
-    shift.x = m.CalculateFirstOrLast(partShift, shift, skipIgnore)
-
-    ' return if we calculated zero shift
-    if not forceLoad and shift.x = 0 and shift.y = 0 then return
 
     ' lazy-load any components that will be on-screen after we shift
     ' and cancel any pending texture requests
     TextureManager().CancelAll(false)
     m.LazyLoadExec(partShift)
 
-    if refocus = invalid then
-        AnimateShift(shift, partShift, m.screen)
+    if ignoreShift then
+        m.LazyLoadExec([shift.toFocus])
     else
-        for each component in partShift
-            component.ShiftPosition(shift.x, shift.y, true)
+        Debug("shift components by: " + tostr(shift.x) + "," + tostr(shift.y))
+
+        ' verify we are not shifting the components to far (first or last component). This
+        ' will modify shift.x based on the first or last component viewable on screen. It
+        ' should be quick to iterate partShift (on screen components after shifting).
+        ' return if we calculated zero shift
+        skipIgnore = (m.focusedItem.parent <> invalid and m.focusedItem.parent.ignoreFirstLast = true)
+        shift.x = m.CalculateFirstOrLast(partShift, shift, skipIgnore)
+        if shift.x = 0 and shift.y = 0 then return
+
+        if refocus = invalid then
+            AnimateShift(shift, partShift, m.screen)
+        else
+            for each component in partShift
+                component.ShiftPosition(shift.x, shift.y, true)
+            end for
+        end if
+
+        for each comp in fullShift
+            comp.ShiftPosition(shift.x, shift.y, false)
         end for
-    end if
-    perfTimer().Log("Shifted ON screen items, expect *high* ms  (partShift)")
 
-    for each comp in fullShift
-        comp.ShiftPosition(shift.x, shift.y, false)
-    end for
-    perfTimer().Log("Shifted OFF screen items (fullShift)")
-
-    ' draw the focus before we lazy load
-    if m.DrawFocusOnRelease <> true then
-        m.screen.DrawFocus(m.focusedItem, true)
+        ' draw the focus before we lazy load
+        if m.DrawFocusOnRelease <> true then
+            m.screen.DrawFocus(m.focusedItem, true)
+        end if
     end if
 
     ' lazy-load any components off screen, but within our range (ll_triggerX)
@@ -1128,7 +1131,7 @@ sub compShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=f
                 lazyLoad.components.Push(candidate)
             end if
         end for
-        perfTimer().Log("Determined lazy load components (off screen): total=" + tostr(lazyLoad.components.count()))
+        Debug("Determined lazy load components (off screen): total=" + tostr(lazyLoad.components.count()))
 
         if lazyLoad.components.count() > 0 then
             m.lazyLoadTimer.active = true
