@@ -174,9 +174,10 @@ function boxGetFocusManual(direction as string, screen as object) as dynamic
     return ApplyFunc(ComponentsScreen().GetFocusManual, screen, [direction, m.components])
 end function
 
-sub boxSetFocusManual(component=invalid as dynamic, direction=invalid as dynamic)
+sub boxSetFocusManual(component=invalid as dynamic, direction=invalid as dynamic, updateFocusedItem=true as boolean)
     m.SetFocusable(invalid)
     m.isFocusContainer = true
+    m.updateFocusedItem = updateFocusedItem
 
     if m.manualFocusItems = invalid then m.manualFocusItems = {}
     if direction <> invalid then

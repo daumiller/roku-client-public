@@ -380,6 +380,7 @@ sub gsGetComponents()
     focusBox = createHBox(true, true, true, 0, false)
     focusBox.SetFrame(0, computeRect(gridBox).down + 1, m.displayWidth, 1)
     focusBox.SetFocusManual(gridBox, "up")
+    focusBox.SetFocusManual(m.jumpbox, "down")
     m.components.Push(focusBox)
 end sub
 

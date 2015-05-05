@@ -1323,7 +1323,7 @@ sub compOnFocusIn(toFocus=invalid as dynamic, lastFocus=invalid as dynamic)
 
     ' Update the root parent with a reference to the focused item
     rootParent = toFocus.GetRootParent()
-    if rootParent <> invalid then
+    if rootParent <> invalid and rootParent.updateFocusedItem <> false then
         rootParent.focusedItem = toFocus
     end if
 

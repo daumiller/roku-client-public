@@ -36,6 +36,8 @@ function createJumpBox(jumpItems as object, font as object, yOffset as integer, 
     obj.expand = false
     obj.fill = false
 
+    obj.SetFocusManual(invalid, invalid, false)
+
     return obj
 end function
 
@@ -50,8 +52,6 @@ sub jumpboxPerformLayout()
         button.width = btnHeight
         button.height = btnHeight
         button.SetMetadata(jump)
-        ' methods specific for the jumpBox Buttons
-        button.GetFocusManual = jbbGetFocusManual
         button.OnBlur = jbbOnBlur
         button.OnFocus = jbbOnFocus
         button.isJumpItem = true
@@ -61,7 +61,7 @@ sub jumpboxPerformLayout()
     end for
 
     ' wrap the jumpBox
-    if m.components.count() > 1 then
+    if m.components.Count() > 1 then
         first = m.components[0]
         last = m.components.peek()
         first.SetFocusSibling("left", last)
@@ -78,9 +78,9 @@ end sub
 sub jumpboxOnFocusIn(item as object)
     if item.isJumpItem = true then return
 
-    if item.jumpIndex <> invalid and m.components.count() > 0 then
+    if item.jumpIndex <> invalid and m.components.Count() > 0 then
         focus = invalid
-        for index = 0 to m.components.count() - 1
+        for index = 0 to m.components.Count() - 1
             jump = m.components[index].metadata
             if item.jumpIndex >= jump.index and item.jumpIndex < jump.index + jump.size then
                 focus = m.components[index]
@@ -88,14 +88,14 @@ sub jumpboxOnFocusIn(item as object)
             end if
         end for
 
-        if focus <> invalid and (m.focusedItem = invalid or NOT m.focusedItem.Equals(focus)) then
+        if focus <> invalid and not focus.Equals(m.focusedItem) then
             if m.focusedItem <> invalid then
                 m.focusedItem.SetColor(m.fgColor)
-                m.focusedItem.draw(true)
+                m.focusedItem.Draw(true)
             end if
             m.focusedItem = focus
             m.focusedItem.SetColor(m.fgColorFocus, m.bgColorFocus)
-            m.focusedItem.draw(true)
+            m.focusedItem.Draw(true)
             CompositorScreen().DrawAll()
         end if
     end if
@@ -110,7 +110,7 @@ sub jbbOnBlur(toFocus as object)
     for each comp in m.parent.components
         if not comp.Equals(m.parent.focusedItem) then
             comp.SetColor(m.parent.fgColor)
-            comp.draw(true)
+            comp.Draw(true)
         end if
     end for
 end sub
@@ -128,7 +128,3 @@ sub jbbOnFocus()
         end if
     end for
 end sub
-
-function jbbGetFocusManual(direction as string, screen as object) as dynamic
-    return m.parent.focusedItem
-end function
