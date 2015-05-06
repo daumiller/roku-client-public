@@ -63,7 +63,8 @@ sub hubsGetComponents()
     m.focusedItem = invalid
 
     ' *** HEADER *** '
-    m.components.Push(createHeader(m))
+    header = createHeader(m)
+    m.components.Push(header)
 
     ' *** BUTTONS & HUBS *** '
     hbox = createHBox(false, false, false, 25)
@@ -134,6 +135,11 @@ sub hubsGetComponents()
     ' set the placement of the description box (manualComponent)
     m.DescriptionBox = createDescriptionBox(m)
     m.DescriptionBox.setFrame(50, 630, 1280-50, 100)
+
+    ' Focus layer between the header and hubs
+    focusBox = createFocusBox(0, computeRect(header).down, AppSettings().GetWidth(), 1)
+    focusBox.SetFocusManual(hbox, "down")
+    m.components.Push(focusBox)
 end sub
 
 function hubsCreateHub(container) as dynamic
