@@ -131,20 +131,13 @@ end sub
 
 function clGetButtons() as object
     components = createObject("roList")
+    buttonHeight = 50
 
     buttons = createObject("roList")
     buttons.Push({text: Glyphs().PLAY, command: "play"})
     buttons.Push({text: Glyphs().SHUFFLE, command: "shuffle"})
-
-    buttonHeight = 50
     for each button in buttons
         btn = createButton(button.text, m.customFonts.glyphs, button.command)
-        btn.SetColor(Colors().Text, Colors().Button)
-        btn.width = 100
-        btn.height = buttonHeight
-        btn.fixed = false
-        btn.DisableNonParentExit("down")
-        if m.focusedItem = invalid then m.focusedItem = btn
         components.Push(btn)
     end for
 
@@ -158,10 +151,6 @@ function clGetButtons() as object
 
     btn = createDropDownButton(Glyphs().MORE, m.customFonts.glyphs, m)
     btn.SetDropDownPosition("right")
-    btn.SetColor(Colors().Text, Colors().Button)
-    btn.width = 100
-    btn.height = buttonHeight
-    if m.focusedItem = invalid then m.focusedItem = btn
 
     ' manual pivots and commands
     if m.item.Get("type", "") = "season" then
@@ -191,6 +180,14 @@ function clGetButtons() as object
     if btn.options.Count() > 0 then
         components.Push(btn)
     end if
+
+    for each component in components
+        component.SetColor(Colors().Text, Colors().Button)
+        component.width = 100
+        component.height = buttonHeight
+        component.DisableNonParentExit("down")
+        if m.focusedItem = invalid then m.focusedItem = component
+    end for
 
     return components
 end function

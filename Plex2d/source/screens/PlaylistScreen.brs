@@ -63,6 +63,7 @@ sub playlistGetComponents()
     vbButtons = createVBox(false, false, false, m.specs.childSpacing)
     vbButtons.SetFrame(m.specs.xOffset, m.specs.yOffset, 100, 720 - m.specs.yOffset)
     vbButtons.SetFocusManual(invalid)
+    vbButtons.DisableNonParentExit("down")
     vbButtons.ignoreFirstLast = true
     for each comp in m.GetButtons()
         vbButtons.AddComponent(comp)
