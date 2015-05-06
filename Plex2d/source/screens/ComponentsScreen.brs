@@ -868,7 +868,7 @@ function compGetFocusManual(direction as string, focusableComponenents=invalid a
                     if best.item = invalid or distance < best.distance then
                         ' If this is a focus container, we need to request the item it wants to focus and
                         ' verify it's valid, otherwise we'll ignore it
-                        ' TODO(rob): convert the older style GetFocusManual methods (jumpbox, textarea)
+                        '
                         if candidate.isFocusContainer = true then
                             candidate = candidate.GetFocusManual(direction, m)
                             if candidate <> invalid then
@@ -902,20 +902,6 @@ function compGetFocusManual(direction as string, focusableComponenents=invalid a
             end if
         end if
     next
-
-    ' Let the pending focus item override what we will actually focus on. Basically,
-    ' this handles focusing on a desired item within the parent. e.g. jumpBox: focus
-    ' on the current character in use, instead of the closest character in relation
-    ' to the last focused item.
-    ' TODO(rob): convert the older style GetFocusManual methods (jumpbox, textarea)
-    if best.item <> invalid and type(best.item.GetFocusManual) = "roFunction" then
-        candidate = best.item.GetFocusManual(direction, m)
-        if candidate <> invalid then
-            best.item = candidate
-            best.x = best.item.x
-            best.y = best.item.y
-        end if
-    end if
 
     ' If we found something then return it. Otherwise, we can at least move the
     ' focus point to the edge of our current component.
