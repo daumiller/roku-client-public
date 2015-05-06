@@ -73,8 +73,9 @@ sub textareaPerformLayout()
     m.y = m.origY + m.textPadding.marginTop
     m.height = m.origHeight - m.textPadding.marginBottom
 
-    for each line in createLabel(m.text, m.font).GetAllLines(m.width - m.textPadding.width)
-        label = createLabel(line, m.font)
+    lines = createLabel(m.text, m.font).GetAllLines(m.width - m.textPadding.width)
+    for index = 0 to lines.Count() - 1
+        label = createLabel(lines[index], m.font)
         label.width = m.width
         label.halign = m.halign
         label.fixed = false
@@ -89,13 +90,14 @@ sub textareaPerformLayout()
             label.SetColor(m.fgColor)
         end if
 
-        ' Methods to focus the text area. Always focus the first item,
-        ' and maintain current focus of the text area ongoing.
-        label.GetFocusManual = textareaGetFocusManual
         label.OnFocus = textareaOnFocus
         label.OnBlur = textareaOnBlur
         label.isTextArea = true
-        if m.firstFocusItem = invalid then m.firstFocusItem = label
+
+        ' Use focus helper to retain the focused line, starting with the first line.
+        if index = 0 then
+            m.SetFocusManual(label)
+        end if
 
         m.AddComponent(label)
     end for
@@ -170,13 +172,7 @@ sub textareaSetVisible(visible=true as boolean)
     end while
 end sub
 
-function textareaGetFocusManual(direction as string, screen as object) as dynamic
-    return m.parent.firstFocusItem
-end function
-
 sub textareaOnFocus()
-    m.parent.firstFocusItem = m
-
     if m.parent.isFocused = true then return
     m.parent.isFocused = true
 
@@ -188,9 +184,7 @@ sub textareaOnFocus()
 end sub
 
 sub textareaOnBlur(toFocus as object)
-    if toFocus.isTextArea = true then return
-
-    if m.parent.isFocused = false then return
+    if toFocus.isTextArea = true or m.parent.isFocused = false then return
     m.parent.isFocused = false
 
     if m.parent.background <> invalid then
