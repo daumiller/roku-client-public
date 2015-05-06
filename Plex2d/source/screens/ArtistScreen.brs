@@ -118,6 +118,7 @@ sub artistGetComponents()
     ' *** Buttons *** '
     vbButtons = createVBox(false, false, false, childSpacing)
     vbButtons.SetFrame(xOffset, yOffset, 100, 720 - yOffset)
+    vbButtons.SetFocusManual(invalid)
     vbButtons.ignoreFirstLast = true
     for each comp in m.GetButtons()
         vbButtons.AddComponent(comp)

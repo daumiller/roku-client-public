@@ -123,6 +123,7 @@ sub ppcGetComponents()
 
     ' *** Buttons *** '
     vbButtons = createVBox(false, false, false, 10)
+    vbButtons.SetFocusManual(invalid)
     components = m.GetButtons()
     for each comp in components
         vbButtons.AddComponent(comp)

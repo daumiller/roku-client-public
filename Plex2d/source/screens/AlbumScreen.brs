@@ -296,13 +296,6 @@ sub albumGetComponents()
     descBox = createStaticDescriptionBox(title, m.item.GetDuration())
     descBox.setFrame(50, 630, 1280-50, 100)
     m.components.Push(descBox)
-
-    ' Focus layer between album buttons and anything to the right. This will ensure we
-    ' always return to the button we came from, when returning from the right.
-    '
-    focusBox = createFocusBox(computeRect(vbButtons).right + 1, 0, 1, AppSettings().GetHeight())
-    focusBox.SetFocusManual(vbButtons, "left")
-    m.components.Push(focusBox)
 end sub
 
 sub albumOnChildResponse(request as object, response as object, context as object)
