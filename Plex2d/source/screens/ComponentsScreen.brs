@@ -872,8 +872,7 @@ function compGetFocusManual(direction as string, focusableComponenents=invalid a
                         if candidate.isFocusContainer = true then
                             candidate = candidate.GetFocusManual(direction, m)
                             if candidate <> invalid then
-                                candPt.x = candidate.x
-                                candPt.y = candidate.y
+                                candPt = m.CalculateFocusPoint(candidate, direction)
                             end if
                         end if
 
@@ -902,14 +901,6 @@ function compGetFocusManual(direction as string, focusableComponenents=invalid a
             end if
         end if
     next
-
-    ' If we found something then return it. Otherwise, we can at least move the
-    ' focus point to the edge of our current component.
-    '
-    if best.item <> invalid then
-        m.focusX = best.x
-        m.focusY = best.y
-    end if
 
     return best.item
 end function
