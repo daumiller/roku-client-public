@@ -190,6 +190,12 @@ sub ppcGetComponents()
         vbox.AddComponent(comp)
     end for
     m.components.Push(vbox)
+
+    ' Focus layer between the seasons grid and action bar
+    focusBox = createFocusBox(0, hbGrid.y - 2, AppSettings().GetWidth(), 1)
+    focusBox.SetFocusManual(vbButtons, "up")
+    focusBox.SetFocusManual(hbGrid, "down")
+    m.components.Push(focusBox)
 end sub
 
 function ppcGetMainInfo() as object
