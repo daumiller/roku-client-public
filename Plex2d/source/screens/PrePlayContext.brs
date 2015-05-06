@@ -144,6 +144,8 @@ sub ppcGetComponents()
 
     ' *** Grid for Children *** '
     hbGrid = createHBox(false, false, false, 10)
+    hbGrid.DisableNonParentExit("right")
+    hbGrid.DisableNonParentExit("left")
     hbGrid.ignoreParentShift = true
     for each item in m.children
         ' TODO(rob): another place to figure out how to determine orientation
