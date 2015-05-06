@@ -300,8 +300,7 @@ sub albumGetComponents()
     ' Focus layer between album buttons and anything to the right. This will ensure we
     ' always return to the button we came from, when returning from the right.
     '
-    focusBox = createHBox(true, true, true, 0, false)
-    focusBox.SetFrame(computeRect(vbButtons).right + 1, 0, 1, 720)
+    focusBox = createFocusBox(computeRect(vbButtons).right + 1, 0, 1, AppSettings().GetHeight())
     focusBox.SetFocusManual(vbButtons, "left")
     m.components.Push(focusBox)
 end sub

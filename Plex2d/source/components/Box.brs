@@ -175,11 +175,17 @@ function boxGetFocusManual(direction as string, screen as object) as dynamic
 end function
 
 sub boxSetFocusManual(component=invalid as dynamic, direction=invalid as dynamic, updateFocusedItem=true as boolean)
+    if m.manualFocusItems = invalid then m.manualFocusItems = {}
     m.SetFocusable(invalid)
     m.isFocusContainer = true
     m.updateFocusedItem = updateFocusedItem
 
-    if m.manualFocusItems = invalid then m.manualFocusItems = {}
+    ' Set our desired components manual focus if it's a container and
+    ' hasn't specifically been set.
+    if component <> invalid and component.isFocusContainer <> true and IsFunction(component.SetFocusManual) then
+        component.SetFocusManual()
+    end if
+
     if direction <> invalid then
         m.manualFocusItems[direction] = component
     else
