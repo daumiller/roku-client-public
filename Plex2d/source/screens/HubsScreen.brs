@@ -77,8 +77,8 @@ sub hubsGetComponents()
         vbox = createVBox(false, false, false, 10)
         vbox.scrollOverflowColor = Colors().Background
         vbox.SetFrame(100, 125, 300, 500)
-        vbox.SetScrollable(invalid, true, true, "left")
-        ' TODO(rob): hide components when shifted outside viewport
+        vbox.SetScrollable(250, true, true, "left")
+        vbox.stopShiftIfInView = true
         vbox.ignoreFirstLast = true
         vbox.DisableNonParentExit("down")
 
