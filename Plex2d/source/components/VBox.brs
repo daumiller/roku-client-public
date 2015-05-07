@@ -307,17 +307,13 @@ sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic, screen=inv
     end if
 
     lastShift = firstOf(m.lastShiftInView, m.lastShift)
-    ' Ignore shifting if we have reached the end.
-    if m.lastShiftInView <> invalid then
-        toFocusY = toFocus.origY + toFocus.height
-        if toFocusY > lastShift then
+
+    ' Handle focusing on items below our last shift point
+    if m.lastShiftInView <> invalid and toFocus.origY + toFocus.height > lastShift then
+        if m.scrolltriggerdown < m.containerHeight then
+            shift.y = m.contentHeight - toFocus.y - (m.containerHeight - toFocus.origY)
+        else
             shift.y = 0
-            ' Handle refocusing on items below our last shift point
-            if m.scrolltriggerdown < m.containerHeight and toFocus.origY = toFocus.y then
-                shift.y = m.scrollTriggerDown - focusRect.down
-                offset = m.contentHeight - (m.containerHeight + shift.y)
-                if offset > 0 then shift.y = shift.y + offset
-            end if
         end if
     end if
 
