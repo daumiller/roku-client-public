@@ -80,6 +80,7 @@ sub hubsGetComponents()
         vbox.SetScrollable(invalid, true, true, "left")
         ' TODO(rob): hide components when shifted outside viewport
         vbox.ignoreFirstLast = true
+        vbox.DisableNonParentExit("down")
 
         for each button in buttons
             vbox.AddComponent(button)
