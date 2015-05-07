@@ -80,6 +80,12 @@ sub vboxPerformLayout()
         xOffset = m.GetXOffsetAlignment(m.x, m.width, width, firstOf(component.phalign, component.halign))
         component.SetFrame(xOffset, offset, width, height)
 
+        ' height of all components in the container
+        m.containerHeight = offset + height
+        if m.contentHeight = invalid then
+            m.contentHeight = m.containerHeight
+        end if
+
         ' calculate the container height, content height and other data about the scrollable area
         if m.scrollTriggerDown <> invalid then
             if m.scrollInfo = invalid then m.scrollInfo = CreateObject("roAssociativeArray")
@@ -96,22 +102,17 @@ sub vboxPerformLayout()
                 end if
             end if
 
-            ' height of all components in the container
-            m.containerHeight = offset + height
-            if m.contentHeight = invalid then
-                m.contentHeight = m.containerHeight
-            end if
             m.lastShift = m.containerHeight
 
             ' calculate the exact content height that fits within m.scrollTriggerDown
             if m.containerHeight <= m.origScrollTriggerDown then
                 m.scrollTriggerDown = m.containerHeight
             end if
+        end if
 
-            ' calculate the content height that fits in wanted container height
-            if m.containerHeight <= offsets[0] + m.height then
-                m.contentHeight = m.containerHeight
-            end if
+        ' calculate the content height that fits in wanted container height
+        if m.containerHeight <= offsets[0] + m.height then
+            m.contentHeight = m.containerHeight
         end if
 
         ' determine the zOrder required for any additional components (scrollbar/opacity blocks)
@@ -187,41 +188,41 @@ sub vboxPerformLayout()
         end if
         m.Delete("scrollInfo")
 
-        ' Calculate and append the border if set. Make sure there is no
-        ' overlap in case we use an alpha color.
+    end if
+    ' Calculate and append the border if set. Make sure there is no
+    ' overlap in case we use an alpha color.
+    '
+    if m.border <> invalid then
+        ' We can use the current vbox rect, but we must resize our
+        ' calculations based on the content height.
         '
-        if m.border <> invalid then
-            ' We can use the current vbox rect, but we must resize our
-            ' calculations based on the content height.
-            '
-            rect = computeRect(m)
-            rect.down = m.contentHeight
-            rect.height = rect.down - rect.up
+        rect = computeRect(m)
+        rect.down = m.contentHeight
+        rect.height = rect.down - rect.up
 
-            borderTop = createBlock(m.border.color)
-            borderTop.SetFrame(rect.left, rect.up - m.border.px, rect.width, m.border.px)
-            borderTop.zOrder = overlayZOrder
-            m.AddComponent(borderTop)
+        borderTop = createBlock(m.border.color)
+        borderTop.SetFrame(rect.left, rect.up - m.border.px, rect.width, m.border.px)
+        borderTop.zOrder = overlayZOrder
+        m.AddComponent(borderTop)
 
-            borderBottom = createBlock(m.border.color)
-            borderBottom.SetFrame(rect.left, rect.down, rect.width, m.border.px)
-            borderBottom.zOrder = overlayZOrder
-            m.AddComponent(borderBottom)
+        borderBottom = createBlock(m.border.color)
+        borderBottom.SetFrame(rect.left, rect.down, rect.width, m.border.px)
+        borderBottom.zOrder = overlayZOrder
+        m.AddComponent(borderBottom)
 
-            ' Shared dimensions between the left/right border
-            yOffset = rect.up - m.border.px
-            height = rect.height + m.border.px*2
+        ' Shared dimensions between the left/right border
+        yOffset = rect.up - m.border.px
+        height = rect.height + m.border.px*2
 
-            borderLeft = createBlock(m.border.color)
-            borderLeft.SetFrame(rect.left - m.border.px, yOffset, m.border.px, height)
-            borderLeft.zOrder = overlayZOrder
-            m.AddComponent(borderLeft)
+        borderLeft = createBlock(m.border.color)
+        borderLeft.SetFrame(rect.left - m.border.px, yOffset, m.border.px, height)
+        borderLeft.zOrder = overlayZOrder
+        m.AddComponent(borderLeft)
 
-            borderRight = createBlock(m.border.color)
-            borderRight.SetFrame(rect.right, yOffset, m.border.px, height)
-            borderRight.zOrder = overlayZOrder
-            m.AddComponent(borderRight)
-        end if
+        borderRight = createBlock(m.border.color)
+        borderRight.SetFrame(rect.right, yOffset, m.border.px, height)
+        borderRight.zOrder = overlayZOrder
+        m.AddComponent(borderRight)
     end if
 end sub
 
