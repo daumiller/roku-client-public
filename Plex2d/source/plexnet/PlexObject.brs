@@ -580,17 +580,13 @@ function pnoGetItemPath(checkFiles=false as boolean) as string
         ' required. i.e. it's normally not required for navigation, probably
         ' excluding the preplay settings screen.
         if checkFiles = true then
-            hasParams = (instr(1, key, "?") > 0)
-            key = key + iif(hasParams, "&", "?") + "checkFiles=1"
+            key = AddUrlParam(key, "checkFiles=1")
         end if
 
         if m.type = "movie" or m.type = "episode" then
-            hasParams = (instr(1, key, "?") > 0)
-            key = key + iif(hasParams, "&", "?") + "includeRelated=1&includeRelatedCount=0"
-            key = key + "&includeExtras=1"
+            key = AddUrlParam(key, "includeRelated=1&includeRelatedCount=0&includeExtras=1")
         else if m.type = "track" then
-            hasParams = (instr(1, key, "?") > 0)
-            key = key + iif(hasParams, "&", "?") + "includeRelated=1&includeRelatedCount=0"
+            key = AddUrlParam(key, "includeRelated=1&includeRelatedCount=0")
         end if
     end if
 

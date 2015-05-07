@@ -56,8 +56,8 @@ sub ppcResetInit(path=invalid as dynamic)
         m.childrenPath = m.requestItem.GetAbsolutePath("key")
     end if
 
-    m.childrenPath = m.childrenPath + "?excludeAllLeaves=1"
-    m.parentPath = m.path + "?includeRelated=1&includeRelatedCount=0&includeOnDeck=1&includeExtras=1"
+    m.childrenPath = AddUrlParam(m.childrenPath, "excludeAllLeaves=1")
+    m.parentPath = AddUrlParam(m.path, "includeRelated=1&includeRelatedCount=0&includeOnDeck=1&includeExtras=1")
 
     m.requestContext = invalid
     m.childRequestContext = invalid

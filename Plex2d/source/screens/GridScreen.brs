@@ -801,7 +801,7 @@ sub gsOnSortResponse(request as object, response as object, context as object)
     if instr(1, request.path, "sort=") = 0 then
         for each item in response.items
             if item.Has("default") then
-                m.path = m.path + iif(instr(1, m.path, "?") = 0, "?", "&") + "sort=" + item.Get("key")
+                m.path = AddUrlParam(m.path, "sort=" + item.Get("key"))
                 Debug("Added default sort: " + m.path)
                 exit for
             end if
