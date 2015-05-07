@@ -431,9 +431,6 @@ sub vboxShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=f
             comp.ShiftPosition(shift.x, shift.y, false)
         end for
 
-        ' Set the visibility after shifting (special case for vbox)
-        m.SetVisible()
-
         ' Normally we would just set onScreenComponents=partShift, however we are executing
         ' this in the containers context, so we must make one more pass to get a list of all
         ' the on screen components after the shift.
@@ -466,6 +463,9 @@ sub vboxShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=f
             m.screen.onScreenComponents = onScreenReplacment
         end if
     end if
+
+    ' Set the visibility after loading on screen components and possible shift.
+    m.SetVisible()
 
     ' lazyload off screen components within our range. Remember we need to execute the
     ' lazyload routines in the screens context.
