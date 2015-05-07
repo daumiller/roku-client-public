@@ -601,7 +601,8 @@ function filtersGetFilterOptionSize(plexObject as object) as integer
         return plexObject.items.Count()
     end if
 
-    request = createPlexRequest(plexObject.GetServer(), plexObject.GetItemPath())
+    path = AddUrlParam(plexObject.GetItemPath(), "type=" + m.GetSelectedType().value)
+    request = createPlexRequest(plexObject.GetServer(), path)
     request.AddHeader("X-Plex-Container-Start", "0")
     request.AddHeader("X-Plex-Container-Size", "0")
     response = request.DoRequestWithTimeout(30)
@@ -611,7 +612,8 @@ end function
 
 function filtersGetFilterOptionValues(plexObject as object, refresh=false as boolean) as object
     if plexObject.items = invalid then
-        request = createPlexRequest(plexObject.GetServer(), plexObject.GetItemPath())
+        path = AddUrlParam(plexObject.GetItemPath(), "type=" + m.GetSelectedType().value)
+        request = createPlexRequest(plexObject.GetServer(), path)
         response = request.DoRequestWithTimeout(30)
         plexObject.items = response.items
     end if

@@ -193,3 +193,7 @@ function ResolveRedirect(url as string) as string
 
     return url
 end function
+
+function AddUrlParam(url as string, param as string) as string
+    return url + iif(instr(1, url, "?") = 0, "?", "&") + param
+end function
