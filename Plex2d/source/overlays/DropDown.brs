@@ -136,6 +136,7 @@ sub ddoverlayCalculatePosition(vbox as object)
     if instr(1, lcase(position), "left") > 0 or instr(1, lcase(position), "right") > 0 then
         if button.parent <> invalid and button.parent.dropdown <> invalid and button.parent.height < ddProp.height then
             ddProp.y = button.parent.y + HDtoSDheight(10)
+            safeArea.up = ddProp.y
         end if
     end if
 
