@@ -75,7 +75,7 @@ function ComponentsScreen() as object
         obj.OnRevButton = compOnRevButton
 
         ' Focus handling
-        obj.OnFocus = compOnFocus
+        obj.OnItemFocus = compOnItemFocus
         obj.OnFocusIn = compOnFocusIn
         obj.OnFocusOut = compOnFocusOut
         obj.FocusItemManually = compFocusItemManually
@@ -214,7 +214,7 @@ sub compShow()
     end if
 
     if m.focusedItem <> invalid then
-        m.OnFocus(m.focusedItem, invalid)
+        m.OnItemFocus(m.focusedItem, invalid)
     end if
 
     ' Always make sure we have a focus point regardless of having a focusItem. We
@@ -458,7 +458,7 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
         if toFocus <> invalid then
             perfTimer().Log("Determined next focus")
             m.lastDirection = direction
-            m.OnFocus(toFocus, m.focusedItem, direction)
+            m.OnItemFocus(toFocus, m.focusedItem, direction)
         else
             m.Trigger("OnFailedFocus", [direction, m.focusedItem])
         end if
@@ -501,7 +501,7 @@ sub compOnPlayButton(item as object)
 end sub
 
 sub compFocusItemManually(toFocus as object)
-    m.OnFocus(toFocus, m.focusedItem)
+    m.OnItemFocus(toFocus, m.focusedItem)
 
     ' clear lastFocusedItem (no focus sibling wanted)
     m.lastFocusedItem = invalid
@@ -1262,7 +1262,7 @@ sub compToggleScrollbar(visible=true as boolean, toFocus=invalid as dynamic, las
     end if
 end sub
 
-sub compOnFocus(toFocus as object, lastFocus=invalid as dynamic, direction=invalid as dynamic)
+sub compOnItemFocus(toFocus as object, lastFocus=invalid as dynamic, direction=invalid as dynamic)
     if toFocus.Equals(lastFocus) then lastFocus = invalid
     if toFocus.focusBorder = false then m.screen.HideFocus(true)
 

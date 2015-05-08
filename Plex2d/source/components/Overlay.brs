@@ -125,7 +125,7 @@ sub overlayClose(backButton=false as boolean, redraw=true as boolean)
     ' a new screen.
     if redraw then
         if m.fromFocusedItem <> invalid then
-            m.screen.OnFocus(m.fromFocusedItem)
+            m.screen.OnItemFocus(m.fromFocusedItem)
         else
             m.screen.screen.HideFocus(true, true)
         end if

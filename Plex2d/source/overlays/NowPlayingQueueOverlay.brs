@@ -438,8 +438,8 @@ sub npqoActionOnSelected(screen as object)
     if focusItem <> invalid then
         screen.screen.DrawLock()
 
-        screen.OnFocus(focusItem, focusItem, "up")
-        screen.OnFocus(btn, focusItem, "right")
+        screen.OnItemFocus(focusItem, focusItem, "up")
+        screen.OnItemFocus(btn, focusItem, "right")
 
         screen.screen.DrawUnlock()
     end if

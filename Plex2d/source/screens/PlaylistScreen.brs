@@ -350,8 +350,8 @@ function playlistHandleCommand(command as string, item as dynamic) as boolean
     end if
 
     if focusItem <> invalid then
-        m.OnFocus(focusItem, focusItem, "up")
-        m.OnFocus(item, focusItem, "right")
+        m.OnItemFocus(focusItem, focusItem, "up")
+        m.OnItemFocus(item, focusItem, "right")
     end if
 
     m.item.Refresh(refreshMetadata, refreshItems)

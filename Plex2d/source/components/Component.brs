@@ -63,8 +63,8 @@ function ComponentClass() as object
         obj.GetRootParent = compGetRootParent
 
         ' no-op methods
-        obj.OnBlur = function(arg=invalid) : Verbose("OnBlur:no-op") : end function
-        obj.OnFocus = function() : Verbose("OnFocus:no-op") : end function
+        obj.OnBlur = compOnBlur
+        obj.OnFocus = compOnFocus
 
         ' Shifting methods
         obj.ShiftPosition = compShiftPosition
@@ -523,3 +523,11 @@ function compGetRootParent() as dynamic
 
     return parent
 end function
+
+sub compOnBlur(toFocus=invalid as dynamic)
+    m.isFocused = false
+end sub
+
+sub compOnFocus()
+    m.isFocused = true
+end sub
