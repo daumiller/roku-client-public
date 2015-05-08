@@ -211,11 +211,8 @@ sub ddoverlayCalculatePosition(vbox as object)
     end if
 
     vbox.SetFrame(ddProp.x, ddProp.y, ddProp.width, ddProp.height)
-
-    ' Always set the scroll in the middle
-    vbox.SetScrollable(ddProp.height / 2 + compHeight, false, false, button.scrollBarPosition)
+    vbox.SetScrollable(ddProp.height / 2, false, false, button.scrollBarPosition)
     vbox.stopShiftIfInView = true
-
     m.components.Push(vbox)
 end sub
 
