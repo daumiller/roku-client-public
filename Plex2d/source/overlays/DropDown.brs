@@ -105,6 +105,7 @@ sub ddoverlayCalculatePosition(vbox as object)
     if maxWidth = invalid or maxWidth > availableRight and maxWidth > availableLeft then
         maxWidth = iif(availableRight > availableLeft, availableRight, availableLeft)
     end if
+    vbox.maxWidth = maxWidth
 
     ' Assumes all dropdown components height are homogeneous
     compHeight = vbox.components[0].height
@@ -214,6 +215,16 @@ sub ddoverlayCalculatePosition(vbox as object)
     vbox.SetScrollable(ddProp.height / 2, false, false, button.scrollBarPosition)
     vbox.stopShiftIfInView = true
     m.components.Push(vbox)
+
+    ' Try to add a jump list based on the content size
+    if vbox.GetPreferredHeight() > vbox.height then
+        jumpList = GetJumpList(vbox.components)
+        if jumpList <> invalid then
+            jumpVBox = createJumpVBox(vbox, jumplist, FontRegistry().SMALL, 40)
+            jumpVBox.border = button.dropdownBorder
+            m.components.Push(jumpVBox)
+        end if
+    end if
 end sub
 
 sub ddoverlayGetComponents()

@@ -660,6 +660,11 @@ function compHandleCommand(command as string, item as dynamic) as boolean
         else
             plexItem.Unscrobble(item.commandCallback)
         end if
+    else if command = "vbox_jump" then
+        jumpComponent = item.metadata.component
+        if jumpComponent <> invalid then
+            m.FocusItemManually(jumpComponent)
+        end if
     else
         handled = false
     end if
@@ -1308,6 +1313,11 @@ sub compOnFocusIn(toFocus=invalid as dynamic, lastFocus=invalid as dynamic)
 
     ' let the component know it's focus state
     toFocus.OnFocus()
+
+    ' let the jumpItem know it's focused
+    if toFocus.jumpItem <> invalid then
+        toFocus.jumpItem.OnFocus()
+    end if
 
     m.ToggleScrollbar(true, toFocus, lastFocus)
 end sub

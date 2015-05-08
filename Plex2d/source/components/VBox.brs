@@ -121,6 +121,30 @@ sub vboxPerformLayout()
         end if
     end while
 
+    ' Resize the jumpVBox to match the height of the resized content list. Allow the
+    ' jump list to shrink by 80%, otherwise we'll have to destroy the jump list.
+    '
+    if m.jumpVBox <> invalid then
+        contentHeight = m.contentHeight - m.y
+        if contentHeight >= m.jumpVBox.GetPreferredHeight() * 0.80 then
+            m.jumpVBox.height = contentHeight
+
+            ' Resize the content list and reposition the jumpVBox if the additional
+            ' jump list width is greater then the contents maxWidth.
+            '
+            if m.width + m.jumpVBox.width > m.maxWidth then
+                m.width = m.width - m.jumpVBox.width
+                m.jumpVBox.x = m.jumpVBox.x - m.jumpVBox.width
+                for each component in m.components
+                    component.width = m.width
+                end for
+            end if
+        else
+            m.jumpVBox.DestroyComponents()
+            m.Delete("jumpVBox")
+        end if
+    end if
+
     ' scrolling helpers: scrollbar, opacity blocks, stop shifting, stop focusing, etc..
     if m.scrollInfo <> invalid then
         ' disable any further shift if we want to stop when the last components
@@ -174,6 +198,10 @@ sub vboxPerformLayout()
                 end if
                 if m.scrollbarPosition = "right" then
                     xOffset = xOffset + m.width + spacing
+                    ' Move the scrollbar to the right of the jump list
+                    if m.jumpVBox <> invalid then
+                        xOffset = xOffset + m.jumpVBox.width
+                    end if
                 else
                     xOffset = xOffset - width - spacing
                 end if
