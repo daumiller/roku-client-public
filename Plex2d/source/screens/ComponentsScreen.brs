@@ -501,7 +501,9 @@ sub compOnPlayButton(item as object)
 end sub
 
 sub compFocusItemManually(toFocus as object)
+    m.screen.DrawLock()
     m.OnItemFocus(toFocus, m.focusedItem)
+    m.screen.DrawUnlock()
 
     ' clear lastFocusedItem (no focus sibling wanted)
     m.lastFocusedItem = invalid
