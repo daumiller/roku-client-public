@@ -272,30 +272,16 @@ sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic, screen=inv
     end if
 
     focusRect = computeRect(toFocus)
-    ' reuse the last position on refocus
+    ' Reuse the last position on refocus
     if refocus <> invalid and focusRect.up > refocus.up then
         shift.y = refocus.up - focusRect.up
-    ' keep shifting on keypress up until the first item is in view
+    else if focusRect.down > shift.triggerDown then
+        shift.y = shift.triggerDown - focusRect.down
     else if focusRect.up < shift.triggerUp and first.y < shift.hideUp then
-        shift.y = shift.shiftAmount
+        shift.y = shift.triggerUp - focusRect.up
         if first.y + shift.y > shift.hideUp then
             shift.y = shift.hideUp - first.y
         end if
-    ' locate the last item to fit, and shift based on it.
-    else if focusRect.down > shift.triggerDown
-        candidates = firstOf(tofocus.shiftableParent, tofocus.parent)
-        if focusRect.down + shift.y > shift.triggerDown then
-            wanted = 0
-            for each i in candidates.components
-                if i.y + i.height > shift.triggerDown then exit for
-                wanted = i.y + i.height
-            end for
-            shift.y = (focusRect.down - wanted) * -1
-        else
-            shift.y = shift.shiftAmount * -1
-        end if
-    else if focusRect.up < shift.hideUp then
-        shift.y = shift.shiftAmount
     end if
 
     ' Verify we have shifted enough. We may have other non-focuseable components
