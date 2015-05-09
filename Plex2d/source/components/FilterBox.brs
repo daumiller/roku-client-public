@@ -278,9 +278,13 @@ sub filterboxOnSelected(screen as object)
             for each item in m.filters.GetFilterOptionValues(plexObject)
                 metadata = {filter: filterKey, key: item.Get("key"), title: item.Get("title")}
                 isSelected = (selectedKey <> invalid and selectedKey = metadata.key)
-                glyph = iif(isSelected, Glyphs().CHECK, " ")
-
-                option = m.AddCallableButton(createGlyphButton, [metadata.title, filterBox.secondaryOptionPrefs.font, glyph, filterbox.customFonts.glyph, "filter_set"])
+                if isSelected then
+                    glyph = iif(isSelected, Glyphs().CHECK, " ")
+                    option = m.AddCallableButton(createGlyphButton, [metadata.title, filterBox.secondaryOptionPrefs.font, glyph, filterbox.customFonts.glyph, "filter_set"])
+                else
+                    option = {text: metadata.title, command: "filter_set"}
+                    m.options.Push(option)
+                end if
                 option.metadata = metadata
                 option.isSelected = isSelected
                 option.Append(filterBox.secondaryOptionPrefs)
