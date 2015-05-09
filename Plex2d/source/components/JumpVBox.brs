@@ -3,6 +3,7 @@ function JumpVBoxClass() as object
         obj = createObject("roAssociativeArray")
         obj.Append(VBoxClass())
         obj.ClassName = "JumpVBox"
+        obj.alpha = ["#","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
 
         ' Methods
         obj.Init = jvboxInit
@@ -44,8 +45,7 @@ sub jvboxInit()
     vboxRect = computeRect(m.contentVBox)
     m.SetFrame(vboxRect.right + 1, vboxRect.up, m.width, vboxRect.height)
 
-    alpha = ["#","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
-    for each ch in alpha
+    for each ch in m.alpha
         ch = ucase(ch)
         if m.jumpList[ch] <> invalid then
             comp = createButton(ch, m.font, "vbox_jump")
@@ -85,8 +85,10 @@ end sub
 '
 function GetJumpList(components as object) as dynamic
     list = CreateObject("roAssociativeArray")
+
     total = 0
-    last = invalid
+    lastDec = -1
+    regexAlpha = CreateObject("roRegex", "[A-Z]", "i")
     for index = 0 to components.Count() - 1
         comp = components[index]
         if comp.text <> invalid then
@@ -94,10 +96,25 @@ function GetJumpList(components as object) as dynamic
 
             ' Group non-alpha characters and empty strings together.
             ' Characters encoded as 2+ bytes are just treated as normal chars
-            c = asc(ch)
-            if ((c >= 0 and c <= 64) or (c >= 91 and c <= 96) or (c >= 123 and c <= 126)) then
+            dec = asc(ch)
+            if ((dec >= 0 and dec <= 64) or (dec >= 91 and dec <= 96) or (dec >= 123 and dec <= 126)) then
                 ch = "#"
+                dec = asc(ch)
             end if
+
+            ' Exclude jump list for non-alpha ordering
+
+            ' TODO(rob): remove `total < 15`
+            ' Temporary exclusion to try harder to show the alpha list for
+            ' studios. Studios are arranged A-Z, a-z. We could add better
+            ' logic, but it's a bug in the PMS that will be fixed.
+            ' GHI: https://github.com/plexinc/plex-media-server/issues/2857
+            '
+            if total < 15 and regexAlpha.IsMatch(ch) and dec < lastDec then
+                Debug("Exclude jump list, list not in alphabetical order")
+                return invalid
+            end if
+            lastDec = dec
 
             if list[ch] = invalid then
                 list[ch] = CreateObject("roAssociativeArray")
@@ -105,24 +122,6 @@ function GetJumpList(components as object) as dynamic
                 list[ch].index = tostr(index)
                 list[ch].component = comp
                 total = total + 1
-                last = ch
-            else if last <> ch then
-                ' Exclude jump list for non-alpha ordering
-
-                ' TODO(rob): https://github.com/plexinc/plex-media-server/issues/2857
-                ' Temporary exclusion to try harder to show the alpha list for
-                ' studios. Studios are arranged A-Z, a-z. We could add better
-                ' logic, but it's a bug in the PMS that will be fixed.
-                '
-                if total > 15 then
-                    Debug("List not in alphabetical order, but we'll include the jump list because we have " + tostr(total) + " items")
-                else
-                    Debug("List not in alphabetical order. Last=" + last + ", cur=" + ch + " (" + tostr(comp.text) + ")")
-                    return invalid
-                end if
-
-                ' We can exist regardless since the order is no longer alphabetic
-                exit for
             end if
 
             ' Keep a list of matching content list components
