@@ -270,7 +270,7 @@ sub hubsAdvanceContainerFocus(delta as integer)
     ' Set focus to the first focusable item in the container
     for each comp in m.focusContainers[containerIndex].components
         if comp.focusable = true then
-            m.FocusItemManually(comp)
+            m.FocusItemManually(comp, false)
             exit for
         end if
     end for

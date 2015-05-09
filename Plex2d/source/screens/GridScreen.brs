@@ -739,7 +739,7 @@ sub gsAdvancePage(delta as integer)
         loop = iif(delta > 0, { start: 0, finish: total }, { start: total, finish: 0 })
         for index = loop.start to loop.finish step delta
             if m.shiftableComponents[index].focusable = true then
-                m.FocusItemManually(m.shiftableComponents[index])
+                m.FocusItemManually(m.shiftableComponents[index], false)
                 exit for
             end if
         end for
@@ -753,15 +753,15 @@ sub gsAdvancePage(delta as integer)
         if comp.focusable = true then
             lastComponent = comp
             if delta > 0 and comp.x + comp.width >= xOffset then
-                m.FocusItemManually(comp)
+                m.FocusItemManually(comp, false)
                 return
             else if delta < 0 and comp.x >= xOffset then
-                m.FocusItemManually(comp)
+                m.FocusItemManually(comp, false)
                 return
             end if
         end if
     end for
-    m.FocusItemManually(lastComponent)
+    m.FocusItemManually(lastComponent, false)
 end sub
 
 sub gsRefresh(path=invalid as dynamic, stickyFocus=true as boolean)

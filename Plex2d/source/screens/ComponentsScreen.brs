@@ -500,10 +500,10 @@ sub compOnPlayButton(item as object)
     m.CreatePlayerForItem(item.plexObject)
 end sub
 
-sub compFocusItemManually(toFocus as object)
-    m.screen.DrawLock()
+sub compFocusItemManually(toFocus as object, drawLock=true as boolean)
+    if drawLock then m.screen.DrawLock()
     m.OnItemFocus(toFocus, m.focusedItem)
-    m.screen.DrawUnlock()
+    if drawLock then m.screen.DrawUnlock()
 
     ' clear lastFocusedItem (no focus sibling wanted)
     m.lastFocusedItem = invalid
