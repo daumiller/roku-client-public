@@ -62,7 +62,16 @@ sub ddoverlayCalculatePosition(vbox as object)
     position = m.button.dropDownPosition
     dynamicPosition = (m.button.dropDownDynamicPosition = true)
 
-    ddProp = {width: 0, height: 0, x: buttonRect.left, y: buttonRect.up}
+    ddProp = {
+        width: vbox.GetPreferredWidth(),
+        height: vbox.GetPreferredHeight(),
+        x: buttonRect.left,
+        y: buttonRect.up
+    }
+    ddProp.origWidth = ddProp.width
+    ddProp.origHeight = ddProp.height
+    ' Assumes all dropdown components height are homogeneous
+    ddProp.compHeight = vbox.components[0].height
 
     safeArea = {
         down: 685,
@@ -72,9 +81,7 @@ sub ddoverlayCalculatePosition(vbox as object)
     }
 
     ' Optional border for the dropdown, set by the dropdown button
-    if button.dropdownBorder <> invalid then
-        vbox.border = button.dropdownBorder
-    end if
+    vbox.border = button.dropdownBorder
 
     ' Calculate the spacing between the dropdown button and dropdown. We will prefer
     ' to specified spacing, parents spacing if it exists or fallback to the focus
@@ -106,17 +113,6 @@ sub ddoverlayCalculatePosition(vbox as object)
         maxWidth = iif(availableRight > availableLeft, availableRight, availableLeft)
     end if
     vbox.maxWidth = maxWidth
-
-    ' Assumes all dropdown components height are homogeneous
-    compHeight = vbox.components[0].height
-
-    ' Calculate the required height and width for the homogeneous buttons
-    for each component in vbox.components
-        if component.getPreferredWidth() > ddProp.width then
-            ddProp.width = component.getPreferredWidth()
-        end if
-        ddProp.height = ddProp.height + component.getPreferredHeight() + vbox.spacing
-    end for
 
     ' Reset the homogeneous width (maxWidth or minWidth if applicable)
     if ddProp.width > maxWidth then
@@ -186,7 +182,7 @@ sub ddoverlayCalculatePosition(vbox as object)
         end if
 
         if override.up.y - ddProp.height < safeArea.up then
-            override.up.height = compHeight * int( (override.up.y - safeArea.up) / compHeight)
+            override.up.height = ddProp.compHeight * int( (override.up.y - safeArea.up) / ddProp.compHeight)
             override.up.y = override.up.y - override.up.height
         else
             override.up.y = override.up.y - ddProp.height
@@ -217,7 +213,7 @@ sub ddoverlayCalculatePosition(vbox as object)
     m.components.Push(vbox)
 
     ' Try to add a jump list based on the content size
-    if vbox.GetPreferredHeight() > vbox.height then
+    if ddProp.origHeight > vbox.height then
         jumpList = GetJumpList(vbox.components)
         if jumpList <> invalid then
             jumpVBox = createJumpVBox(vbox, jumplist, FontRegistry().SMALL, 40)
