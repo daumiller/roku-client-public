@@ -273,10 +273,13 @@ sub filterboxOnSelected(screen as object)
             end if
 
             filterKey = plexObject.Get("filter")
+            selectedKey = firstOf(m.filters.GetFilteredByKey(filterKey), {}).value
+
             for each item in m.filters.GetFilterOptionValues(plexObject)
                 option = {text: item.Get("title"), command: "filter_set"}
                 option.metadata = {filter: filterKey, key: item.Get("key"), title: option.text}
                 option.Append(filterBox.secondaryOptionPrefs)
+                option.isSelected = (selectedKey <> invalid and selectedKey = option.metadata.key)
                 m.options.Push(option)
             end for
         end if

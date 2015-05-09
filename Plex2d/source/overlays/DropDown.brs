@@ -230,6 +230,7 @@ end sub
 sub ddoverlayGetComponents()
     vbox = createVBox(false, false, false, 0)
 
+    hasSelection = false
     for each option in m.button.GetOptions()
         if option.visibleCallable <> invalid and option.visibleCallable.Call([firstOf(option.plexObject, m.plexObject)]) = false then
             comp = invalid
@@ -266,7 +267,21 @@ sub ddoverlayGetComponents()
             if option.fields <> invalid then
                 comp.Append(option.fields)
             end if
-            if m.screen.focusedItem = invalid then m.screen.focusedItem = comp
+
+            ' Always focus the selected item regardless of current focus
+            if option.isSelected = true then
+                m.screen.focusedItem = comp
+                hasSelection = true
+            end if
+
+            ' Fallback to the default or first item if nothing is focused
+            if not hasSelection then
+                if option.isDefault = true then
+                    m.screen.focusedItem = comp
+                else if m.screen.focusedItem = invalid then
+                    m.screen.focusedItem = comp
+                end if
+            end if
         end if
 
         if comp <> invalid then
