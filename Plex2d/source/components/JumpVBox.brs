@@ -69,6 +69,8 @@ sub jvboxInit()
 end sub
 
 sub jvboxItemOnFocus()
+    if not m.SpriteIsLoaded() then return
+
     if m.parent.focusedItem <> invalid then
         if m.Equals(m.parent.focusedItem) and m.isFocused = true then return
         m.parent.focusedItem.OnBlur()

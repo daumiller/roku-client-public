@@ -141,6 +141,9 @@ sub vboxPerformLayout()
             end if
         else
             m.jumpVBox.DestroyComponents()
+            for each component in m.components
+                component.Delete("jumpItem")
+            end for
             m.Delete("jumpVBox")
         end if
     end if
