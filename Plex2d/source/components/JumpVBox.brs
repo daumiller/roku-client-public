@@ -32,6 +32,8 @@ function createJumpVBox(vbox as object, jumpList as object, font as object, widt
 
     ' Add a reference to the content VBox
     obj.contentVBox.jumpVBox = obj
+    obj.SetFocusManual(invalid)
+    obj.contentVBox.SetFocusManual(invalid)
 
     return obj
 end function
