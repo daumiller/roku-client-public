@@ -194,10 +194,11 @@ sub filterboxOnFilterRefresh(filters as object)
 
             ' Sort options
             for each sort in filters.GetSortOptions()
-                sortDirection = filters.GetSortDirection(sort.Get("key"))
+                sortDirection = filters.GetSortDirection(sort.Get("key", ""))
 
                 option = sortButton.AddCallableButton(createSortButton, [sort.Get("title"), sortDirection, m.optionPrefs.font, m.customFonts.glyph, "sort"])
                 option.plexObject = sort
+                option.isSelected = (sortDirection <> invalid)
                 option.Append(m.optionPrefs)
             end for
         end if
