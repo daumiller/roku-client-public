@@ -217,6 +217,14 @@ sub filterboxOnFilterRefresh(filters as object)
         m.screen.screen.DrawComponent(m, m.screen)
     end if
 
+    ' Set a focus helper to refocus the last used button when moving
+    ' to the filter box for the first time after a refresh
+    '
+    if m.screen.lastFilterButtonIndex <> invalid then
+        m.SetFocusManual(m.components[m.screen.lastFilterButtonIndex])
+        m.screen.Delete("lastFilterButtonIndex")
+    end if
+
     ' Refresh available components (filterBox updated)
     m.screen.RefreshAvailableComponents()
 
@@ -224,6 +232,16 @@ sub filterboxOnFilterRefresh(filters as object)
 end sub
 
 sub filterboxOnFilterSet(subject=invalid as dynamic)
+    ' Remember the last button focused before refreshing the screen
+    ' to add a focus helper when the filter box refreshes.
+    '
+    for index = 0 to m.components.Count() - 1
+        if m.components[index].Equals(m.focusedItem) then
+            m.screen.lastFilterButtonIndex = index
+            exit for
+        end if
+    end for
+
     m.screen.Refresh(m.filters.BuildPath(), false)
 end sub
 
