@@ -407,7 +407,7 @@ function filtersSetSort(key=invalid as dynamic, toggle=true as boolean, trigger=
 
     m.currentSort.Delete("plexObject")
     for each sort in m.sortItems
-        if instr(1, key, sort.Get("key")) > 0 then
+        if key = sort.Get("key") or key = sort.Get("descKey") then
             defaultKey = sort.Get("key")
             descKey = sort.Get("descKey", defaultKey)
 
@@ -425,6 +425,7 @@ function filtersSetSort(key=invalid as dynamic, toggle=true as boolean, trigger=
             m.currentSort.direction = iif(m.currentSort.key = descKey, "desc", "asc")
             m.currentSort.defaultKey = defaultKey
             m.currentSort.plexObject = sort
+            exit for
         end if
     end for
 
