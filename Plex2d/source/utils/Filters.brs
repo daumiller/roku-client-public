@@ -527,7 +527,7 @@ function filtersSetFilter(key as string, value=invalid as dynamic, title=invalid
     if value <> invalid then
         filter = {key: key, value: value, title: title}
         for each plexObject in m.filterItems
-            if instr(1, key, plexObject.Get("filter")) > 0 then
+            if key = plexObject.Get("filter") then
                 filter.isBoolean = (plexObject.Get("filterType") = "boolean")
                 filter.plexObject = plexObject
                 exit for
