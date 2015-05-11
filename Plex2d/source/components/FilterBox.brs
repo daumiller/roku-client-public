@@ -133,6 +133,7 @@ sub filterboxOnFilterRefresh(filters as object)
                 option.plexObject = filter
                 option.Append(m.optionPrefs)
                 option.bgColor = Colors().Button
+                option.isDefault = (filters.GetFilters() <> invalid)
             end if
 
             ' Clear Filters button
@@ -140,6 +141,7 @@ sub filterboxOnFilterRefresh(filters as object)
                 option = filterButton.AddCallableButton(createGlyphButton, ["CLEAR FILTER", m.optionPrefs.font, Glyphs().CIR_X, m.customFonts.glyph, "filter_clear"])
                 option.Append(m.optionPrefs)
                 option.bgColor = Colors().Button
+                option.isDefault = true
             end if
 
             ' Filter buttons
