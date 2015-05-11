@@ -53,8 +53,7 @@ sub jvboxInit()
             comp = createButton(ch, m.font, "vbox_jump")
             comp.SetMetadata(m.jumpList[ch])
             comp.SetColor(Colors().Text, Colors().Button, Colors().Button)
-            comp.SetFocusMethod(comp.FOCUS_BACKGROUND, Colors().ButtonLht)
-            comp.OnFocus = jvboxItemOnFocus
+            comp.SetFocusMethod(comp.FOCUS_BACKGROUND, Colors().Orange, Colors().ButtonLht)
 
             ' Add a reference to the content list components for this jumpItem
             for each component in m.jumpList[ch].components
@@ -68,18 +67,6 @@ sub jvboxInit()
         comp.width = m.width
         m.AddComponent(comp)
     end for
-end sub
-
-sub jvboxItemOnFocus()
-    if not m.SpriteIsLoaded() then return
-
-    if m.parent.focusedItem <> invalid then
-        if m.Equals(m.parent.focusedItem) and m.isFocused = true then return
-        m.parent.focusedItem.OnBlur()
-    end if
-
-    ApplyFunc(ButtonClass().OnFocus, m)
-    m.parent.focusedItem = m
 end sub
 
 ' Derive the jump list from the content list components. Hopefully the
