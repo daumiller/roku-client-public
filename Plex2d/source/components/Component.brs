@@ -61,10 +61,13 @@ function ComponentClass() as object
         obj.IsPendingTexture = compIsPendingTexture
         obj.SetOrientation = compSetOrientation
         obj.GetRootParent = compGetRootParent
+        obj.UpdateRootFocusedItem = compUpdateRootFocusedItem
 
         ' no-op methods
         obj.OnBlur = compOnBlur
         obj.OnFocus = compOnFocus
+        obj.OnHighlight = compOnHighlight
+        obj.OnDim = compOnDim
 
         ' Shifting methods
         obj.ShiftPosition = compShiftPosition
@@ -530,4 +533,18 @@ end sub
 
 sub compOnFocus()
     m.isFocused = true
+end sub
+
+sub compOnHighlight(screen as object)
+    if screen.highlightedItem <> invalid and not m.Equals(screen.highlightedItem) and screen.highlightedItem.SpriteIsLoaded() then
+        screen.highlightedItem.OnDim()
+    end if
+
+    m.UpdateRootFocusedItem()
+    screen.highlightedItem = m
+    m.isHighlighted = true
+end sub
+
+sub compOnDim()
+    m.isHighlighted = false
 end sub

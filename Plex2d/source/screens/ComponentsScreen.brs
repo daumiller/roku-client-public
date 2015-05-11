@@ -1305,19 +1305,16 @@ end sub
 sub compOnFocusIn(toFocus=invalid as dynamic, lastFocus=invalid as dynamic)
     if toFocus = invalid then return
 
-    ' let the component know it's focus state
+    ' let the component know its focus state
     toFocus.OnFocus()
 
-    ' let the jumpItem know it's focused
+    ' let the jump item know its highlight state
     if toFocus.jumpItem <> invalid then
-        toFocus.jumpItem.OnFocus()
+        toFocus.jumpItem.OnHighlight(m)
     end if
 
     ' Update the root parent with a reference to the focused item
-    rootParent = toFocus.GetRootParent()
-    if rootParent <> invalid and rootParent.updateFocusedItem <> false then
-        rootParent.focusedItem = toFocus
-    end if
+    toFocus.UpdateRootFocusedItem()
 
     m.ToggleScrollbar(true, toFocus, lastFocus)
 end sub
@@ -1439,3 +1436,10 @@ function compIsRefocusItem(item=invalid as dynamic) as boolean
 
     return (m.refocusKey.value = item[m.refocusKey.key])
 end function
+
+sub compUpdateRootFocusedItem()
+    rootParent = m.GetRootParent()
+    if rootParent <> invalid and rootParent.updateFocusedItem <> false then
+        rootParent.focusedItem = m
+    end if
+end sub

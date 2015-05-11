@@ -16,6 +16,8 @@ function ButtonClass() as object
         obj.SetFocusMethod = buttonSetFocusMethod
         obj.OnFocus = buttonOnFocus
         obj.OnBlur = buttonOnBlur
+        obj.OnHighlight = buttonOnHighlight
+        obj.OnDim = buttonOnDim
 
         obj.SetUniqCommand = buttonSetUniqCommand
         obj.SetText = buttonSetText
@@ -50,7 +52,7 @@ sub buttonInit(text as string, font as object)
     m.SetUniqCommand()
 end sub
 
-sub buttonSetFocusMethod(focusMethod as string, color=invalid as dynamic)
+sub buttonSetFocusMethod(focusMethod as string, color=invalid as dynamic, hlColor=invalid as dynamic)
     m.focusMethod = focusMethod
 
     if focusMethod = m.FOCUS_BORDER then
@@ -58,10 +60,12 @@ sub buttonSetFocusMethod(focusMethod as string, color=invalid as dynamic)
     else if focusMethod = m.FOCUS_FOREGROUND then
         m.focusBorder = false
         m.focusColor = color
+        m.highlightColor = firstOf(hlColor, color)
         m.blurColor = m.fgColor
     else if focusMethod = m.FOCUS_BACKGROUND then
         m.focusBorder = false
         m.focusColor = color
+        m.highlightColor = firstOf(hlColor, color)
         m.blurColor = m.bgColor
         m.focusColorText = firstOf(m.fgColorFocus, m.fgColor)
         m.blurColorText = m.fgColor
@@ -102,6 +106,25 @@ sub buttonOnBlur(toFocus=invalid as dynamic)
             m.Redraw()
         end if
     end if
+end sub
+
+sub buttonOnHighlight(screen as object)
+    ApplyFunc(LabelClass().OnHighlight, m, [screen])
+
+    if m.focusMethod = m.FOCUS_FOREGROUND then
+        m.SetColor(m.highlightColor, m.bgColor)
+        m.Draw(true)
+        m.Redraw()
+    else if m.focusMethod = m.FOCUS_BACKGROUND then
+        m.SetColor(m.focusColorText, m.highlightColor)
+        m.Draw(true)
+        m.Redraw()
+    end if
+end sub
+
+sub buttonOnDim()
+    ApplyFunc(LabelClass().OnDim, m)
+    m.OnBlur()
 end sub
 
 sub buttonSetUniqCommand()
