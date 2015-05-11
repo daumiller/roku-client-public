@@ -344,6 +344,9 @@ function playlistHandleCommand(command as string, item as dynamic) as boolean
         firstComponent.trackIndex = firstComponent.trackIndex + 1
         secondComponent.trackIndex = secondComponent.trackIndex - 1
 
+        firstComponent.AdvanceIndex(1, true)
+        secondComponent.AdvanceIndex(-1, true)
+
         firstComponent.SetFocusSibling("down", secondComponent.GetFocusSibling("down"), true)
         secondComponent.SetFocusSibling("up", firstComponent.GetFocusSibling("up"), true)
         secondComponent.SetFocusSibling("down", firstComponent, true)

@@ -16,6 +16,7 @@ function TrackClass() as object
         obj.PerformLayout = trackPerformLayout
         obj.SetPlaying = trackSetPlaying
         obj.SetIndex = trackSetIndex
+        obj.AdvanceIndex = trackAdvanceIndex
         obj.AddSeparator = trackAddSeparator
 
         m.TrackClass = obj
@@ -64,8 +65,21 @@ sub trackInit(titleFont as object, subtitleFont as object, glyphFont=invalid as 
     m.InitComponents()
 end sub
 
-sub trackSetIndex(index as integer)
-    m.index.SetText(tostr(index))
+sub trackSetIndex(index as integer, redraw=false as boolean)
+    if m.index.text = tostr(index) then return
+
+    ' Only redraw/resize during SetText if we have a region
+    reinit = (m.index.region <> invalid)
+    m.index.SetText(tostr(index), reinit, reinit)
+
+    if redraw then m.Draw()
+end sub
+
+sub trackAdvanceIndex(delta=1 as integer, redraw=false as boolean)
+    ' Index is changing, so we must redraw/resize during SetText
+    m.index.SetText(tostr(m.index.text.toInt() + delta), true, true)
+
+    if redraw then m.Draw()
 end sub
 
 sub trackSetPlaying(playing=true as boolean)
@@ -203,9 +217,7 @@ sub trackPerformLayout()
     end if
 
     ' track index / status glyph
-    if m.index <> invalid then
-        m.index.SetFrame(xOffset, 0, m.index.GetPreferredWidth(), m.height)
-    end if
+    m.index.SetFrame(xOffset, 0, m.index.GetPreferredWidth(), m.height)
     xOffset = xOffset + m.title.font.GetOneLineWidth(string(len(m.trackCount.toStr()), "0"), m.width) + spacingSmall
 
     if m.trackImage <> invalid then
