@@ -336,7 +336,7 @@ sub hubCalculateStyle(container as object)
     else if m.hubType = "clip" then
         m.orientation = m.ORIENTATION_LANDSCAPE
     else if m.hubType = "photo" then
-        m.orientation = m.ORIENTATION_LANDSCAPE
+        m.orientation = m.ORIENTATION_SQUARE
     end if
 
     ' We only expect 5 items per hub, except for landscape, which supports 6. The
