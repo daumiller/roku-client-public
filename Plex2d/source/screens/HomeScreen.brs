@@ -170,7 +170,7 @@ sub homeOnPlaylistResponse(request as object, response as object, context as obj
     response.ParseResponse()
     context.response = response
 
-    if response.container.GetInt("totalSize") > 0 then
+    if response.container <> invalid and response.container.GetInt("totalSize") > 0 then
         ' There may be a better way to do this, but we need to generate
         ' a synthetic PlexObject to add a playlist button.
         obj = CreateObject("roAssociativeArray")
