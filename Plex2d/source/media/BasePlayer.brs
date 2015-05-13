@@ -68,6 +68,7 @@ sub bpInit()
         ' playQueue.
         '
         m.context = invalid
+        m.metadata = invalid
         m.curIndex = invalid
         m.playQueue = invalid
         m.metadataById = {}
@@ -189,7 +190,7 @@ sub bpOnPlayQueueUpdate(playQueue as object)
     end if
 
     objectsById = {}
-    metadata = CreateObject("roList")
+    m.metadata = CreateObject("roList")
     m.context = CreateObject("roList")
     m.curIndex = 0
 
@@ -211,7 +212,7 @@ sub bpOnPlayQueueUpdate(playQueue as object)
 
             if obj.metadata <> invalid then
                 m.context.AddTail(obj)
-                metadata.AddTail(obj.metadata)
+                m.metadata.AddTail(obj.metadata)
                 if item.GetInt("playQueueItemID") = playQueue.selectedID then
                     m.curIndex = m.context.Count() - 1
                 end if
@@ -230,7 +231,7 @@ sub bpOnPlayQueueUpdate(playQueue as object)
         nextIndex = m.curIndex
     end if
 
-    m.SetContentList(metadata, nextIndex)
+    m.SetContentList(m.metadata, nextIndex)
 
     ' Update our controllable items based on the PQ size
     NowPlayingManager().SetControllable(m.timelineType, "skipPrevious", (m.curIndex > 0 or m.repeat = m.REPEAT_ALL))

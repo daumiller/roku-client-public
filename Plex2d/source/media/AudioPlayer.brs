@@ -22,6 +22,7 @@ function AudioPlayer() as object
         obj.IsPlayable = apIsPlayable
         obj.CreateContentMetadata = apCreateContentMetadata
         obj.GetPlaybackPosition = apGetPlaybackPosition
+        obj.SetNext = apSetNext
 
         ' BasePlayer overrides
         obj.SetRepeat = apSetRepeat
@@ -58,6 +59,7 @@ sub apStop()
         m.curIndex = 0
         m.playQueue = invalid
         m.context = invalid
+        m.metadata = invalid
         m.player.SetContentList([])
         m.player.SetNext(m.curIndex)
         m.timelineTimer.active = false
@@ -78,8 +80,8 @@ end sub
 sub apPlayItemAtIndex(index as integer)
     m.ignoreTimelines = true
     m.player.Stop()
+    m.SetNext(index)
     m.SetCurrentIndex(index)
-    m.player.SetNext(index)
     m.Play()
 end sub
 
@@ -145,7 +147,7 @@ function apHandleMessage(msg as object) as boolean
             m.Trigger("playing", [m, item])
 
             if m.repeat = m.REPEAT_ONE then
-                m.player.SetNext(m.curIndex)
+                m.SetNext(m.curIndex)
             else
                 ' We started a new track, so refresh the PQ if necessary
                 refreshQueue = true
@@ -199,6 +201,7 @@ sub apCleanup()
     m.timelineTimer.active = false
     m.playbackTimer.active = false
     m.context = invalid
+    m.metadata = invalid
     m.curIndex = invalid
     m.playQueue = invalid
     m.metadataById.Clear()
@@ -224,12 +227,13 @@ sub apSetRepeat(mode as integer)
     m.player.SetLoop(mode = m.REPEAT_ALL)
 
     if mode = m.REPEAT_ONE then
-        m.player.SetNext(m.curIndex)
+        index = m.curIndex
     else if mode = m.REPEAT_NONE then
-        m.player.SetNext(m.curIndex + 1)
+        index = m.curIndex + 1
     else
-        m.player.SetNext(m.AdvanceIndex(1, false))
+        index = m.AdvanceIndex(1, false)
     end if
+    m.SetNext(index)
 end sub
 
 sub apOnFwdButton()
@@ -248,4 +252,18 @@ sub apOnPlaybackStarted(player as object, item as object)
     ' If we're starting playback fresh, show the now playing screen.
     Application().PushScreen(createNowPlayingScreen(item))
     CompositorScreen().DrawUnlock()
+end sub
+
+sub apSetNext(index as integer)
+    ' Workaround for https://github.com/plexinc/roku-client/issues/433.
+    ' Setting the next track via AudioPlayer().SetNext to the same index
+    ' of the current track, regardless of the playback state, will play
+    ' the track after the desired one.
+    '
+    if index = m.curIndex then
+        Debug("Perform workaround since current track equals next track")
+        m.SetContentList(m.metadata, index)
+    else
+        m.player.SetNext(index)
+    end if
 end sub

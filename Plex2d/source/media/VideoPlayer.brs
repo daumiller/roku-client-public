@@ -126,6 +126,7 @@ sub vpCleanup()
     m.screen = invalid
     m.player = invalid
     m.context = invalid
+    m.metadata = invalid
     m.curIndex = invalid
     m.playQueue = invalid
     m.metadataById.Clear()
