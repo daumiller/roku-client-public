@@ -599,3 +599,12 @@ function BitrateToString(bits as integer) as string
 
     return tostr(speed) + " " + format
 end function
+
+' Wrapper to handle specific case anomalies. e.g. decades 1980S -> 1980s
+function upper(text as string) as string
+    if m.regexYears = invalid then
+        m.regexYears = CreateObject("roRegex", "(.*\d\d\d\d)s(\s.*|$)", "i")
+    end if
+
+    return m.regexYears.Replace(ucase(text), "\1s\2")
+end function

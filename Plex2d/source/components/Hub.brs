@@ -52,7 +52,7 @@ function createHub(title as string, orientation as integer, layout as integer, s
     obj.Init()
 
     ' add a label component for the hubs title
-    obj.title = createLabel(ucase(title), FontRegistry().NORMAL)
+    obj.title = createLabel(upper(title), FontRegistry().NORMAL)
     obj.AddComponent(obj.title)
 
     obj.orientation = orientation

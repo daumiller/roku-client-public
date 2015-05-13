@@ -344,7 +344,7 @@ function filtersGetFilterTitle() as dynamic
     end if
 
     if filterStringArr.Count() > 0 then
-        return ucase(JoinArray(filterStringArr, " / "))
+        return upper(JoinArray(filterStringArr, " / "))
     end if
 
     return invalid

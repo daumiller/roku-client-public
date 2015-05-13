@@ -121,7 +121,7 @@ sub filterboxOnFilterRefresh(filters as object)
         ' Filters
         if filters.HasFilters() then
             title = firstOf(filters.GetFilterTitle(), "ALL")
-            filterButton = createDropDownButton(ucase(title), m.font, m.screen, false)
+            filterButton = createDropDownButton(title, m.font, m.screen, false)
             filterButton.OnClosed = m.OnClosed
             m.AddComponent(filterButton)
             dropdowns.Push(filterButton)
