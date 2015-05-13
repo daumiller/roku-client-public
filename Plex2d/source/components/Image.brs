@@ -76,7 +76,15 @@ function imageDraw() as object
             if m.thumbAttr = invalid then
                 ' Choose an attribute based on orientation
                 if m.orientation = m.ORIENTATION_SQUARE then
-                    m.thumbAttr = ["composite", "thumb", "parentThumb", "grandparentThumb", "art"]
+                    ' TODO(rob): find out why the PMS supplies a valid composite/art attribute, but responds
+                    ' with a 400 level error. I'm not sure if it's a bug exposing the attribute, or a bug in
+                    ' that the composite doesn't work.
+                    '
+                    if m.sourceOrig.type = "photoalbum" then
+                        m.thumbAttr = ["thumb"]
+                    else
+                        m.thumbAttr = ["composite", "thumb", "parentThumb", "grandparentThumb", "art"]
+                    end if
                 else if m.orientation = m.ORIENTATION_LANDSCAPE then
                     ' Prefer thumb over art for clips
                     if m.sourceOrig.type = "clip" then
