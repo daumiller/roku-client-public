@@ -12,6 +12,7 @@ function ImageClass() as object
         obj.SetPlaceholder = imageSetPlaceholder
         obj.FromLocal = imageFromLocal
         obj.Replace = imageReplace
+        obj.ReInit = imageReInit
 
         m.ImageClass = obj
     end if
@@ -117,7 +118,7 @@ function imageDraw() as object
                 doRequest = m.isReplacement <> true
             end if
         end if
-        m.isReplacement = invalid
+        m.Delete("isReplacement")
 
         ' Request texture through the TextureManager
         if doRequest then
@@ -370,10 +371,18 @@ end sub
 
 ' Method to replace and image and correctly handle memory cleanup
 sub imageReplace(item as object)
-    if type(item) <> "roAssociativeArray" then
-        Fatal("Replace only handles plex objects")
-    end if
+    m.Reinit(item)
+    m.isReplacement = true
 
+    m.Draw()
+    ' We depend on a texture request to redraw, so we must redraw here if we didn't
+    ' request a new image, most likey because we had a cached region
+    if m.textureRequest = invalid and m.region <> invalid then
+        m.SetBitmap(m.region.GetBitmap())
+    end if
+end sub
+
+sub imageReInit(item as object)
     ' If this component is cached, then we must break ties with any existing cache, otherwise the
     ' region will override any url/regions this component cached
     if m.cache = true and m.region <> invalid then
@@ -383,14 +392,6 @@ sub imageReplace(item as object)
         m.region = CreateObject("roRegion", bitmap, 0, 0, bitmap.GetWidth(), bitmap.GetHeight())
     end if
 
-    m.isReplacement = true
     m.bitmap = invalid
     m.sourceOrig = item
-    m.Draw()
-
-    ' We depend on a texture request to redraw, so we must redraw here if we didn't
-    ' request a new image, most likey because we had a cached region
-    if m.textureRequest = invalid and m.region <> invalid then
-        m.SetBitmap(m.region.GetBitmap())
-    end if
 end sub
