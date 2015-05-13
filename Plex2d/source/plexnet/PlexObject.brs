@@ -246,7 +246,7 @@ end function
 function pnoGetOverlayTitle(preferParent=false as boolean, forced=false as boolean) as dynamic
     if preferParent and m.type = "episode" then
         return m.GetFirst(["grandparentTitle", "parentTitle"])
-    else if not forced and (m.type = "movie" or m.type = "show" or m.type = "album") then
+    else if not forced and (m.type = "movie" or m.type = "show" or m.type = "album" or m.type = "photo" or m.type = "photoalbum") then
         ' Movies and shows should have identifying posters, so they get no
         ' overlay title. (unless forced, e.g. landscape artwork)
         return invalid

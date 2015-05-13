@@ -59,7 +59,7 @@ sub homeShow()
 
     if m.hubsContext.request = invalid then
         ' TODO(rob): modify to allow Photos
-        request = createPlexRequest(m.server, "/hubs?excludePhotos=1")
+        request = createPlexRequest(m.server, "/hubs")
         m.hubsContext = request.CreateRequestContext("hubs", createCallable("OnResponse", m))
         Application().StartRequest(request, m.hubsContext)
     end if
@@ -108,8 +108,6 @@ function homeHandleCommand(command as string, item as dynamic) as boolean
     return handled
 end function
 
-' TODO(rob): remove/modify to allow non-video sections
-' temporary override to exclude non-video sections
 function homeGetButtons() as object
     buttons = []
 
@@ -118,7 +116,8 @@ function homeGetButtons() as object
     end if
 
     for each item in m.buttonsContext.items
-        if item.Get("type") = "show" or item.Get("type") = "movie" or item.Get("type") = "artist" then
+        ' Is it safe to just include all types? Or is it better to allow the types we know we support.
+        if item.Get("type") = "show" or item.Get("type") = "movie" or item.Get("type") = "artist" or item.Get("type") = "photo" then
             buttons.push(m.createButton(item))
         else
             Debug("excluding section type: " + item.Get("type",""))
