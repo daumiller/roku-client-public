@@ -169,9 +169,11 @@ function hubsCreateHub(container) as dynamic
         ' Continue Watching Hub is special. Use the shows title instead of the episode string
         title = item.GetOverlayTitle(hub.hubIdentifier = "home.continue", hub.orientation = ComponentClass().ORIENTATION_LANDSCAPE)
 
-        ' TODO(rob): handle the viewstate overlays differently (cleaner...)
         contentType = item.Get("type", "")
-        if contentType = "album" or contentType = "artist" or contentType = "playlist" then
+        ' Use an image for photos. They do not need any overlay and it should improve performance.
+        if m.contentType = "photo" or m.contentType = "photoalbum" then
+            card = createImage(item)
+        else if contentType = "album" or contentType = "artist" or contentType = "playlist" then
             card = createCard(item, item.GetOverlayTitle())
         else
             card = createCard(item, title, item.GetViewOffsetPercentage(), item.GetUnwatchedCount(), item.IsUnwatched())
