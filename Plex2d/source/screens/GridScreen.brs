@@ -663,7 +663,6 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
             else if gridItem.ClassName = "Image" then
                 gridItem.ReInit(item)
             end if
-            gridItem.setMetadata(item.attrs)
             gridItem.plexObject = item
             gridItem.SetOrientation(m.orientation)
             gridItem.SetFocusable("show_item")
