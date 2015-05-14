@@ -15,6 +15,7 @@ function FiltersClass() as object
 
         obj.IsAvailable = filtersIsAvailable
         obj.GetSelectedType = filtersGetSelectedType
+        obj.BuildType = filtersBuildType
 
         obj.GetSortOptions = filtersGetSortOptions
         obj.GetTypeOptions = filtersGetTypeOptions
@@ -79,8 +80,20 @@ function FiltersClass() as object
             ' {title: "Tracks", key: "track", value: "10"}
         ]
         obj.types["photo"] = [
-            {title: "Photos", key: "photo", value: "13"}
+            {title: "Folders", key: "folder", value: invalid},
+            {title: "Photos", key: "photo", value: "13"},
+            {title: "Photo Albums", key: "photoalbum", value: "14"}
         ]
+
+        ' Override the specific type if a given url doesn't include a type. This is mainly to
+        ' workaround oddities with photo libraries. A photo library, when a type isn't specified
+        ' will return the results by a folder view, which is not an available view type. Once
+        ' the user changes the type or filter, it will now be sorted by photos, with no way to
+        ' get back to the folder view. Another issue, is that we'll display "photos" as the type
+        ' which is obviously a lie.
+        '
+        obj.emptyTypes = {}
+        obj.emptyTypes["photoalbum"] = {empty: obj.types["photo"][0], filtered: obj.types["photo"][1]}
 
         m.FiltersClass = obj
     end if
@@ -116,6 +129,10 @@ end sub
 sub filtersRefresh()
     ' Try to use the existing filters object
     if m.forceRefresh <> true and m.IsAvailable() then
+        if m.BuildType().instr("type=") = -1 then
+            m.ParseType(m.BuildPath())
+        end if
+
         m.Trigger("refresh", [m])
         return
     end if
@@ -136,7 +153,8 @@ sub filtersRefresh()
     m.requests = CreateObject("roList")
     options = ["filters", "sorts"]
     for each option in options
-        request = createPlexRequest(m.server, m.sectionPath + "/" + option + "?type=" + m.GetSelectedType().value)
+        path = AddUrlParam(m.sectionPath + "/" + option, m.BuildType())
+        request = createPlexRequest(m.server, path)
         context = request.CreateRequestContext(option, createCallable("OnResponse", m))
         m.requests.Push({request: request, context: context})
     end for
@@ -206,10 +224,19 @@ function filtersGetTypeOptions() as object
     return m.typeItems
 end function
 
-function filtersGetSelectedType(useOverride=false as boolean) as dynamic
+function filtersGetSelectedType() as dynamic
     if m.selectedTypeIndex = invalid then return invalid
 
     return m.typeItems[m.selectedTypeIndex]
+end function
+
+function filtersBuildType() as string
+    selectedType = m.GetSelectedType()
+    if selectedType <> invalid and selectedType.value <> invalid then
+        return "type=" + selectedType.value
+    end if
+
+    return ""
 end function
 
 function filtersParsePath(path as string, parseTypeOnly=false as boolean) as boolean
@@ -376,7 +403,7 @@ sub filtersSetType(value=invalid as dynamic, trigger=true as boolean)
     for each key in m.types
         itemTypes = m.types[key]
         for index = 0 to itemTypes.Count() - 1
-            if lcase(itemTypes[index][match.key]) = lcase(match.value) then
+            if lcase(tostr(itemTypes[index][match.key])) = lcase(tostr(match.value)) then
                 m.typeItems.Append(itemTypes)
                 m.selectedTypeIndex = index
                 exit for
@@ -460,16 +487,22 @@ function filtersSetParsedSort(key=invalid as dynamic) as boolean
 end function
 
 ' Wrapper to always disable triggers when automatically setting a sort
-sub filtersSetParsedType(key=invalid as dynamic)
+sub filtersSetParsedType(key=invalid as dynamic, emptyType=false as boolean)
+    ' Support to use a specific view type when no type is parsed in the url
+    if emptyType and m.emptyTypes[key] <> invalid then
+        wanted = iif(m.GetFilters() = invalid, "empty", "filtered")
+        key = m.emptyTypes[key][wanted].key
+    end if
+
     m.SetType(key, false)
 end sub
 
-function filtersParseType() as boolean
+function filtersParseType(path=invalid as dynamic) as boolean
     ' Try parsing the type from the path
-    if m.ParsePath(m.originalPath, true) then
+    if m.ParsePath(firstOf(path, m.originalPath), true) then
         ' Fall back to setting the type based on the item
-        if m.GetSelectedType() = invalid then
-            m.SetParsedType(m.item.Get("type"))
+        if m.BuildType().instr("type=") = -1 then
+            m.SetParsedType(m.item.Get("type"), true)
         end if
 
         return (m.GetSelectedType() <> invalid)
@@ -575,10 +608,7 @@ function filtersBuildPath(clearLimitingFilters=false as boolean) as string
         end for
     end if
 
-    itemType = m.GetSelectedType()
-    if itemType <> invalid then
-        args.Push("type=" + itemType.value)
-    end if
+    args.Push(m.BuildType())
 
     unwatched = m.GetUnwatched()
     if unwatched <> invalid then
@@ -611,7 +641,7 @@ function filtersGetFilterOptionSize(plexObject as object) as integer
         return plexObject.items.Count()
     end if
 
-    path = AddUrlParam(plexObject.GetItemPath(), "type=" + m.GetSelectedType().value)
+    path = AddUrlParam(plexObject.GetItemPath(), m.BuildType())
     request = createPlexRequest(plexObject.GetServer(), path)
     request.AddHeader("X-Plex-Container-Start", "0")
     request.AddHeader("X-Plex-Container-Size", "0")
@@ -622,7 +652,7 @@ end function
 
 function filtersGetFilterOptionValues(plexObject as object, refresh=false as boolean) as object
     if plexObject.items = invalid then
-        path = AddUrlParam(plexObject.GetItemPath(), "type=" + m.GetSelectedType().value)
+        path = AddUrlParam(plexObject.GetItemPath(), m.BuildType())
         request = createPlexRequest(plexObject.GetServer(), path)
         response = request.DoRequestWithTimeout(30)
         plexObject.items = response.items
