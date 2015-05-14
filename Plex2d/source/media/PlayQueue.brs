@@ -126,10 +126,10 @@ function createPlayQueueForItem(item as object, options=invalid as dynamic) as o
     else if item.type = "track" then
         path = "/library/metadata/" + item.Get("parentRatingKey", "")
         itemType = "directory"
-    else if item.type = "photo" then
-        path = "/library/sections/" + item.GetLibrarySectionId() + "/all?type=13&parent=" + UrlEscape(item.Get("parentRatingKey", "-1"))
-    else if item.type = "photoalbum" then
-        path = "/library/sections/" + item.GetLibrarySectionId() + "/all?type=13&parent=" + UrlEscape(item.Get("ratingKey", "-1"))
+    else if item.IsPhotoOrDirectoryItem() then
+        parentKey = iif(item.type = "photo", "parentRatingKey", "ratingKey")
+        path = "/library/sections/" + item.GetLibrarySectionId() + "/all?type=13&parent=" + UrlEscape(item.Get(parentKey, "-1"))
+        itemType = "directory"
     else if item.type = "episode" then
         path = "/library/metadata/" + item.Get("grandparentRatingKey", "")
         itemType = "directory"
