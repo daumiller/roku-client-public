@@ -19,6 +19,14 @@ function createPlexHub(container as object, xml as object) as object
 
     obj.Init(container, xml)
 
+    ' TODO(rob): chat with Elan about adding the type for all photo hubs. This
+    ' was initially set to only fix the "photo.recent" hub, but I don't see any
+    ' harm in adding the type to all photo hubs.
+    '
+    if obj.Get("type") = "photo" then
+        obj.Set("key", AddUrlParam(obj.Get("key"), "type=13"))
+    end if
+
     obj.items = CreateObject("roList")
 
     children = xml.GetChildElements()
