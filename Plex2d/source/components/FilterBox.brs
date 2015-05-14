@@ -203,6 +203,13 @@ sub filterboxOnFilterRefresh(filters as object)
                 option.isSelected = (sortDirection <> invalid)
                 option.Append(m.optionPrefs)
             end for
+        else if filters.HasTypes() then
+            ' Try to keep the view types button in the same place if
+            ' the current type has no valid sorts.
+            '
+            label = createLabel("", FontRegistry().NORMAL)
+            label.width = FontRegistry().NORMAL.GetOneLineWidth("BY NAME", 1280)
+            m.AddComponent(label)
         end if
 
         ' Common dropdown setttings
