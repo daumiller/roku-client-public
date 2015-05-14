@@ -268,7 +268,7 @@ sub imageSetBitmap(bmp=invalid as dynamic, makeCopy=false as boolean)
         perfTimer().Log("imageSetBitmap:: init new region")
     end if
 
-    ' Use our own scaling methods: zoom-to-fill, scale-to-fill, etc.
+    ' Use our own scaling methods: zoom-to-fill, scale-to-fill or scale-to-fit
     if m.scaleToLayout then
         m.ScaleRegion(m.width, m.height)
         m.bitmap = m.region.GetBitmap()
@@ -331,10 +331,12 @@ sub imageScaleRegion(width as integer, height as integer)
         m.region.SetScaleMode(1)
 
         scaledBitmap = createobject("roBitmap", {width: width, height: height, AlphaEnable: false})
-        scaledRegion = CreateObject("roRegion", scaledBitmap, 0, 0, scaledBitmap.GetWidth(), scaledBitmap.GetHeight())
+        scaledRegion = CreateObject("roRegion", scaledBitmap, 0, 0, width, height)
 
-        ' zoom-to-fill: scales/crops image to maintain aspect ratio and completely fill requested dimensions.
         if m.scaleMode = "zoom-to-fill" and scaleX <> scaleY then
+            ' zoom-to-fill: scales/crops image to maintain aspect ratio and
+            ' completely fill requested dimensions.
+            '
             if scaleX <> 1 and scaleY <> 1 then
                 scale = iif(scaleX > scaleY, scaleX, scaleY)
                 ratioX = abs(1 - 1/scaleX)
@@ -359,9 +361,20 @@ sub imageScaleRegion(width as integer, height as integer)
                 y = cint((height - m.region.GetHeight()*scale) / 2)
                 scaledRegion.DrawScaledObject(x, y, scale, scale, m.region)
             end if
-        ' scale-to-fit: scale image to completely fill requested dimensions. Default for any image needing
-        ' to be scaled having identical X/Y multipliers. [fallback scaling method]
+        else if m.scaleMode = "scale-to-fit" and scaleX <> scaleY then
+            ' scale-to-fit: upscale or downscale the image to fit within the
+            ' requested size while maintaining the aspect ratio
+            '
+            curHeight = m.region.GetHeight()
+            curWidth = m.region.GetWidth()
+            scale = iif(curHeight * scaleX <= curHeight, scaleX, scaleY)
+            x = cint((width - curWidth*scale) / 2)
+            y = cint((height - curHeight*scale) / 2)
+            scaledRegion.DrawScaledObject(x, y, scale, scale, m.region)
         else
+            ' scale-to-fill: [default] scale image to completely fill requested
+            ' dimensions. [fallback scaling method]
+            '
             scaledRegion.DrawScaledObject(0, 0, scaleX, scaleY, m.region)
         end if
 
