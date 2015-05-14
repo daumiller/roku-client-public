@@ -249,7 +249,7 @@ function filtersParsePath(path as string, parseTypeOnly=false as boolean) as boo
                 end if
             end if
         end for
-    else
+    else if not parseTypeOnly then
         m.ClearSort()
         m.ClearFilters()
     end if
