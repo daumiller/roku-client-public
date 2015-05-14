@@ -303,14 +303,26 @@ sub imageSetBitmap(bmp=invalid as dynamic, makeCopy=false as boolean)
             else
                 incr = 15
             end if
+
             for fade = -256 to -1 step incr
-                if m.fadeRegion <> invalid then
-                    m.region.DrawObject(0, 0, m.fadeRegion)
-                end if
                 if abs(fade) < incr then fade = -1
+
+                if m.fadeRegion <> invalid then
+                    if m.scaleMode = "scale-to-fit" then
+                        ' We can't trust our regions will fill the entire image if we have
+                        ' set our scale mode to "scale-to-fit". We need to clear the image
+                        ' on every draw during our fade.
+                        m.region.Clear(m.bgColor)
+                        m.region.DrawObject(0, 0, m.fadeRegion, (fade + 257) * -1)
+                    else
+                        m.region.DrawObject(0, 0, m.fadeRegion)
+                    end if
+                end if
+
                 m.region.DrawObject(0, 0, orig, fade)
                 m.Trigger("redraw", [m])
             end for
+
             m.region.SetAlphaEnable(false)
             m.fadeRegion = invalid
         end if
