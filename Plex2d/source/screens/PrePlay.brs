@@ -28,8 +28,6 @@ function PreplayScreen() as object
         obj.GetSideInfo = preplayGetSideInfo
         obj.GetMainInfo = preplayGetMainInfo
         obj.UpdatePrefOptions = preplayUpdatePrefOptions
-        obj.SetRefreshCache = preplaySetRefreshCache
-        obj.InitRefreshCache = preplayInitRefreshCache
 
         obj.OnSettingsClosed = preplayOnSettingsClosed
 
@@ -57,7 +55,6 @@ sub preplayInit()
     m.customFonts.glyphs = FontRegistry().GetIconFont(32)
 
     m.requestContext = invalid
-    m.refreshCache = CreateObject("roAssociativeArray")
 end sub
 
 function createPreplayScreen(item as object) as object
@@ -865,27 +862,6 @@ end sub
 
 sub preplayOnRevButton(item=invalid as dynamic)
     m.AdvanceContext(-1)
-end sub
-
-sub preplaySetRefreshCache(key as string, component as object)
-    if m[key] = invalid then return
-
-    ' Set the intial region for the new component to the cache region.
-    cache = m.refreshCache[key]
-    if type(cache) = "roRegion" and cache.GetWidth() = component.GetPreferredWidth() and cache.GetHeight() = component.GetPreferredHeight() then
-        m[key].region = cache
-    end if
-
-    ' Invalidate the cache and retain the key to cache the response.
-    m.refreshCache[key] = invalid
-end sub
-
-sub preplayInitRefreshCache()
-    for each toCache in m.refreshCache
-        if m[toCache] <> invalid then
-            m.refreshCache[toCache] = m[toCache].region
-        end if
-    end for
 end sub
 
 function preplayGetQualityPrefs(mediaChoice) as object

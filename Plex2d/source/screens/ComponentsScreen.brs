@@ -50,6 +50,8 @@ function ComponentsScreen() as object
         obj.GetManualComponents = compGetManualComponents
         obj.DestroyComponents = compDestroyComponents
         obj.CloseOverlays = compCloseOverlays
+        obj.SetRefreshCache = compSetRefreshCache
+        obj.InitRefreshCache = compInitRefreshCache
 
         ' Manual focus methods
         obj.GetFocusManual = compGetFocusManual
@@ -125,6 +127,8 @@ sub compInit()
     m.lazyLoadTimer = createTimer("lazyLoad")
     m.lazyLoadTimer.SetDuration(m.ll_timerDur)
     m.lazyLoadTimer.active = false
+
+    m.refreshCache = CreateObject("roAssociativeArray")
 end sub
 
 sub compShow()
@@ -1442,4 +1446,25 @@ sub compUpdateRootFocusedItem()
     if rootParent <> invalid and rootParent.updateFocusedItem <> false then
         rootParent.focusedItem = m
     end if
+end sub
+
+sub compSetRefreshCache(key as string, component as object)
+    if m[key] = invalid then return
+
+    ' Set the intial region for the new component to the cache region.
+    cache = m.refreshCache[key]
+    if type(cache) = "roRegion" and cache.GetWidth() = component.GetPreferredWidth() and cache.GetHeight() = component.GetPreferredHeight() then
+        m[key].region = cache
+    end if
+
+    ' Invalidate the cache and retain the key to cache the response.
+    m.refreshCache[key] = invalid
+end sub
+
+sub compInitRefreshCache()
+    for each toCache in m.refreshCache
+        if m[toCache] <> invalid then
+            m.refreshCache[toCache] = m[toCache].region
+        end if
+    end for
 end sub
