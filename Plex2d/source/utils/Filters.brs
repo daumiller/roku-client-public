@@ -195,7 +195,7 @@ function filtersHasSorts() as boolean
 end function
 
 function filtersIsAvailable() as boolean
-    return (m.HasFilters() or m.HasSorts())
+    return (m.HasFilters() or m.HasSorts() or m.HasTypes())
 end function
 
 function filtersHasTypes() as boolean
