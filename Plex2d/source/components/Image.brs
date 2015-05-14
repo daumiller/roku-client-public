@@ -363,7 +363,7 @@ sub imageScaleRegion(width as integer, height as integer)
             if ratio <= .05 then
                 scaledRegion.DrawScaledObject(0, 0, scaleX, scaleY, m.region)
             ' move (crop) image to center
-            else if scale < 1 then
+            else if scale < 1 and m.useLargerSource <> true then
                 x = cint((width - m.region.GetWidth()) / 2)
                 y = cint((height - m.region.GetHeight()) / 2)
                 scaledRegion.DrawObject(x, y, m.region)
