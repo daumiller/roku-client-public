@@ -93,10 +93,12 @@ sub pnoInit(container as object, xml as object)
     ' Hack for photo albums
     if m.type = "photo" and m.IsDirectory() then
         m.type = "photoalbum"
+        m.Set("type", m.type)
     end if
 
     if m.type = "directory" and instr(1, m.Get("key", ""), "services/gracenote/similarPlaylist") > 0 then
         m.type = "plexmix"
+        m.Set("type", m.type)
     end if
 
     ' Allow any PlexObject to have tags so that things like series don't
