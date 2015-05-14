@@ -381,12 +381,7 @@ function gsCreateGridChunk(placeholder as object) as dynamic
     grid.loadStatus = 0
 
     for index = 0 to placeholder.size-1
-        if m.contentType = "photo" or m.contentType = "photoalbum" then
-            card = CreateImage(invalid)
-        else
-            card = createCardPlaceholder(m.contentType)
-        end if
-
+        card = createCardPlaceholder(m.contentType)
         card.SetFocusable(invalid)
         if m.focusedItem = invalid then m.focusedItem = card
         card.jumpIndex = placeholder.start + index
@@ -643,26 +638,23 @@ function gsOnLoadGridChunk(request as object, response as object, context as obj
 
             ' TODO(rob): handle the viewstate overlays differently (cleaner...)
             thumbAttrs = invalid
-            if gridItem.ClassName = "Card" then
-                if contentType = "album" or contentType = "artist" or contentType = "playlist" then
-                    gridItem.ReInit(item, item.GetOverlayTitle())
-                else
-                    if contentType = "episode" and viewGroup = contentType and not m.hasMixedParents then
-                        thumbAttrs = ["thumb", "art"]
-                        if item.Get("index") <> invalid then
-                            title = "Episode " + item.Get("index")
-                        else
-                            title = item.GetOverlayTitle()
-                        end if
+            ' specific types having no view states
+            if contentType = "album" or contentType = "artist" or contentType = "playlist" or contentType = "photoalbum" or contentType = "photo" then
+                gridItem.ReInit(item, item.GetOverlayTitle())
+            else
+                if contentType = "episode" and viewGroup = contentType and not m.hasMixedParents then
+                    thumbAttrs = ["thumb", "art"]
+                    if item.Get("index") <> invalid then
+                        title = "Episode " + item.Get("index")
                     else
                         title = item.GetOverlayTitle()
                     end if
-                    gridItem.ReInit(item, title, item.GetViewOffsetPercentage(), item.GetUnwatchedCount(), item.IsUnwatched())
+                else
+                    title = item.GetOverlayTitle()
                 end if
-                gridItem.SetThumbAttr(thumbAttrs)
-            else if gridItem.ClassName = "Image" then
-                gridItem.ReInit(item)
+                gridItem.ReInit(item, title, item.GetViewOffsetPercentage(), item.GetUnwatchedCount(), item.IsUnwatched())
             end if
+            gridItem.SetThumbAttr(thumbAttrs)
             gridItem.plexObject = item
             gridItem.SetOrientation(m.orientation)
             gridItem.SetFocusable("show_item")
