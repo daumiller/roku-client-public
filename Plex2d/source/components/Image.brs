@@ -153,11 +153,13 @@ function imageDraw() as object
     return [m]
 end function
 
-function createBackgroundImage(item as object) as object
+function createBackgroundImage(item as object, fade=true as boolean, cache=true as boolean, orientation=ComponentClass().ORIENTATION_LANDSCAPE as dynamic) as object
     obj = createImage(item, 1280, 720, { blur: 15, opacity: 60, background: Colors().ToHexString("Background") })
-    obj.SetOrientation(obj.ORIENTATION_LANDSCAPE)
-    obj.cache = true
-    obj.fade = true
+    if orientation <> invalid then
+        obj.SetOrientation(orientation)
+    end if
+    obj.cache = fade
+    obj.fade = cache
     obj.failedBgColor = Colors().Background
     return obj
 end function
