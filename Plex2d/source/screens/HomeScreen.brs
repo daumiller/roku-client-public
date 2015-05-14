@@ -117,7 +117,7 @@ function homeGetButtons() as object
 
     for each item in m.buttonsContext.items
         ' Is it safe to just include all types? Or is it better to allow the types we know we support.
-        if item.Get("type") = "show" or item.Get("type") = "movie" or item.Get("type") = "artist" or item.Get("type") = "photo" then
+        if item.Get("type") = "show" or item.Get("type") = "movie" or item.Get("type") = "artist" or item.Get("type") = "photoalbum" then
             buttons.push(m.createButton(item))
         else
             Debug("excluding section type: " + item.Get("type",""))
