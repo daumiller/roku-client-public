@@ -1227,6 +1227,13 @@ sub compCreatePlayerForItem(plexObject=invalid as dynamic, options=invalid as dy
     if not IsAssociativeArray(plexObject) or not IsFunction(plexObject.isLibraryItem) then return
     if options = invalid then options = createPlayOptions()
 
+    ' Add a callable if a photoalbum PQ is empty. This is a workaround until the PMS has
+    ' implemented PQ recursion. https://github.com/plexinc/roku-client/issues/439
+    '
+    if plexObject.type = "photoalbum" then
+        options.pqEmptyCallable = createCallable(ComponentsScreen().HandleCommand, invalid, invalid, ["show_item", {plexObject: plexObject}])
+    end if
+
     if plexObject.isLibraryItem() then
         ' If this is a video item with a resume point, ask if we should resume. We also
         ' need to obtain this prior to play queue creation for cinema trailers.

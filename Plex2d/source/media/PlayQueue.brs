@@ -61,6 +61,7 @@ function createPlayQueue(server as object, contentType as string, uri as string,
     end if
 
     context = request.CreateRequestContext("create", createCallable("OnResponse", obj))
+    context.options = options
     Application().StartRequest(request, context, "")
 
     return obj
@@ -334,6 +335,12 @@ end sub
 
 sub pqOnResponse(request as object, response as object, context as object)
     if response.ParseResponse() then
+        ' Handle an empty PQ if we have specified an pqEmptyCallable
+        if response.items.Count() = 0 and context.options <> invalid and context.options.pqEmptyCallable <> invalid then
+            context.options.pqEmptyCallable.Call()
+            return
+        end if
+
         m.id = response.container.GetInt("playQueueID")
         m.isShuffled = response.container.GetBool("playQueueShuffled")
         m.supportsShuffle = not response.container.Has("playQueueLastAddedItemID")
