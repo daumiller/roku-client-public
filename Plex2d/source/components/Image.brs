@@ -379,7 +379,7 @@ sub imageScaleRegion(width as integer, height as integer)
             '
             curHeight = m.region.GetHeight()
             curWidth = m.region.GetWidth()
-            scale = iif(curHeight * scaleX <= curHeight, scaleX, scaleY)
+            scale = iif(curHeight * scaleX <= height, scaleX, scaleY)
             x = cint((width - curWidth*scale) / 2)
             y = cint((height - curHeight*scale) / 2)
             scaledRegion.DrawScaledObject(x, y, scale, scale, m.region)
