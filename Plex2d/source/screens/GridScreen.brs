@@ -100,7 +100,9 @@ function createGridScreen(item as object, path=invalid as dynamic, rows=2 as int
         obj.orientation = ComponentClass().ORIENTATION_LANDSCAPE
     else if obj.containerType = "movie" or obj.containerType = "show" or obj.containerType = "mixed" then
         obj.orientation = ComponentClass().ORIENTATION_PORTRAIT
-    else if obj.containerType = "photo" or obj.containerType = "artist" or obj.containerType = "album" or obj.containerType = "playlist" then
+    else if obj.containerType = "photo" or obj.containerType = "photoalbum" then
+        obj.orientation = ComponentClass().ORIENTATION_SQUARE
+    else if obj.containerType = "artist" or obj.containerType = "album" or obj.containerType = "playlist" then
         obj.orientation = ComponentClass().ORIENTATION_SQUARE
     else
         obj.orientation = ComponentClass().ORIENTATION_LANDSCAPE
