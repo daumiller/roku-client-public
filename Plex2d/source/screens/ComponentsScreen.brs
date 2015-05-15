@@ -563,6 +563,8 @@ function compHandleCommand(command as string, item as dynamic) as boolean
             Application().PushScreen(createPreplayContextScreen(item.plexObject))
         else if item.plexObject.IsDirectory() then
             Application().PushScreen(createGridScreen(item.plexObject))
+        else if itemType = "photo" then
+            m.CreatePlayerForItem(item.plexObject, createPlayOptions())
         else
             dialog = createDialog("Item type not handled yet", "type: " + itemType, m)
             dialog.Show()

@@ -237,6 +237,9 @@ sub remoteOnMetadataResponse(request as object, response as object, context as o
             else if item.IsMusicItem() then
                 player = AudioPlayer()
                 pqType = "audio"
+            else if item.IsPhotoItem() then
+                player = PhotoPlayer()
+                pqType = "photo"
             else
                 player = invalid
                 pqType = invalid

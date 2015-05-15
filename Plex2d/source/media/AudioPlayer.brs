@@ -17,7 +17,6 @@ function AudioPlayer() as object
         obj.Stop = apStop
         obj.SeekPlayer = apSeekPlayer
         obj.PlayItemAtIndex = apPlayItemAtIndex
-        obj.PlayItemAtPQIID = apPlayItemAtPQIID
         obj.SetContentList = apSetContentList
         obj.IsPlayable = apIsPlayable
         obj.CreateContentMetadata = apCreateContentMetadata
@@ -83,16 +82,6 @@ sub apPlayItemAtIndex(index as integer)
     m.SetNext(index)
     m.SetCurrentIndex(index)
     m.Play()
-end sub
-
-sub apPlayItemAtPQIID(playQueueItemID as integer)
-    for index = 0 to m.context.Count() - 1
-        track = m.context[index]
-        if track.item.GetInt("playQueueItemID") = playQueueItemID then
-            m.PlayItemAtIndex(index)
-            exit for
-        end if
-    end for
 end sub
 
 sub apSetContentList(metadata as object, nextIndex as integer)

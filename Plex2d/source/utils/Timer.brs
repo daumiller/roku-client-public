@@ -4,6 +4,7 @@ function TimerClass()
 
         ' Properties
         obj.active = true
+        obj.paused = false
         obj.repeat = false
         obj.durationMillis = 0
         obj.name = ""
@@ -16,6 +17,9 @@ function TimerClass()
         obj.SetDuration = timerSetDuration
         obj.IsExpired = timerIsExpired
         obj.RemainingMillis = timerRemainingMillis
+
+        obj.Pause = timerPause
+        obj.Resume = timerResume
 
         m.TimerClass = obj
     end if
@@ -60,7 +64,7 @@ sub timerSetDuration(millis, repeat=false)
 end sub
 
 function timerIsExpired()
-    if m.active then
+    if m.active and not m.paused then
         if m.timer.TotalMilliseconds() > m.durationMillis then
             if m.repeat then
                 m.Mark()
@@ -99,4 +103,15 @@ end function
 sub perfTimerLog(msg = "" as string)
     if m.active <> true or Logger().level > logger().LEVEL_VERBOSE then return
     m.LogElapsedTime("++++++++++ PERFORMANCE: " + tostr(msg), true)
+end sub
+
+sub timerPause()
+    Debug("Paused timer: " + tostr(m.name))
+    m.paused = true
+end sub
+
+sub timerResume(mark=true as boolean)
+    Debug("Resumed timer: " + tostr(m.name))
+    m.paused = false
+    if mark then m.timer.Mark()
 end sub

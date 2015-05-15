@@ -221,6 +221,7 @@ sub appRun()
 
     ' Clean up
     AudioPlayer().Cleanup()
+    PhotoPlayer().Cleanup()
     Analytics().Cleanup()
     GDMAdvertiser().Cleanup()
     GDMDiscovery().Cleanup()
@@ -299,7 +300,7 @@ function appProcessOneMessage(timeout as integer, ignoreAudio=false as boolean)
         end if
 
         ' Clear references to dead timers
-        if not timer.active then
+        if not timer.active and not timer.paused then
             timersToRemove.AddTail(timerID)
         end if
     next

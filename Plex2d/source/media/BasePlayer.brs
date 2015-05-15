@@ -55,6 +55,7 @@ function BasePlayerClass() as object
         obj.GetCurrentItem = bpGetCurrentItem
         obj.GetNextItem = bpGetNextItem
         obj.GetCurrentMetadata = bpGetCurrentMetadata
+        obj.PlayItemAtPQIID = bpPlayItemAtPQIID
 
         m.BasePlayerClass = obj
     end if
@@ -403,10 +404,20 @@ function GetPlayerForType(mediaType as dynamic) as dynamic
     if mediaType = "music" or mediaType = "audio" then
         return AudioPlayer()
     else if mediaType = "photo" then
-        ' return PhotoPlayer()
+        return PhotoPlayer()
     else if mediaType = "video" then
         return VideoPlayer()
     end if
 
     return invalid
 end function
+
+sub bpPlayItemAtPQIID(playQueueItemID as integer)
+    for index = 0 to m.context.Count() - 1
+        pqItem = m.context[index]
+        if pqItem.item.GetInt("playQueueItemID") = playQueueItemID then
+            m.PlayItemAtIndex(index)
+            exit for
+        end if
+    end for
+end sub
