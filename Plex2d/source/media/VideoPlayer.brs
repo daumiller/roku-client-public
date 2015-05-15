@@ -111,6 +111,7 @@ end sub
 
 sub vpCleanup()
     ' We're cleaning up after our screen, not anything long-lived.
+    m.ClearPlayQueue()
 
     timers = ["pingTimer", "playbackTimer", "bufferingTimer"]
     for each name in timers
@@ -128,7 +129,6 @@ sub vpCleanup()
     m.context = invalid
     m.metadata = invalid
     m.curIndex = invalid
-    m.playQueue = invalid
     m.metadataById.Clear()
 end sub
 

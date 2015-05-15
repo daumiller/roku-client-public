@@ -51,12 +51,12 @@ end function
 
 sub apStop()
     if m.context <> invalid then
+        m.ClearPlayQueue()
         m.player.Stop()
         m.SetPlayState(m.STATE_STOPPED)
         m.UpdateNowPlaying()
         m.Trigger("stopped", [m, m.GetCurrentItem()])
         m.curIndex = 0
-        m.playQueue = invalid
         m.context = invalid
         m.metadata = invalid
         m.player.SetContentList([])

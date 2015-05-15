@@ -50,12 +50,12 @@ end sub
 
 sub ppStop()
     if m.context <> invalid then
+        m.ClearPlayQueue()
         m.player.Stop()
         m.SetPlayState(m.STATE_STOPPED)
         m.UpdateNowPlaying()
         m.Trigger("stopped", [m, m.GetCurrentItem()])
         m.curIndex = 0
-        m.playQueue = invalid
         m.context = invalid
         m.player.SetContentList([])
         m.player.SetNext(m.curIndex)

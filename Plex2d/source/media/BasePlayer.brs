@@ -40,6 +40,7 @@ function BasePlayerClass() as object
         obj.OnTimelineTimer = bpOnTimelineTimer
         obj.UpdateNowPlaying = bpUpdateNowPlaying
         obj.ShouldSendTimeline = bpShouldSendTimeline
+        obj.ClearPlayQueue = bpClearPlayQueue
 
         ' Repeat
         obj.repeat = obj.REPEAT_NONE
@@ -420,4 +421,12 @@ sub bpPlayItemAtPQIID(playQueueItemID as integer)
             exit for
         end if
     end for
+end sub
+
+sub bpClearPlayQueue()
+    if m.playqueue <> invalid and m.playqueue.refreshTimer <> invalid then
+        m.playqueue.refreshTimer.active = false
+        m.playqueue.Delete("refreshTimer")
+    end if
+    m.Delete("playQueue")
 end sub
