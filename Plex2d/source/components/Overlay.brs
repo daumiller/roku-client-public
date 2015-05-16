@@ -164,7 +164,7 @@ sub overlayClose(backButton=false as boolean, redraw=true as boolean)
     m.Trigger("close", [m, backButton])
 end sub
 
-sub overlayShow(blocking=false as boolean)
+sub overlayShow(blocking=false as boolean, ignoreFocus=false as boolean)
     Application().CloseLoadingModal()
     if m.enableBackButton = false then DisableBackButton()
 
@@ -184,7 +184,9 @@ sub overlayShow(blocking=false as boolean)
 
     m.RefreshAvailableComponents()
 
-    m.screen.FocusItemManually(m.screen.focusedItem)
+    if m.screen.focusedItem <> invalid and not ignoreFocus then
+        m.screen.FocusItemManually(m.screen.focusedItem)
+    end if
 
     ' Enable listeners once we completed drawing the screen
     m.EnableListeners()

@@ -12,8 +12,8 @@ function PhotoControlOverlayClass() as object
         obj.GetItemComponent = pcoGetItemComponent
         obj.SetNowPlaying = pcoSetNowPlaying
         obj.Refresh = pcoRefresh
-        obj.DeferRefresh = pcoDeferRefresh
-        obj.OnRefreshTimer = pcoOnRefreshTimer
+        obj.DeferSelected = pcoDeferSelected
+        obj.OnSelectedTimer = pcoOnSelectedTimer
         obj.GetButtons = pcoGetButtons
         obj.OnKeyPress = pcoOnKeyPress
 
@@ -71,16 +71,14 @@ sub pcoInit()
     m.AddListener(m.player, "change", CreateCallable("OnChange", m))
 end sub
 
-sub pcoShow(refocusCommand=invalid as dynamic)
+sub pcoShow()
     ' Lock the screen updates
     m.screen.screen.DrawLock()
 
-    ApplyFunc(OverlayClass().Show, m)
-
-    ' Update the item component and shift the item list based on the item playing
-    toFocus = firstOf(m.GetitemComponent(m.player.GetCurrentItem()), m.screen.focusedItem)
+    ApplyFunc(OverlayClass().Show, m, [false, true])
 
     ' Focus the current item or screens focused item if we didn't override
+    toFocus = firstOf(m.GetitemComponent(m.player.GetCurrentItem()), m.screen.focusedItem)
     m.screen.FocusItemManually(toFocus)
 
     ' Unlock the screen and draw the updates
@@ -102,7 +100,6 @@ sub pcoGetComponents()
 
     buttonSpacing = 100
     gridSpacing = 10
-
 
     ' *** Overlay background ***
     background = createBlock(Colors().GetAlpha("Black", 70))
@@ -169,7 +166,18 @@ function pcoGetItemComponent(plexObject as dynamic) as dynamic
 end function
 
 sub pcoOnFocusIn(toFocus as object, lastFocus=invalid as dynamic)
+    overlay = m.overlayscreen.Peek()
+    player = overlay.player
+    plexObject = toFocus.plexObject
+
     ApplyFunc(ComponentsScreen().OnFocusIn, m, [toFocus, lastFocus])
+
+    ' Play the highlighted photo
+    if plexObject <> invalid and plexObject.Has("playQueueItemID") then
+        if not plexObject.Equals(player.GetCurrentItem()) then
+            overlay.DeferSelected(plexObject)
+        end if
+    end if
 end sub
 
 sub pcoSetNowPlaying(plexObject as object, status=true as boolean)
@@ -211,38 +219,26 @@ sub pcoRefresh()
     TextureManager().DeleteCache()
 
     m.DestroyComponents()
-'    m.Show(m.screen.focusedItem.command)
     m.Show()
 
     TextureManager().ClearCache()
 end sub
 
-sub pcoDeferRefresh()
-    if m.refreshTimer = invalid then
-        m.refreshTimer = createTimer("refresh")
-        m.refreshTimer.SetDuration(5000)
-        Application().AddTimer(m.refreshTimer, createCallable("OnRefreshTimer", m))
+sub pcoDeferSelected(item as object)
+    if m.selectedTimer = invalid then
+        m.selectedTimer = createTimer("refresh")
+        m.selectedTimer.SetDuration(1500)
+        Application().AddTimer(m.selectedTimer, createCallable("OnSelectedTimer", m))
     end if
-
-    m.refreshTimer.Mark()
+    m.selectedTimer.playQueueItemID = item.GetInt("playQueueItemID")
+    m.selectedTimer.Mark()
 end sub
 
-sub pcoOnRefreshTimer(timer)
-    m.refreshTimer = invalid
-    m.Refresh()
-end sub
-
-sub pcoActionOnSelected(screen as object)
-    ' We're evaluated in the context of the button, which has a reference to the
-    ' overlay, which has a reference to the screen. But we'll just avoid using
-    ' m to reduce confusion.
-
-    btn = m
-    overlay = btn.overlay
-    player = screen.player
-    command = btn.command
-
-    stop
+sub pcoOnSelectedTimer(timer as object)
+    m.Delete("selectedTimer")
+    if timer.playQueueItemID <> invalid then
+        m.player.PlayItemAtPQIID(timer.playQueueItemID)
+    end if
 end sub
 
 function pcoGetButtons() as object
