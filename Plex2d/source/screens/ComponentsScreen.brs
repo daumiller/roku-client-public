@@ -254,7 +254,6 @@ sub compDeactivate(screen=invalid as dynamic)
     ' disable any lazyLoad timer
     if m.lazyLoadTimer <> invalid then
         m.lazyLoadTimer.active = false
-        m.lazyLoadTimer = invalid
     end if
 
     ' clear any preference overrides we may have set
