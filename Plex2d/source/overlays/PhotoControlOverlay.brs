@@ -105,7 +105,7 @@ sub pcoGetComponents()
 
 
     ' *** Overlay background ***
-    background = createBlock(Colors().GetAlpha("Black", 40))
+    background = createBlock(Colors().GetAlpha("Black", 70))
     background.setFrame(0, overlayYOffset, displayWidth, overlayHeight)
     m.components.Push(background)
 
@@ -271,7 +271,7 @@ function pcoGetButtons() as object
         for each button in buttons[key]
             if components[key] = invalid then components[key] = createObject("roList")
             btn = createButton(button.text, m.customFonts.glyphs, button.command)
-            btn.SetColor(firstOf(button.statusColor, Colors().TextDim))
+            btn.SetColor(firstOf(button.statusColor, Colors().Subtitle))
             btn.SetFocusMethod(btn.FOCUS_FOREGROUND, Colors().OrangeLight)
             btn.SetPadding(0, 0, 0, padding)
             if m.screen.focusedItem = invalid or button.defaultFocus = true then m.screen.focusedItem = btn
