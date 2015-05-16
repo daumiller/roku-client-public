@@ -552,7 +552,15 @@ function filtersSetFilter(key as string, value=invalid as dynamic, title=invalid
     return supported
 end function
 
-function filtersBuildPath() as string
+function filtersBuildPath(clearLimitingFilters=false as boolean) as string
+    ' Clear any filter that would limit content, while keeping the
+    ' sort and view type intact.
+    '
+    if clearLimitingFilters then
+        m.ClearFilters()
+        m.ClearUnwatched()
+    end if
+
     args = []
 
     sort = m.GetSort()

@@ -169,10 +169,7 @@ sub gsShow()
                 text = "There is no content matching your active filter."
                 m.ShowFailure(title, text, false)
 
-                ' Destroy the filter box and refresh the grid using the original path
-                m.filterBox.DestroyComponents()
-                m.Delete("filterBox")
-                m.Refresh(m.originalPath)
+                m.Refresh(m.filterBox.filters.BuildPath(true), false)
             else
                 title = "No content available in this library"
                 text = "Please add content and/or check that " + chr(34) + "Include in dashboard" + chr(34) + " is enabled.".
