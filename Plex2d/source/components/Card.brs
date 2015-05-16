@@ -25,6 +25,8 @@ function createCard(imageSource as dynamic, text=invalid as dynamic, watchedPerc
     obj = CreateObject("roAssociativeArray")
     obj.Append(CardClass())
 
+    obj.bgcolor = Colors().Card
+
     obj.Init(imageSource, text, watchedPercentage, unwatchedCount, unwatched)
 
     return obj
@@ -104,6 +106,7 @@ end sub
 sub cardInitComponents(imageSource=invalid as dynamic, text=invalid as dynamic, watchedPercentage=invalid as dynamic, unwatchedCount=invalid as dynamic, unwatched=false as boolean)
     if imageSource <> invalid then
         m.image = createImage(imageSource)
+        m.image.bgColor = Colors().Card
         m.image.fixed = (m.fixed = true)
         m.AddComponent(m.image)
     end if
