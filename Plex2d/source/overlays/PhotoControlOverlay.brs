@@ -138,19 +138,17 @@ sub pcoGetComponents()
     context = m.player.context
     for index = 0 to context.Count() - 1
         item = context[index].item
-        card = createCard(item, item.GetOverlayTitle())
-        card.SetOrientation(ComponentClass().ORIENTATION_SQUARE)
-        card.thumbAttrs = ["thumb"]
-        card.width = card.GetWidthForOrientation(card.orientation, gridHeight)
-        card.fixed = false
-        card.plexObject = item
-        card.SetFocusable("show_item")
+        image = createImage(item, gridHeight, gridHeight)
+        image.fixed = false
+        image.plexObject = item
+        image.SetFocusable(invalid)
+        image.cache = true
 
         if index = 0 then
-            m.itemList.SetFocusManual(card)
-            m.screen.focusedItem = card
+            m.itemList.SetFocusManual(image)
+            m.screen.focusedItem = image
         end if
-        m.itemList.AddComponent(card)
+        m.itemList.AddComponent(image)
     end for
     m.itemList.SetFrame(gridXOffset, gridYOffset, displayWidth, gridHeight)
 
