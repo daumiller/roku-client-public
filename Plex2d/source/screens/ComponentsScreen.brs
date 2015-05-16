@@ -1035,6 +1035,11 @@ sub compShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=f
         m.lazyLoadTimer.components = invalid
     end if
 
+    ' Handle shifting overlay components, if applicable. If a overlay screen is
+    ' enabled, then we should be shifting it's components only.
+    '
+    compScreen = firstOf(m.overlayScreen.Peek(), m)
+
     ' If we are shifting by a lot, we'll need to "jump" and clear some components
     ' as we cannot animate it (for real) due to memory limitations (and speed).
     if shift.x > 1280 or shift.x < -1280 then
@@ -1050,7 +1055,7 @@ sub compShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=f
 
         ' Pass 1
         onScreen = CreateObject("roList")
-        for each comp in m.shiftableComponents
+        for each comp in compScreen.shiftableComponents
             if comp.IsOnScreen(shift.x, shift.y) then
                 onScreen.push(comp)
             end if
@@ -1059,7 +1064,7 @@ sub compShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=f
         ' Pass 2
         shift.x = m.CalculateFirstOrLast(onScreen, shift)
         onScreen.Clear()
-        for each comp in m.shiftableComponents
+        for each comp in compScreen.shiftableComponents
             comp.ShiftPosition(shift.x, shift.y, false)
             if comp.IsOnScreen() then
                 comp.ShiftPosition(0, 0)
@@ -1069,7 +1074,7 @@ sub compShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=f
             end if
         end for
 
-        m.onScreenComponents = onScreen
+        compScreen.onScreenComponents = onScreen
 
         m.LazyLoadExec(onScreen)
         return
@@ -1080,13 +1085,13 @@ sub compShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=f
     partShift = CreateObject("roList")
     fullShift = CreateObject("roList")
     lazyLoad = CreateObject("roAssociativeArray")
-    for each component in m.components
+    for each component in compScreen.components
         component.GetShiftableItems(partShift, fullShift, lazyLoad, shift.x, shift.y)
     next
     Debug("Determined shiftable items: " + "onscreen=" + tostr(partShift.count()) + ", offScreen=" + tostr(fullShift.count()))
 
     ' set the onScreen components (helper for the manual Focus)
-    m.onScreenComponents = partShift
+    compScreen.onScreenComponents = partShift
 
     ' lazy-load any components that will be on-screen after we shift
     ' and cancel any pending texture requests
@@ -1148,7 +1153,6 @@ sub compShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=f
         m.lazyLoadTimer.active = false
         m.lazyLoadTimer.components = invalid
     end if
-
 end sub
 
 ' Handle expiration of lazy load timer. We expect all components contained

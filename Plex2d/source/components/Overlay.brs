@@ -4,12 +4,16 @@ function OverlayClass() as object
         obj.Append(ComponentClass())
         obj.ClassName = "OverlayClass"
 
+        ' Methods
         obj.Show = overlayShow
         obj.Init = overlayInit
         obj.OnKeyRelease = overlayOnKeyRelease
         obj.Close = overlayClose
         obj.IsActive = overlayIsActive
         obj.AssignOverlayID = overlayAssignOverlayID
+
+        ' Shared Methods
+        obj.RefreshAvailableComponents = compRefreshAvailableComponents
 
         m.OverlayClass = obj
     end if
@@ -81,6 +85,11 @@ sub overlayInit()
 
     m.buttons = CreateObject("roList")
     m.customFonts = CreateObject("roAssociativeArray")
+
+    ' Quick references to drawables in m.components
+    m.onScreenComponents = CreateObject("roList")
+    m.fixedComponents = CreateObject("roList")
+    m.shiftableComponents = CreateObject("roList")
 end sub
 
 ' From the context of the underlying screen. Process everything as
@@ -113,7 +122,10 @@ sub overlayClose(backButton=false as boolean, redraw=true as boolean)
     TextureManager().RemoveTextureByOverlayId(m.uniqID)
     m.DisableListeners()
     m.DestroyComponents()
-    m.customFonts.clear()
+    m.customFonts.Clear()
+    m.shiftableComponents.Clear()
+    m.fixedComponents.Clear()
+    m.onScreenComponents.Clear()
 
     m.screen.overlayScreen.Pop()
 
@@ -160,6 +172,8 @@ sub overlayShow(blocking=false as boolean)
     for each comp in m.components
         CompositorScreen().DrawComponent(comp)
     end for
+
+    m.RefreshAvailableComponents()
 
     m.screen.FocusItemManually(m.screen.focusedItem)
 
