@@ -12,6 +12,7 @@ function PhotoScreen() as object
         obj.Deactivate = photoDeactivate
         obj.GetComponents = photoGetComponents
         obj.OnSlideShowTimer = photoOnSlideShowTimer
+        obj.SetImage = photoSetImage
 
         obj.OnKeyPress = photoOnKeyPress
         obj.OnFwdButton = photoOnFwdButton
@@ -81,44 +82,33 @@ end sub
 sub photoRefresh()
     m.InitRefreshCache()
 
+    ' Cancel request and clean memory
     m.CancelRequests()
-    TextureManager().RemoveTextureByScreenId(m.screenID)
 
-    ' Encourage some extra memory cleanup
+    ' TODO(rob): holding the left/right button down on the harmony remote causes
+    ' memory leak. The harmony remote logic is broken, but we should be able to
+    ' handle their lame sauce.
+    '
+    TextureManager().Reset()
+
+    TextureManager().RemoveTextureByScreenId(m.screenID)
     RunGC()
 
-    m.Show()
+    m.SetImage(4, true)
 end sub
 
 sub photoDeactivate(screen=invalid as dynamic)
     m.slideShowTimer.Pause()
     m.Delete("slideShowTimer")
     m.controller.Stop()
+    m.refreshCache.Clear()
+    m.image = invalid
     ApplyFunc(ComponentsScreen().Deactivate, m, [screen])
 end sub
 
 sub photoGetComponents()
     m.DestroyComponents()
-
-    ' How quickly should we fade the image (1 - 100). It might be nice to slow
-    ' this down when we are in a slideshow, and fade quickly when manually
-    ' advancing
-    '
-    fadeSpeed = 5
-
-    ' Use a layered image. A blurred background and a photo centered on top. This is
-    ' essentially a more efficient (memory and performance) composite. It will wait
-    ' for all texture requests to complete before drawing to the screen.
-    m.image = createLayeredImage()
-    m.image.SetFade(true, fadeSpeed)
-    m.image.setFrame(0, 0, 1280, 720)
-    m.SetRefreshCache("image", m.image)
-
-    ' Add layers
-    m.image.AddComponent(createBackgroundImage(m.item, false, false, invalid))
-    m.image.AddComponent(createImage(m.item, m.image.width, m.image.height, invalid, "scale-to-fit"))
-
-    m.components.Push(m.image)
+    m.components.Push(m.SetImage())
 end sub
 
 sub photoPlay()
@@ -250,3 +240,25 @@ end sub
 sub photoOnOverlayClose(overlay as object, backButton as boolean)
     m.ToggleQueue()
 end sub
+
+function photoSetImage(fadeSpeed=4 as integer, redraw=false as boolean) as object
+    if m.image = invalid then
+        m.image = createLayeredImage()
+        m.image.setFrame(0, 0, 1280, 720)
+    else
+        m.image.DestroyComponents()
+    end if
+
+    m.image.SetFade(true, fadeSpeed)
+    m.SetRefreshCache("image", m.image)
+
+    ' Add layers
+    m.image.AddComponent(createBackgroundImage(m.item, false, false, invalid))
+    m.image.AddComponent(createImage(m.item, m.image.width, m.image.height, invalid, "scale-to-fit"))
+
+    if redraw then
+        m.image.Draw()
+    end if
+
+    return m.image
+end function
