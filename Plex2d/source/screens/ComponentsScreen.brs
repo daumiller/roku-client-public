@@ -467,7 +467,7 @@ sub compOnKeyPress(keyCode as integer, repeat as boolean)
             m.Trigger("OnFailedFocus", [direction, m.focusedItem])
         end if
     else if keyCode = m.kp_REV or keyCode = m.kp_FWD then
-        if m.isKeyRepeat then m.DrawFocusOnRelease = true
+        m.DrawFocusOnRelease = (m.isKeyRepeat)
         if keyCode = m.kp_FWD then
             m.OnFwdButton(m.focusedItem)
         else
@@ -956,7 +956,10 @@ sub compCalculateShift(toFocus as object, refocus=invalid as dynamic)
         shift.x = refocus.left - focusRect.left
     ' verify the component is on the screen if no parent exists
     else if ignoreParent then
-        if parent.demandLeft <> invalid then
+        if parent.demandCenter = true then
+            demandX = int(AppSettings().GetWidth()/2 - toFocus.width/2)
+            shift.x = demandX - focusRect.left
+        else if parent.demandLeft <> invalid then
             shift.x = parent.demandLeft - focusRect.left
         else if focusRect.right > shift.safeRight
             shift.x = shift.safeRight - focusRect.right
@@ -1016,7 +1019,6 @@ sub compCalculateShift(toFocus as object, refocus=invalid as dynamic)
     end if
 
     if forceLoad or (shift.x <> 0 or shift.y <> 0) then
-        m.screen.HideFocus()
         m.shiftComponents(shift, refocus, forceLoad)
     end if
 end sub
@@ -1104,7 +1106,9 @@ sub compShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=f
         shift.x = m.CalculateFirstOrLast(partShift, shift, skipIgnore)
         if shift.x = 0 and shift.y = 0 then return
 
-        if refocus = invalid then
+        ' Disable animation if we are refocusing or the command is a key repeat (excluding FWD/REV)
+        enableAnimation = (refocus = invalid and m.isKeyRepeat <> true) or (m.isKeyRepeat = true and m.DrawFocusOnRelease = true)
+        if enableAnimation then
             AnimateShift(shift, partShift, m.screen)
         else
             for each component in partShift
@@ -1115,11 +1119,6 @@ sub compShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=f
         for each comp in fullShift
             comp.ShiftPosition(shift.x, shift.y, false)
         end for
-
-        ' draw the focus before we lazy load
-        if m.DrawFocusOnRelease <> true then
-            m.screen.DrawFocus(m.focusedItem, true)
-        end if
     end if
 
     ' lazy-load any components off screen, but within our range (ll_triggerX)

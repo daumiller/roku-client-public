@@ -376,6 +376,7 @@ function gsCreateGridChunk(placeholder as object) as dynamic
     if placeholder = invalid or placeholder.size = invalid then return invalid
 
     grid = createGrid(m.orientation, m.rows, m.spacing)
+    grid.demandCenter = true
     grid.height = m.height
 
     ' set the properties needed to lazyload the chunk
@@ -444,8 +445,11 @@ sub gsCalculateShift(toFocus as object, refocus=invalid as dynamic)
     shift.Append(m.shift)
 
     focusRect = computeRect(toFocus)
+    if toFocus.parent.demandCenter = true then
+        demandX = int(AppSettings().GetWidth()/2 - toFocus.width/2)
+        shift.x = demandX - focusRect.left
     ' reuse the last position on refocus
-    if refocus <> invalid and focusRect.left <> refocus.left then
+    else if refocus <> invalid and focusRect.left <> refocus.left then
         shift.x = refocus.left - focusRect.left
     ' shift the component to the "middle" if off screen
     else if focusRect.right > shift.safeRight then
@@ -574,20 +578,14 @@ sub gsShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=fal
 
         Debug("shift components by: " + tostr(shift.x) + "," + tostr(shift.y))
 
-        ' hide the focus box before we shift
-        m.screen.HideFocus()
-
-        if refocus = invalid then
+        ' Disable animation if we are refocusing or the command is a key repeat (excluding FWD/REV)
+        enableAnimation = (refocus = invalid and m.isKeyRepeat <> true) or (m.isKeyRepeat = true and m.DrawFocusOnRelease = true)
+        if enableAnimation then
             AnimateShift(shift, partShift, m.screen)
         else
             for each component in partShift
                 component.ShiftPosition(shift.x, shift.y, true)
             end for
-        end if
-
-        ' draw the focus directly after shifting all on screen components
-        if m.DrawFocusOnRelease <> true then
-            m.screen.DrawFocus(m.focusedItem, true)
         end if
 
         ' shift all off screen components. This will set the x,y postition and

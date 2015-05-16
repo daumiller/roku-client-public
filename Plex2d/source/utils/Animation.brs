@@ -1,6 +1,36 @@
 ' shifting animation used by Components screen, Grid screen, and VBox scrollable
 sub AnimateShift(shift as object, components as object, screen as object)
     totalShift = iif(abs(shift.x) > abs(shift.y), abs(shift.x), abs(shift.y))
+
+    ' Lets see if we should hide the focus border before shifting. Basically, we
+    ' can safely ignore hiding the focus if our destination shares the exact
+    ' dimensions and positioning of our source, after shifting. This allows the
+    ' focus border to stay on the screen while we shift components.
+    '
+    srcRect = screen.GetFocusData("rect")
+    if srcRect = invalid then
+        screen.HideFocus()
+    else
+        dstRect = computeRect(shift.toFocus)
+        ' Update the destinations position
+        if shift.x <> 0 then
+            dstRect.left = dstRect.left + shift.x
+            dstRect.right = dstRect.right + shift.x
+        end if
+        if shift.y <> 0 then
+            dstRect.up = dstRect.up + shift.y
+            dstRect.down = dstRect.down + shift.y
+        end if
+
+        ' Hide the focus and move on, if any one key doesn't match.
+        for each key in dstRect
+            if dstRect[key] <> srcRect[key] then
+                screen.HideFocus()
+                exit for
+            end if
+        end for
+    end if
+
     if Locks().IsLocked("DrawAll") or appSettings().GetGlobal("animationSupport") = false then
         fps = 1
     else

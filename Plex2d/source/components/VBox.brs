@@ -342,11 +342,6 @@ sub vboxCalculateShift(toFocus as object, refocus=invalid as dynamic, screen=inv
     end if
 
     if forceLoad or shift.y <> 0 then
-        ' Hide the focus sprite before shift if destination differs
-        sourceRect = m.screen.screen.GetFocusData("rect")
-        if sourceRect <> invalid and (focusRect.left <> sourceRect.left or focusRect.right <> sourceRect.right) then
-            m.screen.screen.hideFocus()
-        end if
         m.shiftComponents(shift, refocus, forceLoad)
     end if
 end sub

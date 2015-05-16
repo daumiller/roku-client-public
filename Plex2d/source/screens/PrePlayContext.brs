@@ -147,6 +147,8 @@ sub ppcGetComponents()
     hbGrid.DisableNonParentExit("right")
     hbGrid.DisableNonParentExit("left")
     hbGrid.ignoreParentShift = true
+    hbGrid.demandCenter = true
+
     for each item in m.children
         ' TODO(rob): another place to figure out how to determine orientation
         contentType = item.Get("type")
