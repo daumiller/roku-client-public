@@ -242,10 +242,17 @@ function tmReceiveTexture(tmsg as object, screen as object) as boolean
 
     context = m.getItem(tmsg.getID())
 
-    ' TODO(schuyler): See above. Somehow detect and discard textures for closed screens?
-
     if state = m.STATE_CANCELLED then
         Debug("Cancelled Texture Request. State : " + state.toStr())
+        failed = true
+    else if context.component.isDestroyed = true then
+        Debug("Ignore Texture Request. Component was destroyed.")
+        failed = true
+    else
+        failed = false
+    end if
+
+    if failed then
         m.RemoveItem(tmsg.getID())
         return false
     end if

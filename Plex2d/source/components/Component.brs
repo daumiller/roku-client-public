@@ -403,6 +403,7 @@ sub compDestroy()
     m.font = invalid
     m.bitmap = invalid
     m.region = invalid
+    m.isDestroyed = true
     if m.sprite <> invalid then
         m.sprite.Remove()
         m.sprite = invalid
