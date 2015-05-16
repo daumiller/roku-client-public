@@ -8,6 +8,7 @@ function OverlayClass() as object
         obj.Show = overlayShow
         obj.Init = overlayInit
         obj.OnKeyRelease = overlayOnKeyRelease
+        obj.OnKeyPress = overlayOnKeyPress
         obj.Close = overlayClose
         obj.IsActive = overlayIsActive
         obj.AssignOverlayID = overlayAssignOverlayID
@@ -59,6 +60,8 @@ sub overlayInit()
     m.OrigScreenFunctions = {
         OnKeyRelease: m.screen.OnKeyRelease,
         OrigOnKeyRelease: m.screen.OrigOnKeyRelease
+        OnKeyPress: m.screen.OnKeyPress,
+        OrigOnKeyPress: m.screen.OrigOnKeyPress
         OnKeyboardRelease: m.screen.OnKeyboardRelease,
         OrigOnKeyboardRelease: m.screen.OrigOnKeyboardRelease
         OnFocusIn: m.screen.OnFocusIn,
@@ -72,6 +75,8 @@ sub overlayInit()
     }
     m.screen.OrigOnKeyRelease = firstOf(m.screen.OrigOnKeyRelease, m.screen.OnKeyRelease)
     m.screen.OnKeyRelease = m.OnKeyRelease
+    m.screen.OrigOnKeyPress = firstOf(m.screen.OrigOnKeyPress, m.screen.OnKeyPress)
+    m.screen.OnKeyPress = m.OnKeyPress
     m.screen.OrigOnKeyboardRelease = firstOf(m.screen.OrigOnKeyboardRelease, m.screen.OnKeyboardRelease)
     m.screen.OnKeyboardRelease = firstOf(m.OnKeyboardRelease, compOnKeyboardRelease)
     m.screen.OrigOnFocusIn = firstOf(m.screen.OrigOnFocusIn, m.screen.OnFocusIn)
@@ -103,6 +108,10 @@ sub overlayOnKeyRelease(keyCode as integer)
     end if
 end sub
 
+sub overlayOnKeyPress(keyCode as integer, repeat as boolean)
+    m.OrigOnKeyPress(keyCode, repeat)
+end sub
+
 sub overlayOnKeyboardRelease(keyCode as integer, value as string)
     m.OrigOnKeyboardRelease(keyCode, value)
 end sub
@@ -116,7 +125,7 @@ sub overlayClose(backButton=false as boolean, redraw=true as boolean)
         m.screen.lazyLoadTimer.active = false
     end if
 
-    ' reset screen OnKeyRelease to original
+    ' reset screens original methods (onKeyPress, onKeyRelease, etc) to original
     m.screen.Append(m.OrigScreenFunctions)
 
     TextureManager().RemoveTextureByOverlayId(m.uniqID)
