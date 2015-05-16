@@ -27,6 +27,10 @@ function PhotoScreen() as object
         obj.SetContentList = photoSetContentList
         obj.SetDuration = photoSetDuration
 
+        ' Overlay methods (controls and queue)
+        obj.ToggleQueue = photoToggleQueue
+        obj.OnOverlayClose = photoOnOverlayClose
+
         m.PhotoScreen = obj
     end if
 
@@ -168,7 +172,9 @@ sub photoOnKeyPress(keyCode as integer, repeat as boolean)
     '
     if m.overlayScreen.Count() = 0 then
         ' For now, lets just enable moving between the photos via left/right.
-        if keyCode = m.kp_RT then
+        if keyCode = m.kp_UP or keyCode = m.kp_DN then
+            m.ToggleQueue()
+        else if keyCode = m.kp_RT then
             m.controller.Next()
         else if keyCode = m.kp_LT then
             m.controller.Prev()
@@ -208,4 +214,39 @@ sub photoSetDuration(duration=5000 as integer, mark=false as boolean)
         m.slideShowTimer.SetDuation(duration, true)
         if mark then m.slideShowTimer.Mark()
     end if
+end sub
+
+sub photoToggleQueue()
+    if m.showQueue = true and m.overlayScreen.Count() > 0 then
+        m.overlayScreen.Peek().Close()
+        return
+    end if
+
+    m.showQueue = not (m.showQueue = true)
+
+    if m.showQueue then
+        m.wasPlaying = (m.isPlaying = true)
+        if m.wasPlaying then
+            m.controller.Pause()
+        end if
+
+        ' Clear any traces of a focusedItem. We shouldn't have any.
+        m.focusedItem = invalid
+
+        queueOverlay = createPhotoControlOverlay(m)
+        queueOverlay.enableOverlay = true
+        queueOverlay.Show()
+        queueOverlay.On("close", createCallable("OnOverlayClose", m))
+    else
+        ' Resume the slide show if it was playing
+        if m.wasPlaying = true then
+            m.controller.Resume()
+        end if
+        m.Delete("wasPlaying")
+        m.screen.DrawAll()
+    end if
+end sub
+
+sub photoOnOverlayClose(overlay as object, backButton as boolean)
+    m.ToggleQueue()
 end sub
