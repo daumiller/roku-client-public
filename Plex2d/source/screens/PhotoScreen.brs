@@ -80,6 +80,10 @@ sub photoShow()
 end sub
 
 sub photoRefresh()
+    if m.overlayScreen.Count() = 0 then
+        TextureManager().DeleteCache()
+    end if
+
     m.InitRefreshCache()
 
     ' Cancel request and clean memory
@@ -95,6 +99,10 @@ sub photoRefresh()
     RunGC()
 
     m.SetImage(4, true)
+
+    if m.overlayScreen.Count() = 0 then
+        TextureManager().ClearCache()
+    end if
 end sub
 
 sub photoDeactivate(screen=invalid as dynamic)
