@@ -13,6 +13,7 @@ function PhotoPlayer() as object
         obj.GetPlaybackPosition = ppGetPlaybackPosition
 
         ' Method overrides
+        obj.Play = ppPlay
         obj.Stop = ppStop
         obj.Pause = ppPause
         obj.Resume = ppResume
@@ -35,12 +36,27 @@ function PhotoPlayer() as object
     return m.PhotoPlayer
 end function
 
-sub ppPause()
+sub ppPlay()
+    ApplyFunc(BasePlayerClass().Play, m)
+
+    ' Handle starting the player paused and sending timelines for either
+    if m.startPaused = true then
+        m.Pause()
+        m.Delete("startPaused")
+    else
+        m.ignoreTimelines = false
+        m.UpdateNowPlaying(true, false)
+    end if
+end sub
+
+sub ppPause(playing=false as boolean)
+    ' Handle pausing player, but overriding the timeline statue
     m.ignoreTimelines = false
-    m.SetPlayState(m.STATE_PAUSED)
+    m.SetPlayState(iif(playing, m.STATE_PLAYING, m.STATE_PAUSED))
     m.UpdateNowPlaying(true, false)
 
     ApplyFunc(BasePlayerClass().Pause, m)
+    m.Trigger("paused", [m, m.GetCurrentItem()])
 end sub
 
 sub ppResume()
@@ -49,6 +65,7 @@ sub ppResume()
     m.UpdateNowPlaying(true, false)
 
     ApplyFunc(BasePlayerClass().Resume, m)
+    m.Trigger("resumed", [m, m.GetCurrentItem()])
 end sub
 
 sub ppStop()
@@ -72,6 +89,7 @@ sub ppPlayItemAtIndex(index as integer)
     m.SetCurrentIndex(index)
     m.player.SetNext(index)
     m.Play()
+    m.Trigger("playing", [m, m.GetCurrentItem()])
 end sub
 
 sub ppSetContentList(metadata as object, nextIndex as integer)

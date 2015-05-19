@@ -29,7 +29,7 @@ function PhotoScreen() as object
         obj.SetDuration = photoSetDuration
 
         ' Overlay methods (controls and queue)
-        obj.ToggleQueue = photoToggleQueue
+        obj.ToggleOverlay = photoToggleOverlay
         obj.OnOverlayClose = photoOnOverlayClose
 
         m.PhotoScreen = obj
@@ -54,11 +54,6 @@ sub photoInit(controller as object)
     m.curIndex = 0
     m.nextIndex = invalid
     m.context = invalid
-
-    ' TODO(rob): should we not start the slideshow automatically? I'm assuming
-    ' we should only start automatically if requested by the "play" button on
-    ' the remote.
-    '
     m.isPlaying = true
 
     m.SetDuration(5000)
@@ -126,9 +121,15 @@ sub photoPlay()
     ' Show or refresh the screen
     if not Application().IsActiveScreen(m) then
         Application().PushScreen(m)
+        if m.controller.startPaused = true then
+            m.ToggleOverlay()
+        end if
     else
         m.Refresh()
     end if
+
+    ' Ignore modifying playback status when overlay is enabled
+    if m.overlayScreen.Count() > 0 then return
 
     ' Let the controller know our current state
     if m.isPlaying then
@@ -170,8 +171,8 @@ sub photoOnKeyPress(keyCode as integer, repeat as boolean)
     '
     if m.overlayScreen.Count() = 0 then
         ' For now, lets just enable moving between the photos via left/right.
-        if keyCode = m.kp_UP or keyCode = m.kp_DN then
-            m.ToggleQueue()
+        if keyCode = m.kp_UP or keyCode = m.kp_DN or keyCode = m.kp_OK then
+            m.ToggleOverlay()
         else if keyCode = m.kp_RT then
             m.controller.Next()
         else if keyCode = m.kp_LT then
@@ -214,7 +215,7 @@ sub photoSetDuration(duration=5000 as integer, mark=false as boolean)
     end if
 end sub
 
-sub photoToggleQueue()
+sub photoToggleOverlay()
     if m.showQueue = true and m.overlayScreen.Count() > 0 then
         m.overlayScreen.Peek().Close()
         return
@@ -223,19 +224,16 @@ sub photoToggleQueue()
     m.showQueue = not (m.showQueue = true)
 
     if m.showQueue then
+        NowPlayingManager().SetLocation(NowPlayingManager().NAVIGATION)
         m.wasPlaying = (m.isPlaying = true)
-        if m.wasPlaying then
-            m.controller.Pause()
-        end if
-
-        ' Clear any traces of a focusedItem. We shouldn't have any.
-        m.focusedItem = invalid
+        m.controller.Pause(m.wasPlaying)
 
         queueOverlay = createPhotoControlOverlay(m)
         queueOverlay.enableOverlay = true
         queueOverlay.Show()
         queueOverlay.On("close", createCallable("OnOverlayClose", m))
     else
+        NowPlayingManager().SetLocation(NowPlayingManager().FULLSCREEN_PHOTO)
         ' Resume the slide show if it was playing
         if m.wasPlaying = true then
             m.controller.Resume()
@@ -246,7 +244,12 @@ sub photoToggleQueue()
 end sub
 
 sub photoOnOverlayClose(overlay as object, backButton as boolean)
-    m.ToggleQueue()
+    if m.playOnClose = true then
+        m.controller.Resume()
+        m.Delete("playOnClose")
+    end if
+
+    m.ToggleOverlay()
 end sub
 
 function photoSetImage(fadeSpeed=4 as integer, redraw=false as boolean) as object
