@@ -169,8 +169,12 @@ sub trackInitComponents()
     m.AddComponent(m.title)
 
     if item.type = "track" then
-        if m.IsMixed then
-            subtitle = joinArray([item.Get("grandparentTitle"), item.Get("parentTitle")], " / ")
+        if m.IsMixed or item.GetBool("isVarious") then
+            if m.IsMixed then
+                subtitle = joinArray([item.Get("trackArtist"), item.Get("parentTitle")], " / ")
+            else
+                subtitle = item.Get("trackArtist", "")
+            end if
             m.subtitle = createLabel(subtitle, m.customFonts.subtitle)
             m.subtitle.SetColor(Colors().TextMed)
             m.subtitle.SetPadding(0, m.padding.right, 0, m.padding.left)

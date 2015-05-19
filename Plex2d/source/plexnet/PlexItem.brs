@@ -59,6 +59,10 @@ function createPlexItem(container as object, xml as object) as object
         if obj.GetInt("index", -1) = 0 then
             obj.Set("index", "")
         end if
+
+        ' Handle Various Artists
+        obj.Set("trackArtist", obj.GetFirst(["originalTitle", "grandparentTitle"], ""))
+        obj.Set("isVarious", iif(ucase(obj.Get("trackArtist")) <> ucase(obj.Get("grandparentTitle")), "1", "0"))
     end if
 
     ' Synthesize media and do further iTunes normalization if necessary

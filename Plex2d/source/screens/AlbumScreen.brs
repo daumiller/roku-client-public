@@ -207,7 +207,7 @@ sub albumGetComponents()
     trackPrefs = {
         background: Colors().GetAlpha(&hffffffff, 10),
         width: 1230 - xOffset - padding - m.trackActions.GetPreferredWidth(),
-        height: 50,
+        height: 80,
         fixed: false,
         focusBG: true,
         zOrder: 2,
@@ -237,7 +237,7 @@ sub albumGetComponents()
     sepRegion = CreateRegion(trackPrefs.width, 1, Colors().Separator)
     for index = 0 to trackCount - 1
         item = m.children[index]
-        track = createTrack(item, FontRegistry().NORMAL, FontRegistry().SMALL, m.customFonts.trackStatus, trackCount)
+        track = createTrack(item, FontRegistry().NORMAL, FontRegistry().MEDIUM, m.customFonts.trackStatus, trackCount)
         track.Append(trackPrefs)
         track.DisableNonParentExit("down")
         track.plexObject = item

@@ -159,15 +159,15 @@ sub nowplayingGetComponents()
 
     font = FontRegistry().LARGE
     fontBold = FontRegistry().LARGE_BOLD
-    m.queueGrandparentTitle = createLabel(m.item.Get("grandparentTitle"), font)
+    m.queueGrandparentTitle = createLabel(m.item.Get("trackArtist", ""), font)
     m.queueGrandparentTitle.width = vbox.width
     m.queueGrandparentTitle.SetColor(Colors().TextLht)
     m.queueGrandparentTitle.zOrderInit = -1
-    m.queueParentTitle = createLabel(m.item.Get("parentTitle"), font)
+    m.queueParentTitle = createLabel(m.item.Get("parentTitle", ""), font)
     m.queueParentTitle.width = vbox.width
     m.queueParentTitle.SetColor(Colors().TextLht)
     m.queueParentTitle.zOrderInit = -1
-    m.queueTitle = createLabel(m.item.Get("title"), fontBold)
+    m.queueTitle = createLabel(m.item.Get("title", ""), fontBold)
     m.queueTitle.width = vbox.width
     m.queueTitle.zOrderInit = -1
 
@@ -191,13 +191,13 @@ sub nowplayingGetComponents()
     vbox = createVBox(false, false, false, 0)
     vbox.SetFrame(xOffset, yOffset, 1230 - xOffset, imageRect.height)
 
-    m.grandparentTitle = createLabel(m.item.Get("grandparentTitle"), m.customFonts.title)
+    m.grandparentTitle = createLabel(m.item.Get("trackArtist", ""), m.customFonts.title)
     m.grandparentTitle.width = vbox.width
     m.grandparentTitle.SetColor(Colors().TextLht)
-    m.parentTitle = createLabel(m.item.Get("parentTitle"), m.customFonts.title)
+    m.parentTitle = createLabel(m.item.Get("parentTitle", ""), m.customFonts.title)
     m.parentTitle.width = vbox.width
     m.parentTitle.SetColor(Colors().TextLht)
-    m.title = createLabel(m.item.Get("title"), m.customFonts.titleStrong)
+    m.title = createLabel(m.item.Get("title", ""), m.customFonts.titleStrong)
     m.title.width = vbox.width
 
     timeString = "0:00 / " + m.item.GetDuration()
@@ -223,7 +223,7 @@ sub nowplayingGetComponents()
     vbox.SetFrame(xOffset, yOffset + imageRect.height - height, 1230 - xOffset, height)
 
     nextTrack = m.GetNextTrack()
-    m.nextGrandparentTitle = createLabel(firstOf(nextTrack.grandparentTitle, ""), m.customFonts.title)
+    m.nextGrandparentTitle = createLabel(firstOf(nextTrack.trackArtist, ""), m.customFonts.title)
     m.nextGrandparentTitle.width = vbox.width
     m.nextGrandparentTitle.halign = m.nextGrandparentTitle.JUSTIFY_RIGHT
     m.nextGrandparentTitle.SetColor(Colors().TextDim)
@@ -391,7 +391,7 @@ function nowplayingGetNextTrack() as object
 
     nextTrack = m.player.GetNextItem()
     if nextTrack <> invalid then
-        obj.grandparentTitle = nextTrack.Get("grandparentTitle")
+        obj.trackArtist = nextTrack.Get("trackArtist")
         obj.parentTitle = nextTrack.Get("parentTitle")
         obj.title = nextTrack.Get("title")
     end if
@@ -428,16 +428,16 @@ sub nowplayingOnToggleTimer(timer as object)
 end sub
 
 sub nowplayingUpdateTracks(item as object)
-    m.SetTitle(item.Get("grandparentTitle", ""), m.grandparentTitle)
+    m.SetTitle(item.Get("trackArtist", ""), m.grandparentTitle)
     m.SetTitle(item.Get("parentTitle", ""), m.parentTitle)
     m.SetTitle(item.Get("title", ""), m.title)
 
-    m.SetTitle(item.Get("grandparentTitle", ""), m.queueGrandparentTitle)
+    m.SetTitle(item.Get("trackArtist", ""), m.queueGrandparentTitle)
     m.SetTitle(item.Get("parentTitle", ""), m.queueParentTitle)
     m.SetTitle(item.Get("title", ""), m.queueTitle)
 
     nextTrack = m.GetNextTrack()
-    m.SetTitle(firstOf(nextTrack.grandparentTitle, ""), m.nextGrandparentTitle)
+    m.SetTitle(firstOf(nextTrack.trackArtist, ""), m.nextGrandparentTitle)
     m.SetTitle(firstOf(nextTrack.title, ""), m.nextTitle)
 end sub
 
