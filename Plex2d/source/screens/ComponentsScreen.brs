@@ -563,7 +563,9 @@ function compHandleCommand(command as string, item as dynamic) as boolean
         else if item.plexObject.IsDirectory() then
             Application().PushScreen(createGridScreen(item.plexObject))
         else if itemType = "photo" then
-            m.CreatePlayerForItem(item.plexObject, createPlayOptions())
+            options = createPlayOptions()
+            options.startPaused = true
+            m.CreatePlayerForItem(item.plexObject, options)
         else
             dialog = createDialog("Item type not handled yet", "type: " + itemType, m)
             dialog.Show()
@@ -1252,6 +1254,9 @@ sub compCreatePlayerForItem(plexObject=invalid as dynamic, options=invalid as dy
         player = GetPlayerForType(pq.type)
         if player <> invalid then
             player.shouldResume = options.resume
+            if options.startPaused = true then
+                player.startPaused = true
+            end if
             player.SetPlayQueue(pq, true)
         end if
     end if
