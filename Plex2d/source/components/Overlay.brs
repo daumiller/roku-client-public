@@ -72,6 +72,8 @@ sub overlayInit()
         OrigOnRevButton: m.screen.OrigOnRevButton,
         OnFwdButton: m.screen.OnFwdButton,
         OrigOnFwdButton: m.screen.OrigOnFwdButton,
+        OnPlayButton: m.screen.OnPlayButton,
+        OrigOnPlayButton: m.screen.OrigOnPlayButton
     }
     m.screen.OrigOnKeyRelease = firstOf(m.screen.OrigOnKeyRelease, m.screen.OnKeyRelease)
     m.screen.OnKeyRelease = m.OnKeyRelease
@@ -87,6 +89,8 @@ sub overlayInit()
     m.screen.OnRevButton = firstOf(m.OnRevButton, compOnRevButton)
     m.screen.OrigOnFwdButton = firstOf(m.screen.OrigOnFwdButton, m.screen.OnFwdButton)
     m.screen.OnFwdButton = firstOf(m.OnFwdButton, compOnFwdButton)
+    m.screen.OrigOnPlayButton = firstOf(m.screen.OrigOnPlayButton, m.screen.OnPlayButton)
+    m.screen.OnPlayButton = firstOf(m.OnPlayButton, compOnPlayButton)
 
     m.buttons = CreateObject("roList")
     m.customFonts = CreateObject("roAssociativeArray")
