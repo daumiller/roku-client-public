@@ -240,6 +240,8 @@ sub photoToggleOverlay()
         ' Resume the slide show if it was playing
         if m.wasPlaying = true then
             m.controller.Resume()
+        else
+            m.controller.Pause()
         end if
         m.Delete("wasPlaying")
         m.screen.DrawAll()
