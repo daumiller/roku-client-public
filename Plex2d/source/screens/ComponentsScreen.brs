@@ -1184,7 +1184,7 @@ sub compLazyLoadExec(components as object)
     for each comp in components
         if comp.SpriteIsLoaded() = false then
             if comp.IsOnScreen() then
-                zOrder = firstOf(m.zOrder, 1)
+                zOrder = firstOf(comp.zOrder, 1)
             else
                 zOrder = -1
             end if
