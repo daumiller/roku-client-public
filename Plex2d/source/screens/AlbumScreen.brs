@@ -237,7 +237,7 @@ sub albumGetComponents()
     sepRegion = CreateRegion(trackPrefs.width, 1, Colors().Separator)
     for index = 0 to trackCount - 1
         item = m.children[index]
-        track = createTrack(item, FontRegistry().NORMAL, FontRegistry().MEDIUM, m.customFonts.trackStatus, trackCount)
+        track = createTrack(item, FontRegistry().NORMAL, FontRegistry().NORMAL, m.customFonts.trackStatus, trackCount)
         track.Append(trackPrefs)
         track.DisableNonParentExit("down")
         track.plexObject = item

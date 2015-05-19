@@ -175,7 +175,7 @@ sub npqoGetComponents()
     sepRegion = CreateRegion(trackPrefs.width, 1, Colors().Separator)
     for index = 0 to trackCount - 1
         item = items.[index].item
-        track = createTrack(item, FontRegistry().NORMAL, FontRegistry().MEDIUM, m.customFonts.trackStatus, m.player.playQueue.totalSize, isMixed)
+        track = createTrack(item, FontRegistry().NORMAL, FontRegistry().NORMAL, m.customFonts.trackStatus, m.player.playQueue.totalSize, isMixed)
         track.Append(trackPrefs)
         track.DisableNonParentExit("down")
         track.plexObject = item
