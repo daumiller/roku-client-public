@@ -128,6 +128,9 @@ sub photoPlay()
         m.Refresh()
     end if
 
+    ' Keep the player active
+    SendEcpCommand("Lit_a")
+
     ' Ignore modifying playback status when overlay is enabled
     if m.overlayScreen.Count() > 0 then return
 
