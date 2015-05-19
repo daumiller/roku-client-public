@@ -125,7 +125,7 @@ sub trackInitComponents()
     item = m.plexObject
 
     ' show the track index of the play queue, unless it's a single album
-    if m.isMixed = true then
+    if m.isMixed then
         trackIndex = item.GetFirst(["playQueueIndex", "index"], "")
     else
         trackIndex = item.Get("index", "")
@@ -137,8 +137,9 @@ sub trackInitComponents()
     m.AddComponent(m.index)
 
     ' Include an image for mixed content or video items
-    if m.isMixed = true or item.IsVideoItem() then
+    if m.isMixed or item.IsVideoItem() then
         m.trackImage = createImage(m.plexObject, m.height, m.height)
+        m.trackImage.cache = true
         if item.type = "track" then
             m.trackImage.SetOrientation(ComponentClass().ORIENTATION_SQUARE)
         else
@@ -147,7 +148,6 @@ sub trackInitComponents()
                 m.trackImage.thumbAttr = ["thumb", "art"]
             end if
         end if
-        m.trackImage.cache = true
         m.AddComponent(m.trackImage)
     end if
 
@@ -168,17 +168,14 @@ sub trackInitComponents()
     m.title.SetPadding(m.padding.top, m.padding.right, m.padding.bottom, m.padding.left)
     m.AddComponent(m.title)
 
+    subtitle = invalid
     if item.type = "track" then
-        if m.IsMixed or item.GetBool("isVarious") then
-            if m.IsMixed then
+        if m.isMixed or item.GetBool("isVarious") then
+            if m.isMixed then
                 subtitle = joinArray([item.Get("trackArtist"), item.Get("parentTitle")], " / ")
             else
                 subtitle = item.Get("trackArtist", "")
             end if
-            m.subtitle = createLabel(subtitle, m.customFonts.subtitle)
-            m.subtitle.SetColor(Colors().TextMed)
-            m.subtitle.SetPadding(0, m.padding.right, 0, m.padding.left)
-            m.AddComponent(m.subtitle)
         end if
         m.time = createLabel(item.GetDuration(), m.customFonts.title)
         m.time.SetPadding(m.padding.top, m.padding.right, m.padding.bottom, m.padding.left)
@@ -190,20 +187,20 @@ sub trackInitComponents()
             else
                 subtitle = joinArray([item.Get("grandparentTitle"), item.GetSingleLineTitle()], " / ")
             end if
-            m.subtitle = createLabel(subtitle, m.customFonts.subtitle)
-            m.subtitle.SetColor(Colors().TextMed)
-            m.subtitle.SetPadding(0, m.padding.right, 0, m.padding.left)
-            m.AddComponent(m.subtitle)
         else
-            m.subtitle = createLabel(item.Get("year", ""), m.customFonts.subtitle)
-            m.subtitle.SetColor(Colors().TextMed)
-            m.subtitle.SetPadding(0, m.padding.right, 0, m.padding.left)
-            m.AddComponent(m.subtitle)
+            subtitle = item.Get("year", "")
         end if
         m.runtime = createLabel(item.GetDuration(), m.customFonts.subtitle)
-        m.runtime.SetColor(Colors().TextMed)
+        m.runtime.SetColor(Colors().Subtitle)
         m.runtime.SetPadding(0, m.padding.right, 0, m.padding.left)
         m.AddComponent(m.runtime)
+    end if
+
+    if subtitle <> invalid then
+        m.subtitle = createLabel(subtitle, m.customFonts.subtitle)
+        m.subtitle.SetColor(Colors().Subtitle)
+        m.subtitle.SetPadding(0, m.padding.right, 0, m.padding.left)
+        m.AddComponent(m.subtitle)
     end if
 end sub
 
@@ -240,7 +237,7 @@ sub trackPerformLayout()
                 m.unwatched.SetFrame(xOffset, yOffset, width, m.unwatched.GetPreferredHeight())
             end if
         end if
-        xOffset = xOffset +m.trackImage.GetPreferredWidth() + spacingSmall
+        xOffset = xOffset + m.trackImage.GetPreferredWidth() + spacingSmall
     end if
 
     ' track time
