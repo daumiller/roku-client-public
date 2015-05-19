@@ -372,7 +372,7 @@ sub npqoActionOnSelected(screen as object)
     focusItem = invalid
 
     if command = "move_item_up" then
-        if player.playQueue.MoveItemUp(focusedTrack) then
+        if focusedComponent.trackIndex > 0 and player.playQueue.MoveItemUp(focusedTrack) then
             ' Move the items in the UI now, and then allow the PQ to refresh
             ' a few seconds after the user stops moving things around.
             '
@@ -381,7 +381,8 @@ sub npqoActionOnSelected(screen as object)
             overlay.DeferRefresh()
         end if
     else if command = "move_item_down" then
-        if player.playQueue.MoveItemDown(focusedTrack) then
+        hasNext = (focusedComponent.trackIndex < overlay.trackList.components.Count()-1)
+        if hasNext and player.playQueue.MoveItemDown(focusedTrack) then
             ' Move the items in the UI now, and then allow the PQ to refresh
             ' a few seconds after the user stops moving things around.
             '
