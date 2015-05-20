@@ -34,6 +34,7 @@ function NowPlayingScreen() as object
         obj.OnFocusTimer = nowplayingOnFocusTimer
         obj.OnToggleTimer = nowplayingOnToggleTimer
         obj.AddToggleTimer = nowplayingAddToggleTimer
+        obj.ToggleShuffleVisibility = nowplayingToggleShuffleVisibility
 
         ' Queue methods
         obj.ToggleQueue = nowplayingToggleQueue
@@ -330,9 +331,9 @@ function nowplayingGetButtons() as object
     buttons = createObject("roAssociativeArray")
 
     buttons["left"] = createObject("roList")
-    if m.player.playQueue <> invalid and m.player.playQueue.supportsShuffle = true then
-        buttons["left"].push({text: Glyphs().SHUFFLE, command: "shuffle", componentKey: "shuffleButton", statusColor: iif(m.player.isShuffled, Colors().Orange, invalid) })
-    end if
+    shuffleColor = iif(m.player.isShuffled, Colors().Orange, invalid)
+    shuffleZOrder = iif(m.player.playQueue.supportsShuffle, invalid, -1)
+    buttons["left"].push({text: Glyphs().SHUFFLE, command: "shuffle", componentKey: "shuffleButton", statusColor: shuffleColor, zOrderInit: shuffleZOrder })
     repeatGlyph = iif(m.player.repeat = m.player.REPEAT_ONE, Glyphs().REPEAT_ONE, Glyphs().REPEAT)
     repeatColor = iif(m.player.repeat <> m.player.REPEAT_NONE, Colors().Orange, invalid)
     buttons["left"].push({text: repeatGlyph, command: "repeat", componentKey: "repeatButton", statusColor: repeatColor})
@@ -354,6 +355,7 @@ function nowplayingGetButtons() as object
             btn.SetColor(firstOf(button.statusColor, Colors().TextDim))
             btn.SetFocusMethod(btn.FOCUS_FOREGROUND, Colors().OrangeLight)
             btn.SetPadding(0, 0, 0, padding)
+            btn.zOrderInit = button.zOrderInit
             if m.focusedItem = invalid or button.defaultFocus = true then m.focusedItem = btn
             components[key].push(btn)
             ' use unique key reference for the screen and overlay
@@ -531,14 +533,14 @@ sub nowplayingOnProgress(player as object, item as object, time as integer, forc
 end sub
 
 sub nowplayingOnShuffle(player as object, item as object, shuffle as boolean)
+    if not m.ToggleShuffleVisibility() then return
+
     ' Update shuffle button, including the underlying screen if applicable
     buttons = CreateObject("roList")
     buttons.Push(m.shuffleButton)
     if m.showQueue = true then
-        buttons.Push(m.queueshuffleButton)
+        buttons.Push(m.queueShuffleButton)
     end if
-
-    if buttons.Peek() = invalid then return
 
     for each button in buttons
         if shuffle then
@@ -618,6 +620,7 @@ sub nowplayingToggleQueue()
         queueOverlay.Show()
         queueOverlay.On("close", createCallable("OnOverlayClose", m))
     else
+        m.ToggleShuffleVisibility()
         m.screen.DrawAll()
     end if
 end sub
@@ -630,3 +633,17 @@ sub nowplayingOnFailedFocus(direction as string, focusedItem=invalid as dynamic)
     if m.hiddenFocusedItem = invalid then return
     m.OnFocusIn(m.hiddenFocusedItem)
 end sub
+
+function nowplayingToggleShuffleVisibility() as boolean
+    shuffleSupport = m.player.playQueue.supportsShuffle
+
+    if m.showQueue = true then
+        m.queueShuffleButton.SetVisible(shuffleSupport)
+        m.queueShuffleButton.ToggleFocusable(shuffleSupport)
+    else
+        m.shuffleButton.SetVisible(shuffleSupport)
+        m.shuffleButton.ToggleFocusable(shuffleSupport)
+    end if
+
+    return shuffleSupport
+end function
