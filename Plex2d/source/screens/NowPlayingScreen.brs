@@ -444,10 +444,7 @@ sub nowplayingUpdateTracks(item as object)
 end sub
 
 sub nowplayingSetTitle(text as string, component as object)
-    if component.sprite = invalid then return
-
-    component.text = text
-    component.Draw(true)
+    component.SetText(text, true)
 end sub
 
 sub nowplayingSetImage(item as object, component as object)
