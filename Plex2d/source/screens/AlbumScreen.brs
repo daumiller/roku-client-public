@@ -132,7 +132,7 @@ sub albumGetComponents()
 
     ' *** Background Artwork *** '
     m.background = createBackgroundImage(m.item)
-    m.background.thumbAttr = ["art", "parentThumb", "thumb"]
+    m.background.thumbAttr = ["art", "thumb"]
     m.components.Push(m.background)
     m.SetRefreshCache("background", m.background)
 

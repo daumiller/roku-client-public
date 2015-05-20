@@ -98,11 +98,10 @@ sub artistGetComponents()
     m.focusedItem = invalid
 
     ' *** Background Artwork *** '
-    if m.item.Get("art") <> invalid then
-        m.background = createBackgroundImage(m.item)
-        m.components.Push(m.background)
-        m.SetRefreshCache("background", m.background)
-    end if
+    m.background = createBackgroundImage(m.item)
+    m.background.thumbAttr = ["art", "thumb"]
+    m.components.Push(m.background)
+    m.SetRefreshCache("background", m.background)
 
     ' *** HEADER *** '
     m.components.Push(createHeader(m))
