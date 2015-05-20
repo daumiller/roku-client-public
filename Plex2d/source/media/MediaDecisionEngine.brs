@@ -228,7 +228,7 @@ function mdeEvaluateMediaVideo(item as object, media as object) as object
     return choice
 end function
 
-function mdeCanDirectPlay(media as object, part as object, videoStream as object, audioStream as object) as boolean
+function mdeCanDirectPlay(media as object, part as object, videoStream as dynamic, audioStream as dynamic) as boolean
     settings = AppSettings()
     maxResolution = settings.GetMaxResolution(media.GetServer().IsLocalConnection())
     height = media.GetInt("height")
@@ -244,9 +244,9 @@ function mdeCanDirectPlay(media as object, part as object, videoStream as object
         return false
     end if
 
-    ' TODO(schuyler): Is this a real concern? What should we do?
     if videoStream = invalid then
-        Fatal("No video stream")
+        Error("MDE: No video stream")
+        return false
     end if
 
     container = media.Get("container")
