@@ -392,7 +392,10 @@ sub npqoActionOnSelected(screen as object)
         end if
     else if command = "remove_item" then
         if focusedTrack.Equals(player.GetCurrentItem()) then
-            player.Next()
+            player.Next(player.repeat = player.REPEAT_ALL)
+            ' Update the timeline now or the PQ will be empty after removal
+            player.ignoreTimelines = false
+            player.UpdateNowPlaying(true, false)
         end if
 
         ' TODO(schuyler): This is maybe possible, but definitely trickier than

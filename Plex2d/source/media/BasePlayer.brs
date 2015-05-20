@@ -122,19 +122,27 @@ sub bpSeek(offset, relative=false as boolean)
     m.SeekPlayer(offset)
 end sub
 
-sub bpPrev()
+sub bpPrev(wrap=true as boolean)
     if m.context = invalid then return
 
-    m.PlayItemAtIndex(m.AdvanceIndex(-1, false))
+    newIndex = m.AdvanceIndex(-1, false)
+    if not wrap and newIndex > m.curIndex then return
+
+    m.PlayItemAtIndex(newIndex)
 end sub
 
-sub bpNext()
+sub bpNext(wrap=true as boolean)
     if m.context = invalid then return
 
-    m.PlayItemAtIndex(m.AdvanceIndex(1, false))
+    newIndex = m.AdvanceIndex(1, false)
+    if not wrap and newIndex < m.curIndex then return
+
+    m.PlayItemAtIndex(newIndex)
 end sub
 
 function bpAdvanceIndex(delta=1 as integer, updateSelectedItem=true as boolean) as integer
+    if m.context = invalid or m.context.Count() = 0 then return 0
+
     newIndex = (m.curIndex + delta) mod m.context.Count()
     newIndex = iif(newIndex < 0, newIndex + m.context.Count(), newIndex)
 
@@ -226,6 +234,12 @@ sub bpOnPlayQueueUpdate(playQueue as object)
     ' instead of the matching index.
     '
     if m.isPlaying or m.isPaused then
+        ' If we are playing something and our playQueue comes back
+        ' empty, then we should stop playback.
+        if m.context.Count() = 0 then
+            m.Stop()
+            return
+        end if
         nextIndex = m.AdvanceIndex(1, false)
     else
         nextIndex = m.curIndex
@@ -258,7 +272,7 @@ sub bpOnPlayQueueUpdate(playQueue as object)
     end if
 
     ' Verify the contents of the playQueue have changed before we fire off an event.
-    if m.context.count() > 0 then
+    if m.context.Count() > 0 then
         changes.first = m.context[0].item.GetInt("playQueueItemID")
         changes.last = m.context.Peek().item.GetInt("playQueueItemID")
         if (oldSize <> m.context.Count() or changes.first <> changes.origFirst or changes.last <> changes.origLast) then
