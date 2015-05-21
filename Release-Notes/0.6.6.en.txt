@@ -1,0 +1,64 @@
+NEW:
+ - Vertical jump list for filters flyout (genre, actors, etc)
+
+FIXES:
+ - Fix preplay quality settings
+   - Show qualities above 8mbps 1080p
+   - Include the original quality
+   - Include the resolution
+ - Respect bitrate quality selection
+ - Fix erroneous shift right while scrolling context list
+ - Fix exponential lag while scrolling text (e.g. album review)
+ - Fix loading delay due to long text (e.g. album review)
+ - Fix filters genre list (Artist vs Albums)
+ - Fix sorting "By Artist" on grid screen (albums view)
+ - Show a checkmark in the filter flyout for the filter in use
+ - Set default focus in filter values flyout to filter in use
+ - Set default focus in sorts dropdown to sort in use
+ - Fix multi-level flyout positioning
+ - Scroll action bars in middle (e.g. buttons on left hand side of home screen)
+ - Remember the last used filter button (filter / type / sort) on key press up
+ - Fix a variety of crashes when reordering or removing items from a Play Queue
+ - Display track artist for Various Artists
+ - Better handle filters with no content (retain type and sort)
+ - Update track index while reordering a Play Queue
+ - Update "Up Next" when PQ changes
+ - Do not crash when video has no video stream
+ - Various performance improvements
+ - Miscellaneous focus improvements
+
+INTERNAL:
+ - Disable exiting action bars on keypress down
+ - Simplified getting/setting mediaChoice and pref overrides
+ - New method to get resolution string from media
+ - New method to convert bitrate to string (expect bits)
+ - Refactor settings menu button to easily update the reference
+ - Add support for custom focus helpers (FocusBox)
+ - Refactor TextArea to use the new focus helper style
+ - Refactor JumpBox to use the new focus helper style
+ - Be less aggressive matching the selected filter
+ - Be less aggressive matching the selected sort
+ - Minor dropdown performance and readability improvements
+ - Improve multi-level flyout performance
+ - Lock screen updates while manually focusing an item (exclude advance by page/container)
+ - Clear confusion between Components and ComponentsScreen `OnFocus` method
+ - Simplify our VBox scrolling calculations
+ - Simplify and fix focusing on items below our last shift point
+ - Extend border support to non scrollable vboxes
+ - Fix VBox visibility regression (forceLoad)
+ - AddUrlParam() helper
+ - Fix possible crash if playlist response fails.
+ - SetNext wrapper for AudioPlayer (fix repeat/restart current track)
+ - Update default selection in filters dropdown.
+ - Add a few focus helpers to improve natural movement
+       Action bars: Remember and refocus the last used button
+       HUB screens: Ensure pressing down from the header on the hubs screen will
+                    return to the previously focused hubs item, instead of the
+                    closest one. (fixes erroneous shifting)
+       Grid screen: Refocus the last focused grid item between the filter options
+                    (top) and jump list (bottom). Also fixes focusing the filters
+                    before any header button, when pressing up from the grid.
+    Vertical lists: Initially focus the first item, and retain the last focused
+                    item when moving between list and other areas (action bar)
+      Shows screen: Retain where we came from in both directions (up/down), from
+                    the action bar and seasons grid.
