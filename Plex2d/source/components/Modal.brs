@@ -51,6 +51,7 @@ sub modalShow()
     modal.halign = modal.JUSTIFY_CENTER
     modal.valign = modal.ALIGN_MIDDLE
     modal.zOrder = ZOrders().MODAL
+    modal.roundedCorners = true
     m.components.push(modal)
 
     ' set the modal in the center of the screen.
