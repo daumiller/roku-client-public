@@ -3,6 +3,8 @@ function PhotoPlayer() as object
         obj = CreateObject("roAssociativeArray")
         obj.Append(BasePlayerClass())
 
+        obj.player = createPhotoScreen(obj)
+
         obj.timelineType = "photo"
 
         ' Required methods for BasePlayer
@@ -25,12 +27,6 @@ function PhotoPlayer() as object
         obj.Init()
 
         m.PhotoPlayer = obj
-    end if
-
-    ' Our own custom PhotoScreen (roSlideShow). This will be destroyed
-    ' when we stop the photo player.
-    if m.PhotoPlayer.player = invalid then
-        m.PhotoPlayer.player = createPhotoScreen(m.PhotoPlayer)
     end if
 
     return m.PhotoPlayer
@@ -77,10 +73,11 @@ sub ppStop()
         m.Trigger("stopped", [m, m.GetCurrentItem()])
         m.curIndex = 0
         m.context = invalid
-        m.player.SetContentList([])
-        m.player.SetNext(m.curIndex)
         m.timelineTimer.active = false
+
+        ' Reinstantiate the player
         m.Delete("player")
+        m.player = createPhotoScreen(m)
     end if
 end sub
 
