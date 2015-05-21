@@ -47,7 +47,7 @@ end sub
 sub modalShow()
     modal = createLabel(m.title, m.font)
     modal.SetPadding(m.padding)
-    modal.SetColor(Colors().Text, Colors().OverlayDark)
+    modal.SetColor(Colors().Text, Colors().Modal)
     modal.halign = modal.JUSTIFY_CENTER
     modal.valign = modal.ALIGN_MIDDLE
     modal.zOrder = ZOrders().MODAL
