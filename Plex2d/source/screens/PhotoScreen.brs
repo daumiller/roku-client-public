@@ -30,6 +30,8 @@ function PhotoScreen() as object
 
         ' Overlay methods (controls and queue)
         obj.ToggleOverlay = photoToggleOverlay
+        obj.DeferOverlay = photoDeferOverlay
+        obj.OnOverlayTimer = photoOnOverlayTimer
         obj.OnOverlayClose = photoOnOverlayClose
 
         m.PhotoScreen = obj
@@ -70,8 +72,6 @@ sub photoShow()
         m.slideShowTimer.paused = true
         Application().AddTimer(m.slideShowTimer, createCallable("OnSlideShowTimer", m))
     end if
-
-    NowPlayingManager().SetLocation(NowPlayingManager().FULLSCREEN_PHOTO)
 end sub
 
 sub photoRefresh()
@@ -113,7 +113,9 @@ sub photoPlay()
     if not Application().IsActiveScreen(m) then
         Application().PushScreen(m)
         if m.controller.startPaused = true then
-            m.ToggleOverlay()
+            m.DeferOverlay()
+        else
+            NowPlayingManager().SetLocation(NowPlayingManager().FULLSCREEN_PHOTO)
         end if
     else
         m.Refresh()
@@ -270,3 +272,20 @@ function photoSetImage(fadeSpeed=4 as integer, redraw=false as boolean) as objec
 
     return m.image
 end function
+
+sub photoOnOverlayTimer(timer as object)
+    m.Delete("overlayTimer")
+
+    if m.showOverlay <> true then
+        m.ToggleOverlay()
+    end if
+end sub
+
+sub photoDeferOverlay()
+    if m.overlayTimer = invalid then
+        m.overlayTimer = createTimer("overlayTimer")
+        m.overlayTimer.SetDuration(100)
+        Application().AddTimer(m.overlayTimer, createCallable("OnOverlayTimer", m))
+    end if
+    m.overlayTimer.Mark()
+end sub
