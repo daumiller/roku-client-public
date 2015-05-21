@@ -482,13 +482,14 @@ function appIsInitialized()
 end function
 
 sub appShowLoadingModal(screen as object, screenCallBack=invalid as dynamic)
-    timer = m.LoadingModalTimer
+    ' Close any loading modal before creating a new one
+    m.CloseLoadingModal()
+
+    timer = m.loadingModalTimer
     if timer = invalid then
         timer = createTimer("LoadingModal")
         timer.SetDuration(500)
-        m.LoadingModalTimer = timer
-    else if timer.screenCallBack <> invalid then
-        ApplyFunc(timer.screenCallBack, timer.screen)
+        m.loadingModalTimer = timer
     end if
 
     timer.screenCallBack = screenCallBack
@@ -510,18 +511,18 @@ sub appOnLoadingModalTimeout(timer as object)
         end if
     end if
 
-    ' Modals for other screen types?
-
+    ' Apply any callback and delete the timer
     if timer.screenCallBack <> invalid then
         ApplyFunc(timer.screenCallBack, timer.screen)
     end if
 
-    m.LoadingModalTimer = invalid
+    timer.active = false
+    m.Delete("loadingModalTimer")
 end sub
 
 sub appCheckLoadingModal()
-    if m.LoadingModalTimer <> invalid and m.LoadingModalTimer.isExpired() then
-        m.OnLoadingModalTimeout(m.LoadingModalTimer)
+    if m.loadingModalTimer <> invalid and m.loadingModalTimer.isExpired() then
+        m.OnLoadingModalTimeout(m.loadingModalTimer)
     end if
 end sub
 
@@ -531,14 +532,14 @@ sub appCloseLoadingModal()
         m.Delete("loadingModal")
     end if
 
-    if m.LoadingModalTimer = invalid then return
+    if m.loadingModalTimer = invalid then return
 
-    if m.LoadingModalTimer.screenCallBack <> invalid then
-        ApplyFunc(m.LoadingModalTimer.screenCallBack, m.LoadingModalTimer.screen)
+    if m.loadingModalTimer.screenCallBack <> invalid then
+        ApplyFunc(m.loadingModalTimer.screenCallBack, m.loadingModalTimer.screen)
     end if
 
-    m.LoadingModalTimer.active = false
-    m.LoadingModalTimer = invalid
+    m.loadingModalTimer.active = false
+    m.Delete("loadingModalTimer")
 end sub
 
 sub appProcessUrlEvent(msg as object)
