@@ -62,7 +62,7 @@ function labelGetPreferredWidth() as integer
         end if
 
         if m.roundedCorners = true then
-            paddingSize = 16
+            paddingSize = paddingSize + 16
         end if
 
         return m.font.GetOneLineWidth(m.text, 1280) + paddingSize
