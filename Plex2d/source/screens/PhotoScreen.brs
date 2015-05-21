@@ -211,14 +211,14 @@ sub photoSetDuration(duration=5000 as integer, mark=false as boolean)
 end sub
 
 sub photoToggleOverlay()
-    if m.showQueue = true and m.overlayScreen.Count() > 0 then
+    if m.showOverlay = true and m.overlayScreen.Count() > 0 then
         m.overlayScreen.Peek().Close()
         return
     end if
 
-    m.showQueue = not (m.showQueue = true)
+    m.showOverlay = not (m.showOverlay = true)
 
-    if m.showQueue then
+    if m.showOverlay then
         NowPlayingManager().SetLocation(NowPlayingManager().NAVIGATION)
         m.wasPlaying = (m.isPlaying = true)
         m.controller.Pause(m.wasPlaying)
