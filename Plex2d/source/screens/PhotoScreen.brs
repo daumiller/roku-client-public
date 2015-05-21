@@ -9,12 +9,12 @@ function PhotoScreen() as object
         obj.Init = photoInit
         obj.Show = photoShow
         obj.Refresh = photoRefresh
-        obj.Deactivate = photoDeactivate
         obj.GetComponents = photoGetComponents
         obj.OnSlideShowTimer = photoOnSlideShowTimer
         obj.SetImage = photoSetImage
 
         obj.OnKeyPress = photoOnKeyPress
+        obj.OnKeyRelease = photoOnKeyRelease
         obj.OnFwdButton = photoOnFwdButton
         obj.OnRevButton = photoOnRevButton
         obj.OnPlayButton = photoOnPlayButton
@@ -100,15 +100,6 @@ sub photoRefresh()
     end if
 end sub
 
-sub photoDeactivate(screen=invalid as dynamic)
-    m.slideShowTimer.Pause()
-    m.Delete("slideShowTimer")
-    m.controller.Stop()
-    m.refreshCache.Clear()
-    m.image = invalid
-    ApplyFunc(ComponentsScreen().Deactivate, m, [screen])
-end sub
-
 sub photoGetComponents()
     m.DestroyComponents()
     m.components.Push(m.SetImage())
@@ -167,22 +158,23 @@ sub photoSetContentList(context as object)
     m.context = context
 end sub
 
+sub photoOnKeyRelease(keyCode as integer)
+    if keyCode = m.kp_BK then
+        m.controller.stop()
+    end if
+
+    ApplyFunc(ComponentsScreen().OnKeyRelease, m, [keyCode])
+end sub
+
 sub photoOnKeyPress(keyCode as integer, repeat as boolean)
-    ' We'll probably override this anyways once we have an overlay. There is no overlay
-    ' yet, but I'd imagine it would contain player controls and some sort of horizontal
-    ' grid on the bottom of the screen
-    '
-    if m.overlayScreen.Count() = 0 then
-        ' For now, lets just enable moving between the photos via left/right.
-        if keyCode = m.kp_UP or keyCode = m.kp_DN or keyCode = m.kp_OK then
-            m.ToggleOverlay()
-        else if keyCode = m.kp_RT then
-            m.controller.Next()
-        else if keyCode = m.kp_LT then
-            m.controller.Prev()
-        else
-            ApplyFunc(ComponentsScreen().OnKeyPress, m, [keyCode, repeat])
-        end if
+    if keyCode = m.kp_UP or keyCode = m.kp_DN or keyCode = m.kp_OK then
+        m.ToggleOverlay()
+    else if keyCode = m.kp_RT then
+        m.controller.Next()
+    else if keyCode = m.kp_LT then
+        m.controller.Prev()
+    else
+        ApplyFunc(ComponentsScreen().OnKeyPress, m, [keyCode, repeat])
     end if
 end sub
 
