@@ -238,7 +238,10 @@ sub apOnRevButton()
 end sub
 
 sub apOnPlaybackStarted(player as object, item as object)
-    ' If we're starting playback fresh, show the now playing screen.
+    ' If we're starting playback fresh, show the now playing screen,
+    ' unless the PhotoPlayer is active.
+    '
+    if PhotoPlayer().IsActive() then return
     Application().PushScreen(createNowPlayingScreen(item))
     CompositorScreen().DrawUnlock()
 end sub
