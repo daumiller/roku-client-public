@@ -210,13 +210,9 @@ sub appRun()
         ' process any audio request immediately
         msg = m.port.PeekMessage()
         if type(msg) = "roUniversalControlEvent" then
-            keyCode = msg.GetInt()
-            AudioEvents().OnKeyPress(keyCode)
-            ignoreAudio = true
-        else
-            ignoreAudio = false
+            AudioEvents().OnKeyPress(msg.GetInt())
         end if
-        timeout = m.ProcessOneMessage(timeout, ignoreAudio)
+        timeout = m.ProcessOneMessage(timeout, (type(msg) = "roUniversalControlEvent"))
     end while
 
     ' Clean up
@@ -579,6 +575,12 @@ sub appProcessNonBlocking()
     else if type(msg) = "roUrlEvent" and msg.GetInt() = 1 then
         msg = m.Port.GetMessage()
         m.ProcessUrlEvent(msg)
+    else if type(msg) = "roUniversalControlEvent" then
+        msg = m.Port.GetMessage()
+        AudioEvents().OnKeyPress(msg.GetInt())
+        for i = m.screens.Count() - 1 to 0 step -1
+            if m.screens[i].HandleMessage(msg) then exit for
+        end for
     end if
 end sub
 

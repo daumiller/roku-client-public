@@ -91,6 +91,10 @@ function ComponentsScreen() as object
         ' Playback methods
         obj.CreatePlayerForItem = compCreatePlayerForItem
 
+        ' Components animation
+        obj.DeferAnimate = compDeferAnimate
+        obj.OnAnimateTimer = compOnAnimateTimer
+
         m.ComponentsScreen = obj
     end if
 
@@ -230,10 +234,8 @@ sub compShow()
 
     m.screen.DrawAll()
 
-    ' process any animated components
-    for each comp in m.animatedComponents
-        comp.Animate()
-    end for
+    ' Process any animated components
+    m.DeferAnimate()
 
     ' Enable listeners once we completed drawing the screen
     m.EnableListeners()
@@ -1523,4 +1525,24 @@ sub compAdvancePage(delta as integer)
     if toFocus <> invalid then
         m.FocusItemManually(toFocus, false)
     end if
+end sub
+
+sub compDeferAnimate()
+    if m.animatedComponents = invalid or m.animatedComponents.Count() = 0 then return
+
+    if m.animateTimer = invalid then
+        m.animateTimer = createTimer("animate")
+        m.animateTimer.SetDuration(800)
+        Application().AddTimer(m.animateTimer, createCallable("OnAnimateTimer", m))
+    end if
+
+    m.animateTimer.Mark()
+end sub
+
+sub compOnAnimateTimer(timer)
+    m.animateTimer = invalid
+
+    for each comp in m.animatedComponents
+        comp.Animate()
+    end for
 end sub

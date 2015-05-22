@@ -64,6 +64,7 @@ sub pbAnimate()
 
     for width = 0 to m.fgWidth step incr
         Application().ProcessNonBlocking()
+        if m.region = invalid then return
         m.region.DrawRect(0, 0, width, m.height, m.fgColor)
         CompositorScreen().DrawAll()
     end for
