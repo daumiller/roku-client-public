@@ -22,8 +22,8 @@ function Locks() as object
 end function
 
 sub locksLock(name as string)
-    Debug("Lock " + name)
-    m.locks[name] = true
+    m.locks[name] = validint(m.locks[name]) + 1
+    Debug("Lock " + name + ", total=" + tostr(m.locks[name]))
 end sub
 
 sub locksLockOnce(name as string)
@@ -31,13 +31,28 @@ sub locksLockOnce(name as string)
     m.oneTimeLocks[name] = true
 end sub
 
-function locksUnlock(name as string) as boolean
-    Debug("Unlock " + name)
-
-    normal = m.locks.Delete(name)
+function locksUnlock(name as string, forceUnlock=false as boolean) as boolean
     oneTime = m.oneTimeLocks.Delete(name)
+    normal = (validint(m.locks[name]) > 0)
 
-    return (normal or oneTime)
+    if normal then
+        if forceUnlock then
+            m.locks[name] = 0
+        else
+            m.locks[name] = m.locks[name] - 1
+        end if
+
+        if m.locks[name] <= 0 then
+            m.locks.Delete(name)
+        else
+            normal = false
+        end if
+    end if
+
+    unlocked = (normal or oneTime)
+    Debug("Unlock " + name + ", total=" + tostr(validint(m.locks[name])) + ", unlocked=" + tostr(unlocked))
+
+    return unlocked
 end function
 
 function locksIsLocked(name as string) as boolean

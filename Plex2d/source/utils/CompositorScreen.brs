@@ -258,8 +258,8 @@ sub compositorDrawLockOnce(timeout=60000 as integer)
     Locks().LockOnce("DrawAll")
 end sub
 
-sub compositorDrawUnlock(drawAll=true as boolean)
-    if Locks().Unlock("DrawAll") and drawAll then
+sub compositorDrawUnlock(drawAll=true as boolean, forceUnlock=false as boolean)
+    if Locks().Unlock("DrawAll", forceUnlock) and drawAll then
         m.DrawAll()
     end if
     m.drawLockTimer.active = false
@@ -267,7 +267,7 @@ end sub
 
 sub compositorOnDrawLockTimer(timer as object)
     WARN("DrawLock timer expired")
-    m.DrawUnlock()
+    m.DrawUnlock(true, true)
 end sub
 
 sub compositorAddDrawLockTimer(timeout as integer)
