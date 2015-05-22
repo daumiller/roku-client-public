@@ -191,14 +191,14 @@ sub trackInitComponents()
             subtitle = item.Get("year", "")
         end if
         m.runtime = createLabel(item.GetDuration(), m.customFonts.subtitle)
-        m.runtime.SetColor(Colors().Subtitle)
+        m.runtime.SetColor(Colors().TextMed)
         m.runtime.SetPadding(0, m.padding.right, 0, m.padding.left)
         m.AddComponent(m.runtime)
     end if
 
     if subtitle <> invalid then
         m.subtitle = createLabel(subtitle, m.customFonts.subtitle)
-        m.subtitle.SetColor(Colors().Subtitle)
+        m.subtitle.SetColor(Colors().TextMed)
         m.subtitle.SetPadding(0, m.padding.right, 0, m.padding.left)
         m.AddComponent(m.subtitle)
     end if
