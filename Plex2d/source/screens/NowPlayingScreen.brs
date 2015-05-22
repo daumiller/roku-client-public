@@ -332,7 +332,7 @@ function nowplayingGetButtons() as object
 
     buttons["left"] = createObject("roList")
     shuffleColor = iif(m.player.isShuffled, Colors().Orange, invalid)
-    shuffleZOrder = iif(m.player.playQueue.supportsShuffle, invalid, -1)
+    shuffleZOrder = iif(m.player.playQueue <> invalid and m.player.playQueue.supportsShuffle, invalid, -1)
     buttons["left"].push({text: Glyphs().SHUFFLE, command: "shuffle", componentKey: "shuffleButton", statusColor: shuffleColor, zOrderInit: shuffleZOrder })
     repeatGlyph = iif(m.player.repeat = m.player.REPEAT_ONE, Glyphs().REPEAT_ONE, Glyphs().REPEAT)
     repeatColor = iif(m.player.repeat <> m.player.REPEAT_NONE, Colors().Orange, invalid)
@@ -632,7 +632,7 @@ sub nowplayingOnFailedFocus(direction as string, focusedItem=invalid as dynamic)
 end sub
 
 function nowplayingToggleShuffleVisibility() as boolean
-    shuffleSupport = m.player.playQueue.supportsShuffle
+    shuffleSupport = (m.player.playQueue <> invalid and m.player.playQueue.supportsShuffle)
 
     if m.showQueue = true then
         m.queueShuffleButton.SetVisible(shuffleSupport)
