@@ -155,6 +155,7 @@ function mdeEvaluateMediaVideo(item as object, media as object) as object
         audioLanguageChannelsSeen = 0
     else
         ' No audio stream, which is fine, so pretend like we saw it
+        audioStreamCompatible = true
         audioLanguageForceable = true
     end if
 
