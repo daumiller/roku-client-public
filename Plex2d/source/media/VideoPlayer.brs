@@ -471,8 +471,8 @@ sub vpOnTranscodeInfoResponse(request as object, response as object, context as 
             Debug("Throttled: " + session.Get("throttled", ""))
             Debug("Progress: " + session.Get("progress", ""))
             Debug("Speed: " + session.Get("speed", ""))
-            Debug("Video Decision: " + session.Get("videoDecision"))
-            Debug("Audio Decision: " + session.Get("audioDecision"))
+            Debug("Video Decision: " + session.Get("videoDecision", "invalid"))
+            Debug("Audio Decision: " + session.Get("audioDecision", "invalid"))
 
             ' Update the most interesting bits in the overlay
             if session.GetInt("progress") >= 100 then
@@ -483,8 +483,17 @@ sub vpOnTranscodeInfoResponse(request as object, response as object, context as 
                 curState = " (" + left(session.Get("speed", "?"), 3) + "x)"
             end if
 
-            video = iif(session.Get("videoDecision") = "transcode", "convert", "copy")
-            audio = iif(session.Get("audioDecision") = "transcode", "convert", "copy")
+            if session.Has("videoDecision") then
+                video = iif(session.Get("videoDecision") = "transcode", "convert", "copy")
+            else
+                video = "none"
+            end if
+
+            if session.Has("audioDecision") then
+                audio = iif(session.Get("audioDecision") = "transcode", "convert", "copy")
+            else
+                audio = "none"
+            end if
 
             videoItem.ReleaseDate = videoItem.OrigReleaseDate + chr(10) + chr(10) + "video: " + video + " audio: " + audio + curState
             m.Screen.SetContent(videoItem)
