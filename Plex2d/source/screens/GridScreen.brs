@@ -16,6 +16,7 @@ function GridScreen() as object
         obj.OnFocusIn = gsOnFocusIn
 
         ' Shifting Methods
+        obj.AnimateShift = gsAnimateShift
         obj.CalculateShift = gsCalculateShift
         obj.ShiftComponents = gsShiftComponents
         obj.OnFwdButton = gsOnFwdButton
@@ -826,4 +827,9 @@ sub gsOnSortResponse(request as object, response as object, context as object)
     end if
 
     m.Show()
+end sub
+
+sub gsAnimateShift(shift as object, components as object)
+    maxFps = iif(m.lastKey = m.kp_FWD or m.lastKey = m.kp_REV, invalid, 10)
+    AnimateShift(shift, components, m.screen, invalid, maxFps)
 end sub
