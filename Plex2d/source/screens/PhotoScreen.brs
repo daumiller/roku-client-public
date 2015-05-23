@@ -12,6 +12,7 @@ function PhotoScreen() as object
         obj.GetComponents = photoGetComponents
         obj.OnSlideShowTimer = photoOnSlideShowTimer
         obj.SetImage = photoSetImage
+        obj.AnimateShift = photoAnimateShift
 
         obj.OnKeyPress = photoOnKeyPress
         obj.OnKeyRelease = photoOnKeyRelease
@@ -288,4 +289,9 @@ sub photoDeferOverlay()
         Application().AddTimer(m.overlayTimer, createCallable("OnOverlayTimer", m))
     end if
     m.overlayTimer.Mark()
+end sub
+
+sub photoAnimateShift(shift as object, components as object)
+    maxFps = iif(m.lastKey = m.kp_FWD or m.lastKey = m.kp_REV, invalid, 10)
+    AnimateShift(shift, components, m.screen, invalid, maxFps)
 end sub
