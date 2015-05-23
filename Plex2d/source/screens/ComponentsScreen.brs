@@ -1113,7 +1113,7 @@ sub compShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=f
         if shift.x = 0 and shift.y = 0 then return
 
         ' Disable animation if we are refocusing or the command is a key repeat (excluding FWD/REV)
-        enableAnimation = (refocus = invalid and m.isKeyRepeat <> true) or (m.isKeyRepeat = true and m.DrawFocusOnRelease = true)
+        enableAnimation = (refocus = invalid and m.isKeyRepeat <> true) or (m.lastKey = m.kp_FWD or m.lastKey = m.kp_REV)
         if enableAnimation then
             AnimateShift(shift, partShift, m.screen)
         else
