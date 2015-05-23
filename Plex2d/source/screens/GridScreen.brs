@@ -237,12 +237,6 @@ sub gsOnGridResponse(request as object, response as object, context as object)
 
     m.totalSize = response.container.GetInt("totalSize")
     if m.totalSize < m.chunkSizeInitial then m.chunkSizeInitial = m.totalSize
-    ' TODO(rob): we should use 3/4 height for landscape and square orientation
-    if m.totalSize < 20 and m.orientation = ComponentClass().ORIENTATION_PORTRAIT then
-        m.gridRows = 1
-    else
-        m.gridRows = m.rows
-    end if
 
     placeholder = {
         start: 0,
@@ -379,7 +373,7 @@ end sub
 function gsCreateGridChunk(placeholder as object) as dynamic
     if placeholder = invalid or placeholder.size = invalid then return invalid
 
-    grid = createGrid(m.orientation, m.gridRows, m.spacing)
+    grid = createGrid(m.orientation, m.rows, m.spacing)
     grid.height = m.height
 
     ' set the properties needed to lazyload the chunk
