@@ -22,6 +22,7 @@ function PreplayScreen() as object
         obj.OnFwdButton = preplayOnFwdButton
         obj.OnRevButton = preplayOnRevButton
         obj.OnDelete = preplayOnDelete
+        obj.AnimateShift = preplayAnimateShift
 
         obj.GetButtons = preplayGetButtons
         obj.GetImages = preplayGetImages
@@ -967,3 +968,8 @@ function preplayGetSubtitleStreamPrefs(mediaChoice as object) as dynamic
 
     return invalid
 end function
+
+sub preplayAnimateShift(shift as object, components as object)
+    maxFps = iif(m.lastKey = m.kp_FWD or m.lastKey = m.kp_REV, invalid, 10)
+    AnimateShift(shift, components, m.screen, invalid, maxFps)
+end sub
