@@ -1,5 +1,5 @@
 ' shifting animation used by Components screen, Grid screen, and VBox scrollable
-sub AnimateShift(shift as object, components as object, screen as object)
+sub AnimateShift(shift as object, components as object, screen as object, minFps=invalid as dynamic, maxFps=invalid as dynamic)
     totalShift = iif(abs(shift.x) > abs(shift.y), abs(shift.x), abs(shift.y))
 
     ' Lets see if we should hide the focus border before shifting. Basically, we
@@ -34,10 +34,9 @@ sub AnimateShift(shift as object, components as object, screen as object)
     if Locks().IsLocked("DrawAll") or appSettings().GetGlobal("animationSupport") = false then
         fps = 1
     else
+        if minFps = invalid then minFps = 10
+        if maxFps = invalid then maxFps = 15
         ' calculate the desired FPS ( use totalShift if the calulation fps > total )
-        minFps = 10
-        maxFps = 15
-
         fps = iif(totalShift / maxFps < minFps, minFps, maxFps)
         if totalShift < fps then fps = totalShift
 

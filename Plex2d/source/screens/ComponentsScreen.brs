@@ -59,6 +59,7 @@ function ComponentsScreen() as object
         obj.ToggleScrollbar = compToggleScrollbar
 
         ' Shifting methods
+        obj.AnimateShift = compAnimateShift
         obj.CalculateShift = compCalculateShift
         obj.ShiftComponents = compShiftComponents
         obj.CalculateFirstOrLast = compCalculateFirstOrLast
@@ -1115,7 +1116,7 @@ sub compShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=f
         ' Disable animation if we are refocusing or the command is a key repeat (excluding FWD/REV)
         enableAnimation = (refocus = invalid and m.isKeyRepeat <> true) or (m.lastKey = m.kp_FWD or m.lastKey = m.kp_REV)
         if enableAnimation then
-            AnimateShift(shift, partShift, m.screen)
+            m.AnimateShift(shift, partShift)
         else
             for each component in partShift
                 component.ShiftPosition(shift.x, shift.y, true)
@@ -1483,4 +1484,8 @@ sub compInitRefreshCache()
             m.refreshCache[toCache] = m[toCache].region
         end if
     end for
+end sub
+
+sub compAnimateShift(shift as object, components as object)
+    AnimateShift(shift, components, m.screen)
 end sub

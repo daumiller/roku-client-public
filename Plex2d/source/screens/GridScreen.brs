@@ -581,7 +581,7 @@ sub gsShiftComponents(shift as object, refocus=invalid as dynamic, forceLoad=fal
         ' Disable animation if we are refocusing or the command is a key repeat (excluding FWD/REV)
         enableAnimation = (refocus = invalid and m.isKeyRepeat <> true) or (m.lastKey = m.kp_FWD or m.lastKey = m.kp_REV)
         if enableAnimation then
-            AnimateShift(shift, partShift, m.screen)
+            m.AnimateShift(shift, partShift)
         else
             for each component in partShift
                 component.ShiftPosition(shift.x, shift.y, true)
