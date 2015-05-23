@@ -8,32 +8,32 @@ function AudioEvents() as object
         obj.OnRelease = audioeventsOnRelease
 
         ' Audio clips
-        obj.clips = {}
-        obj.clips.select = CreateObject("roAudioResource", "select")
-        obj.clips.navsingle = CreateObject("roAudioResource", "navsingle")
-        obj.clips.navmulti = CreateObject("roAudioResource", "navmulti")
-        obj.clips.deadend = CreateObject("roAudioResource", "deadend")
+        obj.clips = {
+            select: CreateObject("roAudioResource", "select"),
+            navsingle: CreateObject("roAudioResource", "navsingle")
+            ' Unused audio clips
+            ' navmulti: CreateObject("roAudioResource", "navmulti"),
+            ' deadend: CreateObject("roAudioResource", "deadend")
+        }
+
+        ' Containers
+        obj.keyPress = CreateObject("roAssociativeArray")
+        obj.keyRelease = CreateObject("roAssociativeArray")
 
         ' Key press mappings
-        obj.keyPress = {}
-        obj.keyPress["right"] = obj.clips.navsingle
-        obj.keyPress["left"] = obj.clips.navsingle
-        obj.keyPress["up"] = obj.clips.navsingle
-        obj.keyPress["down"] = obj.clips.navsingle
-        obj.keyPress["back"] = obj.clips.navsingle
-
-        obj.keyPress["fwd"] = obj.clips.navmulti
-        obj.keyPress["rev"] = obj.clips.navmulti
-
-        obj.keyPress["ok"] = obj.clips.select
-        obj.keyPress["play"] = obj.clips.select
-
-        ' Key release mappings
-        obj.keyRelease = {}
+        obj.keyPress["right"]  = obj.clips.navsingle
+        obj.keyPress["left"]   = obj.clips.navsingle
+        obj.keyPress["up"]     = obj.clips.navsingle
+        obj.keyPress["down"]   = obj.clips.navsingle
+        obj.keyPress["back"]   = obj.clips.navsingle
+        obj.keyPress["fwd"]    = obj.clips.navsingle
+        obj.keyPress["rev"]    = obj.clips.navsingle
+        obj.keyPress["ok"]     = obj.clips.select
+        obj.keyPress["play"]   = obj.clips.select
 
         ' Unused mappings
-        ' obj.keyCodes["replay"] = obj.clips.click
-        ' obj.keyCodes["info"] = obj.clips.click
+        ' obj.keyPress["replay"] = obj.clips.click
+        ' obj.keyPress["info"]   = obj.clips.click
 
         m.AudioEvents = obj
     end if
