@@ -300,7 +300,11 @@ sub pcoOnKeyRelease(keyCode as integer)
     ' Verify our key release came from the overlay
     overlay = m.overlayScreen.Peek()
     if overlay.Delete("hadKeyPress") then
-        ApplyFunc(ComponentsScreen().OnKeyRelease, m, [keyCode])
+        if keyCode = m.kp_BK then
+            overlay.Close()
+        else
+            ApplyFunc(ComponentsScreen().OnKeyRelease, m, [keyCode])
+        end if
     end if
 end sub
 
