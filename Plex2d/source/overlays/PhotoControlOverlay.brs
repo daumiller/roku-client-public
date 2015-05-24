@@ -327,11 +327,11 @@ sub pcoOnKeyPress(keyCode as integer, repeat as boolean)
 end sub
 
 sub pcoOnFwdButton(item=invalid as dynamic)
-    ApplyFunc(ComponentsScreen().OnFwdButton, m, [item])
+    m.AdvancePage(1)
 end sub
 
 sub pcoOnRevButton(item=invalid as dynamic)
-    ApplyFunc(ComponentsScreen().OnRevButton, m, [item])
+    m.AdvancePage(-1)
 end sub
 
 sub pcoOnPlayButton(item as object)
