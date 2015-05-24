@@ -22,6 +22,7 @@ function PlexServerClass() as object
         obj.activeConnection = invalid
 
         obj.pendingReachabilityRequests = 0
+        obj.pendingSecureRequests = 0
 
         obj.BuildUrl = pnsBuildUrl
         obj.GetToken = pnsGetToken
@@ -194,12 +195,14 @@ sub pnsUpdateReachability(force=true as boolean)
     Debug("Updating reachability for " + tostr(m.name) + ", will test " + tostr(m.connections.Count()) + " connections")
     for each conn in m.connections
         m.pendingReachabilityRequests = m.pendingReachabilityRequests + 1
+        if conn.isSecure then m.pendingSecureRequests = m.pendingSecureRequests + 1
         conn.TestReachability(m)
     next
 end sub
 
 sub pnsOnReachabilityResult(connection as object)
     m.pendingReachabilityRequests = m.pendingReachabilityRequests - 1
+    if connection.isSecure then m.pendingSecureRequests = m.pendingSecureRequests - 1
 
     Debug("Reachability result for " + tostr(m.name) + ": " + connection.address + " is " + tostr(connection.state))
 
@@ -211,13 +214,21 @@ sub pnsOnReachabilityResult(connection as object)
     ' Pick a best connection. If we already had an active connection and
     ' it's still reachable, stick with it. (replace with local if
     ' available)
-    if m.activeConnection = invalid or NOT(m.activeConnection.isLocal = true) then
+    best = m.activeConnection
     for i = m.connections.Count() - 1 to 0 step -1
-            conn = m.connections[i]
-            if conn.state = PlexConnectionClass().STATE_REACHABLE and (m.activeConnection = invalid or conn.isLocal) then
-        m.activeConnection = conn
-            end if
-        next
+        conn = m.connections[i]
+
+        if best = invalid or conn.GetScore() > best.GetScore() then
+            best = conn
+        end if
+    next
+
+    if best <> invalid and best.state = best.STATE_REACHABLE then
+        if best.isSecure or m.pendingSecureRequests = 0 then
+            m.activeConnection = best
+        else
+            Debug("Found a good connection for " + tostr(m.name) + ", but holding out for better")
+        end if
     end if
 
     Info("Active connection for " + tostr(m.name) + " is " + tostr(m.activeConnection))

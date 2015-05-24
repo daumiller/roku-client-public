@@ -13,6 +13,10 @@ function PlexConnectionClass() as object
         obj.SOURCE_DISCOVERED = 2
         obj.SOURCE_MYPLEX = 4
 
+        obj.SCORE_REACHABLE = 4
+        obj.SCORE_SECURE = 2
+        obj.SCORE_LOCAL = 1
+
         ' Properties
         obj.state = obj.STATE_UNKNOWN
         obj.sources = 0
@@ -21,12 +25,14 @@ function PlexConnectionClass() as object
         obj.isSecure = false
         obj.token = invalid
         obj.refreshed = true
+        obj.score = 0
 
         ' Methods
         obj.Merge = pncMerge
         obj.TestReachability = pncTestReachability
         obj.OnReachabilityResponse = pncOnReachabilityResponse
         obj.BuildUrl = pncBuildUrl
+        obj.GetScore = pncGetScore
         obj.Equals = pncEquals
         obj.ToString = pncToString
 
@@ -47,6 +53,8 @@ function createPlexConnection(source as integer, address as string, isLocal as b
     obj.isSecure = (left(address, 5) = "https")
     obj.token = token
 
+    obj.GetScore(true)
+
     return obj
 end function
 
@@ -64,6 +72,8 @@ sub pncMerge(other as object)
     m.isLocal = (m.isLocal or other.isLocal)
     m.isSecure = other.isSecure
     m.refreshed = true
+
+    m.GetScore(true)
 end sub
 
 sub pncTestReachability(server as object)
@@ -92,6 +102,8 @@ sub pncOnReachabilityResponse(request as object, response as object, context as 
         m.state = m.STATE_UNREACHABLE
     end if
 
+    m.GetScore(true)
+
     context.server.OnReachabilityResult(m)
 end sub
 
@@ -119,6 +131,17 @@ function pncBuildUrl(server as object, path as string, includeToken=false as boo
     end if
 
     return url
+end function
+
+function pncGetScore(recalc=false as boolean) as integer
+    if recalc then
+        m.score = 0
+        if m.state = m.STATE_REACHABLE then m.score = (m.score or m.SCORE_REACHABLE)
+        if m.isSecure then m.score = (m.score or m.SCORE_SECURE)
+        if m.isLocal then m.score = (m.score or m.SCORE_LOCAL)
+    end if
+
+    return m.score
 end function
 
 function pncEquals(other as dynamic) as boolean
