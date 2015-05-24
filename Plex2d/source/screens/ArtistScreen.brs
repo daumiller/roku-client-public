@@ -15,8 +15,6 @@ function ArtistScreen() as object
         obj.ToggleSummary = artistToggleSummary
 
         ' Preplay overrrides
-        ' TODO(rob): page advance
-        '
         obj.OnFwdButton = artistOnFwdButton
         obj.OnRevButton = artistOnRevButton
 
@@ -319,9 +317,9 @@ sub artistToggleSummary()
 end sub
 
 sub artistOnFwdButton(item=invalid as dynamic)
-    ' no-op
+    m.AdvancePage(1)
 end sub
 
 sub artistOnRevButton(item=invalid as dynamic)
-    ' no-op
+    m.AdvancePage(-1)
 end sub
