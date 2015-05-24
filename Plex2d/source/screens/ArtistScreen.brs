@@ -112,13 +112,11 @@ sub artistGetComponents()
     parentHeight = 434
     parentWidth = parentHeight
     childSpacing = 10
-    demandLeft = xOffset + parentSpacing + parentWidth
 
     ' *** Buttons *** '
     vbButtons = createVBox(false, false, false, childSpacing)
     vbButtons.SetFrame(xOffset, yOffset, 100, 720 - yOffset)
     vbButtons.SetFocusManual(invalid)
-    vbButtons.ignoreFirstLast = true
     for each comp in m.GetButtons()
         vbButtons.AddComponent(comp)
     end for
@@ -162,7 +160,7 @@ sub artistGetComponents()
     ' *** Grids (Hubs) *** '
     m.hbGrid = createHBox(false, false, false, 30)
     m.hbGrid.SetFrame(xOffset, yOffset, 2000*2000, parentHeight)
-    gridPrefs = { height: parentHeight, ignoreParentShift: true, demandLeft: demandLeft }
+    gridPrefs = { height: parentHeight, ignoreParentShift: true, demandCenter: true}
 
     ' TODO(rob): lazy load placeholders
     ' *** Albums *** '
