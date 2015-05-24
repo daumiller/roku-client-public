@@ -18,6 +18,7 @@ function PlexConnectionClass() as object
         obj.sources = 0
         obj.address = invalid
         obj.isLocal = false
+        obj.isSecure = false
         obj.token = invalid
         obj.refreshed = true
 
@@ -43,6 +44,7 @@ function createPlexConnection(source as integer, address as string, isLocal as b
     obj.sources = source
     obj.address = address
     obj.isLocal = isLocal
+    obj.isSecure = (left(address, 5) = "https")
     obj.token = token
 
     return obj
@@ -60,6 +62,7 @@ sub pncMerge(other as object)
     m.address = other.address
     m.sources = (m.sources or other.sources)
     m.isLocal = (m.isLocal or other.isLocal)
+    m.isSecure = other.isSecure
     m.refreshed = true
 end sub
 

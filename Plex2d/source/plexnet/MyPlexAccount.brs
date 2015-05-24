@@ -17,6 +17,7 @@ function MyPlexAccount() as object
         obj.isPlexPass = false
         obj.isEntitled = false
         obj.isManaged = false
+        obj.isSecure = false
         obj.hasQueue = false
 
         obj.homeUsers = createObject("roList")
@@ -55,6 +56,7 @@ sub mpaSaveState()
         isEntitled: m.isEntitled,
         isManaged: m.isManaged,
         isAdmin: m.isAdmin,
+        isSecure: m.isSecure,
     }
 
     AppSettings().SetRegistry("MyPlexAccount", FormatJson(obj), "myplex")
@@ -82,6 +84,7 @@ sub mpaLoadState()
             if obj.isEntitled <> invalid then m.isEntitled = obj.isEntitled
             if obj.isManaged <> invalid then m.isManaged = obj.isManaged
             if obj.isAdmin <> invalid then m.isAdmin = obj.isAdmin
+            if obj.isSecure <> invalid then m.isSecure = obj.isSecure
             m.isProtected = (obj.pin <> invalid)
         end if
     else
@@ -117,6 +120,7 @@ sub mpaOnAccountResponse(request as object, response as object, context as objec
         m.isSignedIn = true
         m.isPlexPass = (xml.subscription <> invalid and xml.subscription@active = "1")
         m.isManaged = (xml@restricted = "1")
+        m.isSecure = (xml@secure = "1")
         m.hasQueue = (xml@queueEmail <> invalid and xml@queueEmail <> "" and xml@queueEmail <> invalid and xml@queueEmail <> "")
 
         ' PIN
@@ -213,6 +217,7 @@ sub mpaSignOut(expired=false as boolean)
     m.isPlexPass = false
     m.isEntitled = false
     m.isManaged = false
+    m.isSecure = false
     m.isExpired = expired
 
     Application().Trigger("change:user", [m, true])

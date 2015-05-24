@@ -36,6 +36,10 @@ sub mpRefreshResources()
     context = request.CreateRequestContext("resources", createCallable("OnResourcesResponse", m))
     context.timeout = iif(MyPlexAccount().isOffline, 1000, 10000)
 
+    if MyPlexAccount().isSecure = true then
+        request.AddParam("includeHttps", "1")
+    end if
+
     Application().StartRequest(request, context)
 end sub
 
