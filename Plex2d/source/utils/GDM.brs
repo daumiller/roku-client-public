@@ -256,6 +256,7 @@ sub gdmDiscoveryOnSocketEvent(msg as object)
     name = parseFieldValue(message, "Name: ")
     port = firstOf(parseFieldValue(message, "Port: "), "32400")
     machineID = parseFieldValue(message, "Resource-Identifier: ")
+    secureHost = parseFieldValue(message, "Host: ")
 
     Debug("Received GDM response for " + tostr(name) + " at http://" + hostname + ":" + port)
 
@@ -265,6 +266,11 @@ sub gdmDiscoveryOnSocketEvent(msg as object)
     server = createPlexServerForConnection(conn)
     server.uuid = machineID
     server.name = name
+
+    ' If the server advertised a secure hostname, add a secure connection as well
+    if secureHost <> invalid then
+        server.connections.Push(createPlexConnection(PlexConnectionClass().SOURCE_DISCOVERED, "https://" + hostname.Replace(".", "-") + "." + secureHost + ":" + port, true, invalid))
+    end if
 
     m.servers.AddTail(server)
 end sub
