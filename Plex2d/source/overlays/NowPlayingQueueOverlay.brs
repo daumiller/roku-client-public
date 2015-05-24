@@ -15,6 +15,7 @@ function NowPlayingQueueOverlayClass() as object
         obj.DeferRefresh = npqoDeferRefresh
         obj.OnRefreshTimer = npqoOnRefreshTimer
         obj.SetControlSiblings = npqoSetControlSiblings
+        obj.OnFocusIn = npqoOnFocusIn
 
         ' Listener Methods
         obj.OnPlay = npqoOnPlay
@@ -47,7 +48,6 @@ end function
 
 sub npqoInit()
     ApplyFunc(OverlayClass().Init, m)
-    m.screen.OnFocusIn = npqoOnFocusIn
     m.enableOverlay = false
 
     m.customFonts = CreateObject("roAssociativeArray")

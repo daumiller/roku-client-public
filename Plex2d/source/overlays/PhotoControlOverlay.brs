@@ -15,6 +15,7 @@ function PhotoControlOverlayClass() as object
         obj.GetButtons = pcoGetButtons
         obj.SetNowPlaying = pcoSetNowPlaying
         obj.UpdatePlayState = pcoUpdatePlayState
+        obj.OnFocusIn = pcoOnFocusIn
 
         ' Timer Methods
         obj.DeferSelected = pcoDeferSelected
@@ -54,10 +55,6 @@ end function
 
 sub pcoInit()
     ApplyFunc(OverlayClass().Init, m)
-
-    ' TODO(rob): why are we setting this here? instead of the class
-    m.screen.OnFocusIn = pcoOnFocusIn
-
     m.enableOverlay = false
 
     ' Intialize custom fonts for this screen
