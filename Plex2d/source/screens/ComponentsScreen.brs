@@ -63,6 +63,7 @@ function ComponentsScreen() as object
         obj.CalculateShift = compCalculateShift
         obj.ShiftComponents = compShiftComponents
         obj.CalculateFirstOrLast = compCalculateFirstOrLast
+        obj.AdvancePage = compAdvancePage
 
         ' Message handling
         obj.HandleMessage = compHandleMessage
@@ -1488,4 +1489,38 @@ end sub
 
 sub compAnimateShift(shift as object, components as object)
     AnimateShift(shift, components, m.screen)
+end sub
+
+sub compAdvancePage(delta as integer)
+    compScreen = firstOf(m.overlayScreen.Peek(), m)
+    toFocus = invalid
+
+    if m.focusedItem.fixed then
+        ' focus to the first or last item if current focus is fixed
+        delta = delta * -1
+        total = compScreen.shiftableComponents.Count() - 1
+        loop = iif(delta > 0, { start: 0, finish: total }, { start: total, finish: 0 })
+        for index = loop.start to loop.finish step delta
+            if compScreen.shiftableComponents[index].focusable = true then
+                toFocus = compScreen.shiftableComponents[index]
+                exit for
+            end if
+        end for
+    else
+        ' Locate the closest component one screen away, or use the first/last item.
+        xPadding = firstOf(m.xPadding, HDtoSDWidth(50)) * 2
+        xOffset = m.focusedItem.x + ((AppSettings().GetWidth() - xPadding) * delta)
+        for each comp in compScreen.shiftableComponents
+            if comp.focusable = true then
+                toFocus = comp
+                if (delta > 0 and comp.x + comp.width >= xOffset) or (delta < 0 and comp.x >= xOffset) then
+                    exit for
+                end if
+            end if
+        end for
+    end if
+
+    if toFocus <> invalid then
+        m.FocusItemManually(toFocus, false)
+    end if
 end sub

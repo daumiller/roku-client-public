@@ -21,7 +21,6 @@ function GridScreen() as object
         obj.ShiftComponents = gsShiftComponents
         obj.OnFwdButton = gsOnFwdButton
         obj.OnRevButton = gsOnRevButton
-        obj.AdvancePage = gsAdvancePage
 
         ' Grid Methods
         obj.GetGridChunks = gsGetGridChunks
@@ -721,39 +720,6 @@ end sub
 
 sub gsOnRevButton(item=invalid as dynamic)
     m.AdvancePage(-1)
-end sub
-
-sub gsAdvancePage(delta as integer)
-    ' focus to the first of last item if current focus is fixed
-    if m.focusedItem.fixed then
-        delta = delta * -1
-        total = m.shiftableComponents.Count() - 1
-        loop = iif(delta > 0, { start: 0, finish: total }, { start: total, finish: 0 })
-        for index = loop.start to loop.finish step delta
-            if m.shiftableComponents[index].focusable = true then
-                m.FocusItemManually(m.shiftableComponents[index], false)
-                exit for
-            end if
-        end for
-
-        return
-    end if
-
-    ' Locate the closest component 1 screen away
-    xOffset = m.focusedItem.x + ( (m.displayWidth - m.xPadding*2) * delta)
-    for each comp in m.shiftableComponents
-        if comp.focusable = true then
-            lastComponent = comp
-            if delta > 0 and comp.x + comp.width >= xOffset then
-                m.FocusItemManually(comp, false)
-                return
-            else if delta < 0 and comp.x >= xOffset then
-                m.FocusItemManually(comp, false)
-                return
-            end if
-        end if
-    end for
-    m.FocusItemManually(lastComponent, false)
 end sub
 
 sub gsRefresh(path=invalid as dynamic, stickyFocus=true as boolean)
