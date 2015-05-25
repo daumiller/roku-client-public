@@ -136,9 +136,9 @@ end function
 function pncGetScore(recalc=false as boolean) as integer
     if recalc then
         m.score = 0
-        if m.state = m.STATE_REACHABLE then m.score = (m.score or m.SCORE_REACHABLE)
-        if m.isSecure then m.score = (m.score or m.SCORE_SECURE)
-        if m.isLocal then m.score = (m.score or m.SCORE_LOCAL)
+        if m.state = m.STATE_REACHABLE then m.score = m.score + m.SCORE_REACHABLE
+        if m.isSecure then m.score = m.score + m.SCORE_SECURE
+        if m.isLocal then m.score = m.score + m.SCORE_LOCAL
     end if
 
     return m.score
