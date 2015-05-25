@@ -157,6 +157,8 @@ function headerGetOptions() as object
         option.font = font
         option.bgColor = Colors().ButtonMed
         option.height = 66
+        option.focusMethod = ButtonClass().FOCUS_BACKGROUND
+        option.focusMethodColor = Colors().Orange
     end for
 
     return m.options
