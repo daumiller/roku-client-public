@@ -10,7 +10,6 @@ function ServerDropDownButtonClass() as object
 
         ' Overlay overrides
         obj.GetComponents = sddoverlayGetComponents
-        obj.CreateButton = sddoverlayCreateButton
 
         m.ServerDropDownButtonClass = obj
     end if
@@ -39,7 +38,6 @@ sub sddbuttonInit(text as string, font as object)
         title: FontRegistry().NORMAL,
         subtitle: FontRegistry().NORMAL,
         glyph: FontRegistry().GetIconFont(11),
-        status: FontRegistry().GetTextFont(20),
     }
 
     ' Title
@@ -55,8 +53,8 @@ sub sddbuttonInit(text as string, font as object)
     m.AddComponent(m.indicator)
 
     ' Max and Min width of the drop down options (server/owner name dependent)
-    m.maxWidth = 450
-    m.minWidth = 128
+    m.dropdownMinWidth = 200
+    m.dropdownMaxWidth = 450
 end sub
 
 sub sddbuttonPerformLayout()

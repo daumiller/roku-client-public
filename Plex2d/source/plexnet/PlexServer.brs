@@ -41,7 +41,6 @@ function PlexServerClass() as object
         obj.Equals = pnsEquals
         obj.ToString = pnsToString
         obj.GetVersion = pnsGetVersion
-        obj.GetSubtitle = pnsGetSubtitle
 
         m.PlexServerClass = obj
     end if
@@ -328,21 +327,3 @@ sub pnsGetVersion() as string
 
     return JoinArray(version, ".")
 end sub
-
-function pnsGetSubtitle() as dynamic
-    subtitle = CreateObject("roList")
-
-    if m.IsSupported = false then
-        subtitle.Push("Upgrade Required")
-    else if m.isReachable() = false then
-        subtitle.Push("Offline")
-    end if
-
-    if not m.owned then
-        subtitle.Push(m.owner)
-    end if
-
-    if subtitle.Count() > 0 then return JoinArray(subtitle, " - ")
-
-    return invalid
-end function

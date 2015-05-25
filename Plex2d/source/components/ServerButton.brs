@@ -1,13 +1,19 @@
 function ServerButtonClass() as object
     if m.ServerButtonClass = invalid then
         obj = CreateObject("roAssociativeArray")
-        obj.Append(ComponentClass())
-        obj.Append(AlignmentMixin())
-        obj.Append(PaddingMixin())
+        obj.Append(CompositeButtonClass())
         obj.ClassName = "ServerButton"
 
-        obj.Draw = serverbuttonDraw
+        ' Method overrides
         obj.Init = serverbuttonInit
+        obj.PerformLayout = serverbuttonPerformLayout
+        obj.Draw = serverbuttonDraw
+
+        obj.GetPreferredWidth = serverbuttonGetPreferredWidth
+        obj.GetPreferredHeight = serverbuttonGetPreferredHeight
+
+        obj.OnFocus = serverbuttonOnFocus
+        obj.OnBlur = serverbuttonOnBlur
 
         m.ServerButtonClass = obj
     end if
@@ -15,116 +21,169 @@ function ServerButtonClass() as object
     return m.ServerButtonClass
 end function
 
-function createServerButton(server as object, command as dynamic, titleFont as object, subtitleFont as object, glyphFont as object, statusFont as object) as object
+function createServerButton(server as object, titleFont as object, subtitleFont, glyphFont as object, command as dynamic) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(ServerButtonClass())
 
     obj.server = server
-    obj.command = command
-    obj.statusWidth = statusFont.GetOneLineWidth(Glyphs().CHECK, 1280) * 2
 
-    obj.Init(titleFont, subtitleFont, glyphFont, statusFont)
+    obj.Init(titleFont, subtitleFont, glyphFont)
+
+    obj.useIndicator = false
+    obj.command = command
 
     return obj
 end function
 
-sub serverbuttonInit(titleFont as object, subtitleFont as object, glyphFont as object, statusFont as object)
-    ApplyFunc(ComponentClass().Init, m)
+sub serverbuttonInit(titleFont as object, subtitleFont as object, glyphFont as object)
+    ApplyFunc(CompositeButtonClass().Init, m, [m.server.name, titleFont])
 
     m.customFonts = {
         title: titleFont,
         subtitle: subtitleFont,
-        glyph: glyphFont,
-        status: statusFont,
+        glyph: glyphFont
     }
 
-    m.bgColor = iif(m.server.owned, Colors().Button, Colors().ButtonMed)
-    m.titleColor = iif(m.server.isReachable(), Colors().Text, Colors().Subtitle)
-    m.subtitleColor = Colors().Subtitle
+    ' Title: server name
+    m.title = createLabel(m.text, m.customFonts.title)
+    m.AddComponent(m.title)
 
-    m.focusable = true
-    m.selectable = true
-    m.fixed = false
-    m.focusInside = true
+    ' Subtitle: optional shared server user or status text
+    if not m.server.owned then
+        m.subtitle = createLabel(firstOf(m.server.owner, "remote"), m.customFonts.subtitle)
+        m.subtitle.SetColor(Colors().Subtitle)
+        m.AddComponent(m.subtitle)
+    end if
 
-    m.halign = m.JUSTIFY_LEFT
-    m.valign = m.ALIGN_MIDDLE
+    ' Status indicator
+    if m.server.Equals(PlexServerManager().GetSelectedServer()) then
+        statusText = Glyphs().CHECK
+        statusColor = Colors().Text
+    else if m.server.IsSupported = false or m.server.isReachable() = false then
+        statusText = Glyphs().ERROR
+        statusColor = Colors().Red
+    else
+        statusText = invalid
+    end if
+
+    if statusText <> invalid then
+        m.statusLabel = createLabel(statusText, m.customFonts.glyph)
+        m.statusLabel.SetColor(statusColor)
+        m.AddComponent(m.statusLabel)
+    end if
+
+    ' Secure indicator
+    showLock = (MyPlexAccount().isSecure and m.server.activeConnection <> invalid and m.server.activeConnection.isSecure)
+    if showLock then
+        m.lockLabel = createLabel(Glyphs().Lock, m.customFonts.glyph)
+        m.lockLabel.SetColor(Colors().Green)
+        m.AddComponent(m.lockLabel)
+    end if
 end sub
 
-function serverbuttonDraw(redraw=false as boolean) as object
-    if redraw = false and m.region <> invalid then return [m]
-    m.InitRegion()
+sub serverbuttonPerformLayout()
+    ApplyFunc(CompositeButtonClass().PerformLayout, m)
 
-    if m.padding <> invalid then
-        childWidth = m.width - m.padding.left - m.padding.right - m.statusWidth
-        xOffset = m.padding.left
-    else
-        childWidth = m.width - m.statusWidth
-        xOffset = 0
+    ' Place the components right to left
+    xOffset = m.width - m.padding.right
+
+    ' Status label positioning
+    if m.statusLabel <> invalid then
+        xOffset = xOffset - m.statusLabel.GetPreferredWidth()
+        yOffset = m.GetYOffsetAlignment(m.statusLabel.font.GetOneLineHeight())
+        m.statusLabel.SetFrame(xOffset, yOffset, m.statusLabel.GetPreferredWidth(), m.statusLabel.GetPreferredHeight())
+        xOffset = xOffset - m.padding.right
     end if
 
-    if m.focusSeparator <> invalid then
-        m.region.DrawRect(xOffset, m.height - m.focusSeparator, m.width - xOffset*2, m.focusSeparator, Colors().Black)
+    ' Lock label positioning
+    if m.lockLabel <> invalid then
+        xOffset = xOffset - m.lockLabel.GetPreferredWidth()
+        yOffset = m.GetYOffsetAlignment(m.lockLabel.font.GetOneLineHeight())
+        m.lockLabel.SetFrame(xOffset, yOffset, m.lockLabel.GetPreferredWidth(), m.lockLabel.GetPreferredHeight())
+        xOffset = xOffset - m.padding.right
     end if
 
-    ' Include subtitle if server is shared
-    titleText = tostr(m.server.name)
-    subtitleText = m.server.GetSubtitle()
+    ' Calculate the available width and height after placing the status/lock indicators
+    width = xOffset - m.padding.left
+    height = m.title.GetPreferredHeight()
+    if m.subtitle <> invalid then
+        height = height + m.subtitle.GetPreferredHeight()
+    end if
 
-    ' Status indicators
-    showLock = (MyPlexAccount().isSecure and m.server.activeConnection <> invalid and m.server.activeConnection.isSecure)
+    xOffset = m.padding.left
+    yOffset = m.height/2 - height/2
 
-    if m.server.Equals(PlexServerManager().GetSelectedServer()) then
-        if showLock then
-            ' TODO(schuyler): Is this the best way to show both? The latest client
-            ' mocks for this menu are somewhat different.
-            glyphText = Glyphs().LOCK + Glyphs().CHECK
-        else
-            glyphText = Glyphs().CHECK
+    m.title.SetFrame(xOffset, yOffset, width, m.title.GetPreferredHeight())
+
+    if m.subtitle <> invalid then
+        yOffset = yOffset + m.title.GetPreferredHeight()
+        m.subtitle.SetFrame(xOffset, yOffset, width, m.subtitle.GetPreferredHeight())
+    end if
+end sub
+
+function serverButtonDraw(redraw=false as boolean) as object
+    if m.focusMethod = m.FOCUS_FOREGROUND or m.focusMethod = m.FOCUS_BACKGROUND then
+        ' Based on the focus method, we'll want to force a redraw
+        ' regardless of the passed argument.
+        redraw = (m.title.region <> invalid) or (m.statusLabel <> invalid and m.statusLabel.region <> invalid) or (m.lockLabel <> invalid and m.LockLabel.region <> invalid)
+
+        ' Reset colors after buttons OnFocus/OnBlur methods
+        for each comp in m.components
+            comp.SetColor(comp.fgColor, m.bgColor)
+        end for
+    end if
+
+    ' This is a composite, so these labels will be redrawn if
+    ' the components have an invalid region.
+    if redraw then
+        for each comp in m.components
+            comp.region = invalid
+        end for
+    end if
+
+    return ApplyFunc(CompositeButtonClass().Draw, m)
+end function
+
+sub serverbuttonOnFocus()
+    m.title.SetColor(Colors().Black, m.bgColor)
+    if m.subtitle <> invalid then
+        m.subtitle.SetColor(Colors().Text, m.bgColor)
+    end if
+
+    ApplyFunc(CompositeButtonClass().OnFocus, m)
+end sub
+
+sub serverbuttonOnBlur(toFocus=invalid as dynamic)
+    m.title.SetColor(Colors().Text, m.bgColor)
+    if m.subtitle <> invalid then
+        m.subtitle.SetColor(Colors().Subtitle, m.bgColor)
+    end if
+
+    ApplyFunc(CompositeButtonClass().OnBlur, m)
+end sub
+
+function serverbuttonGetPreferredWidth() as integer
+    ' If someone specifically set our width, then prefer that.
+    if validint(m.width) > 0 then return m.width
+
+    width = m.title.GetPreferredWidth()
+    if m.subtitle <> invalid and m.subtitle.GetPreferredWidth() > width then
+        width = m.subtitle.GetPreferredWidth()
+    end if
+
+    for each comp in m.components
+        if not comp.Equals(m.title) and not comp.Equals(m.subtitle) then
+            ' Pad the lock or status label
+            mp = iif(comp.Equals(m.lockLabel) or comp.Equals(m.statusLabel), 2, 1)
+            width = width + comp.GetPreferredWidth()*mp + m.padding.right
         end if
-        glyphColor = Colors().Green
-    else if m.server.IsSupported = false or m.server.isReachable() = false then
-        glyphText = Glyphs().ERROR
-        glyphColor = Colors().Red
-    else if showLock then
-        glyphText = Glyphs().LOCK
-        glyphColor = Colors().Green
-    else
-        glyphText = invalid
-    end if
-    if glyphText <> invalid then
-        yOffset = m.GetYOffsetAlignment(m.customFonts.glyph.GetOneLineHeight())
-        m.region.DrawText(glyphText, xOffset, yOffset, glyphColor, m.customFonts.glyph)
-    end if
-    xOffset = xOffset + m.statusWidth
+    end for
 
-    ' Title
-    title = createLabel(titleText, m.customFonts.title)
-    title.width = childWidth
-    titleText = title.TruncateText()
-    height = title.GetPreferredHeight()
+    return width + m.padding.left
+end function
 
-    ' Subtitle
-    if subtitleText <> invalid then
-        subtitle = createLabel(subtitleText, m.customFonts.subtitle)
-        subtitle.width = childWidth
-        subtitleText = subtitle.TruncateText()
-        height = height + subtitle.GetPreferredHeight()
-    end if
-
-    yOffset = m.GetYOffsetAlignment(height)
-    if m.halign <> m.JUSTIFY_LEFT then
-        xOffset = m.GetXOffsetAlignment(title.font.GetOneLineWidth(titleText, m.width))
-    end if
-    m.region.DrawText(titleText, xOffset, yOffset, m.titleColor, title.font)
-
-    if subtitleText <> invalid then
-        yOffset = yOffset + title.GetPreferredHeight()
-        if m.halign <> m.JUSTIFY_LEFT then
-            xOffset = m.GetXOffsetAlignment(subtitle.font.GetOneLineWidth(subtitleText, m.width))
-        end if
-        m.region.DrawText(subtitleText, xOffset, yOffset, m.subtitleColor, subtitle.font)
-    end if
-
-    return [m]
+function serverbuttonGetPreferredHeight() as integer
+    ' If someone specifically set our height, then prefer that.
+    if validint(m.height) > 0 then return m.height
+    return m.customFonts.title.GetOneLineHeight() + m.customFonts.subtitle.GetOneLineHeight() + m.padding.top + m.padding.bottom
 end function
