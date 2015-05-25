@@ -14,8 +14,8 @@ function PlexConnectionClass() as object
         obj.SOURCE_MYPLEX = 4
 
         obj.SCORE_REACHABLE = 4
-        obj.SCORE_SECURE = 2
-        obj.SCORE_LOCAL = 1
+        obj.SCORE_LOCAL = 2
+        obj.SCORE_SECURE = 1
 
         ' Properties
         obj.state = obj.STATE_UNKNOWN
