@@ -72,12 +72,23 @@ function serverbuttonDraw(redraw=false as boolean) as object
     subtitleText = m.server.GetSubtitle()
 
     ' Status indicators
+    showLock = (MyPlexAccount().isSecure and m.server.activeConnection <> invalid and m.server.activeConnection.isSecure)
+
     if m.server.Equals(PlexServerManager().GetSelectedServer()) then
-        glyphText = Glyphs().CHECK
+        if showLock then
+            ' TODO(schuyler): Is this the best way to show both? The latest client
+            ' mocks for this menu are somewhat different.
+            glyphText = Glyphs().LOCK + Glyphs().CHECK
+        else
+            glyphText = Glyphs().CHECK
+        end if
         glyphColor = Colors().Green
     else if m.server.IsSupported = false or m.server.isReachable() = false then
         glyphText = Glyphs().ERROR
         glyphColor = Colors().Red
+    else if showLock then
+        glyphText = Glyphs().LOCK
+        glyphColor = Colors().Green
     else
         glyphText = invalid
     end if
