@@ -33,6 +33,7 @@ function Glyphs() as object
         obj.FILM_STRIP  = chr(&he009)
         obj.TRAILER     = chr(&hf109)
         obj.CROWN       = chr(&h1f451)
+        obj.PADLOCK     = chr(&hf107)
         obj.LOCK        = chr(&h1f512)
         obj.UNLOCK      = chr(&he205)
         obj.INFO        = chr(&he196)
@@ -45,6 +46,7 @@ function Glyphs() as object
         obj.ARROW_RIGHT = chr(&he224)
         obj.ARROW_LEFT  = chr(&he225)
         obj.EYE         = chr(&he002)
+        obj.CIRCLE      = chr(&hf108)
 
         ' Constants Aliases
         obj.MORE        = obj.ELLIPSIS
