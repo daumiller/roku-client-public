@@ -4,6 +4,8 @@ function ServerButtonClass() as object
         obj.Append(CompositeButtonClass())
         obj.ClassName = "ServerButton"
 
+        obj.alphaEnable = false
+
         ' Method overrides
         obj.Init = serverbuttonInit
         obj.PerformLayout = serverbuttonPerformLayout
@@ -75,7 +77,7 @@ sub serverbuttonInit(titleFont as object, subtitleFont as object, glyphFont as o
     ' Secure indicator
     showLock = (MyPlexAccount().isSecure and m.server.activeConnection <> invalid and m.server.activeConnection.isSecure)
     if showLock then
-        m.lockLabel = createLabel(Glyphs().Lock, m.customFonts.glyph)
+        m.lockLabel = createLabel(Glyphs().PADLOCK, m.customFonts.glyph)
         m.lockLabel.SetColor(Colors().Green)
         m.AddComponent(m.lockLabel)
     end if
@@ -126,12 +128,12 @@ function serverButtonDraw(redraw=false as boolean) as object
         ' Based on the focus method, we'll want to force a redraw
         ' regardless of the passed argument.
         redraw = (m.title.region <> invalid) or (m.statusLabel <> invalid and m.statusLabel.region <> invalid) or (m.lockLabel <> invalid and m.LockLabel.region <> invalid)
-
-        ' Reset colors after buttons OnFocus/OnBlur methods
-        for each comp in m.components
-            comp.SetColor(comp.fgColor, m.bgColor)
-        end for
     end if
+
+    ' Reset colors after buttons OnFocus/OnBlur methods
+    for each comp in m.components
+        comp.SetColor(comp.fgColor, m.bgColor)
+    end for
 
     ' This is a composite, so these labels will be redrawn if
     ' the components have an invalid region.

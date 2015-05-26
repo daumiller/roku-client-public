@@ -38,7 +38,7 @@ sub sddbuttonInit(text as string, font as object)
     m.customFonts = {
         title: FontRegistry().NORMAL,
         subtitle: FontRegistry().NORMAL,
-        glyph: FontRegistry().GetIconFont(11),
+        glyph: FontRegistry().GetIconFont(15),
     }
 
     ' Title
