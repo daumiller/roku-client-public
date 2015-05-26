@@ -30,6 +30,8 @@ sub sddoverlayGetComponents()
         comp.SetPadding(10, 10, 10, 10)
         comp.SetFocusMethod(comp.FOCUS_BACKGROUND, Colors().Orange)
         comp.SetMetadata(server)
+        comp.height = comp.GetPreferredHeight()
+        comp.width = comp.GetPreferredWidth()
 
         if server.Equals(PlexServerManager().GetSelectedServer()) or m.screen.focusedItem = invalid then
             m.screen.focusedItem = comp
