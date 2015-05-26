@@ -161,7 +161,7 @@ sub serverbuttonOnBlur(toFocus=invalid as dynamic)
         m.subtitle.SetColor(Colors().Subtitle, m.bgColor)
     end if
 
-    ApplyFunc(CompositeButtonClass().OnBlur, m)
+    ApplyFunc(CompositeButtonClass().OnBlur, m, [toFocus])
 end sub
 
 function serverbuttonGetPreferredWidth() as integer
