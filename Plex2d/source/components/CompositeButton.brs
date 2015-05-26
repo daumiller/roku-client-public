@@ -44,7 +44,9 @@ function cbuttonGetPreferredWidth() as integer
 
     width = m.padding.left
     for each comp in m.components
-        width = width + comp.GetPreferredWidth() + m.padding.right
+        if comp.excludeGetPreferredWidth <> true then
+            width = width + comp.GetPreferredWidth() + m.padding.right
+        end if
     end for
 
     return width

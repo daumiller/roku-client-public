@@ -23,6 +23,7 @@ function createServerDropDownButton(server as object, font as object, screen as 
 
     obj.screen = screen
     obj.server = server
+    obj.isSecure = (MyPlexAccount().isSecure and server.activeConnection <> invalid and server.activeConnection.isSecure)
 
     obj.Init(server.name, font)
 
@@ -52,6 +53,14 @@ sub sddbuttonInit(text as string, font as object)
     m.indicator = createLabel(Glyphs().D_TRIANGLE, m.customFonts.glyph)
     m.AddComponent(m.indicator)
 
+    ' Lock
+    if m.isSecure then
+        m.lock = createLabel(Glyphs().PADLOCK, FontRegistry().GetIconFont(10))
+        m.lock.SetColor(Colors().Green)
+        m.lock.excludeGetPreferredWidth = true
+        m.AddComponent(m.lock)
+    end if
+
     ' Max and Min width of the drop down options (server/owner name dependent)
     m.dropdownMinWidth = 200
     m.dropdownMaxWidth = 450
@@ -70,6 +79,15 @@ sub sddbuttonPerformLayout()
     yOffset = m.GetYOffsetAlignment(m.image.GetPreferredHeight())
     xOffset = xOffset - m.padding.right - m.image.GetPreferredWidth()
     m.image.SetFrame(xOffset, yOffset, m.image.GetPreferredWidth(), m.image.GetPreferredHeight())
+
+    ' Lock
+    if m.lock <> invalid then
+        lockHeight = m.lock.GetPreferredHeight()
+        lockWidth = m.lock.GetPreferredWidth()
+        yOffset = computeRect(m.image).down - lockHeight + lockHeight/4
+        xOffset = xOffset - lockWidth/4
+        m.lock.SetFrame(xOffset, yOffset, lockWidth, lockHeight)
+    end if
 
     ' Title
     m.title.width = xOffset - m.padding.right
