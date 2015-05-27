@@ -353,7 +353,10 @@ end sub
 
 sub psmOnAccountChange(account as dynamic, reallyChanged as boolean)
     ' Clear any AudioPlayer data before invalidating the active server
-    if reallyChanged then AudioPlayer().Cleanup()
+    if reallyChanged then
+        AudioPlayer().Cleanup()
+        PhotoPlayer().Cleanup()
+    end if
 
     if account.isSignedIn then
         ' If the user didn't really change, such as selecting the previous user
