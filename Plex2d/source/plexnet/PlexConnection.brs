@@ -83,7 +83,9 @@ sub pncTestReachability(server as object)
     context.timeout = 10000
     AddPlexHeaders(request.request, server.GetToken())
 
-    Application().StartRequest(request, context)
+    if Application().StartRequest(request, context) then
+        m.hasPendingRequest = true
+    end if
 end sub
 
 sub pncOnReachabilityResponse(request as object, response as object, context as object)

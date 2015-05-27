@@ -192,14 +192,25 @@ sub pnsUpdateReachability(force=true as boolean)
     if not force and m.activeConnection <> invalid and m.activeConnection.state <> PlexConnectionClass().STATE_UNKNOWN then return
 
     Debug("Updating reachability for " + tostr(m.name) + ", will test " + tostr(m.connections.Count()) + " connections")
+    epoch = CreateObject("roDateTime").AsSeconds()
+    minSeconds = 60
     for each conn in m.connections
-        m.pendingReachabilityRequests = m.pendingReachabilityRequests + 1
-        if conn.isSecure then m.pendingSecureRequests = m.pendingSecureRequests + 1
-        conn.TestReachability(m)
+        diff = epoch - validint(conn.lastTestedAt)
+        if conn.hasPendingRequest = true then
+            Debug("Skipping reachability test for " + conn.ToString() + " (has pending request)")
+        else if diff < minSeconds then
+            Debug("Skipping reachability test for " + conn.ToString() + " (tested " + tostr(diff) + " seconds ago)")
+        else
+            m.pendingReachabilityRequests = m.pendingReachabilityRequests + 1
+            if conn.isSecure then m.pendingSecureRequests = m.pendingSecureRequests + 1
+            conn.TestReachability(m)
+        end if
     next
 end sub
 
 sub pnsOnReachabilityResult(connection as object)
+    connection.lastTestedAt = CreateObject("roDateTime").AsSeconds()
+    connection.Delete("hasPendingRequest")
     m.pendingReachabilityRequests = m.pendingReachabilityRequests - 1
     if connection.isSecure then m.pendingSecureRequests = m.pendingSecureRequests - 1
 
