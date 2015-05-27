@@ -6,8 +6,8 @@ function PhotoScreen() as object
         obj.screenName = "Photo Screen"
 
         ' Methods
-        obj.Init = photoInit
         obj.Show = photoShow
+        obj.Activate = photoActivate
         obj.Refresh = photoRefresh
         obj.GetComponents = photoGetComponents
         obj.OnSlideShowTimer = photoOnSlideShowTimer
@@ -45,22 +45,14 @@ function createPhotoScreen(controller as object) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(PhotoScreen())
 
-    obj.Init(controller)
+    obj.Init()
+
+    obj.controller = controller
+    obj.isPlaying = true
+    obj.SetDuration(5000)
 
     return obj
 end function
-
-sub photoInit(controller as object)
-    ApplyFunc(ComponentsScreen().Init, m)
-
-    m.controller = controller
-    m.curIndex = 0
-    m.nextIndex = invalid
-    m.context = invalid
-    m.isPlaying = true
-
-    m.SetDuration(5000)
-end sub
 
 sub photoShow()
     ApplyFunc(ComponentsScreen().Show, m)
@@ -73,6 +65,12 @@ sub photoShow()
         m.slideShowTimer.paused = true
         Application().AddTimer(m.slideShowTimer, createCallable("OnSlideShowTimer", m))
     end if
+end sub
+
+sub photoActivate()
+    ApplyFunc(ComponentsScreen().Activate, m)
+
+    NowPlayingManager().SetLocation(NowPlayingManager().FULLSCREEN_PHOTO)
 end sub
 
 sub photoRefresh()
@@ -208,7 +206,7 @@ end sub
 sub photoSetDuration(duration=5000 as integer, mark=false as boolean)
     m.duration = duration
     if m.slideShowTimer <> invalid then
-        m.slideShowTimer.SetDuation(duration, true)
+        m.slideShowTimer.SetDuration(duration, true)
         if mark then m.slideShowTimer.Mark()
     end if
 end sub
