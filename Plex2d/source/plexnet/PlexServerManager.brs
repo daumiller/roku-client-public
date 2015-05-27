@@ -299,7 +299,14 @@ sub psmLoadState()
         server.owned = serverObj.owned
 
         for each conn in serverObj.connections
-            server.connections.Push(createPlexConnection(conn.sources, conn.address, conn.isLocal, conn.token))
+            connection = createPlexConnection(conn.sources, conn.address, conn.isLocal, conn.token)
+
+            ' Keep the secure connection on top
+            if connection.isSecure then
+                server.connections.Unshift(connection)
+            else
+                server.connections.Push(connection)
+            end if
         next
 
         m.serversByUuid[server.uuid] = server

@@ -19,7 +19,14 @@ function createPlexResource(container as object, xml as object) as object
 
     obj.connections = CreateObject("roList")
     for each conn in xml.Connection
-        obj.connections.Push(createPlexConnection(PlexConnectionClass().SOURCE_MYPLEX, conn@uri, (conn@local = "1"), obj.Get("accessToken")))
+        connection = createPlexConnection(PlexConnectionClass().SOURCE_MYPLEX, conn@uri, (conn@local = "1"), obj.Get("accessToken"))
+
+        ' Keep the secure connection on top
+        if connection.isSecure then
+            obj.connections.Unshift(connection)
+        else
+            obj.connections.Push(connection)
+        end if
 
         ' If the connection is one of our plex.direct secure connections, add
         ' the nonsecure variant as well.
