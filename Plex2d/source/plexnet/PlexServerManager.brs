@@ -358,6 +358,9 @@ sub psmOnAccountChange(account as dynamic, reallyChanged as boolean)
         PhotoPlayer().Cleanup()
     end if
 
+    ' Clear any selected server on user change
+    m.Delete("selectedServer")
+
     if account.isSignedIn then
         ' If the user didn't really change, such as selecting the previous user
         ' on the lock screen, then we don't need to clear anything. We can
