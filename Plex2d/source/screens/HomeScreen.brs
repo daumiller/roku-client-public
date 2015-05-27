@@ -69,6 +69,9 @@ sub homeShow()
     else
         Debug("HubsShow:: waiting for all requests to be completed")
     end if
+
+    ' Defer any pending reachability tests during home screen creation
+    PlexServerManager().DeferUpdateReachability(false)
 end sub
 
 function homeHandleCommand(command as string, item as dynamic) as boolean

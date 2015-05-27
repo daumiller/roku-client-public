@@ -22,6 +22,8 @@ function PlexServerManager()
 
         obj.UpdateReachability = psmUpdateReachability
         obj.UpdateReachabilityResult = psmUpdateReachabilityResult
+        obj.DeferUpdateReachability = psmDeferUpdateReachability
+        obj.OnDeferUpdateReachabilityTimer = psmOnDeferUpdateReachabilityTimer
 
         obj.IsValidForTranscoding = psmIsValidForTranscoding
         obj.GetTranscodeServer = psmGetTranscodeServer
@@ -118,7 +120,7 @@ sub psmUpdateFromConnectionType(servers as object, source as integer)
     end if
 
     m.DeviceRefreshComplete(source)
-    m.UpdateReachability(true)
+    m.UpdateReachability(true, true)
     m.SaveState()
 end sub
 
@@ -126,7 +128,7 @@ sub psmUpdateFromDiscovery(server as object)
     merged = m.MergeServer(server)
 
     if merged.activeConnection = invalid then
-        merged.UpdateReachability(false)
+        merged.UpdateReachability(false, true)
     else
         ' m.NotifyAboutDevice(merged, true)
     end if
@@ -168,12 +170,23 @@ sub psmDeviceRefreshComplete(source as integer)
     next
 end sub
 
-sub psmUpdateReachability(force as boolean)
-    Debug("Updating reachability for all devices, force=" + tostr(force))
-
-    for each uuid in m.serversByUuid
-        m.serversByUuid[uuid].UpdateReachability(force)
-    next
+sub psmUpdateReachability(force as boolean, preferSearch=false as boolean, defer=true as boolean)
+    ' To improve reachability performance and app startup, we'll try to test the
+    ' preferred server first, and defer the connection tests for a few seconds.
+    '
+    searchUUID = m.searchContext.preferredServer
+    if preferSearch and searchUUID <> invalid and m.serversByUuid[searchUUID] <> invalid then
+        Info("Updating reachability for preferred server, force=" + tostr(force))
+        m.serversByUuid[searchUUID].UpdateReachability(force)
+        m.DeferUpdateReachability()
+    else if defer then
+        m.DeferUpdateReachability()
+    else
+        Info("Updating reachability for all devices, force=" + tostr(force))
+        for each uuid in m.serversByUuid
+            m.serversByUuid[uuid].UpdateReachability(force)
+        next
+    end if
 end sub
 
 sub psmUpdateReachabilityResult(server as object, reachable as boolean)
@@ -287,7 +300,7 @@ sub psmLoadState()
     next
 
     Info("Loaded " + tostr(obj.servers.Count()) + " servers from registry")
-    m.UpdateReachability(false)
+    m.UpdateReachability(false, true)
 end sub
 
 sub psmSaveState()
@@ -385,6 +398,37 @@ sub psmOnAccountChange(account as dynamic, reallyChanged as boolean)
         ' Clear servers/connections from plex.tv
         m.UpdateFromConnectionType([], PlexConnectionClass().SOURCE_MYPLEX)
     end if
+end sub
+
+sub psmDeferUpdateReachability(addTimer=true as boolean)
+    if addTimer and m.deferReachabilityTimer = invalid then
+        m.deferReachabilityTimer = createTimer("deferReachabilityTimer")
+        m.deferReachabilityTimer.SetDuration(1000, true)
+        Application().AddTimer(m.deferReachabilityTimer, createCallable("OnDeferUpdateReachabilityTimer", m))
+    end if
+
+    if m.deferReachabilityTimer <> invalid then
+        Info("Defer update reachability for all devices a few seconds")
+        m.deferReachabilityTimer.Mark()
+    end if
+end sub
+
+sub psmOnDeferUpdateReachabilityTimer(timer as object)
+    if m.selectedServer = invalid and m.searchContext <> invalid then
+        servers = m.GetServers()
+        for each server in servers
+            if server.pendingReachabilityRequests > 0 then
+                if server.uuid = m.searchContext.preferredServer then
+                    Info("Defer update reachability a few more seconds... still waiting for preferred server")
+                    return
+                end if
+            end if
+        end for
+    end if
+
+    timer.active = false
+    m.Delete("deferReachabilityTimer")
+    m.UpdateReachability(true, false, false)
 end sub
 
 ' TODO(schuyler): Notifications
