@@ -171,6 +171,12 @@ sub psmDeviceRefreshComplete(source as integer)
 end sub
 
 sub psmUpdateReachability(force as boolean, preferSearch=false as boolean, defer=true as boolean)
+    ' We don't need to test any servers unless we are signed in and authenticated.
+    if MyPlexAccount().isAuthenticated <> true then
+        Info("Ignore testing server reachability until we're authenticated")
+        return
+    end if
+
     ' To improve reachability performance and app startup, we'll try to test the
     ' preferred server first, and defer the connection tests for a few seconds.
     '
