@@ -226,6 +226,18 @@ end sub
 function tmCreateTextureRequest(context as object) as object
     request = CreateObject("roTextureRequest", context.url)
 
+    ' texture requests expose the ifHttpAgent interface. We can set headers
+    ' and certificates if needed. AddPlexHeaders?
+
+    ' Use our specific plex.direct CA cert if applicable to improve performance
+    if left(context.url, 5) = "https" then
+        if context.url.instr("plex.direct") > -1 then
+            request.SetCertificatesFile("pkg:/certs/plex-bundle.crt")
+        else
+            request.SetCertificatesFile("common:/certs/ca-bundle.crt")
+        end if
+    end if
+
     if context.scaleSize = true then
         request.SetSize(context.width, context.height)
         request.SetScaleMode(context.scaleMode)

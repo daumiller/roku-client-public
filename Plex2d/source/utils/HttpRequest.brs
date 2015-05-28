@@ -46,7 +46,15 @@ function createHttpRequest(url as string, method=invalid as dynamic) as object
 
     obj.request.SetUrl(url)
     obj.request.EnableEncodings(true)
-    obj.request.SetCertificatesFile("common:/certs/ca-bundle.crt")
+
+    ' Use our specific plex.direct CA cert if applicable to improve performance
+    if left(url, 5) = "https" then
+        if url.instr("plex.direct") > -1 then
+            obj.request.SetCertificatesFile("pkg:/certs/plex-bundle.crt")
+        else
+            obj.request.SetCertificatesFile("common:/certs/ca-bundle.crt")
+        end if
+    end if
 
     return obj
 end function
