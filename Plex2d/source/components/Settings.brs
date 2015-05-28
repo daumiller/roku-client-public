@@ -37,6 +37,10 @@ end function
 sub settingsInit()
     ApplyFunc(OverlayClass().Init, m)
 
+    m.customFonts = {
+        glyph: FontRegistry().GetIconFont(20)
+    }
+
     m.width = 660
     m.height = 200
     m.maxHeight = 560
@@ -85,9 +89,6 @@ sub settingsGetComponents()
             if not (pref.isRestricted = true and MyPlexAccount().isManaged) then
                 btn = m.createMenuButton(pref)
                 btn.scrollGroupTop = label
-                btn.SetDimensions(m.width, 60)
-                btn.SetPadding(0, 0, 0, m.padding*2)
-                btn.DisableManualFocus()
                 btn.listBox = listBox
                 menuBox.AddComponent(btn)
             end if
@@ -155,11 +156,15 @@ sub settingsGetComponents()
 end sub
 
 function settingsCreateMenuButton(pref as object) as object
-    btn = createButton(pref.title, FontRegistry().NORMAL, pref.key)
-    btn.focusInside = true
+    btn = createGlyphButton(pref.title, FontRegistry().NORMAL, " ", m.customFonts.glyph, pref.key)
     btn.fixed = false
     btn.halign = btn.JUSTIFY_LEFT
     btn.zOrder = m.zOrderOverlay
+    btn.fgColorFocus = Colors().Black
+    btn.SetFocusMethod(btn.FOCUS_BACKGROUND, Colors().Orange, Colors().ButtonLht)
+    btn.SetDimensions(m.width, 60)
+    btn.SetPadding(0, 0, 0, m.padding*2)
+    btn.DisableManualFocus()
 
     ' special properties for the menu buttons
     btn.overlay = m
@@ -199,6 +204,9 @@ sub settingsOnSelected(screen as object)
 end sub
 
 sub settingsOnFocus()
+    m.SetGlyph(" ", true, false)
+    ApplyFunc(ButtonClass().OnFocus, m)
+
     if tostr(m.listBox.curCommand) = m.command then
         ' TODO(rob): we can probably rip the focus sibling out when we keep
         ' state, as I'd expect we'll always focus to the selected pref
@@ -206,10 +214,6 @@ sub settingsOnFocus()
         return
     end if
     m.listBox.curCommand = m.command
-
-    ' highlight the focused item
-    m.SetColor(Colors().Text, m.overlay.colors.highlight)
-    m.draw(true)
 
     'TODO(rob): better way to reinit the list box
     m.listBox.DestroyComponents()
@@ -234,20 +238,26 @@ sub settingsOnFocus()
             btn.SetPadding(0, 0, 0, m.padding.left)
             btn.SetFocusSibling("left", m)
             btn.DisableManualFocus()
+            btn.fgColorFocus = Colors().Black
+            btn.SetFocusMethod(btn.FOCUS_BACKGROUND, Colors().Orange, Colors().ButtonLht)
             m.listBox.AddComponent(btn)
         end if
     end for
 
-    CompositorScreen().DrawComponent(m.listBox)
+    m.screen.screen.DrawComponent(m.listBox)
     m.SetFocusSibling("right", m.listBox.components[0])
 
     m.screen.screen.DrawAll()
 end sub
 
-sub settingsOnBlur(toFocus as object)
+sub settingsOnBlur(toFocus=invalid as dynamic)
+    if toFocus = invalid then return
+
     if toFocus.pref <> invalid then
-        m.SetColor(Colors().Text)
-        m.draw(true)
+        ApplyFunc(ButtonClass().OnBlur, m, [toFocus])
+    else
+        m.SetGlyph(Glyphs().ARROW_RIGHT, true, false)
+        m.OnHighlight(m.screen)
     end if
 end sub
 
