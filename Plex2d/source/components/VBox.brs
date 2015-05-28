@@ -92,13 +92,13 @@ sub vboxPerformLayout()
             if m.origScrollTriggerDown = invalid then m.origScrollTriggerDown = m.scrollTriggerDown
 
             ' Calculate the spacing from the xOffset for the scrollbar
-            if m.scrollInfo.spacing = invalid then
+            if m.scrollInfo.spacing = invalid and component.focusable = true then
                 if component.focusMethod <> invalid and component.focusMethod <> ButtonClass().FOCUS_BORDER then
                     m.scrollInfo.spacing = 2
                 else if component.focusInside = true then
                     m.scrollInfo.spacing = cint(CompositorScreen().focusPixels/2)
                 else
-                    m.scrollInfo.spacing = CompositorScreen().focusPixels * 2
+                    m.scrollInfo.spacing = CompositorScreen().focusPixels + 2
                 end if
             end if
 
@@ -195,7 +195,7 @@ sub vboxPerformLayout()
             m.scrollbar = createScrollbar(offsets[0], m.contentHeight, m.containerHeight, overlayZOrder, m.scrollInfo.offsetContainer)
             if m.scrollbar <> invalid
                 width = int(CompositorScreen().focusPixels * 1.5)
-                spacing = firstOf(m.scrollInfo.spacing, CompositorScreen().focusPixels * 2)
+                spacing = firstOf(m.scrollInfo.spacing, CompositorScreen().focusPixels + 2)
                 if m.border <> invalid then
                     spacing = spacing + m.border.px
                 end if
