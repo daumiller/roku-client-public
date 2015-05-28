@@ -116,7 +116,7 @@ sub buttonOnHighlight(screen as object)
         m.Draw(true)
         m.Redraw()
     else if m.focusMethod = m.FOCUS_BACKGROUND then
-        m.SetColor(m.focusColorText, m.highlightColor)
+        m.SetColor(firstOf(m.blurColorText, m.focusColorText), m.highlightColor)
         m.Draw(true)
         m.Redraw()
     end if
