@@ -33,6 +33,9 @@ function GridScreen() as object
         obj.Refresh = gsRefresh
         obj.ResetInit = gsResetInit
 
+        ' Maximum items allowed on any grid
+        obj.maxItems = 5000
+
         obj.SetRefocusItem = gsSetRefocusItem
 
         m.GridScreen = obj
@@ -194,7 +197,7 @@ sub gsOnJumpResponse(request as object, response as object, context as object)
     ' TODO(rob): We may want to ignore the jump list based
     ' on the `incr` count (total items)
     '
-    if response.items.Count() > 1
+    if response.items.Count() > 1 then
         ' Reverse the jump list for descending title sort
         if instr(1, request.GetUrl(), "titleSort:desc") > 0 then
             items = CreateObject("roList")
@@ -207,6 +210,14 @@ sub gsOnJumpResponse(request as object, response as object, context as object)
 
         incr = 0
         for each item in items
+            ' Do not include the jumpBox if we reach maxItems. We could just stop and show
+            ' the list, but it feels more wrong to do so.
+            '
+            if incr >= m.maxItems then
+                m.jumpItems.Clear()
+                exit for
+            end if
+
             m.jumpItems.push({
                 index: incr,
                 key: item.Get("key")
@@ -239,6 +250,9 @@ sub gsOnGridResponse(request as object, response as object, context as object)
 
     m.totalSize = response.container.GetInt("totalSize")
     if m.totalSize < m.chunkSizeInitial then m.chunkSizeInitial = m.totalSize
+
+    ' Force the maximum items limit if applicable
+    if m.totalSize > m.maxItems then m.totalSize = m.maxItems
 
     placeholder = {
         start: 0,
