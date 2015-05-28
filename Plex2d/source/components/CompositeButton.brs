@@ -13,6 +13,8 @@ function CompositeButtonClass() as object
         obj.SetFocusMethod = ButtonClass().SetFocusMethod
         obj.OnFocus = ButtonClass().OnFocus
         obj.OnBlur = ButtonClass().OnBlur
+        obj.OnHighlight = ButtonClass().OnHighlight
+        obj.OnDim = ButtonClass().OnDim
 
         ' Method overrides
         obj.Init = cbuttonInit

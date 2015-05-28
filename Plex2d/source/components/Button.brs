@@ -124,7 +124,7 @@ end sub
 
 sub buttonOnDim()
     ApplyFunc(LabelClass().OnDim, m)
-    m.OnBlur()
+    m.OnBlur(invalid)
 end sub
 
 sub buttonSetUniqCommand()
