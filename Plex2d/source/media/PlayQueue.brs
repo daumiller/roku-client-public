@@ -13,10 +13,12 @@ function PlayQueueClass() as object
         obj.totalSize = 0
         obj.windowSize = 0
 
+        obj.Init = pqInit
         obj.Refresh = pqRefresh
         obj.OnRefreshTimer = pqOnRefreshTimer
         obj.OnResponse = pqOnResponse
         obj.IsWindowed = pqIsWindowed
+        obj.AddRequestOptions = pqAddRequestOptions
 
         obj.SetShuffle = pqSetShuffle
         obj.SetRepeat = pqSetRepeat
@@ -35,19 +37,31 @@ function PlayQueueClass() as object
     return m.PlayQueueClass
 end function
 
+sub pqInit(server as object, contentType as string, options=invalid as dynamic)
+    m.server = server
+    m.type = contentType
+    m.items = CreateObject("roList")
+    m.options = firstOf(options, {})
+
+    ' Add a few default options for specific PQ types
+    if m.type = "audio" then
+        m.options.includeRelated = true
+    else if m.type = "photo" then
+        m.SetRepeat(true)
+    end if
+end sub
+
 function createPlayQueue(server as object, contentType as string, uri as string, options as object) as object
     obj = CreateObject("roAssociativeArray")
     obj.Append(PlayQueueClass())
 
-    obj.server = server
-    obj.type = contentType
-    obj.items = CreateObject("roList")
+    obj.Init(server, contentType, options)
 
     request = createPlexRequest(server, "/playQueues")
     request.AddParam(iif(options.isPlaylist = invalid, "uri", "playlistID"), uri)
     request.AddParam("type", contentType)
-    request.AddParam("includeRelated", "1")
 
+    ' Add options we pass once during PQ creation
     if options.key <> invalid then
         request.AddParam("key", options.key)
     end if
@@ -56,12 +70,10 @@ function createPlayQueue(server as object, contentType as string, uri as string,
         request.AddParam("shuffle", "1")
     end if
 
-    if options.extrasPrefixCount <> invalid then
-        request.AddParam("extrasPrefixCount", tostr(options.extrasPrefixCount))
-    end if
+    ' Add options we pass every time querying PQs
+    obj.AddRequestOptions(request)
 
     context = request.CreateRequestContext("create", createCallable("OnResponse", obj))
-    context.options = options
     Application().StartRequest(request, context, "")
 
     return obj
@@ -158,15 +170,12 @@ function createPlayQueueForId(server as object, contentType as string, id as int
     obj = CreateObject("roAssociativeArray")
     obj.Append(PlayQueueClass())
 
-    obj.server = server
-    obj.type = contentType
-    obj.items = CreateObject("roList")
+    obj.Init(server, contentType)
     obj.id = id
 
     request = createPlexRequest(server, "/playQueues/" + tostr(id))
     request.AddParam("own", "1")
-    request.AddParam("includeRelated", "1")
-
+    obj.AddRequestOptions(request)
     context = request.CreateRequestContext("own", createCallable("OnResponse", obj))
     Application().StartRequest(request, context)
 
@@ -234,7 +243,8 @@ sub pqRefresh(force=true as boolean, delay=false as boolean)
             m.refreshTimer.active = true
             Application().AddTimer(m.refreshTimer, m.refreshTimer.callback)
         else
-            request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id) + "?includeRelated=1")
+            request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id))
+            m.AddRequestOptions(request)
             context = request.CreateRequestContext("refresh", createCallable("OnResponse", m))
             Application().StartRequest(request, context)
         end if
@@ -252,7 +262,8 @@ sub pqSetShuffle(shuffle as boolean)
 
     ' Don't change m.isShuffled, it'll be set in OnResponse if all goes well
 
-    request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id) + command + "?includeRelated=1", "PUT")
+    request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id) + command, "PUT")
+    m.AddRequestOptions(request)
     context = request.CreateRequestContext("shuffle", createCallable("OnResponse", m))
     Application().StartRequest(request, context, "")
 end sub
@@ -260,8 +271,7 @@ end sub
 sub pqSetRepeat(repeat as boolean)
     if m.isRepeat = repeat then return
 
-    ' TODO(schuyler): Flesh this out once PMS supports it
-
+    m.options.repeat = repeat
     m.isRepeat = repeat
 end sub
 
@@ -304,7 +314,7 @@ sub pqMoveItem(item as object, after as object)
     end if
 
     request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id) + "/items/" + item.Get("playQueueItemID", "-1") + "/move" + query, "PUT")
-    request.AddParam("includeRelated", "1")
+    m.AddRequestOptions(request)
     context = request.CreateRequestContext("move", createCallable("OnResponse", m))
     Application().StartRequest(request, context, "")
 end sub
@@ -319,7 +329,7 @@ end sub
 
 sub pqRemoveItem(item as object)
     request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id) + "/items/" + item.Get("playQueueItemID", "-1"), "DELETE")
-    request.AddParam("includeRelated", "1")
+    m.AddRequestOptions(request)
     context = request.CreateRequestContext("delete", createCallable("OnResponse", m))
     Application().StartRequest(request, context, "")
 end sub
@@ -328,7 +338,7 @@ sub pqAddItem(item as object, addNext as boolean)
     request = createPlexRequest(m.server, "/playQueues/" + tostr(m.id), "PUT")
     request.AddParam("uri", item.GetItemUri())
     request.AddParam("next", iif(addNext, "1", "0"))
-    request.AddParam("includeRelated", "1")
+    m.AddRequestOptions(request)
     context = request.CreateRequestContext("add", createCallable("OnResponse", m))
     Application().StartRequest(request, context, "")
 end sub
@@ -336,8 +346,8 @@ end sub
 sub pqOnResponse(request as object, response as object, context as object)
     if response.ParseResponse() then
         ' Handle an empty PQ if we have specified an pqEmptyCallable
-        if response.items.Count() = 0 and context.options <> invalid and context.options.pqEmptyCallable <> invalid then
-            context.options.pqEmptyCallable.Call()
+        if response.items.Count() = 0 and m.options <> invalid and m.options.pqEmptyCallable <> invalid then
+            m.options.pqEmptyCallable.Call()
             return
         end if
 
@@ -419,3 +429,18 @@ function pqEquals(other as dynamic) as boolean
     if m.ClassName <> other.ClassName then return false
     return (m.id = other.id and m.type = other.type)
 end function
+
+sub pqAddRequestOptions(request as object)
+    ' Add any required options when refreshing
+    if m.options.repeat = true then
+        request.AddParam("repeat", "1")
+    end if
+
+    if m.options.includeRelated = true then
+        request.AddParam("includeRelated", "1")
+    end if
+
+    if m.options.extrasPrefixCount <> invalid then
+        request.AddParam("extrasPrefixCount", tostr(m.options.extrasPrefixCount))
+    end if
+end sub

@@ -318,8 +318,8 @@ end sub
 sub bpSetRepeat(mode as integer)
     if m.repeat = mode then return
 
-    ' Tell the Play Queue to set this repeat mode
-    m.playQueue.SetRepeat(mode)
+    ' Tell the Play Queue if we should repeat all
+    m.playQueue.SetRepeat(mode = m.REPEAT_ALL)
 
     m.repeat = mode
 
