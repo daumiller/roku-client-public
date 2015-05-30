@@ -29,6 +29,7 @@ function PlayQueueClass() as object
         obj.RemoveItem = pqRemoveItem
         obj.AddItem = pqAddItem
 
+        obj.ToString = pqToString
         obj.Equals = pqEquals
 
         m.PlayQueueClass = obj
@@ -454,3 +455,7 @@ sub pqAddRequestOptions(request as object)
         request.AddParam("extrasPrefixCount", tostr(m.options.extrasPrefixCount))
     end if
 end sub
+
+function pqToString()
+    return tostr(m.ClassName) + " " + tostr(m.type) + " windowSize=" + tostr(m.windowSize) + " totalSize=" + tostr(m.totalSize) + " selectedId=" + tostr(m.selectedId) + " shuffled=" + tostr(m.isShuffled) + " repeat=" + tostr(m.isRepeat) + " mixed=" + tostr(m.isMixed) + " supportsShuffle=" + tostr(m.supportsShuffle) + " version=" + tostr(m.version) + " id=" + tostr(m.id)
+end function

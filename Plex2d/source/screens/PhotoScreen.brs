@@ -108,6 +108,9 @@ sub photoPlay()
     m.curIndex = firstOf(m.nextIndex, m.curIndex, 0)
     m.item = m.context[m.curIndex]
 
+    Info("Playing " + m.item.ToString() + ", " + "playQueueIndex=" + m.item.Get("playQueueIndex", "invalid") + ", curIndex=" + tostr(m.curIndex) + " of " + tostr(m.context.Count()-1))
+    Info(m.controller.playQueue.ToString())
+
     ' Show or refresh the screen
     if not Application().IsActiveScreen(m) then
         Application().PushScreen(m)
