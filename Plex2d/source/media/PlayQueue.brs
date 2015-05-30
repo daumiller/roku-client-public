@@ -379,14 +379,24 @@ sub pqOnResponse(request as object, response as object, context as object)
             if playQueueOffset = invalid and item.GetInt("playQueueItemID") = pmsSelectedId then
                 playQueueOffset = response.container.GetInt("playQueueSelectedItemOffset") - index + 1
 
-                ' Update the index of everything we've already past.
+                ' Update the index of everything we've already past, and handle
+                ' wrapping indexes (repeat).
+                '
                 for i = 0 to index - 1
-                    m.items[i].Set("playQueueIndex", tostr(playQueueOffset + i))
+                    pqIndex = playQueueOffset + i
+                    if pqIndex < 1 then
+                        pqIndex = pqIndex + m.totalSize
+                    end if
+                    m.items[i].Set("playQueueIndex", tostr(pqIndex))
                 end for
             end if
 
             if playQueueOffset <> invalid then
-                item.Set("playQueueIndex", tostr(playQueueOffset + index))
+                pqIndex = playQueueOffset + index
+                if pqIndex > m.totalSize then
+                    pqIndex = pqIndex - m.totalSize
+                end if
+                item.Set("playQueueIndex", tostr(pqIndex))
             end if
 
             ' If we found the item that we believe is selected then we should
