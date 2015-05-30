@@ -266,6 +266,15 @@ sub settingsInitPrefs()
         isRestricted: true,
     }
 
+    ' Automatically sign in
+    m.prefs["blur_artwork"] = {
+        key: "blur_artwork",
+        title: "Blur background art",
+        default: "1",
+        section: "user",
+        prefType: "bool"
+    }
+
     ' Audio direct play
     m.prefs["directplay_mp3"] = {
         key: "directplay_mp3",
@@ -615,6 +624,7 @@ function settingsGetGlobalSettings() as object
         m.prefs["analytics"],
         m.prefs["gdm_discovery"],
         m.prefs["auto_signin"],
+        m.prefs["blur_artwork"],
     ]
     advanced.Push({key: "tweaks", title: "Tweaks", options: options, prefType: "bool"})
 

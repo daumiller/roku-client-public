@@ -148,7 +148,7 @@ sub npqoGetComponents()
     m.trackActions = createButtonGrid(2, 2)
 
     trackPrefs = {
-        background: Colors().GetAlpha(&hffffffff, 10),
+        background: Colors().GetAlpha(&hffffffff, iif(AppSettings().GetBoolPreference("blur_artwork"), 10, 20)),
         width: 1230 - xOffset - spacing - m.trackActions.GetPreferredWidth(),
         height: 80,
         fixed: false,

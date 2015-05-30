@@ -154,7 +154,15 @@ function imageDraw() as object
 end function
 
 function createBackgroundImage(item as object, fade=true as boolean, cache=true as boolean, orientation=ComponentClass().ORIENTATION_LANDSCAPE as dynamic) as object
-    obj = createImage(item, 1280, 720, { blur: 15, opacity: 60, background: Colors().ToHexString("Background") })
+    if AppSettings().GetBoolPreference("blur_artwork") then
+        blur = 15
+        opacity = 60
+    else
+        blur = 0
+        opacity = 30
+    end if
+
+    obj = createImage(item, 1280, 720, { blur: blur, opacity: opacity, background: Colors().ToHexString("Background") })
     if orientation <> invalid then
         obj.SetOrientation(orientation)
     end if

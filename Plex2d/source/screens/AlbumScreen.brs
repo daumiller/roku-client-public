@@ -205,7 +205,7 @@ sub albumGetComponents()
     ' *** Track List Area *** '
     padding = 20
     trackPrefs = {
-        background: Colors().GetAlpha(&hffffffff, 10),
+        background: Colors().GetAlpha(&hffffffff, iif(AppSettings().GetBoolPreference("blur_artwork"), 10, 20)),
         width: 1230 - xOffset - padding - m.trackActions.GetPreferredWidth(),
         height: 80,
         fixed: false,

@@ -277,7 +277,7 @@ sub clInitItem()
     }
 
     m.listPrefs = {
-        background: Colors().GetAlpha(&hffffffff, 10),
+        background: Colors().GetAlpha(&hffffffff, iif(AppSettings().GetBoolPreference("blur_artwork"), 10, 20)),
         fixed: false,
         focusBG: true,
         zOrder: 2,
