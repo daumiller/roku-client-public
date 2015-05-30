@@ -140,8 +140,12 @@ function createPlayQueueForItem(item as object, options=invalid as dynamic) as o
         path = "/library/metadata/" + item.Get("parentRatingKey", "")
         itemType = "directory"
     else if item.IsPhotoOrDirectoryItem() then
-        parentKey = iif(item.type = "photo", "parentRatingKey", "ratingKey")
-        path = "/library/sections/" + item.GetLibrarySectionId() + "/all?type=13&parent=" + UrlEscape(item.Get(parentKey, "-1"))
+        if (item.type = "photoalbum" or item.container.address = invalid) and item.GetLibrarySectionId() <> "" then
+            parentKey = iif(item.type = "photo", "parentRatingKey", "ratingKey")
+            path = "/library/sections/" + item.GetLibrarySectionId() + "/all?type=13&parent=" + UrlEscape(item.Get(parentKey, "-1"))
+        else
+            path = item.container.address
+        end if
         itemType = "directory"
     else if item.type = "episode" then
         path = "/library/metadata/" + item.Get("grandparentRatingKey", "")
@@ -159,11 +163,13 @@ function createPlayQueueForItem(item as object, options=invalid as dynamic) as o
     end if
 
     if path <> invalid then
+        Debug("playQueue path: " + tostr(path))
         uri = uri + itemType + "/" + UrlEscape(path)
     end if
 
     if options.shuffle = true then options.key = invalid
 
+    Debug("playQueue uri: " + tostr(uri))
     return createPlayQueue(item.GetServer(), contentType, uri, options)
 end function
 
