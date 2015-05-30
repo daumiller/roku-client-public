@@ -214,6 +214,7 @@ sub bpOnPlayQueueUpdate(playQueue as object)
 
             if m.metadataById.DoesExist(itemId) then
                 obj = m.metadataById[itemId]
+                obj.item = item
             else
                 obj = m.CreateContentMetaData(item)
             end if
