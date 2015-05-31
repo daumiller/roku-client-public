@@ -39,6 +39,7 @@ function FiltersClass() as object
         obj.ClearSort = filtersClearSort
         obj.ClearFilters = filtersClearFilters
         obj.ClearUnwatched = filtersClearUnwatched
+        obj.ResetType = filtersResetType
         obj.Refresh = filtersRefresh
 
         obj.GetSort = filtersGetSort
@@ -307,6 +308,17 @@ sub filtersClearSort()
     m.currentSort.Clear()
 end sub
 
+sub filtersResetType(force=false as boolean)
+    ' Clear the current type if it hasn't been set manually, or
+    ' forced. Try to reset the type based on the original path.
+    '
+    if force or m.typeIsManuallySet <> true then
+        m.Delete("typeIsManuallySet")
+        m.Delete("selectedTypeIndex")
+        m.ParsePath(m.originalPath, true)
+    end if
+end sub
+
 sub filtersSetDefaultSort()
     m.Delete("defaultSortKey")
     if not m.HasSorts() then return
@@ -383,8 +395,11 @@ function filtersGetFilters() as dynamic
     return m.currentFilters
 end function
 
-sub filtersSetType(value=invalid as dynamic, trigger=true as boolean)
+sub filtersSetType(value=invalid as dynamic, trigger=true as boolean, isManuallySet=false as boolean)
     if value = invalid then return
+
+    ' Remember if the type was set manually for when we need to reset
+    if isManuallySet then m.typeIsManuallySet = true
 
     ' value can be an object or string (key|value)
     match = {key: "value"}

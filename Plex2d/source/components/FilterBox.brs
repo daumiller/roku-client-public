@@ -265,6 +265,7 @@ sub filterboxOnSelected(screen as object)
     command = m.command
 
     if command = "filter_clear" then
+        m.filters.ResetType(false)
         m.filters.ClearFilters(true)
     else if command = "filter_set" then
         m.filters.SetFilter(m.metadata.filter, m.metadata.key, m.metadata.title)
@@ -272,7 +273,7 @@ sub filterboxOnSelected(screen as object)
         m.filters.ToggleUnwatched(plexObject.Get("filter"))
         m.SetSelected(screen)
     else if m.command = "filter_type" then
-        m.filters.SetType(m.metadata)
+        m.filters.SetType(m.metadata, true, true)
     else if command = "filter_boolean" then
         m.filters.ToggleFilter(plexObject.Get("filter"))
     else if command = "sort" then
