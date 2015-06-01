@@ -35,6 +35,8 @@ function PhotoScreen() as object
         obj.OnOverlayTimer = photoOnOverlayTimer
         obj.OnOverlayClose = photoOnOverlayClose
 
+        obj.fadeSpeed = iif(AppSettings().GetGlobal("animationFull"), 4, 8)
+
         m.PhotoScreen = obj
     end if
 
@@ -92,7 +94,7 @@ sub photoRefresh()
     TextureManager().RemoveTextureByScreenId(m.screenID)
     RunGC()
 
-    m.SetImage(4, true)
+    m.SetImage(true)
 
     if m.overlayScreen.Count() = 0 then
         TextureManager().ClearCache()
@@ -253,7 +255,7 @@ sub photoOnOverlayClose(overlay as object, backButton as boolean)
     m.ToggleOverlay()
 end sub
 
-function photoSetImage(fadeSpeed=4 as integer, redraw=false as boolean) as object
+function photoSetImage(redraw=false as boolean) as object
     if m.image = invalid then
         m.image = createLayeredImage()
         m.image.setFrame(0, 0, 1280, 720)
@@ -261,7 +263,7 @@ function photoSetImage(fadeSpeed=4 as integer, redraw=false as boolean) as objec
         m.image.DestroyComponents()
     end if
 
-    m.image.SetFade(true, fadeSpeed)
+    m.image.SetFade(true, m.fadeSpeed)
     m.SetRefreshCache("image", m.image)
 
     ' Add layers
