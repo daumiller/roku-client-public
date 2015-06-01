@@ -276,6 +276,14 @@ function photoSetImage(fadeSpeed=4 as integer, redraw=false as boolean) as objec
 end function
 
 sub photoOnOverlayTimer(timer as object)
+    ' Wait for the current image to complete before drawing the overlay
+    if m.image.HasPendingTextures() then
+        Debug("Defer photo overlay, image has pending textures.")
+        timer.active = true
+        timer.Mark()
+        return
+    end if
+
     m.Delete("overlayTimer")
 
     if m.showOverlay <> true then

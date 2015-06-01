@@ -9,6 +9,7 @@ function LayeredImageClass() as object
         ' Methods
         obj.SetFade = liSetFade
         obj.OnComponentRedraw = liOnComponentRedraw
+        obj.HasPendingTextures = liHasPendingTextures
 
         m.LayeredImageClass = obj
     end if
@@ -40,12 +41,10 @@ end sub
 sub liOnComponentRedraw(component as object)
     ' We only allow the component to be redrawn if all texture requests
     ' are finished
-    for each comp in m.components
-        if IsFunction(comp.IsPendingTexture) and comp.IsPendingTexture() then
-            Verbose("Ignore redraw for " + m.ToString() + ", it has pending textures.")
-            return
-        end if
-    end for
+    if m.HasPendingTextures() then
+        Verbose("Ignore redraw for " + m.ToString() + ", it has pending textures.")
+        return
+    end if
 
     if m.fade = true then
         ' Set the fade "from" region
@@ -77,4 +76,14 @@ sub liOnComponentRedraw(component as object)
     else
         ApplyFunc(CompositeClass().OnComponentRedraw, m, [component])
     end if
+end sub
+
+sub liHasPendingTextures() as boolean
+    for each comp in m.components
+        if IsFunction(comp.IsPendingTexture) and comp.IsPendingTexture() then
+            return true
+        end if
+    end for
+
+    return false
 end sub
