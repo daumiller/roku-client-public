@@ -56,6 +56,7 @@ end function
 sub pcoInit()
     ApplyFunc(OverlayClass().Init, m)
     m.enableOverlay = false
+    m.deferItemList = true
 
     ' Intialize custom fonts for this screen
     m.customFonts = {
@@ -108,6 +109,12 @@ sub pcoShow()
     m.overlayTimer = createTimer("overlay")
     m.overlayTimer.SetDuration(3000)
     Application().AddTimer(m.overlayTimer, createCallable("OnoverlayTimer", m))
+
+    ' Refresh the overlay and draw the item list
+    if m.deferItemList = true then
+        m.Delete("deferItemList")
+        m.Refresh()
+    end if
 end sub
 
 sub pcoGetComponents()
@@ -150,6 +157,9 @@ sub pcoGetComponents()
     m.controlButtons.SetFocusManual(m.screen.focusedItem)
     m.components.Push(m.controlButtons)
 
+    ' Defer the item list (photo grid) until we have shown the overlay
+    if m.deferItemList = true then return
+
     ' *** Photo grid ***
     m.itemList = createHBox(false, false, false, gridSpacing, false)
     m.itemList.DisableNonParentExit("right")
@@ -186,7 +196,7 @@ sub pcoGetComponents()
 end sub
 
 function pcoGetItemComponent(plexObject as dynamic) as dynamic
-    if plexObject = invalid then return invalid
+    if plexObject = invalid or m.itemList = invalid then return invalid
 
     ' locate the plexObject by key and return it
     for each item in m.itemList.components
