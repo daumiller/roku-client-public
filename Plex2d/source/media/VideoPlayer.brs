@@ -42,6 +42,7 @@ function VideoPlayer() as object
 
         obj.OnPingTimer = vpOnPingTimer
         obj.SendTranscoderCommand = vpSendTranscoderCommand
+        obj.SendStopTimeline = vpSendStopTimeline
 
         obj.RequestTranscodeSessionInfo = vpRequestTranscodeSessionInfo
         obj.OnTranscodeInfoResponse = vpOnTranscodeInfoResponse
@@ -191,11 +192,11 @@ function vpHandleMessage(msg) as boolean
 
             ' If we were specifically told to move to another item, do so now
             if m.playIndexAfterClose <> invalid then
-                m.ignoreTimelines = false
                 m.curIndex = m.playIndexAfterClose
                 m.playIndexAfterClose = invalid
                 m.player = invalid
                 m.screen = invalid
+                m.SendStopTimeline()
                 m.Play()
                 return handled
             end if
@@ -209,6 +210,7 @@ function vpHandleMessage(msg) as boolean
                     m.context[m.curIndex] = videoItem
                     m.player = invalid
                     m.screen = invalid
+                    m.SendStopTimeline()
                     m.Play()
                     return handled
                 end if
@@ -228,16 +230,14 @@ function vpHandleMessage(msg) as boolean
                     Info("Going to try to play the next item")
                     m.player = invalid
                     m.screen = invalid
+                    m.SendStopTimeline()
                     m.Next()
                     return handled
                 end if
             end if
 
             Info("Done with entire play queue, going to pop screen")
-            m.SetPlayState(m.STATE_STOPPED)
-            NowPlayingManager().SetLocation(NowPlayingManager().NAVIGATION)
-            m.UpdateNowPlaying()
-            m.Trigger("stopped", [m, item])
+            m.SendStopTimeline()
             Application().PopScreen(m)
             if m.playbackError then m.ShowPlaybackError()
             m.Cleanup()
@@ -376,8 +376,6 @@ sub vpPlayItemAtIndex(index as integer)
         m.Play()
     else
         m.playIndexAfterClose = index
-        ' TODO(schuyler): Is this even right? Don't we want to send something about our final progress?
-        m.ignoreTimelines = true
         m.player.Close()
     end if
 end sub
@@ -572,4 +570,12 @@ end sub
 sub vpActivate()
     ' We cannot allow activation (at least not with the roVideoScreen)
     Application().PopScreen(m)
+end sub
+
+sub vpSendStopTimeline()
+    m.ignoreTimelines = false
+    m.SetPlayState(m.STATE_STOPPED)
+    NowPlayingManager().SetLocation(NowPlayingManager().NAVIGATION)
+    m.UpdateNowPlaying()
+    m.Trigger("stopped", [m, item])
 end sub
