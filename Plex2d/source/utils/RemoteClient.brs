@@ -141,7 +141,42 @@ function ProcessPlaybackPlayMedia() as boolean
         port = firstOf(m.request.query["port"], "32400")
         protocol = firstOf(m.request.query["protocol"], "http")
 
-        conn = createPlexConnection(PlexConnectionClass().SOURCE_MANUAL, protocol + "://" + address + ":" + port, true, token)
+        ' If we already know about the server and it has an active connection,
+        ' we simply use that server's active connection address with the
+        ' given token. This potentially allows us to upgrade to a secure
+        ' connection and lets us avoid a connection test.
+        '
+        server = PlexServerManager().GetServer(machineID)
+
+        if server <> invalid and server.activeConnection <> invalid then
+            conn = createPlexConnection(PlexConnectionClass().SOURCE_MANUAL, server.activeConnection.address, true, token)
+        else if protocol = "https" then
+            ' If we got an HTTP connection then we take it at face value and assume
+            ' everything will work. If we got an HTTPS connection, we need to test
+            ' it and possibly fall back to HTTP instead. We do this with a blocking
+            ' connection test. Controllers *should* send us the plex.direct name,
+            ' and then we can pull it apart in case we need to fall back to HTTP
+            ' to the IP. If it doesn't match that pattern, then we just use it as
+            ' is.
+            '
+            url = protocol + "://" + address + ":" + port
+            request = createHttpRequest(url + "/identity")
+            response = request.GetToStringWithTimeout(3)
+
+            if response = "" then
+                directRegex = CreateObject("roRegex", "(\d+-\d+-\d+-\d+)\..*plex\.direct", "")
+                match = directRegex.Match(address)
+                if match.Count() > 1 then
+                    address = match[1].Replace("-", ".")
+                    protocol = "http"
+                end if
+            end if
+
+            conn = createPlexConnection(PlexConnectionClass().SOURCE_MANUAL, protocol + "://" + address + ":" + port, true, token)
+        else
+            conn = createPlexConnection(PlexConnectionClass().SOURCE_MANUAL, protocol + "://" + address + ":" + port, true, token)
+        end if
+
         server = createPlexServerForConnection(conn)
         server.uuid = machineID
     else
