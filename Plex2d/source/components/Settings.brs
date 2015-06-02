@@ -47,11 +47,12 @@ sub settingsInit()
     m.x = int(AppSettings().GetWidth()/2 - m.width/2)
 
     m.colors = {
-        category: Colors().Button and &hffffff90,
-        border: Colors().Button and &hffffff90,
-        highlight: Colors().Button,
-        background: Colors().Black,
-        title: Colors().Button,
+        background: Colors().SettingsBg,
+        border: Colors().Background,
+        title: Colors().Background,
+        category: Colors().Button,
+        buttonHighlight: Colors().Orange,
+        buttonDim: Colors().ButtonLht,
     }
 
     m.padding = 10
@@ -161,7 +162,7 @@ function settingsCreateMenuButton(pref as object) as object
     btn.halign = btn.JUSTIFY_LEFT
     btn.zOrder = m.zOrderOverlay
     btn.fgColorFocus = Colors().Black
-    btn.SetFocusMethod(btn.FOCUS_BACKGROUND, Colors().Orange, Colors().ButtonLht)
+    btn.SetFocusMethod(btn.FOCUS_BACKGROUND, m.colors.buttonHighlight, m.colors.buttonDim)
     btn.SetDimensions(m.width, 60)
     btn.SetPadding(0, 0, 0, m.padding*2)
     btn.DisableManualFocus()
@@ -239,7 +240,7 @@ sub settingsOnFocus()
             btn.SetFocusSibling("left", m)
             btn.DisableManualFocus()
             btn.fgColorFocus = Colors().Black
-            btn.SetFocusMethod(btn.FOCUS_BACKGROUND, Colors().Orange, Colors().ButtonLht)
+            btn.SetFocusMethod(btn.FOCUS_BACKGROUND, m.overlay.colors.buttonHighlight, m.overlay.colors.buttonDim)
             m.listBox.AddComponent(btn)
         end if
     end for

@@ -40,6 +40,7 @@ function Colors() as object
         obj.OrangeLight = &hf9be03ff
 
         ' Component specific
+        obj.SettingsBg = &h2c2c2cff
         obj.ScrollbarBg = obj.GetAlpha(&hffffffff, 10)
         obj.ScrollbarFg = obj.GetAlpha(obj.Orange, 40)
         obj.IndicatorBorder = obj.Black
