@@ -36,6 +36,7 @@ function PhotoScreen() as object
         obj.OnOverlayClose = photoOnOverlayClose
 
         obj.fadeSpeed = iif(AppSettings().GetGlobal("animationFull"), 4, 8)
+        obj.idleResetKeyCode = 97
 
         m.PhotoScreen = obj
     end if
@@ -125,9 +126,6 @@ sub photoPlay()
         m.Refresh()
     end if
 
-    ' Keep the player active
-    SendEcpCommand("Lit_a")
-
     ' Ignore modifying playback status when overlay is enabled
     if m.overlayScreen.Count() > 0 then return
 
@@ -173,6 +171,9 @@ sub photoOnKeyRelease(keyCode as integer)
 end sub
 
 sub photoOnKeyPress(keyCode as integer, repeat as boolean)
+    ' Ignore our idle timer reset keycode
+    if keyCode = m.idleResetKeyCode then return
+
     if keyCode = m.kp_UP or keyCode = m.kp_DN or keyCode = m.kp_OK then
         m.ToggleOverlay()
     else if keyCode = m.kp_RT then
@@ -202,6 +203,9 @@ sub photoOnPlayButton(item=invalid as dynamic)
 end sub
 
 sub photoOnSlideShowTimer(timer as object)
+    ' Keep the player active
+    SendEcpCommand("Lit_" + chr(m.idleResetKeyCode))
+
     ' Pause the timer until we refresh the screen
     m.slideShowTimer.Pause()
 
