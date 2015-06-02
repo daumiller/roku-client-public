@@ -399,7 +399,11 @@ sub filtersSetType(value=invalid as dynamic, trigger=true as boolean, isManually
     if value = invalid then return
 
     ' Remember if the type was set manually for when we need to reset
-    if isManuallySet then m.typeIsManuallySet = true
+    if IsAssociativeArray(value) and value.value = invalid then
+        m.Delete("typeIsManuallySet")
+    else if isManuallySet then
+        m.typeIsManuallySet = true
+    end if
 
     ' value can be an object or string (key|value)
     match = {key: "value"}
