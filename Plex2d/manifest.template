@@ -1,8 +1,8 @@
 title=APPTITLE
-version=0.6.6
+version=0.6.7
 major_version=0
 minor_version=6
-build_version=6
+build_version=7
 gh_hash=GH_HASH
 gh_rev=GH_REV
 subtitle=The best personal and online content streaming app!

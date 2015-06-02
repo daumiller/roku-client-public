@@ -1,0 +1,64 @@
+NEW:
+ - Photos support!
+ - Update loading modal style
+ - Update server dropdown style
+ - Update settings overlay style
+ - Add support to advance by page on Artist screen (fwd/rev buttons)
+ - Add advanced preference to toggle background art style
+ - Keep the focus in the middle of the screen when scrolling
+
+FIXES:
+ - Improve app startup time
+ - Add advanced preference to toggle background art style
+ - Fix saving the last server used per user
+ - Display two rows on grid screen regardless of item count
+ - Do not capitalize a trailing 'S'. e.g. decades 1980S -> 1980s
+ - Do not restart a video after playback is stopped during continuous playback
+ - Fix possible stuck loading modals
+ - Allow Direct Play for videos having no audio stream
+ - Fix crash when transcoding video with no audio stream
+ - Fix delay caused by progress bar animation
+ - Fix track indexes when the PQ is modified
+ - Fix looping PQs (photos and music)
+ - Fix possible crash viewing music album
+ - Various performance improvements
+
+NEW: (pending server release for announcement)
+ - Security support!
+
+INTERNAL:
+ - Improve HTTPS performance
+   - Use our own CA bundle for plex.direct requests
+   - Ignore testing server reachability until we are authenticated
+   - Try the preferred server first and defer all other connections
+   - Ignore connection reachability if it has pending requests or was recently checked
+ - Do basic connection testing for flung secure URLs
+ - Move AdvancePage method to the ComponentsScreen (page shifting)
+ - Allow an overlay to override OnFocusIn, OnPlayButton and OnKeyPress
+ - Add support for screens to override shifting animation speed
+ - Increase shifting animation speed on grids, preplay screens and photo overlay
+ - Set the remote back to navigation after all overlays are closed
+ - Prefer the components zOrder when lazy loading
+ - Ignore texture response for any destroyed components
+ - Handle shifting components in an overlay screen
+ - Fix card bgColor (use placeholder color instead of transparency)
+ - Add a simplistic layered image component (for photo player)
+ - Consider the filters available if any one option is available (filters, types, sorts)
+ - Set the plexObject `type` attr when overriding
+ - Fix PQ creation for photo and photoalbums (itemType = "directory")
+ - Move refreshCache up a level into the ComponentsScreen
+ - Add a few option arguments to `createBackground` (photo support)
+ - Keep filter view type in same position regardless of sorts availability
+ - Handle fading images with different dimensions
+ - Add a new scale mode to the image component: scale-to-fit
+ - Disable the PQ refresh timer when playback stops
+ - Use the single click audio event for FWD/REV buttons
+ - Add lock counters
+ - Update the players PQ item references on PQ update
+ - Prefer the photo container when creating a PQ
+ - Handle wrapping PQ indexes (repeat=1).
+ - Refactor PQ options (repeat, extras, related)
+ - Add support for OnDim and OnHighlight to the CompositeButton
+ - Limit the grid to 5k items to improve grid performance
+ - Revert view type when clearing filters, unless manually set
+ - Better handle stop timelines in the video player
