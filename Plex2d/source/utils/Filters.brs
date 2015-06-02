@@ -521,7 +521,15 @@ function filtersParseType(path=invalid as dynamic) as boolean
     if m.ParsePath(firstOf(path, m.originalPath), true) then
         ' Fall back to setting the type based on the item
         if m.BuildType().instr("type=") = -1 then
-            m.SetParsedType(m.item.Get("type"), true)
+            ' Add silly workaround for photos since the default view type when
+            ' no type is specified is "folders".
+            '
+            itemType = m.item.Get("type")
+            selectedType = m.GetSelectedType()
+            if itemType = "photo" and (selectedType = invalid or selectedType.value = invalid) then
+                itemType = "photoalbum"
+            end if
+            m.SetParsedType(itemType, true)
         end if
 
         return (m.GetSelectedType() <> invalid)
