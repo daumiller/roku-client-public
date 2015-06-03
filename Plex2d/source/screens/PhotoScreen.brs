@@ -110,8 +110,9 @@ end sub
 sub photoPlay()
     m.curIndex = firstOf(m.nextIndex, m.curIndex, 0)
     m.item = m.context[m.curIndex]
+    m.plexObject = m.controller.GetCurrentItem()
 
-    Info("Playing " + m.item.ToString() + ", " + "playQueueIndex=" + m.item.Get("playQueueIndex", "invalid") + ", curIndex=" + tostr(m.curIndex) + " of " + tostr(m.context.Count()-1))
+    Info("Playing " + m.plexObject.ToString() + ", " + "playQueueIndex=" + m.plexObject.Get("playQueueIndex", "invalid") + ", curIndex=" + tostr(m.curIndex) + " of " + tostr(m.context.Count()-1))
     Info(m.controller.playQueue.ToString())
 
     ' Show or refresh the screen
@@ -272,8 +273,8 @@ function photoSetImage(redraw=false as boolean) as object
 
     ' Add layers
     bgOptions = {blur: 80, opacity: 60, background: Colors().ToHexString("Background")}
-    m.image.AddComponent(createImage(m.item, m.image.width, m.image.height, bgOptions))
-    m.image.AddComponent(createImage(m.item, m.image.width, m.image.height, invalid, "scale-to-fit"))
+    m.image.AddComponent(createImage(m.item.url, m.image.width, m.image.height, bgOptions))
+    m.image.AddComponent(createImage(m.item.url, m.image.width, m.image.height, invalid, "scale-to-fit"))
 
     if redraw then
         m.image.Draw()

@@ -99,11 +99,9 @@ function ppIsPlayable(item as object) as boolean
 end function
 
 function ppCreateContentMetadata(item as object) as object
-    ' We don't need a custom object since we control our own photo
-    ' player, but we'll return the expected structure, as the base
-    ' player expects it.
-    '
-    return {item: item, metadata: item}
+    obj = createPhotoObject(item)
+    obj.Build()
+    return obj
 end function
 
 sub ppCleanup()
