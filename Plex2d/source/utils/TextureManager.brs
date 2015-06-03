@@ -338,7 +338,7 @@ function tmReceiveTexture(tmsg as object, screen as object) as boolean
 
                 str = "Handle failure by setting bitmap invalid. State: " + state.toStr() + "  Bitmap: " + type(tmsg.GetBitmap())
                 str = str + " URI: " + context.url
-                Debug(str)
+                Warn(str)
 
                 context.textureRequest = invalid
                 context.component.pendingTexture = false
