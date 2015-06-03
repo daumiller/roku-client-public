@@ -36,6 +36,7 @@ function PlexServerClass() as object
         obj.IsReachable = pnsIsReachable
         obj.IsLocalConnection = pnsIsLocalConnection
         obj.IsRequestToServer = pnsIsRequestToServer
+        obj.ConvertURLToLoopback = pnsConvertUrlToLoopback
         obj.SupportsFeature = pnsSupportsFeature
         obj.Merge = pnsMerge
         obj.Equals = pnsEquals
@@ -106,7 +107,7 @@ function pnsGetImageTranscodeURL(path as string, width as integer, height as int
     end if
 
     if instr(1, path, "://") > 0 then
-        imageUrl = path
+        imageUrl = m.ConvertUrlToLoopBack(path)
     else
         imageUrl = "http://127.0.0.1:" + m.GetLocalServerPort() + path
     end if
@@ -338,3 +339,12 @@ sub pnsGetVersion() as string
 
     return JoinArray(version, ".")
 end sub
+
+function pnsConvertUrlToLoopback(url) as string
+    ' If the URL starts with our server URL, replace it with 127.0.0.1:32400.
+    if m.IsRequestToServer(url) then
+        url =  "http://127.0.0.1:32400" + Right(url, len(url) - len(m.activeconnection.address))
+    end if
+
+    return url
+end function
