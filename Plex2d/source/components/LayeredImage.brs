@@ -2,6 +2,8 @@ function LayeredImageClass() as object
     if m.LayeredImageClass = invalid then
         obj = CreateObject("roAssociativeArray")
         obj.Append(CompositeClass())
+        obj.Append(AlignmentMixin())
+
         obj.ClassName = "LayeredImage"
 
         obj.alphaEnable = true
@@ -10,6 +12,8 @@ function LayeredImageClass() as object
         obj.SetFade = liSetFade
         obj.OnComponentRedraw = liOnComponentRedraw
         obj.HasPendingTextures = liHasPendingTextures
+        obj.AddComponent = liAddComponent
+        obj.PerformChildLayout = liPerformChildLayout
 
         m.LayeredImageClass = obj
     end if
@@ -17,11 +21,14 @@ function LayeredImageClass() as object
     return m.LayeredImageClass
 end function
 
-function createLayeredImage()
+function createLayeredImage(spacing=0 as integer, horizontal=false as boolean)
     obj = CreateObject("roAssociativeArray")
     obj.Append(LayeredImageClass())
 
     obj.Init()
+
+    obj.halign = obj.JUSTIFY_CENTER
+    obj.valign = obj.ALIGN_MIDDLE
 
     return obj
 end function
@@ -86,4 +93,48 @@ sub liHasPendingTextures() as boolean
     end for
 
     return false
+end sub
+
+sub liAddComponent(child as object)
+    ApplyFunc(CompositeClass().AddComponent, m, [child])
+    child.needsLayout = true
+    child.bgColor = Colors().Transparent
+end sub
+
+sub liPerformChildLayout(child as object)
+    if m.HasPendingTextures() or type(child.region) <> "roRegion" then return
+    child.needsLayout = false
+
+    ' If we are not scaling the source image, then we'll have to reposition it.
+    if child.scaleSize = false then
+        dstWidth = m.region.GetWidth()
+        dstHeight = m.region.GetHeight()
+        srcWidth = child.region.GetWidth()
+        srcHeight = child.region.GetHeight()
+
+        xOffset = 0
+        yOffset = 0
+
+        if srcWidth <> dstWidth then
+            if child.halign = child.JUSTIFY_CENTER then
+                xOffset = cint(dstWidth/2 - srcWidth/2)
+            else if child.halign = child.JUSTIFY_RIGHT then
+                xOffset = cint(dstWidth - srcWidth)
+            else
+                xOffset = 0
+            end if
+        end if
+
+        if srcHeight <> dstHeight then
+            if child.valign = child.ALIGN_MIDDLE then
+                yOffset = cint(dstHeight/2 - srcHeight/2)
+            else if child.valign = child.ALIGN_BOTTOM then
+                yOffset = cint(dstHeight - srcHeight)
+            else
+                yOffset = 0
+            end if
+        end if
+
+        child.SetPosition(xOffset, yOffset)
+    end if
 end sub

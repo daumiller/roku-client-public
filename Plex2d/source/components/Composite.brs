@@ -6,6 +6,7 @@ function CompositeClass() as object
         ' Methods
         obj.Draw = compositeDraw
         obj.OnComponentRedraw = compositeOnComponentRedraw
+        obj.PerformChildLayout = compositePerformChildLayout
 
         ' Either the composite itself is focusable or its not, the children
         ' don't matter. So we can use the base component definition instead
@@ -59,6 +60,7 @@ function compositeDraw() as object
     next
 
     for each comp in drawables
+        if comp.needsLayout = true then m.PerformChildLayout(comp)
         compositor.NewSprite(comp.x, comp.y, comp.region)
         comp.On("redraw", createCallable("OnComponentRedraw", m, "comp" + tostr(m.id) + "_redraw"))
         ' performance vs memory: keep all regions, except for a URL source. Optional key `multiBitmap`
@@ -86,4 +88,8 @@ sub compositeOnComponentRedraw(component as object)
     m.Draw()
 
     m.Trigger("redraw", [m])
+end sub
+
+sub compositePerformChildLayout(child as object)
+    child.needsLayout = false
 end sub
