@@ -284,18 +284,23 @@ sub preplayGetComponents()
     m.components.Push(vbImages)
 
     ' *** Media Flag *** '
-    hbMediaFlags = createHBox(false, false, false, 20)
-    hbMediaFlags.SetFrame(xOffset, descBlock.y + descBlock.height + spacing, m.components.peek().width, 20)
-    hbMediaFlags.halign = hbMediaFlags.JUSTIFY_CENTER
+    m.flags = createLayeredImage(20)
+    m.flags.layout = m.flags.LAYOUT_HORIZONTAL
+    m.flags.bgColor = Colors().Transparent
+    m.flags.SetFade(true, 100)
+    m.flags.SetFrame(xOffset, descBlock.y + descBlock.height + spacing, m.components.peek().width, 20)
     tags = ["videoResolution", "audioCodec", "audioChannels"]
     for each tag in tags
-        url = m.item.getMediaFlagTranscodeURL(tag, hbMediaFlags.width, hbMediaFlags.height)
+        url = m.item.getMediaFlagTranscodeURL(tag, m.flags.width, m.flags.height)
         if url <> invalid then
-            image = createImageScaleToParent(url, hbMediaFlags)
-            hbMediaFlags.AddComponent(image)
+            flag = createImage(url, m.flags.width, m.flags.height, {upScale: 1})
+            flag.scaleSize = false
+            flag.useMinSize = false
+            m.flags.AddComponent(flag)
         end if
     end for
-    m.components.Push(hbMediaFlags)
+    m.SetRefreshCache("flags", m.flags)
+    m.components.Push(m.flags)
     xOffset = xOffset + spacing + m.components.peek().width
 
     ' *** Progress Bar *** '
