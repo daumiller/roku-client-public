@@ -15,20 +15,27 @@ function LayeredImageClass() as object
         obj.AddComponent = liAddComponent
         obj.PerformChildLayout = liPerformChildLayout
 
+        ' STATIC
+        obj.LAYOUT_COMBINED = 0
+        obj.LAYOUT_HORIZONTAL = 1
+        obj.LAYOUT_VERTICAL = 2
+
         m.LayeredImageClass = obj
     end if
 
     return m.LayeredImageClass
 end function
 
-function createLayeredImage(spacing=0 as integer, horizontal=false as boolean)
+function createLayeredImage(spacing=0 as integer)
     obj = CreateObject("roAssociativeArray")
     obj.Append(LayeredImageClass())
 
     obj.Init()
 
+    obj.spacing = spacing
     obj.halign = obj.JUSTIFY_CENTER
     obj.valign = obj.ALIGN_MIDDLE
+    obj.layout = obj.LAYOUT_COMBINED
 
     return obj
 end function
@@ -105,8 +112,29 @@ sub liPerformChildLayout(child as object)
     if m.HasPendingTextures() or type(child.region) <> "roRegion" then return
     child.needsLayout = false
 
-    ' If we are not scaling the source image, then we'll have to reposition it.
-    if child.scaleSize = false then
+    ' Horizontal layout of components (media flags)
+    if m.layout = m.LAYOUT_HORIZONTAL then
+        xOffset = 0
+        for each comp in m.components
+            comp.needsLayout = false
+            comp.SetPosition(xOffset, 0)
+            xOffset = xOffset + m.spacing + comp.region.GetWidth()
+        end for
+
+        if m.halign = m.JUSTIFY_LEFT then return
+
+        offset = m.region.GetWidth() - (xOffset - m.spacing)
+        if offset > 0 then
+            if m.halign = m.JUSTIFY_CENTER then
+                offset = cint(offset / 2)
+            end if
+
+            for each comp in m.components
+                comp.SetPosition(comp.x + offset, 0)
+            end for
+        end if
+    else if m.layout = m.LAYOUT_COMBINED and child.scaleSize = false then
+        ' If we are not scaling the source image, then we'll have to reposition it.
         dstWidth = m.region.GetWidth()
         dstHeight = m.region.GetHeight()
         srcWidth = child.region.GetWidth()
@@ -136,5 +164,7 @@ sub liPerformChildLayout(child as object)
         end if
 
         child.SetPosition(xOffset, yOffset)
+    else if m.layout = m.LAYOUT_VERTICAL then
+        Fatal("Layout not defined: " + tostr(m.layout))
     end if
 end sub
