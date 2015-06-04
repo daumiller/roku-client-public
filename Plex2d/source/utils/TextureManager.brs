@@ -255,7 +255,10 @@ function tmReceiveTexture(tmsg as object, screen as object) as boolean
     context = m.getItem(tmsg.getID())
 
     if state = m.STATE_CANCELLED then
-        Debug("Cancelled Texture Request. State : " + state.toStr())
+        Debug("Cancelled Texture Request. State : " + tostr(state))
+        failed = true
+    else if context = invalid then
+        Warn("Texture request context is invalid. state=" + tostr(state))
         failed = true
     else if context.component.isDestroyed = true then
         Debug("Ignore Texture Request. Component was destroyed.")
@@ -273,13 +276,6 @@ function tmReceiveTexture(tmsg as object, screen as object) as boolean
     if state = m.STATE_READY or state >= m.STATE_FAILED
         ' Removed the received texture from the asynclist. But do not increment the received count
         m.RemoveItem(tmsg.getID())
-
-        ' There SHOULD ALWAYS be one in there if used properly. This shouldn't
-        ' happen anymore now that we cancel textures during cleanup (reset)
-        if context = invalid then
-            Warn("texture received is invalid: state " + tostr(state))
-            return false
-        end if
 
         bitmap = tmsg.GetBitmap()
 
