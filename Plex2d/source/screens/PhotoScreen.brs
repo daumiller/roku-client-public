@@ -272,9 +272,17 @@ function photoSetImage(redraw=false as boolean) as object
     m.SetRefreshCache("image", m.image)
 
     ' Add layers
-    bgOptions = {blur: 80, opacity: 60, background: Colors().ToHexString("Background")}
-    m.image.AddComponent(createImage(m.item.url, m.image.width, m.image.height, bgOptions))
-    m.image.AddComponent(createImage(m.item.url, m.image.width, m.image.height, invalid, "scale-to-fit"))
+    bgOptions = {upscale: 1, blur: 80, opacity: 60, background: Colors().ToHexString("Background")}
+    background = createImage(m.item.url, m.image.width, m.image.height, bgOptions, "scale-to-fill")
+    background.useMinSize = false
+    m.image.AddComponent(background)
+
+    foreground = createImage(m.item.url, m.image.width, m.image.height, invalid, "scale-to-fit")
+    foreground.halign = foreground.JUSTIFY_CENTER
+    foreground.valign = foreground.ALIGN_MIDDLE
+    foreground.scaleSize = false
+    foreground.useMinSize = false
+    m.image.AddComponent(foreground)
 
     if redraw then
         m.image.Draw()

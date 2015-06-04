@@ -30,8 +30,7 @@ function imageDraw() as object
     else if type(m.sourceOrig) = "roAssociativeArray" or left(m.source, 4) = "http" then
         ' case sensitive AA only works by setting with aa["caseSensitive"]
         transcodeOpts = createObject("roAssociativeArray")
-        transcodeOpts["minSize"] = 1
-'        transcodeOpts["upscale"] = 1
+        if m.useMinSize then transcodeOpts["minSize"] = 1
         if m.transcodeOpts <> invalid then transcodeOpts.Append(m.transcodeOpts)
         width = firstOf(m.preferredWidth, m.width)
         height = firstOf(m.preferredHeight, m.height)
@@ -195,6 +194,7 @@ function createImage(source as dynamic, width=0 as integer, height=0 as integer,
     obj.scaleMode = scaleMode
     obj.scaleToLayout = false
     obj.useLargerSource = false
+    obj.useMinSize = true
 
     obj.bitmap = invalid
     obj.placeholder = invalid
