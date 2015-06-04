@@ -7,6 +7,7 @@ function LayeredImageClass() as object
         obj.ClassName = "LayeredImage"
 
         obj.alphaEnable = true
+        obj.copyFadeRegion = true
 
         ' Methods
         obj.SetFade = liSetFade
@@ -61,14 +62,19 @@ sub liOnComponentRedraw(component as object)
     end if
 
     if m.fade = true then
-        ' Set the fade "from" region
-        fadeRegion = createobject("roBitmap", {width: m.region.GetWidth(), height: m.region.GetHeight(), AlphaEnable: false})
-        fadeRegion.DrawObject(0, 0, m.region)
+        ' Copy the current region or use the existing fade region, to fade from
+        if m.fadeRegion = invalid then
+            fadeRegion = createobject("roBitmap", {width: m.region.GetWidth(), height: m.region.GetHeight(), AlphaEnable: false})
+            fadeRegion.DrawObject(0, 0, m.region)
+        else
+            fadeRegion = m.fadeRegion
+        end if
 
-        ' Draw the layered bitmap/region
+        ' Clear the existing region, and draw the layered bitmap/region
+        m.region.Clear(Colors().Transparent)
         m.Draw()
 
-        ' Set (copy) the fade "to" region
+        ' Copy the new region, to fade into
         orig = createobject("roBitmap", {width: m.region.GetWidth(), height: m.region.GetHeight(), AlphaEnable: false})
         orig.DrawObject(0, 0, m.region)
 
@@ -77,16 +83,31 @@ sub liOnComponentRedraw(component as object)
             comp.Destroy()
         end for
 
-        for fade = -256 to -1 step m.fadeSpeed
-            if abs(fade) < m.fadeSpeed or abs(fade) - abs(m.fadeSpeed) = 0 then fade = -1
+        for fade = -256 + m.fadeSpeed to -1 step m.fadeSpeed
+            if abs(fade) < m.fadeSpeed or abs(fade) - abs(m.fadeSpeed) = 0 then exit for
 
             if fadeRegion <> invalid then
-                m.region.DrawObject(0, 0, fadeRegion)
+                ' If the background is transparent, then we'll need to
+                ' fade out the old image, and fade in the new image.
+                '
+                if m.bgColor = Colors().Transparent then
+                    m.region.Clear(m.bgColor)
+                    m.region.DrawObject(0, 0, fadeRegion, (fade + 257) * -1)
+                else
+                    m.region.DrawObject(0, 0, fadeRegion)
+                end if
             end if
 
             m.region.DrawObject(0, 0, orig, fade)
             m.Trigger("redraw", [m])
         end for
+
+        ' Clear the region and redraw the source with no alpha bit
+        m.region.Clear(m.bgColor)
+        m.region.DrawObject(0, 0, orig)
+        m.Trigger("redraw", [m])
+
+        m.Delete("fadeRegion")
     else
         ApplyFunc(CompositeClass().OnComponentRedraw, m, [component])
     end if

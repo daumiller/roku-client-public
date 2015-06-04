@@ -21,6 +21,7 @@ function CompositeClass() as object
         obj.SetPosition = compSetPosition
 
         obj.multiBitmap = false
+        obj.copyFadeRegion = false
 
         m.CompositeClass = obj
     end if
@@ -35,12 +36,20 @@ function compositeDraw() as object
 
     if m.needsLayout then m.PerformLayout()
 
-    ' init the region ( it will be cleared/reused if not invalid )
-    ' basic support to fade image components (nothing else). This also
-    ' assumes the image is the full size of the component (card).
+    ' Init the region (it will be cleared and reused if not invalid). This
+    ' provides basic support to fade image components, nothing else.
+    '
     if m.fade = true and m.region <> invalid then
+        if m.fadeRegion = invalid then
+            ' Copy (break reference) the existing region for layered images
+            if m.copyFadeRegion then
+                m.fadeRegion = createobject("roBitmap", {width: m.region.GetWidth(), height: m.region.GetHeight(), AlphaEnable: false})
+                m.fadeRegion.DrawObject(0, 0, m.region)
+            else
+                m.fadeRegion = m.region
+            end if
+        end if
         bgColor = Colors().Transparent
-        m.fadeRegion = m.region
     else
         bgColor = m.bgColor
         m.InitRegion()
