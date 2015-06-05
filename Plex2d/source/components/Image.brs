@@ -43,13 +43,13 @@ function imageDraw() as object
 
         ' Copy the existing region (if it exists) if we if we are fading in. Also check
         ' if the parent has a valid fade region to use.
-        if m.parent <> invalid and m.parent.fadeRegion <> invalid then
-            m.region = m.parent.fadeRegion
-        end if
-        if m.fade = true and m.region <> invalid then
-            bitmap = CreateObject("roBitmap", {width: m.region.GetWidth(), height: m.region.GetHeight(), alphaEnable: false})
-            bitmap.DrawObject(0, 0, m.region)
-            m.fadeRegion = CreateObject("roRegion", bitmap, 0, 0, bitmap.GetWidth(), bitmap.GetHeight())
+        if m.fade = true then
+            if m.parent <> invalid and m.parent.fadeRegion <> invalid then
+                m.region = m.parent.fadeRegion
+            end if
+            if m.region <> invalid then
+                m.fadeRegion = CopyRegion(m.region)
+            end if
         end if
 
         if m.region = invalid then
