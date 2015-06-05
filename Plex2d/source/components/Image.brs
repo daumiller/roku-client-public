@@ -303,8 +303,8 @@ sub imageSetBitmap(bmp=invalid as dynamic, makeCopy=false as boolean)
             m.Trigger("redraw", [m])
         else
             m.lastFadeSource = m.source
-            orig = createobject("roBitmap", {width: m.region.GetWidth(), height: m.region.GetHeight(), AlphaEnable: false})
-            orig.DrawObject(0, 0, m.region)
+            orig = CopyRegion(m.region)
+
             m.region.SetAlphaEnable(true)
             if m.fadeRegion = invalid then
                 ' Clear the region if we have no source to fade into
@@ -421,10 +421,7 @@ sub imageReInit(item as object)
     ' If this component is cached, then we must break ties with any existing cache, otherwise the
     ' region will override any url/regions this component cached
     if m.cache = true and m.region <> invalid then
-        bitmap = createobject("roBitmap", {width: m.region.GetWidth(), height: m.region.GetHeight(), AlphaEnable: false})
-        bitmap.DrawObject(0, 0, m.region)
-        m.region = invalid
-        m.region = CreateObject("roRegion", bitmap, 0, 0, bitmap.GetWidth(), bitmap.GetHeight())
+        m.region = CopyRegion(m.region)
     end if
 
     m.bitmap = invalid

@@ -41,10 +41,8 @@ function compositeDraw() as object
     '
     if m.fade = true and m.region <> invalid then
         if m.fadeRegion = invalid then
-            ' Copy (break reference) the existing region for layered images
             if m.copyFadeRegion then
-                m.fadeRegion = createobject("roBitmap", {width: m.region.GetWidth(), height: m.region.GetHeight(), AlphaEnable: false})
-                m.fadeRegion.DrawObject(0, 0, m.region)
+                m.fadeRegion = CopyRegion(m.region)
             else
                 m.fadeRegion = m.region
             end if

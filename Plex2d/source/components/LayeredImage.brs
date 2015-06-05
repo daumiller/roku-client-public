@@ -64,10 +64,7 @@ sub liOnComponentRedraw(component as object)
     if m.fade = true then
         ' Copy the current region or use the existing fade region, to fade from
         if m.fadeRegion = invalid then
-            fadeRegion = createobject("roBitmap", {width: m.region.GetWidth(), height: m.region.GetHeight(), AlphaEnable: false})
-            fadeRegion.DrawObject(0, 0, m.region)
-        else
-            fadeRegion = m.fadeRegion
+            m.fadeRegion = CopyRegion(m.region)
         end if
 
         ' Clear the existing region, and draw the layered bitmap/region
@@ -75,8 +72,7 @@ sub liOnComponentRedraw(component as object)
         m.Draw()
 
         ' Copy the new region, to fade into
-        orig = createobject("roBitmap", {width: m.region.GetWidth(), height: m.region.GetHeight(), AlphaEnable: false})
-        orig.DrawObject(0, 0, m.region)
+        orig = CopyRegion(m.region)
 
         ' It's safe to clear the bitmaps/regions now
         for each comp in m.components
@@ -86,15 +82,15 @@ sub liOnComponentRedraw(component as object)
         for fade = -256 + m.fadeSpeed to -1 step m.fadeSpeed
             if abs(fade) < m.fadeSpeed or abs(fade) - abs(m.fadeSpeed) = 0 then exit for
 
-            if fadeRegion <> invalid then
+            if m.fadeRegion <> invalid then
                 ' If the background is transparent, then we'll need to
                 ' fade out the old image, and fade in the new image.
                 '
                 if m.bgColor = Colors().Transparent then
                     m.region.Clear(m.bgColor)
-                    m.region.DrawObject(0, 0, fadeRegion, (fade + 257) * -1)
+                    m.region.DrawObject(0, 0, m.fadeRegion, (fade + 257) * -1)
                 else
-                    m.region.DrawObject(0, 0, fadeRegion)
+                    m.region.DrawObject(0, 0, m.fadeRegion)
                 end if
             end if
 

@@ -36,8 +36,7 @@ function blockInitSharedRegion() as object
     ' Resize the shared region (for all) if the size changes. The key here is to
     ' use m.region.Set() so it replaces all other regions sharing this reference.
     if m.region <> invalid and (m.region.GetWidth() <> m.width or m.region.GetHeight() <> m.height) then
-        bmp = CreateObject("roBitmap", {width: m.width, height: m.height, alphaEnable: m.alphaEnable})
-        m.region.Set(CreateObject("roRegion", bmp, 0, 0, bmp.GetWidth(), bmp.GetHeight()))
+        m.region.Set(CreateRegion(m.width, m.height, m.bgColor, m.alphaEnable))
     end if
 
     ApplyFunc(ComponentClass().InitRegion, m)

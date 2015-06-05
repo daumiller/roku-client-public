@@ -196,20 +196,19 @@ sub compositorDrawFocus(component=invalid as dynamic, drawAllNow=false as boolea
         m.HideFocus(true)
 
         ' Borders drawn in order: top, right, bottom, left
-        bmp = CreateObject("roBitmap", {width: focus.w, height: focus.h, alphaEnable: false})
-        bmp.DrawRect(0, 0, focus.w, numPixels, focus.color)
-        bmp.DrawRect(focus.w - numPixels, 0, numPixels, focus.h, focus.color)
-        bmp.DrawRect(0, focus.h - numPixels, focus.w, numPixels, focus.color)
-        bmp.DrawRect(0, 0, numPixels, focus.h, focus.color)
+        region = CreateRegion(focus.w, focus.h, invalid, false)
+        region.DrawRect(0, 0, focus.w, numPixels, focus.color)
+        region.DrawRect(focus.w - numPixels, 0, numPixels, focus.h, focus.color)
+        region.DrawRect(0, focus.h - numPixels, focus.w, numPixels, focus.color)
+        region.DrawRect(0, 0, numPixels, focus.h, focus.color)
 
         if innerBorder <> invalid then
-            bmp.DrawRect(innerBorder.x, innerBorder.y, innerBorder.w, innerPixels, Colors().Black)
-            bmp.DrawRect(innerBorder.x + innerBorder.w, innerBorder.y, innerPixels, innerBorder.h, Colors().Black)
-            bmp.DrawRect(innerBorder.x, innerBorder.y + innerBorder.h - innerPixels, innerBorder.w, innerPixels, Colors().Black)
-            bmp.DrawRect(innerBorder.x, innerBorder.x, innerPixels, innerBorder.h, Colors().Orange and Colors().Black)
+            region.DrawRect(innerBorder.x, innerBorder.y, innerBorder.w, innerPixels, Colors().Black)
+            region.DrawRect(innerBorder.x + innerBorder.w, innerBorder.y, innerPixels, innerBorder.h, Colors().Black)
+            region.DrawRect(innerBorder.x, innerBorder.y + innerBorder.h - innerPixels, innerBorder.w, innerPixels, Colors().Black)
+            region.DrawRect(innerBorder.x, innerBorder.x, innerPixels, innerBorder.h, Colors().Orange and Colors().Black)
         end if
 
-        region = CreateObject("roRegion", bmp, 0, 0, focus.w, focus.h)
         m.focusSprite = m.compositor.NewSprite(focus.x, focus.y, region, focus.zOrder)
     end if
 
@@ -241,9 +240,7 @@ end sub
 sub compositorDrawDebugRect(x, y, width, height, color, drawNow=false)
     ' disabled draw debug points for focus
     return
-    bmp = CreateObject("roBitmap", {width: width, height: height, alphaEnable: false})
-    bmp.Clear(color)
-    region = CreateObject("roRegion", bmp, 0, 0, width, height)
+    region = CreateRegion(width, height, color, false)
     m.debugSprites.Push(m.compositor.NewSprite(x - int(width/2), y - int(height / 2), region, 999))
     if drawNow then m.DrawAll()
 end sub

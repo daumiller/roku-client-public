@@ -106,13 +106,11 @@ end sub
 sub compInitRegion()
     perfTimer().mark()
     if m.region <> invalid then
-        m.region.clear(m.bgColor)
+        m.region.Clear(m.bgColor)
         msg = "clear and reuse"
     else
-        bmp = CreateObject("roBitmap", {width: m.width, height: m.height, alphaEnable: m.alphaEnable})
-        bmp.Clear(m.bgColor)
-        m.region = CreateObject("roRegion", bmp, 0, 0, bmp.GetWidth(), bmp.GetHeight())
-        msg = "new bitmap/region"
+        m.region = CreateRegion(m.width, m.height, m.bgColor, m.alphaEnable)
+        msg = "new region"
     end if
 
     if m.roundedCorners = true then
