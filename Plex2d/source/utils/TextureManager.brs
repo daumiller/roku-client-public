@@ -154,8 +154,9 @@ end sub
 ' out any items remaing, resets all values
 sub tmReset()
     Debug("Reset texture manager")
-    ' cancel any pending requests
-    m.CancelAll()
+
+    ' Cancel any pending requests including fixed components
+    m.CancelAll(true)
 
     m.TManager.CleanUp()
     m.requestList.Clear()

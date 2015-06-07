@@ -560,11 +560,12 @@ sub appProcessUrlEvent(msg as object)
 end sub
 
 sub appProcessTextureEvent(msg as object)
-    ' TODO(rob) we should be tracking roTextureRequestEvent by screenID
-    ' Only one roScreen is available at a time, but we want to ignore
-    ' any requests that might come in for a prevoius screen. The logic
-    ' to handle that should just be added to the TextureManager
-     TextureManager().ReceiveTexture(msg, m.screens.peek())
+    ' We reset/delete the TextureManager singleton when a video is playing, but
+    ' for good measure, we'll ignore texture events when the player is active.
+    '
+    if not Application().IsActiveScreen(VideoPlayer()) then
+        TextureManager().ReceiveTexture(msg, m.screens.peek())
+    end if
 end sub
 
 sub appProcessNonBlocking()

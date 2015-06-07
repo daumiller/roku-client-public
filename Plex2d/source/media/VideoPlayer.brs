@@ -516,10 +516,13 @@ sub vpClearMemory()
     ' roScreen and compositor must die
     CompositorScreen().Destroy()
 
-    ' This doesn't seem needed for all platforms, but the Roku HD (2500) will randomly
-    ' fail without this. I can't even start to describe what you'll see on the screen
-    ' when it fails.
-    GetGlobalAA().delete("texturemanager")
+    ' Reset the texture manager (cancel all requests, and unload), and delete the
+    ' singleton. This doesn't seem needed for all platforms, but the Roku HD (2500)
+    ' will randomly fail without this. I can't even start to describe what you'll
+    ' see on the screen when it fails.
+    '
+    TextureManager().Reset()
+    GetGlobalAA().Delete("TextureManager")
 end sub
 
 sub vpShowPlaybackError()
