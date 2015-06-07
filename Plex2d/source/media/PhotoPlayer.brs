@@ -5,6 +5,9 @@ function PhotoPlayer() as object
 
         obj.timelineType = "photo"
 
+        ' Methods
+        obj.InitPlayer = ppInitPlayer
+
         ' Required methods for BasePlayer
         obj.PlayItemAtIndex = ppPlayItemAtIndex
         obj.SetContentList = ppSetContentList
@@ -23,12 +26,13 @@ function PhotoPlayer() as object
         ' TODO(rob): playback analytics?
 
         obj.Init()
+        obj.InitPlayer()
 
         m.PhotoPlayer = obj
     end if
 
-    if m.PhotoPlayer.player = invalid then
-        m.PhotoPlayer.player = createPhotoScreen(m.PhotoPlayer)
+    if m.PhotoPlayer.reinitPlayer then
+        m.PhotoPlayer.InitPlayer()
     end if
 
     return m.PhotoPlayer
@@ -76,9 +80,7 @@ sub ppStop()
         m.curIndex = 0
         m.context = invalid
         m.timelineTimer.active = false
-
-        ' Remove the reference to the player (our custom photo screen)
-        m.Delete("player")
+        m.reinitPlayer = true
     end if
 end sub
 
@@ -117,3 +119,8 @@ end sub
 function ppGetPlaybackPosition(millis=false as boolean) as integer
     return 0
 end function
+
+sub ppInitPlayer()
+    m.player = createPhotoScreen(m)
+    m.reinitPlayer = false
+end sub
