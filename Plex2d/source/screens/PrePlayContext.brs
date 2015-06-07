@@ -335,6 +335,8 @@ sub ppcLoadContext(delta as integer)
     path = m.requestItem.GetContextPath(false)
     if path <> invalid then
         ApplyFunc(PreplayScreen().LoadContext, m, [delta, path])
+    else
+        Application().CloseLoadingModal()
     end if
 end sub
 

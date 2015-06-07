@@ -161,10 +161,15 @@ sub seasonInitItem()
 end sub
 
 sub seasonLoadContext(delta as integer)
-    path = m.item.GetContextPath(false)
-    if path <> invalid then
-        ApplyFunc(ContextListScreen().LoadContext, m, [delta, path])
+    if m.item <> invalid then
+        path = m.item.GetContextPath(false)
+        if path <> invalid then
+            ApplyFunc(ContextListScreen().LoadContext, m, [delta, path])
+            return
+        end if
     end if
+
+    Application().CloseLoadingModal()
 end sub
 
 function seasonHandleCommand(command as string, item as dynamic) as boolean

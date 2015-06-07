@@ -823,7 +823,7 @@ end sub
 
 sub preplayLoadContext(delta as integer, path=invalid as dynamic)
     Debug("Loading context for " + m.ToString())
-    if m.context = invalid then
+    if m.context = invalid and m.item <> invalid then
         if path = invalid then
             item = iif(m.item.type = "episode", m.item, m.requestItem)
             path = item.GetContextPath()
