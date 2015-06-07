@@ -169,6 +169,7 @@ sub preplayOnPlayButton(focusedItem=invalid as dynamic)
     else
         plexObject = m.item
     end if
+    if plexObject = invalid then return
 
     options = createPlayOptions()
 
