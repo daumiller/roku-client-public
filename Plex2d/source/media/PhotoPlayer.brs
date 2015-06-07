@@ -3,8 +3,6 @@ function PhotoPlayer() as object
         obj = CreateObject("roAssociativeArray")
         obj.Append(BasePlayerClass())
 
-        obj.player = createPhotoScreen(obj)
-
         obj.timelineType = "photo"
 
         ' Required methods for BasePlayer
@@ -27,6 +25,10 @@ function PhotoPlayer() as object
         obj.Init()
 
         m.PhotoPlayer = obj
+    end if
+
+    if m.PhotoPlayer.player = invalid then
+        m.PhotoPlayer.player = createPhotoScreen(m.PhotoPlayer)
     end if
 
     return m.PhotoPlayer
@@ -75,9 +77,8 @@ sub ppStop()
         m.context = invalid
         m.timelineTimer.active = false
 
-        ' Reinstantiate the player
+        ' Remove the reference to the player (our custom photo screen)
         m.Delete("player")
-        m.player = createPhotoScreen(m)
     end if
 end sub
 
