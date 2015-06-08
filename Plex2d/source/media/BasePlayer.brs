@@ -65,26 +65,26 @@ function BasePlayerClass() as object
 end function
 
 sub bpInit()
-        ' context is a list of Content Meta-Data objects, with curIndex
-        ' tracking the current item. The actual PlexObjects are backed by
-        ' playQueue.
-        '
-        m.context = invalid
-        m.metadata = invalid
-        m.curIndex = invalid
-        m.playQueue = invalid
-        m.metadataById = {}
+    ' context is a list of Content Meta-Data objects, with curIndex
+    ' tracking the current item. The actual PlexObjects are backed by
+    ' playQueue.
+    '
+    m.context = invalid
+    m.metadata = invalid
+    m.curIndex = invalid
+    m.playQueue = invalid
+    m.metadataById = {}
 
-        m.ignoreTimelines = false
-        m.timelineTimer = createTimer("timeline")
-        m.timelineTimer.SetDuration(1000, true)
-        m.timelineTimer.active = false
-        m.timelineTimer.callback = createCallable("OnTimelineTimer", m)
+    m.ignoreTimelines = false
+    m.timelineTimer = createTimer("timeline")
+    m.timelineTimer.SetDuration(1000, true)
+    m.timelineTimer.active = false
+    m.timelineTimer.callback = createCallable("OnTimelineTimer", m)
 
-        m.SetPlayState(m.STATE_STOPPED)
+    m.SetPlayState(m.STATE_STOPPED)
 
-        NowPlayingManager().timelines[m.timelineType].attrs["repeat"] = "0"
-        NowPlayingManager().timelines[m.timelineType].attrs["shuffle"] = "0"
+    NowPlayingManager().timelines[m.timelineType].attrs["repeat"] = "0"
+    NowPlayingManager().timelines[m.timelineType].attrs["shuffle"] = "0"
 end sub
 
 function bpIsActive() as boolean
