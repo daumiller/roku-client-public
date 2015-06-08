@@ -6,13 +6,12 @@ function LayeredImageClass() as object
 
         obj.ClassName = "LayeredImage"
 
-        obj.alphaEnable = true
         obj.copyFadeRegion = true
+        obj.waitForTextures = true
 
         ' Methods
         obj.SetFade = liSetFade
         obj.OnComponentRedraw = liOnComponentRedraw
-        obj.HasPendingTextures = liHasPendingTextures
         obj.AddComponent = liAddComponent
         obj.PerformChildLayout = liPerformChildLayout
 
@@ -79,6 +78,7 @@ sub liOnComponentRedraw(component as object)
             comp.Destroy()
         end for
 
+        m.region.setAlphaEnable(true)
         for fade = -256 + m.fadeSpeed to -1 step m.fadeSpeed
             if abs(fade) < m.fadeSpeed or abs(fade) - abs(m.fadeSpeed) = 0 then exit for
 
@@ -97,6 +97,7 @@ sub liOnComponentRedraw(component as object)
             m.region.DrawObject(0, 0, orig, fade)
             m.Trigger("redraw", [m])
         end for
+        m.region.setAlphaEnable(m.alphaEnable)
 
         ' Clear the region and redraw the source with no alpha bit
         m.region.Clear(m.bgColor)
@@ -107,16 +108,6 @@ sub liOnComponentRedraw(component as object)
     else
         ApplyFunc(CompositeClass().OnComponentRedraw, m, [component])
     end if
-end sub
-
-sub liHasPendingTextures() as boolean
-    for each comp in m.components
-        if IsFunction(comp.IsPendingTexture) and comp.IsPendingTexture() then
-            return true
-        end if
-    end for
-
-    return false
 end sub
 
 sub liAddComponent(child as object)

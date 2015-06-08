@@ -7,6 +7,7 @@ function CompositeClass() as object
         obj.Draw = compositeDraw
         obj.OnComponentRedraw = compositeOnComponentRedraw
         obj.PerformChildLayout = compositePerformChildLayout
+        obj.HasPendingTextures = compositeHasPendingTextures
 
         ' Either the composite itself is focusable or its not, the children
         ' don't matter. So we can use the base component definition instead
@@ -22,6 +23,7 @@ function CompositeClass() as object
 
         obj.multiBitmap = false
         obj.copyFadeRegion = false
+        obj.waitForTextures = false
 
         m.CompositeClass = obj
     end if
@@ -54,11 +56,7 @@ function compositeDraw() as object
     end if
     m.region.setAlphaEnable(m.alphaEnable)
 
-    compositor = CreateObject("roCompositor")
-    compositor.SetDrawTo(m.region, bgColor)
-
     drawables = CreateObject("roList")
-
     for each comp in m.components
         childDrawables = comp.Draw()
         for each drawable in childDrawables
@@ -66,9 +64,18 @@ function compositeDraw() as object
         next
     next
 
+    drawComposite = not (m.waitForTextures and m.HasPendingTextures())
+    if drawComposite then
+        compositor = CreateObject("roCompositor")
+        compositor.SetDrawTo(m.region, bgColor)
+    end if
+
     for each comp in drawables
         if comp.needsLayout = true then m.PerformChildLayout(comp)
-        compositor.NewSprite(comp.x, comp.y, comp.region)
+        ' Wait to draw any drawables until pending textures have completed
+        if drawComposite then
+            compositor.NewSprite(comp.x, comp.y, comp.region)
+        end if
         comp.On("redraw", createCallable("OnComponentRedraw", m, "comp" + tostr(m.id) + "_redraw"))
         ' performance vs memory: keep all regions, except for a URL source. Optional key `multiBitmap`
         ' is needed if we are compositing multiple downloaded textures, otherwise we keep redrawing.
@@ -81,7 +88,9 @@ function compositeDraw() as object
         end if
     next
 
-    compositor.DrawAll()
+    if drawComposite then
+        compositor.DrawAll()
+    end if
 
     return [m]
 end function
@@ -99,4 +108,14 @@ end sub
 
 sub compositePerformChildLayout(child as object)
     child.needsLayout = false
+end sub
+
+sub compositeHasPendingTextures() as boolean
+    for each comp in m.components
+        if IsFunction(comp.IsPendingTexture) and comp.IsPendingTexture() then
+            return true
+        end if
+    end for
+
+    return false
 end sub
