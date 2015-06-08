@@ -15,6 +15,7 @@ function NowPlayingManager()
         obj.TIMELINE_TYPES = ["video", "music", "photo"]
 
         ' Members
+        obj.serverTimelines = CreateObject("roAssociativeArray")
         obj.subscribers = CreateObject("roAssociativeArray")
         obj.pollReplies = CreateObject("roAssociativeArray")
         obj.timelines = CreateObject("roAssociativeArray")
@@ -32,6 +33,7 @@ function NowPlayingManager()
         obj.SendTimelineToServer = nowPlayingSendTimelineToServer
         obj.SendTimelineToSubscriber = nowPlayingSendTimelineToSubscriber
         obj.SendTimelineToAll = nowPlayingSendTimelineToAll
+        obj.GetServerTimeline = nowPlayingGetServerTimeline
         obj.CreateTimelineDataXml = nowPlayingCreateTimelineDataXml
         obj.UpdatePlaybackState = nowPlayingUpdatePlaybackState
         obj.TimelineDataXmlForSubscriber = nowPlayingTimelineDataXmlForSubscriber
@@ -45,12 +47,6 @@ function NowPlayingManager()
         for each timelineType in obj.TIMELINE_TYPES
             obj.timelines[timelineType] = TimelineData(timelineType)
         next
-
-        ' server timeline
-        obj.pmsLastTimelineItem = invalid
-        obj.pmsLastTimelineState = invalid
-        obj.pmsTimelineTimer = createTimer("pmsTimeline")
-        obj.pmsTimelineTimer.SetDuration(15000, true)
 
         ' Singleton
         m.NowPlayingManager = obj
@@ -169,16 +165,18 @@ sub nowPlayingSendTimelineToSubscriber(subscriber as object, xml=invalid as dyna
     Application().StartRequestIgnoringResponse(url, xml.GenXml(false), invalid, true)
 end sub
 
-sub nowPlayingSendTimelineToServer(item as object, state as string, time as integer, playQueue=invalid as dynamic)
+sub nowPlayingSendTimelineToServer(timelineType as string, item as object, state as string, time as integer, playQueue=invalid as dynamic)
     if type(item.GetServer) <> "roFunction" or item.GetServer() = invalid then return
 
-    ' only send the timeline if it's the first timeline, item changes, playstate changes or timer pops
-    itemsEqual = (item <> invalid and m.pmsLastTimelineItem <> invalid and item.Get("ratingKey") = m.pmsLastTimelineItem.Get("ratingKey"))
-    if itemsEqual AND state = m.pmsLastTimelineState AND NOT m.pmsTimelineTimer.IsExpired() then return
+    timeline = m.GetServerTimeline(timelineType)
 
-    m.pmsTimelineTimer.Mark()
-    m.pmsLastTimelineItem = item
-    m.pmsLastTimelineState = state
+    ' Only send timeline if it's the first, item changes, playstate changes or timer pops
+    itemsEqual = (item <> invalid and timeline.item <> invalid and item.Get("ratingKey") = timeline.item.Get("ratingKey"))
+    if itemsEqual and state = timeline.state and not timeline.timer.IsExpired() then return
+
+    timeline.timer.Mark()
+    timeline.item = item
+    timeline.state = state
 
     encoder = CreateObject("roUrlTransfer")
     query = "time=" + tostr(time)
@@ -245,7 +243,7 @@ sub nowPlayingUpdatePlaybackState(timelineType as string, item as object, state 
 
     m.SendTimelineToAll()
 
-    m.SendTimelineToServer(item, state, time, playQueue)
+    m.SendTimelineToServer(timelineType, item, state, time, playQueue)
 end sub
 
 function nowPlayingCreateTimelineDataXml() as object
@@ -410,8 +408,20 @@ sub nowPlayingSetLocation(location as string)
     end if
 end sub
 
-sub nowplayingOnTimelineResponse(request as object, response as object, context as object)
+sub nowPlayingOnTimelineResponse(request as object, response as object, context as object)
     if context.playQueue = invalid or context.playQueue.refreshOnTimeline <> true then return
     context.playQueue.refreshOnTimeline = false
     context.playQueue.Refresh(false)
 end sub
+
+function nowPlayingGetServerTimeline(timelineType as string) as object
+    if m.serverTimelines[timelineType] = invalid then
+        obj = CreateObject("roAssociativeArray")
+        obj.timer = createTimer("serverTimeline")
+        obj.timer.SetDuration(15000, true)
+
+        m.serverTimelines[timelineType] = obj
+    end if
+
+    return m.serverTimelines[timelineType]
+end function
