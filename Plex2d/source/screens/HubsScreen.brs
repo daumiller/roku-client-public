@@ -171,9 +171,9 @@ function hubsCreateHub(container) as dynamic
 
         contentType = item.Get("type", "")
         ' Use an image for photos. They do not need any overlay and it should improve performance.
-        if m.contentType = "photo" then
+        if contentType = "photo" then
             card = createImage(item)
-        else if contentType = "album" or contentType = "artist" or contentType = "playlist" or m.contentType = "photoalbum" then
+        else if contentType = "album" or contentType = "artist" or contentType = "playlist" or contentType = "photoalbum" then
             card = createCard(item, item.GetOverlayTitle())
         else
             card = createCard(item, title, item.GetViewOffsetPercentage(), item.GetUnwatchedCount(), item.IsUnwatched())
