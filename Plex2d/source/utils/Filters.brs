@@ -507,6 +507,8 @@ end function
 
 ' Wrapper to always disable triggers when automatically setting a sort
 sub filtersSetParsedType(key=invalid as dynamic, emptyType=false as boolean)
+    if key = invalid then return
+
     ' Support to use a specific view type when no type is parsed in the url
     if emptyType and m.emptyTypes[key] <> invalid then
         wanted = iif(m.GetFilters() = invalid, "empty", "filtered")
