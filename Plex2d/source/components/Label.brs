@@ -93,6 +93,15 @@ function labelDraw(redraw=false as boolean) as object
 
     m.InitRegion()
 
+    ' Inhibit a crash by returning the object if the font is invalid.
+    ' We'll stop if we're in dev mode to catch and debug.
+    '
+    if m.font = invalid then
+        Error("Tried to draw a label with an invalid font! label: " + tostr(m, 1, false))
+        if CreateObject("roAppInfo").IsDev() then stop
+        return [m]
+    end if
+
     lineHeight = m.font.GetOneLineHeight()
 
     ' Split our text into lines according to the wrap setting.

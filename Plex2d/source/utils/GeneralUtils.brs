@@ -1,8 +1,8 @@
 ' Mostly standard helpers borrowed from SDK examples
 
-function tostr(any as dynamic, aaDepth=0 as integer) as string
+function tostr(any as dynamic, aaDepth=0 as integer, tryToString=true as boolean) as string
     ret = AnyToString(any)
-    if ret = invalid and any <> invalid and type(any.ToString) = "roFunction" then
+    if ret = invalid and tryToString and type(any) = "roAssociativeArray" and type(any.ToString) = "roFunction" then
         ret = any.ToString()
     end if
 
