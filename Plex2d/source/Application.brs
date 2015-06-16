@@ -43,6 +43,7 @@ function Application()
         obj.OnRequestTimeout = appOnRequestTimeout
 
         obj.AddSocketCallback = appAddSocketCallback
+        obj.DelSocketCallback = appDelSocketCallback
 
         obj.Run = appRun
         obj.ProcessOneMessage = appProcessOneMessage
@@ -459,8 +460,12 @@ sub appOnRequestTimeout(timer)
     timer.requestContext = invalid
 end sub
 
-sub appAddSocketCallback(socket, callback)
-    m.socketCallbacks[socket.GetID().tostr()] = callback
+sub appAddSocketCallback(socket as object, callback as object)
+    m.socketCallbacks[socket.GetID().toStr()] = callback
+end sub
+
+sub appDelSocketCallback(socket as object)
+    m.socketCallbacks.Delete(socket.GetID().toStr())
 end sub
 
 sub appAddInitializer(name)

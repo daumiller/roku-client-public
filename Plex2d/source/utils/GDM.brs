@@ -10,9 +10,9 @@ function GDMAdvertiser() as object
         obj.GetResponseString = gdmAdvertiserGetResponseString
 
         obj.CreateSocket = gdmAdvertiserCreateSocket
-        obj.Close = gdmAdvertiserClose
         obj.Refresh = gdmAdvertiserRefresh
         obj.Cleanup = gdmAdvertiserCleanup
+        obj.Close = gdmClose
 
         m.GDMAdvertiser = obj
 
@@ -47,13 +47,6 @@ sub gdmAdvertiserCreateSocket()
     Application().AddSocketCallback(udp, createCallable("OnSocketEvent", m))
 
     Debug("Created GDM player advertiser")
-end sub
-
-sub gdmAdvertiserClose()
-    if m.socket <> invalid then
-        m.socket.Close()
-        m.socket = invalid
-    end if
 end sub
 
 sub gdmAdvertiserRefresh()
@@ -142,9 +135,8 @@ function GDMDiscovery() as object
         obj.Discover = gdmDiscoveryDiscover
         obj.OnSocketEvent = gdmDiscoveryOnSocketEvent
         obj.OnTimer = gdmDiscoveryOnTimer
-
-        obj.Close = gdmDiscoveryClose
         obj.Cleanup = gdmDiscoveryCleanup
+        obj.Close = gdmClose
 
         m.GDMDiscovery = obj
     end if
@@ -244,7 +236,7 @@ sub gdmDiscoveryDiscover()
 end sub
 
 sub gdmDiscoveryOnSocketEvent(msg as object)
-    if msg.getSocketID() <> m.socket.getID() or not m.socket.isReadable() then return
+    if m.socket <> invalid and msg.getSocketID() <> m.socket.getID() or not m.socket.isReadable() then return
 
     message = m.socket.receiveStr(4096)
 
@@ -289,13 +281,6 @@ sub gdmDiscoveryOnTimer(timer as object)
     m.timer = invalid
 end sub
 
-sub gdmDiscoveryClose()
-    if m.socket <> invalid then
-        m.socket.Close()
-        m.socket = invalid
-    end if
-end sub
-
 sub gdmDiscoveryCleanup()
     m.Close()
     fn = function() :m.GDMDiscovery = invalid :end function
@@ -309,3 +294,11 @@ function parseFieldValue(message as string, label as string) as dynamic
     endPos = instr(startPos, message, chr(13))
     return Mid(message, startPos, endPos - startPos)
 end function
+
+sub gdmClose()
+    if m.socket <> invalid then
+        Application().DelSocketCallback(m.socket)
+        m.socket.Close()
+        m.Delete("socket")
+    end if
+end sub
