@@ -425,9 +425,12 @@ sub bpPlayItemAtPQIID(playQueueItemID as integer)
 end sub
 
 sub bpClearPlayQueue()
-    if m.playqueue <> invalid and m.playqueue.refreshTimer <> invalid then
-        m.playqueue.refreshTimer.active = false
-        m.playqueue.Delete("refreshTimer")
+    if m.playqueue <> invalid then
+        m.playQueue.Off(invalid, invalid)
+        if m.playqueue.refreshTimer <> invalid then
+            m.playqueue.refreshTimer.active = false
+            m.playqueue.Delete("refreshTimer")
+        end if
     end if
     m.Delete("playQueue")
 end sub
