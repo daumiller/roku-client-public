@@ -465,10 +465,9 @@ function nowplayingSetProgress(time as integer, duration as integer) as boolean
 
     region = progressComp.sprite.GetRegion()
     region.Clear(progressComp.bgColor)
-    progressPercent = int(time/1000) / int(duration/1000)
-    region.DrawRect(0, 0, cint(progressComp.width * progressPercent), progressComp.height, Colors().OrangeLight)
+    region.DrawRect(0, 0, cint(progressComp.width * (time/duration)), progressComp.height, Colors().OrangeLight)
 
-    m.time.text = GetTimeString(time/1000) +" / " + GetTimeString(duration/1000)
+    m.time.text = GetTimeString(time/1000) + " / " + GetTimeString(duration/1000)
     m.queueTime.text = m.time.text
     timeComp.Draw(true)
 

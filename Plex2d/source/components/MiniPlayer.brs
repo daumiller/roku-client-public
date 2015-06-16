@@ -159,8 +159,7 @@ function miniplayerSetProgress(time as integer, duration as integer) as boolean
 
     region = m.progress.sprite.GetRegion()
     region.Clear(m.progress.bgColor)
-    progressPercent = int(time/1000) / int(duration/1000)
-    region.DrawRect(0, 0, cint(m.progress.width * progressPercent), m.progress.height, Colors().Orange)
+    region.DrawRect(0, 0, cint(m.progress.width * (time/duration)), m.progress.height, Colors().Orange)
     return true
 end function
 
