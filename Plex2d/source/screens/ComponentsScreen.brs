@@ -1494,6 +1494,8 @@ sub compAnimateShift(shift as object, components as object)
 end sub
 
 sub compAdvancePage(delta as integer)
+    if m.focusedItem = invalid then return
+
     compScreen = firstOf(m.overlayScreen.Peek(), m)
     toFocus = invalid
 
