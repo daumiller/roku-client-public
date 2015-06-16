@@ -496,14 +496,15 @@ sub compOnKeyRelease(keyCode as integer)
         m.OnRewindButton()
     else if keyCode = m.kp_INFO then
         m.OnInfoButton()
-    else if keyCode = m.kp_PLAY then
+    else if keyCode = m.kp_PLAY and m.focusedItem <> invalid then
         m.OnPlayButton(m.focusedItem)
     else if keyCode > 13 or (keyCode = 1 or keyCode = 11 or keyCode = 12) then
         m.OnKeyboardRelease(keyCode, chr(keyCode))
     end if
 end sub
 
-sub compOnPlayButton(item as object)
+sub compOnPlayButton(item=invalid as dynamic)
+    if item = invalid then return
     m.CreatePlayerForItem(item.plexObject)
 end sub
 
