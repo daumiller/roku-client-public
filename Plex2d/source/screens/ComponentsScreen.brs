@@ -607,7 +607,12 @@ function compHandleCommand(command as string, item as dynamic) as boolean
         end if
     else if command = "play_next" or command = "add_to_queue" then
         plexItem = firstOf(item.plexObject, m.item)
-        playQueue = addItemToPlayQueue(plexItem, (command = "play_next"))
+
+        if plexItem <> invalid then
+            playQueue = addItemToPlayQueue(plexItem, (command = "play_next"))
+        else
+            playQueue = invalid
+        end if
 
         if playQueue = invalid then
             ' TODO(schuyler): All of this error handling is lame...
@@ -660,17 +665,22 @@ function compHandleCommand(command as string, item as dynamic) as boolean
         end if
     else if command = "go_to_artist" then
         plexItem = firstOf(item.plexObject, m.item)
-        Application().PushScreen(createArtistScreen(plexItem, plexItem.Get("grandparentKey")))
+        if plexItem <> invalid then
+            Application().PushScreen(createArtistScreen(plexItem, plexItem.Get("grandparentKey")))
+        end if
     else if command = "go_to_album" then
         plexItem = firstOf(item.plexObject, m.item)
-        Application().PushScreen(createAlbumScreen(plexItem, plexItem.Get("parentKey")))
+        if plexItem <> invalid then
+            Application().PushScreen(createAlbumScreen(plexItem, plexItem.Get("parentKey")))
+        end if
     else if command = "toggle_watched" then
         plexItem = firstOf(item.plexObject, m.item)
-
-        if plexItem.IsUnwatched() or plexItem.InProgress() then
-            plexItem.Scrobble(item.commandCallback)
-        else
-            plexItem.Unscrobble(item.commandCallback)
+        if plexItem <> invalid then
+            if plexItem.IsUnwatched() or plexItem.InProgress() then
+                plexItem.Scrobble(item.commandCallback)
+            else
+                plexItem.Unscrobble(item.commandCallback)
+            end if
         end if
     else if command = "vbox_jump" then
         jumpComponent = item.metadata.component
