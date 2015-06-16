@@ -160,12 +160,12 @@ sub albumGetComponents()
 
     ' *** Artist title ***
     lineHeight = FontRegistry().NORMAL.GetOneLineHeight()
-    artistTitle = createLabel(ucase(m.item.Get("parentTitle")), FontRegistry().NORMAL)
+    artistTitle = createLabel(ucase(m.item.Get("parentTitle", "")), FontRegistry().NORMAL)
     artistTitle.SetFrame(xOffset, yOffset - childSpacing - (lineHeight*2), parentWidth, lineHeight)
     m.components.push(artistTitle)
 
     ' *** Album title ***
-    albumTitle = createLabel(ucase(m.item.Get("title")), FontRegistry().NORMAL)
+    albumTitle = createLabel(ucase(m.item.Get("title", "")), FontRegistry().NORMAL)
     albumTitle.SetFrame(xOffset, yOffset - childSpacing - lineHeight, parentWidth, lineHeight)
     albumTitle.SetColor(Colors().TextDim)
     m.components.push(albumTitle)
