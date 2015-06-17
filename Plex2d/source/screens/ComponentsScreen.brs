@@ -1219,6 +1219,7 @@ function compCalculateFirstOrLast(components as object, shift as object, skipIgn
     end for
 
     ' ALL Components fit on screen, ignore shifting.
+    if minMax.right = invalid or minMax.left = invalid then return 0
     if minMax.right <= shift.safeRight and minMax.left >= shift.safeLeft then return 0
 
     minMax.right = minMax.right + shift.x
