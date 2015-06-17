@@ -250,10 +250,11 @@ sub apSetNext(index as integer)
     ' Workaround for https://github.com/plexinc/roku-client/issues/433.
     ' Setting the next track via AudioPlayer().SetNext to the same index
     ' of the current track, regardless of the playback state, will play
-    ' the track after the desired one.
+    ' the track after the desired one. This bug also affects the first
+    ' track regardless.
     '
-    if index = m.curIndex then
-        Debug("Perform workaround since current track equals next track")
+    if index = m.curIndex or index = 0 then
+        Debug("Perform SetNext workaround: restarting current track or is the first")
         m.SetContentList(m.metadata, index)
     else
         m.player.SetNext(index)
