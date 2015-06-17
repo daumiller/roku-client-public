@@ -382,10 +382,10 @@ sub psmOnAccountChange(account as dynamic, reallyChanged as boolean)
     if reallyChanged then
         AudioPlayer().Cleanup()
         PhotoPlayer().Cleanup()
-    end if
 
-    ' Clear any selected server on user change
-    m.Delete("selectedServer")
+        ' Clear any selected server on user change
+        m.Delete("selectedServer")
+    end if
 
     if account.isSignedIn then
         ' If the user didn't really change, such as selecting the previous user
