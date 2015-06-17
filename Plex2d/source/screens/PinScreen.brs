@@ -254,8 +254,7 @@ sub pinGetComponents()
         end if
         refreshButton = createButton(buttonText, FontRegistry().NORMAL, "refresh")
         refreshButton.SetColor(Colors().Text, Colors().Button)
-        refreshButton.width = 72
-        refreshButton.height = 44
+        refreshButton.SetPadding(10)
         m.focusedItem = refreshButton
         buttons.AddComponent(refreshButton)
     end if
