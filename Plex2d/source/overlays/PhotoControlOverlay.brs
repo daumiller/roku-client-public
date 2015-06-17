@@ -344,11 +344,11 @@ sub pcoOnRevButton(item=invalid as dynamic)
     m.AdvancePage(-1)
 end sub
 
-sub pcoOnPlayButton(item as object)
-    overlay = item.overlay
+sub pcoOnPlayButton(item=invalid as dynamic)
+    if item = invalid then return
 
     if item.isControl = true then
-        overlay.UpdatePlayState()
+        item.overlay.UpdatePlayState()
     else
         item.OnSelected(m)
     end if
