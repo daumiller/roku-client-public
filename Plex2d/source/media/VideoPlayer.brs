@@ -183,7 +183,7 @@ function vpHandleMessage(msg) as boolean
             amountPlayed = m.lastPosition - startOffset
             if amountPlayed > m.playbackTimer.GetElapsedSeconds() then amountPlayed = m.playbackTimer.GetElapsedSeconds()
 
-            if amountPlayed > 0 then
+            if amountPlayed > 0 and item <> invalid then
                 Info("Sending analytics event, appear to have watched video for " + tostr(amountPlayed) + " seconds")
                 Analytics().TrackEvent("Playback", item.Get("type", "clip"), tostr(item.GetIdentifier()), amountPlayed)
             end if
