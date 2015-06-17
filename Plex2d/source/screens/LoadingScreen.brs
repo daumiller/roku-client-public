@@ -71,7 +71,7 @@ sub loadingFindServer()
 
     if server = invalid then
         GDMDiscovery().Discover()
-        MyPlexManager().RefreshResources()
+        MyPlexManager().RefreshResources(true)
 
         m.waitTimer = createTimer("waitTimer")
         m.waitTimer.SetDuration(17000)

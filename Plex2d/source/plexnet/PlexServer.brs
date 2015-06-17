@@ -29,6 +29,7 @@ function PlexServerClass() as object
         obj.GetLocalServerPort = pnsGetLocalServerPort
         obj.GetImageTranscodeURL = pnsGetImageTranscodeURL
         obj.CollectDataFromRoot = pnsCollectDataFromRoot
+        obj.ResetLastTest = pnsResetLastTest
         obj.UpdateReachability = pnsUpdateReachability
         obj.OnReachabilityResult = pnsOnReachabilityResult
         obj.MarkAsRefreshing = pnsMarkAsRefreshing
@@ -348,3 +349,9 @@ function pnsConvertUrlToLoopback(url) as string
 
     return url
 end function
+
+sub pnsResetLastTest()
+    for each conn in m.connections
+        conn.Delete("lastTestedAt")
+    next
+end sub

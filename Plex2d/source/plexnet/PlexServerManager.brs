@@ -14,6 +14,7 @@ function PlexServerManager()
         obj.RemoveServer = psmRemoveServer
         obj.MergeServer = psmMergeServer
         obj.CompareServers = psmCompareServers
+        obj.ResetLastTest = psmResetLastTest
 
         obj.UpdateFromConnectionType = psmUpdateFromConnectionType
         obj.UpdateFromDiscovery = psmUpdateFromDiscovery
@@ -442,6 +443,12 @@ sub psmOnDeferUpdateReachabilityTimer(timer as object)
     timer.active = false
     m.Delete("deferReachabilityTimer")
     m.UpdateReachability(true, false, false)
+end sub
+
+sub psmResetLastTest()
+    for each uuid in m.serversByUuid
+        m.serversByUuid[uuid].ResetLastTest()
+    next
 end sub
 
 ' TODO(schuyler): Notifications

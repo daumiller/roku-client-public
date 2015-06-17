@@ -31,7 +31,9 @@ sub mpPublish()
     Application().StartRequest(request, context, "_method=PUT")
 end sub
 
-sub mpRefreshResources()
+sub mpRefreshResources(force=false as boolean)
+    if force then PlexServerManager().ResetLastTest()
+
     request = createMyPlexRequest("/pms/resources")
     context = request.CreateRequestContext("resources", createCallable("OnResourcesResponse", m))
     context.timeout = iif(MyPlexAccount().isOffline, 1000, 10000)
