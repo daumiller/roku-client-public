@@ -1,0 +1,39 @@
+FIXES:
+ - Fix photo quality in viewer
+ - Do not upscale photos in viewer (use original size)
+ - Fix flickering media flags on preplay screen (1080p DTS 5.1)
+ - Better handle concurrent server timelines (photos + music)
+ - Remove unwatched indicator for photos and photoalbums on hub screens
+ - Fix playing the first audio track when selected
+ - Fix a handful of crashes
+
+INTERNAL:
+ - Warn when texture requests fail
+ - Convert URLs to loopback addresses when necessary
+ - Add a PhotoObject for the PhotoPlayer
+ - Convert media flags to a LayeredImage
+ - Rework fade support for the LayeredImage component
+ - Additional layout support for the LayeredImage component
+ - Maintain aspect ratio and scale in photo player
+ - Add support to maintain aspect ratio/scale in LayeredImage
+ - Use helpers to create/copy regions and bitmaps
+ - Only replace the image region with the parents if fade is enabled
+ - Ignore FWD/REV button on preplay unless we have a valid item
+ - Ignore remote play button on preplay unless we have a valid item
+ - Better handle texture manager/events when video player is active
+ - Fix LayeredImage alpha blending (composite)
+ - Fix possible crash in the filters
+ - Update SetNext AudioPlayer wrapper to fix playing first track
+ - Various crash fixes from Roku crash dumps!
+   - Fix a few possible crashes processing commands when the plexItem is invalid
+   - Do not crash if our labels font is invalid
+   - Do not crash when pressing the remote play button
+   - Do not crash drawing focus if the screen or compositor are invalid
+   - Clear PQ event callbacks when destroying the PQ
+   - Delete callbacks when closing a socket
+   - Fix PIN screen button dimensions
+   - Fix possible crash calculating first of last shift
+   - Fix possible crash sending video analytic data
+   - Fix possible divide by zero error when calculating progress
+   - Fix possible crash in AdvancePage
+   - Fix possible crash in album screen
